@@ -34,7 +34,6 @@ export default function Home() {
   const [showTestPanel, setShowTestPanel] = useState(false);
   const [testResult, setTestResult] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   // tRPC Queries und Mutations
   const { data: investigations, refetch: refetchInvestigations } =

@@ -75,14 +75,6 @@ interface Investigation {
   metadata: Record<string, unknown>;
 }
 
-interface Session {
-  user: {
-    id: string;
-    email: string;
-  };
-  profile: UserProfile | null;
-}
-
 export default function Dashboard() {
   const router = useRouter();
   const { session, loading, logout } = useAuth();

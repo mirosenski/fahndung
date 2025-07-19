@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "~/lib/supabase";
-import { getCurrentSession, signOut, clearAuthSession } from "~/lib/auth";
+import { getCurrentSession, clearAuthSession } from "~/lib/auth";
 import type { Session } from "~/lib/auth";
 
 export const useAuth = () => {
@@ -64,7 +64,7 @@ export const useAuth = () => {
           if (error) {
             console.log(
               "ℹ️ Logout-Fehler (normal bei fehlender Session):",
-              error.message,
+              error?.message,
             );
           }
         } catch (err) {
