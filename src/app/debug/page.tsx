@@ -8,12 +8,18 @@ import {
 } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
 
+type SessionTestResult = {
+  user?: { id: string; email: string };
+  profile?: { id: string; name: string; role: string };
+  error?: string;
+} | null;
+
 export default function DebugPage() {
   const [connectionTest, setConnectionTest] = useState<{
     success: boolean;
     message: string;
   } | null>(null);
-  const [sessionTest, setSessionTest] = useState<unknown>(null);
+  const [sessionTest, setSessionTest] = useState<SessionTestResult>(null);
   const [loading, setLoading] = useState(false);
 
   const handleConnectionTest = async () => {
@@ -151,7 +157,7 @@ export default function DebugPage() {
           {sessionTest && (
             <div className="rounded-md bg-gray-100 p-4">
               <pre className="text-sm whitespace-pre-wrap">
-                {JSON.stringify(sessionTest, null, 2) as string}
+                {JSON.stringify(sessionTest, null, 2)}
               </pre>
             </div>
           )}
