@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
-  ],
+  "extends": ["next/core-web-vitals", "next/typescript"],
   "rules": {
     "@typescript-eslint/no-unsafe-assignment": "warn",
     "@typescript-eslint/no-unsafe-argument": "warn",
@@ -10,6 +7,7 @@
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/prefer-optional-chain": "off",
     "react-hooks/exhaustive-deps": "warn"
   }
-} 
+}
