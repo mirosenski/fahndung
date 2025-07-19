@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "~/lib/supabase";
@@ -62,12 +63,14 @@ export const useAuth = () => {
         try {
           const { error } = await supabase.auth.signOut();
           if (error) {
+            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
             console.log(
               "ℹ️ Logout-Fehler (normal bei fehlender Session):",
-              error && error.message ? error.message : "Unbekannter Fehler",
+              error?.message || "Unbekannter Fehler",
             );
           }
         } catch (err) {
+          // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
           console.log(
             "ℹ️ Logout-Ausnahme (normal bei fehlender Session):",
             err,
