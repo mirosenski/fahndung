@@ -27,8 +27,6 @@ import {
 import { api } from "~/trpc/react";
 import { supabase } from "~/lib/supabase";
 import {
-  getCurrentSession,
-  signOut,
   isAdmin,
   isEditor,
   getAllUsers,
@@ -42,6 +40,7 @@ import {
 } from "~/lib/auth";
 import type { UserProfile, UserActivity, AdminAction } from "~/lib/auth";
 import Header from "~/components/layout/Header";
+import { useAuth } from "~/hooks/useAuth";
 
 interface PendingRegistration {
   id: string;
@@ -86,8 +85,7 @@ interface Session {
 
 export default function Dashboard() {
   const router = useRouter();
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { session, loading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -121,26 +119,12 @@ export default function Dashboard() {
     offset: 0,
   });
 
-  // Session-Management
+  // Redirect to login if not authenticated
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const currentSession = await getCurrentSession();
-        if (!currentSession) {
-          router.push("/login");
-          return;
-        }
-        setSession(currentSession as Session);
-      } catch (error) {
-        console.error("Session-Fehler:", error);
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void checkSession();
-  }, [router]);
+    if (!loading && !session) {
+      router.push("/login");
+    }
+  }, [session, loading, router]);
 
   // Filtered investigations
   const investigations = (investigationsData as Investigation[]) ?? [];
@@ -178,8 +162,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    await signOut();
-    router.push("/login");
+    await logout();
   };
 
   const handleCreateInvestigation = () => {

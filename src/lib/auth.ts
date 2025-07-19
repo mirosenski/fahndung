@@ -406,19 +406,27 @@ export const signOut = async (): Promise<void> => {
   try {
     console.log("🔐 Starte Abmeldung...");
 
-    // Zuerst lokale Storage bereinigen
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.removeItem("supabase.auth.token");
-        sessionStorage.removeItem("supabase.auth.token");
-        console.log("✅ Lokale Token-Daten bereinigt");
-      } catch (storageError) {
-        console.error(
-          "⚠️ Fehler beim Bereinigen des lokalen Storage:",
-          storageError,
-        );
-      }
+    // Zuerst prüfen, ob eine Session existiert
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.log("⚠️ Session-Fehler beim Logout:", sessionError);
+      // Session bereits fehlerhaft - nur lokale Bereinigung
+      await clearLocalSession();
+      return;
     }
+
+    if (!session) {
+      console.log("ℹ️ Keine aktive Session gefunden - nur lokale Bereinigung");
+      await clearLocalSession();
+      return;
+    }
+
+    // Lokale Storage bereinigen
+    await clearLocalSession();
 
     // Dann Supabase-Abmeldung mit verbesserter Fehlerbehandlung
     const { error } = await supabase.auth.signOut();
@@ -426,15 +434,16 @@ export const signOut = async (): Promise<void> => {
     if (error) {
       console.error("❌ Supabase Logout-Fehler:", error);
 
-      // Auch bei Fehler lokale Session bereinigen
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.clear();
-          sessionStorage.clear();
-          console.log("✅ Lokale Session vollständig bereinigt");
-        } catch (clearError) {
-          console.error("⚠️ Fehler beim vollständigen Bereinigen:", clearError);
-        }
+      // Bei AuthSessionMissingError oder ähnlichen Fehlern ist das normal
+      if (
+        error?.message?.includes("Auth session missing") ||
+        error?.message?.includes("No session")
+      ) {
+        console.log(
+          "ℹ️ Session bereits abgemeldet - normal bei wiederholtem Logout",
+        );
+      } else {
+        console.error("❌ Unerwarteter Supabase Logout-Fehler:", error);
       }
     } else {
       console.log("✅ Abmeldung erfolgreich");
@@ -443,15 +452,33 @@ export const signOut = async (): Promise<void> => {
     console.error("❌ Unerwarteter Fehler beim Abmelden:", error);
 
     // Auch bei unerwarteten Fehlern lokale Session bereinigen
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-        console.log("✅ Lokale Session nach Fehler bereinigt");
-      } catch (clearError) {
-        console.error("⚠️ Fehler beim Bereinigen nach Fehler:", clearError);
+    await clearLocalSession();
+  }
+};
+
+// Lokale Session bereinigen (ohne Supabase-Aufruf)
+const clearLocalSession = async (): Promise<void> => {
+  if (typeof window === "undefined") return;
+
+  try {
+    // Alle Supabase-bezogenen Daten bereinigen
+    localStorage.removeItem("supabase.auth.token");
+    sessionStorage.removeItem("supabase.auth.token");
+
+    // Zusätzliche Supabase-Storage-Keys bereinigen
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.includes("supabase")) {
+        keysToRemove.push(key);
       }
     }
+
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+    console.log("✅ Lokale Session-Daten vollständig bereinigt");
+  } catch (error) {
+    console.error("⚠️ Fehler beim Bereinigen der lokalen Session:", error);
   }
 };
 
@@ -463,24 +490,21 @@ export const clearAuthSession = async (): Promise<void> => {
     console.log("🧹 Bereinige Auth-Session...");
 
     // Zuerst lokale Storage bereinigen
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-        console.log("✅ Lokale Session-Daten bereinigt");
-      } catch (storageError) {
-        console.error(
-          "⚠️ Fehler beim Bereinigen des lokalen Storage:",
-          storageError,
-        );
-      }
-    }
+    await clearLocalSession();
 
-    // Dann Supabase-Abmeldung
+    // Dann Supabase-Abmeldung mit Fehlerbehandlung
     const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error("❌ Supabase Session-Bereinigung Fehler:", error);
+
+      // Bei AuthSessionMissingError ist das normal
+      if (
+        error?.message?.includes("Auth session missing") ||
+        error?.message?.includes("No session")
+      ) {
+        console.log("ℹ️ Session bereits bereinigt - normal");
+      }
     } else {
       console.log("✅ Supabase Session erfolgreich bereinigt");
     }
@@ -490,15 +514,7 @@ export const clearAuthSession = async (): Promise<void> => {
     console.error("❌ Fehler beim Bereinigen der Auth-Session:", error);
 
     // Auch bei Fehler lokale Session bereinigen
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-        console.log("✅ Lokale Session nach Fehler bereinigt");
-      } catch (clearError) {
-        console.error("⚠️ Fehler beim Bereinigen nach Fehler:", clearError);
-      }
-    }
+    await clearLocalSession();
   }
 };
 
