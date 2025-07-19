@@ -63,14 +63,12 @@ export const useAuth = () => {
         try {
           const { error } = await supabase.auth.signOut();
           if (error) {
-            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
             console.log(
               "ℹ️ Logout-Fehler (normal bei fehlender Session):",
               error?.message || "Unbekannter Fehler",
             );
           }
         } catch (err) {
-          // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
           console.log(
             "ℹ️ Logout-Ausnahme (normal bei fehlender Session):",
             err,
