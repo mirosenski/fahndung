@@ -10,6 +10,7 @@ import {
   Shield,
 } from "lucide-react";
 import { Logo } from "~/components/ui/Logo";
+import { Breadcrumb } from "~/components/ui/Breadcrumb";
 
 interface Session {
   user: {
@@ -41,7 +42,7 @@ interface HeaderProps {
   onLogout?: () => void;
   onCreateInvestigation?: () => void;
   onShowTestPanel?: () => void;
-  showTestPanel?: boolean;
+  _showTestPanel?: boolean;
 }
 
 export default function Header({
@@ -50,7 +51,7 @@ export default function Header({
   onLogout,
   onCreateInvestigation,
   onShowTestPanel,
-  showTestPanel,
+  _showTestPanel,
 }: HeaderProps) {
   const router = useRouter();
 
@@ -207,15 +208,18 @@ export default function Header({
   };
 
   return (
-    <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Logo className="text-white" showLink={true} />
+    <>
+      <header className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Logo className="text-white" showLink={true} />
+            </div>
+            {getButtons()}
           </div>
-          {getButtons()}
         </div>
-      </div>
-    </header>
+      </header>
+      <Breadcrumb />
+    </>
   );
 }
