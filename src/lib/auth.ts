@@ -1,11 +1,11 @@
-import { supabase } from './supabase';
+import { supabase } from "./supabase";
 
 export interface UserProfile {
   id: string;
   user_id: string;
   email: string;
   name?: string;
-  role: 'admin' | 'editor' | 'user';
+  role: "admin" | "editor" | "user";
   department?: string;
   phone?: string;
   last_login?: string;
@@ -21,9 +21,18 @@ export interface UserProfile {
 export interface UserActivity {
   id: string;
   user_id: string;
-  activity_type: 'login' | 'logout' | 'profile_update' | 'investigation_create' | 
-                'investigation_edit' | 'investigation_delete' | 'media_upload' |
-                'user_block' | 'user_unblock' | 'role_change' | 'password_reset';
+  activity_type:
+    | "login"
+    | "logout"
+    | "profile_update"
+    | "investigation_create"
+    | "investigation_edit"
+    | "investigation_delete"
+    | "media_upload"
+    | "user_block"
+    | "user_unblock"
+    | "role_change"
+    | "password_reset";
   description?: string;
   ip_address?: string;
   user_agent?: string;
@@ -46,8 +55,14 @@ export interface UserSession {
 export interface AdminAction {
   id: string;
   admin_id: string;
-  action_type: 'user_block' | 'user_unblock' | 'role_change' | 'user_delete' |
-               'investigation_approve' | 'investigation_reject' | 'system_settings';
+  action_type:
+    | "user_block"
+    | "user_unblock"
+    | "role_change"
+    | "user_delete"
+    | "investigation_approve"
+    | "investigation_reject"
+    | "system_settings";
   target_user_id?: string;
   target_investigation_id?: string;
   description?: string;
@@ -64,60 +79,81 @@ export interface Session {
 }
 
 // Benutzer-Rollen prüfen
-export const hasRole = (profile: UserProfile | null, role: 'admin' | 'editor' | 'user'): boolean => {
+export const hasRole = (
+  profile: UserProfile | null,
+  role: "admin" | "editor" | "user",
+): boolean => {
   if (!profile) return false;
-  
+
   const roleHierarchy = {
-    'user': 1,
-    'editor': 2,
-    'admin': 3
+    user: 1,
+    editor: 2,
+    admin: 3,
   };
-  
+
   return roleHierarchy[profile.role] >= roleHierarchy[role];
 };
 
 // Admin-Rechte prüfen
 export const isAdmin = (profile: UserProfile | null): boolean => {
-  return hasRole(profile, 'admin');
+  return hasRole(profile, "admin");
 };
 
 // Editor-Rechte prüfen
 export const isEditor = (profile: UserProfile | null): boolean => {
-  return hasRole(profile, 'editor');
+  return hasRole(profile, "editor");
 };
 
 // Aktuelle Session abrufen
 export const getCurrentSession = async (): Promise<Session | null> => {
   if (!supabase) {
-    console.error('❌ Supabase ist nicht konfiguriert');
+    console.error("❌ Supabase ist nicht konfiguriert");
     return null;
   }
 
   try {
-    console.log('🔍 Prüfe Benutzer-Authentifizierung...');
-    
+    console.log("🔍 Prüfe Benutzer-Authentifizierung...");
+
     // Zuerst die aktuelle Session abrufen
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession();
+
     if (sessionError) {
-      console.error('❌ Session-Fehler:', sessionError);
+      console.error("❌ Session-Fehler:", sessionError);
+
+      // Spezielle Behandlung für Refresh Token Fehler
+      if (
+        sessionError.message.includes("Invalid Refresh Token") ||
+        sessionError.message.includes("Refresh Token Not Found")
+      ) {
+        console.log("🔄 Refresh Token Fehler - versuche Token zu erneuern...");
+
+        // Versuche den Benutzer abzumelden und neu anzumelden
+        await supabase.auth.signOut();
+        console.log("✅ Benutzer abgemeldet - bitte melden Sie sich erneut an");
+        return null;
+      }
+
       return null;
     }
-    
+
     if (!sessionData.session) {
-      console.log('❌ Keine aktive Session gefunden');
+      console.log("❌ Keine aktive Session gefunden");
       return null;
     }
 
     const user = sessionData.session.user;
-    console.log('✅ Benutzer authentifiziert:', { id: user.id, email: user.email });
+    console.log("✅ Benutzer authentifiziert:", {
+      id: user.id,
+      email: user.email,
+    });
 
     // Benutzer-Profil abrufen
-    console.log('🔍 Lade Benutzer-Profil...');
+    console.log("🔍 Lade Benutzer-Profil...");
     const profileResult = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', user.id)
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", user.id)
       .single();
     const { data: profile, error: profileError } = profileResult as {
       data: UserProfile | null;
@@ -125,49 +161,49 @@ export const getCurrentSession = async (): Promise<Session | null> => {
     };
 
     if (profileError) {
-      console.log('⚠️ Profile Error Details:', {
+      console.log("⚠️ Profile Error Details:", {
         code: profileError.code,
         message: profileError.message,
-        details: profileError
+        details: profileError,
       });
-      
-      if (profileError.code === 'PGRST116') {
+
+      if (profileError.code === "PGRST116") {
         // Profil existiert nicht - erstelle es automatisch
-        console.log('🔄 Profil existiert nicht, erstelle es automatisch...');
+        console.log("🔄 Profil existiert nicht, erstelle es automatisch...");
         const autoProfile = await createOrUpdateProfile(
           user.id,
-          user.email ?? '',
+          user.email ?? "",
           {
-            name: user.email?.split('@')[0] ?? 'Benutzer',
-            role: 'user',
-            department: 'Allgemein'
-          }
+            name: user.email?.split("@")[0] ?? "Benutzer",
+            role: "user",
+            department: "Allgemein",
+          },
         );
-        
+
         if (autoProfile) {
-          console.log('✅ Profil erfolgreich erstellt');
+          console.log("✅ Profil erfolgreich erstellt");
           return {
             user: {
               id: user.id,
-              email: user.email ?? ''
+              email: user.email ?? "",
             },
-            profile: autoProfile
+            profile: autoProfile,
           };
         } else {
-          console.error('❌ Fehler beim automatischen Erstellen des Profils');
+          console.error("❌ Fehler beim automatischen Erstellen des Profils");
         }
       } else {
-        console.error('❌ Fehler beim Abrufen des Benutzer-Profils:', {
+        console.error("❌ Fehler beim Abrufen des Benutzer-Profils:", {
           code: profileError.code,
           message: profileError.message,
-          fullError: profileError
+          fullError: profileError,
         });
       }
     } else if (profile) {
-      console.log('✅ Benutzer-Profil gefunden:', { 
-        id: profile.id, 
-        role: profile.role, 
-        name: profile.name 
+      console.log("✅ Benutzer-Profil gefunden:", {
+        id: profile.id,
+        role: profile.role,
+        name: profile.name,
       });
     }
 
@@ -176,37 +212,44 @@ export const getCurrentSession = async (): Promise<Session | null> => {
     return {
       user: {
         id: user.id,
-        email: user.email ?? ''
+        email: user.email ?? "",
       },
-      profile: typedProfile
+      profile: typedProfile,
     };
   } catch (error) {
-    console.error('❌ Fehler beim Abrufen der Session:', error);
+    console.error("❌ Fehler beim Abrufen der Session:", error);
     return null;
   }
 };
 
 // Benutzer-Profil erstellen oder aktualisieren
-export const createOrUpdateProfile = async (userId: string, email: string, profileData: Partial<UserProfile>): Promise<UserProfile | null> => {
+export const createOrUpdateProfile = async (
+  userId: string,
+  email: string,
+  profileData: Partial<UserProfile>,
+): Promise<UserProfile | null> => {
   if (!supabase) {
-    console.error('❌ Supabase ist nicht konfiguriert');
+    console.error("❌ Supabase ist nicht konfiguriert");
     return null;
   }
 
   try {
-    console.log('🔄 Erstelle/Aktualisiere Benutzer-Profil...', { userId, email });
-    
+    console.log("🔄 Erstelle/Aktualisiere Benutzer-Profil...", {
+      userId,
+      email,
+    });
+
     const upsertData = {
       user_id: userId,
       email,
-      status: 'approved', // Automatisch genehmigt für bestehende User
-      ...profileData
+      status: "approved", // Automatisch genehmigt für bestehende User
+      ...profileData,
     };
 
-    console.log('📝 Upsert-Daten:', upsertData);
+    console.log("📝 Upsert-Daten:", upsertData);
 
     const upsertResult = await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .upsert(upsertData)
       .select()
       .single();
@@ -217,112 +260,118 @@ export const createOrUpdateProfile = async (userId: string, email: string, profi
     };
 
     if (error) {
-      console.error('❌ Fehler beim Erstellen/Aktualisieren des Profils:', {
+      console.error("❌ Fehler beim Erstellen/Aktualisieren des Profils:", {
         message: error.message,
-        fullError: error
+        fullError: error,
       });
       return null;
     }
 
-    console.log('✅ Profil erfolgreich erstellt/aktualisiert:', data);
+    console.log("✅ Profil erfolgreich erstellt/aktualisiert:", data);
     return data;
   } catch (error) {
-    console.error('❌ Fehler beim Erstellen/Aktualisieren des Profils:', error);
+    console.error("❌ Fehler beim Erstellen/Aktualisieren des Profils:", error);
     return null;
   }
 };
 
 // Demo-Benutzer erstellen
-export const createDemoUsers = async (): Promise<{ success: boolean; message: string }> => {
+export const createDemoUsers = async (): Promise<{
+  success: boolean;
+  message: string;
+}> => {
   if (!supabase) {
-    return { success: false, message: 'Supabase ist nicht konfiguriert' };
+    return { success: false, message: "Supabase ist nicht konfiguriert" };
   }
 
   try {
-    console.log('🔄 Erstelle Demo-User Profile...');
-    
+    console.log("🔄 Erstelle Demo-User Profile...");
+
     // Demo-User Profile
     const demoProfiles = [
-      { 
-        email: 'admin@fahndung.local', 
-        role: 'admin',
-        name: 'Administrator',
-        department: 'IT',
-        status: 'approved'
+      {
+        email: "admin@fahndung.local",
+        role: "admin",
+        name: "Administrator",
+        department: "IT",
+        status: "approved",
       },
-      { 
-        email: 'editor@fahndung.local', 
-        role: 'editor',
-        name: 'Editor',
-        department: 'Redaktion',
-        status: 'approved'
+      {
+        email: "editor@fahndung.local",
+        role: "editor",
+        name: "Editor",
+        department: "Redaktion",
+        status: "approved",
       },
-      { 
-        email: 'user@fahndung.local', 
-        role: 'user',
-        name: 'Benutzer',
-        department: 'Allgemein',
-        status: 'approved'
-      }
+      {
+        email: "user@fahndung.local",
+        role: "user",
+        name: "Benutzer",
+        department: "Allgemein",
+        status: "approved",
+      },
     ];
 
     // Versuche Profile zu erstellen
     try {
-      console.log('📝 Versuche Demo-Profile zu erstellen...');
-      
+      console.log("📝 Versuche Demo-Profile zu erstellen...");
+
       const { data, error: profileError } = await supabase
-        .from('user_profiles')
-        .upsert(demoProfiles, { 
-          onConflict: 'email',
-          ignoreDuplicates: false 
+        .from("user_profiles")
+        .upsert(demoProfiles, {
+          onConflict: "email",
+          ignoreDuplicates: false,
         })
         .select();
 
       if (profileError) {
-        console.error('❌ Fehler beim Erstellen der Demo-Profile:', {
+        console.error("❌ Fehler beim Erstellen der Demo-Profile:", {
           code: profileError.code,
           message: profileError.message,
-          details: profileError
+          details: profileError,
         });
-        
-        if (profileError.code === '42P17') {
-          return { 
-            success: false, 
-            message: `❌ RLS-Policy Endlosschleife erkannt!\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus, um RLS temporär zu deaktivieren.` 
+
+        if (profileError.code === "42P17") {
+          return {
+            success: false,
+            message: `❌ RLS-Policy Endlosschleife erkannt!\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus, um RLS temporär zu deaktivieren.`,
           };
         }
-        
-        return { 
-          success: false, 
-          message: `❌ Fehler beim Erstellen der Demo-Profile: ${profileError.message}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.` 
+
+        return {
+          success: false,
+          message: `❌ Fehler beim Erstellen der Demo-Profile: ${profileError.message}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.`,
         };
       }
 
-      console.log('✅ Demo-Profile erfolgreich erstellt:', data);
-      return { 
-        success: true, 
-        message: `✅ Demo-Profile erfolgreich erstellt! Du kannst jetzt mit den Demo-Buttons einloggen.` 
+      console.log("✅ Demo-Profile erfolgreich erstellt:", data);
+      return {
+        success: true,
+        message: `✅ Demo-Profile erfolgreich erstellt! Du kannst jetzt mit den Demo-Buttons einloggen.`,
       };
     } catch (error) {
-      console.error('❌ Fehler beim Erstellen der Demo-Profile:', error);
-      
-      if (error instanceof Error && error.message.includes('infinite recursion')) {
-        return { 
-          success: false, 
-          message: `❌ RLS-Policy Endlosschleife erkannt!\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus, um RLS temporär zu deaktivieren.` 
+      console.error("❌ Fehler beim Erstellen der Demo-Profile:", error);
+
+      if (
+        error instanceof Error &&
+        error.message.includes("infinite recursion")
+      ) {
+        return {
+          success: false,
+          message: `❌ RLS-Policy Endlosschleife erkannt!\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus, um RLS temporär zu deaktivieren.`,
         };
       }
-      
-      return { 
-        success: false, 
-        message: `❌ Fehler beim Erstellen der Demo-Profile: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.` 
+
+      return {
+        success: false,
+        message: `❌ Fehler beim Erstellen der Demo-Profile: ${error instanceof Error ? error.message : "Unbekannter Fehler"}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.`,
       };
     }
   } catch (error) {
-    console.error('❌ Allgemeiner Fehler beim Erstellen der Demo-User:', error);
-    return { 
-      success: false, 
-      message: `❌ Fehler beim Erstellen der Demo-User: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.` 
+    console.error("❌ Allgemeiner Fehler beim Erstellen der Demo-User:", error);
+    return {
+      success: false,
+      message: `❌ Fehler beim Erstellen der Demo-User: ${error instanceof Error ? error.message : "Unbekannter Fehler"}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.`,
     };
   }
 };
@@ -334,78 +383,112 @@ export const signOut = async (): Promise<void> => {
   try {
     await supabase.auth.signOut();
   } catch (error) {
-    console.error('Fehler beim Abmelden:', error);
+    console.error("Fehler beim Abmelden:", error);
   }
 };
 
 // Middleware für geschützte Routen
 export const requireAuth = async (): Promise<Session> => {
   const session = await getCurrentSession();
-  
+
   if (!session) {
-    throw new Error('Nicht authentifiziert');
+    throw new Error("Nicht authentifiziert");
   }
-  
+
   return session;
 };
 
 // Middleware für Admin-Routen
 export const requireAdmin = async (): Promise<Session> => {
   const session = await requireAuth();
-  
+
   if (!isAdmin(session.profile)) {
-    throw new Error('Admin-Rechte erforderlich');
+    throw new Error("Admin-Rechte erforderlich");
   }
-  
+
   return session;
 };
 
 // Middleware für Editor-Routen
 export const requireEditor = async (): Promise<Session> => {
   const session = await requireAuth();
-  
+
   if (!isEditor(session.profile)) {
-    throw new Error('Editor-Rechte erforderlich');
+    throw new Error("Editor-Rechte erforderlich");
   }
-  
+
   return session;
 };
 
 // Test-Funktion für Supabase-Verbindung
-export const testSupabaseConnection = async (): Promise<{ success: boolean; message: string }> => {
+export const testSupabaseConnection = async (): Promise<{
+  success: boolean;
+  message: string;
+}> => {
   if (!supabase) {
-    return { success: false, message: 'Supabase ist nicht konfiguriert' };
+    return { success: false, message: "Supabase ist nicht konfiguriert" };
   }
 
   try {
-    console.log('🔍 Teste Supabase-Verbindung...');
-    
+    console.log("🔍 Teste Supabase-Verbindung...");
+
+    // Prüfe Umgebungsvariablen
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        message:
+          "❌ Umgebungsvariablen fehlen!\n\nBitte setzen Sie:\n- NEXT_PUBLIC_SUPABASE_URL\n- NEXT_PUBLIC_SUPABASE_ANON_KEY\n\nIn Vercel: Settings → Environment Variables",
+      };
+    }
+
+    // Prüfe URL-Format
+    if (
+      !supabaseUrl.startsWith("https://") &&
+      !supabaseUrl.startsWith("http://localhost")
+    ) {
+      return {
+        success: false,
+        message: `❌ Ungültige Supabase URL: ${supabaseUrl}\n\nFür Produktion sollte die URL mit https:// beginnen.`,
+      };
+    }
+
+    console.log("✅ Umgebungsvariablen korrekt konfiguriert");
+
     // Teste Authentifizierung
     const { data: authData, error: authError } = await supabase.auth.getUser();
-    console.log('🔐 Auth-Test:', { hasUser: !!authData?.user, error: authError });
-    
+    console.log("🔐 Auth-Test:", {
+      hasUser: !!authData?.user,
+      error: authError,
+    });
+
     // Teste Datenbankverbindung
     const { data: dbData, error: dbError } = await supabase
-      .from('user_profiles')
-      .select('count')
+      .from("user_profiles")
+      .select("count")
       .limit(1);
-    
-    console.log('🗄️ DB-Test:', { hasData: !!dbData, error: dbError });
-    
+
+    console.log("🗄️ DB-Test:", { hasData: !!dbData, error: dbError });
+
     if (authError) {
-      return { success: false, message: `Authentifizierungsfehler: ${authError.message}` };
+      return {
+        success: false,
+        message: `Authentifizierungsfehler: ${authError.message}`,
+      };
     }
-    
+
     if (dbError) {
       return { success: false, message: `Datenbankfehler: ${dbError.message}` };
     }
-    
-    return { success: true, message: '✅ Supabase-Verbindung funktioniert' };
+
+    return { success: true, message: "✅ Supabase-Verbindung funktioniert" };
   } catch (error) {
-    console.error('❌ Supabase-Verbindungstest fehlgeschlagen:', error);
-    return { 
-      success: false, 
-      message: `Verbindungsfehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}` 
+    console.error("❌ Supabase-Verbindungstest fehlgeschlagen:", error);
+    return {
+      success: false,
+      message: `Verbindungsfehler: ${error instanceof Error ? error.message : "Unbekannter Fehler"}`,
     };
   }
 };
@@ -416,160 +499,177 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
 
   try {
     const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("user_profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('❌ Fehler beim Abrufen aller Benutzer:', error);
+      console.error("❌ Fehler beim Abrufen aller Benutzer:", error);
       return [];
     }
 
     return (data as UserProfile[]) ?? [];
   } catch (error) {
-    console.error('❌ Fehler beim Abrufen aller Benutzer:', error);
+    console.error("❌ Fehler beim Abrufen aller Benutzer:", error);
     return [];
   }
 };
 
-export const getUserActivity = async (userId: string): Promise<UserActivity[]> => {
+export const getUserActivity = async (
+  userId: string,
+): Promise<UserActivity[]> => {
   if (!supabase) return [];
 
   try {
     const { data, error } = await supabase
-      .from('user_activity')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      .from("user_activity")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
       .limit(50);
 
     if (error) {
-      console.error('❌ Fehler beim Abrufen der Benutzeraktivität:', error);
+      console.error("❌ Fehler beim Abrufen der Benutzeraktivität:", error);
       return [];
     }
 
     return (data as UserActivity[]) ?? [];
   } catch (error) {
-    console.error('❌ Fehler beim Abrufen der Benutzeraktivität:', error);
+    console.error("❌ Fehler beim Abrufen der Benutzeraktivität:", error);
     return [];
   }
 };
 
-export const getUserSessions = async (userId: string): Promise<UserSession[]> => {
+export const getUserSessions = async (
+  userId: string,
+): Promise<UserSession[]> => {
   if (!supabase) return [];
 
   try {
     const { data, error } = await supabase
-      .from('user_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('login_at', { ascending: false })
+      .from("user_sessions")
+      .select("*")
+      .eq("user_id", userId)
+      .order("login_at", { ascending: false })
       .limit(20);
 
     if (error) {
-      console.error('❌ Fehler beim Abrufen der Benutzersessions:', error);
+      console.error("❌ Fehler beim Abrufen der Benutzersessions:", error);
       return [];
     }
 
     return (data as UserSession[]) ?? [];
   } catch (error) {
-    console.error('❌ Fehler beim Abrufen der Benutzersessions:', error);
+    console.error("❌ Fehler beim Abrufen der Benutzersessions:", error);
     return [];
   }
 };
 
-export const blockUser = async (userId: string, reason?: string): Promise<boolean> => {
+export const blockUser = async (
+  userId: string,
+  reason?: string,
+): Promise<boolean> => {
   if (!supabase) return false;
 
   try {
     const { error } = await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .update({ is_active: false })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('❌ Fehler beim Blockieren des Benutzers:', error);
+      console.error("❌ Fehler beim Blockieren des Benutzers:", error);
       return false;
     }
 
     // Log admin action
-    await logAdminAction('user_block', userId, reason);
-    
+    await logAdminAction("user_block", userId, reason);
+
     return true;
   } catch (error) {
-    console.error('❌ Fehler beim Blockieren des Benutzers:', error);
+    console.error("❌ Fehler beim Blockieren des Benutzers:", error);
     return false;
   }
 };
 
-export const unblockUser = async (userId: string, reason?: string): Promise<boolean> => {
+export const unblockUser = async (
+  userId: string,
+  reason?: string,
+): Promise<boolean> => {
   if (!supabase) return false;
 
   try {
     const { error } = await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .update({ is_active: true })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('❌ Fehler beim Entsperren des Benutzers:', error);
+      console.error("❌ Fehler beim Entsperren des Benutzers:", error);
       return false;
     }
 
     // Log admin action
-    await logAdminAction('user_unblock', userId, reason);
-    
+    await logAdminAction("user_unblock", userId, reason);
+
     return true;
   } catch (error) {
-    console.error('❌ Fehler beim Entsperren des Benutzers:', error);
+    console.error("❌ Fehler beim Entsperren des Benutzers:", error);
     return false;
   }
 };
 
-export const changeUserRole = async (userId: string, newRole: 'admin' | 'editor' | 'user', reason?: string): Promise<boolean> => {
+export const changeUserRole = async (
+  userId: string,
+  newRole: "admin" | "editor" | "user",
+  reason?: string,
+): Promise<boolean> => {
   if (!supabase) return false;
 
   try {
     const { error } = await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .update({ role: newRole })
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('❌ Fehler beim Ändern der Benutzerrolle:', error);
+      console.error("❌ Fehler beim Ändern der Benutzerrolle:", error);
       return false;
     }
 
     // Log admin action
-    await logAdminAction('role_change', userId, reason, { newRole });
-    
+    await logAdminAction("role_change", userId, reason, { newRole });
+
     return true;
   } catch (error) {
-    console.error('❌ Fehler beim Ändern der Benutzerrolle:', error);
+    console.error("❌ Fehler beim Ändern der Benutzerrolle:", error);
     return false;
   }
 };
 
-export const deleteUser = async (userId: string, reason?: string): Promise<boolean> => {
+export const deleteUser = async (
+  userId: string,
+  reason?: string,
+): Promise<boolean> => {
   if (!supabase) return false;
 
   try {
     const { error } = await supabase
-      .from('user_profiles')
+      .from("user_profiles")
       .delete()
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('❌ Fehler beim Löschen des Benutzers:', error);
+      console.error("❌ Fehler beim Löschen des Benutzers:", error);
       return false;
     }
 
     // Log admin action
-    await logAdminAction('user_delete', userId, reason);
-    
+    await logAdminAction("user_delete", userId, reason);
+
     return true;
   } catch (error) {
-    console.error('❌ Fehler beim Löschen des Benutzers:', error);
+    console.error("❌ Fehler beim Löschen des Benutzers:", error);
     return false;
   }
 };
@@ -579,61 +679,66 @@ export const getAdminActions = async (): Promise<AdminAction[]> => {
 
   try {
     const { data, error } = await supabase
-      .from('admin_actions')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("admin_actions")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(100);
 
     if (error) {
-      console.error('❌ Fehler beim Abrufen der Admin-Aktionen:', error);
+      console.error("❌ Fehler beim Abrufen der Admin-Aktionen:", error);
       return [];
     }
 
     return (data as AdminAction[]) ?? [];
   } catch (error) {
-    console.error('❌ Fehler beim Abrufen der Admin-Aktionen:', error);
+    console.error("❌ Fehler beim Abrufen der Admin-Aktionen:", error);
     return [];
   }
 };
 
 // Hilfsfunktionen
-const logAdminAction = async (actionType: string, targetUserId?: string, reason?: string, metadata?: Record<string, unknown>) => {
+const logAdminAction = async (
+  actionType: string,
+  targetUserId?: string,
+  reason?: string,
+  metadata?: Record<string, unknown>,
+) => {
   if (!supabase) return;
 
   try {
     const currentUser = await getCurrentSession();
     if (!currentUser) return;
 
-    await supabase
-      .from('admin_actions')
-      .insert({
-        admin_id: currentUser.user.id,
-        action_type: actionType,
-        target_user_id: targetUserId,
-        description: reason,
-        metadata: metadata ?? {}
-      });
+    await supabase.from("admin_actions").insert({
+      admin_id: currentUser.user.id,
+      action_type: actionType,
+      target_user_id: targetUserId,
+      description: reason,
+      metadata: metadata ?? {},
+    });
   } catch (error) {
-    console.error('❌ Fehler beim Loggen der Admin-Aktion:', error);
+    console.error("❌ Fehler beim Loggen der Admin-Aktion:", error);
   }
 };
 
-export const logUserActivity = async (activityType: string, description?: string, metadata?: Record<string, unknown>) => {
+export const logUserActivity = async (
+  activityType: string,
+  description?: string,
+  metadata?: Record<string, unknown>,
+) => {
   if (!supabase) return;
 
   try {
     const currentUser = await getCurrentSession();
     if (!currentUser) return;
 
-    await supabase
-      .from('user_activity')
-      .insert({
-        user_id: currentUser.user.id,
-        activity_type: activityType,
-        description,
-        metadata: metadata ?? {}
-      });
+    await supabase.from("user_activity").insert({
+      user_id: currentUser.user.id,
+      activity_type: activityType,
+      description,
+      metadata: metadata ?? {},
+    });
   } catch (error) {
-    console.error('❌ Fehler beim Loggen der Benutzeraktivität:', error);
+    console.error("❌ Fehler beim Loggen der Benutzeraktivität:", error);
   }
-}; 
+};

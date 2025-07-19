@@ -1,11 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { testSupabaseConnection, getCurrentSession, createDemoUsers } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+import { useState } from "react";
+import {
+  testSupabaseConnection,
+  getCurrentSession,
+  createDemoUsers,
+} from "../../lib/auth";
+import { supabase } from "../../lib/supabase";
 
 export default function DebugPage() {
-  const [connectionTest, setConnectionTest] = useState<{ success: boolean; message: string } | null>(null);
+  const [connectionTest, setConnectionTest] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
   const [sessionTest, setSessionTest] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +22,8 @@ export default function DebugPage() {
       const result = await testSupabaseConnection();
       setConnectionTest(result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unbekannter Fehler";
       setConnectionTest({ success: false, message: `Fehler: ${errorMessage}` });
     } finally {
       setLoading(false);
@@ -28,7 +36,8 @@ export default function DebugPage() {
       const session = await getCurrentSession();
       setSessionTest(session);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unbekannter Fehler";
       setSessionTest({ error: errorMessage });
     } finally {
       setLoading(false);
@@ -41,7 +50,8 @@ export default function DebugPage() {
       const result = await createDemoUsers();
       setConnectionTest(result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unbekannter Fehler";
       setConnectionTest({ success: false, message: `Fehler: ${errorMessage}` });
     } finally {
       setLoading(false);
@@ -55,104 +65,112 @@ export default function DebugPage() {
     }
   };
 
+  // Umgebungsvariablen anzeigen (nur für Debug-Zwecke)
+  const envVars = {
+    NEXT_PUBLIC_SUPABASE_URL:
+      process.env.NEXT_PUBLIC_SUPABASE_URL ?? "Nicht gesetzt",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.substring(0, 20)}...`
+      : "Nicht gesetzt",
+    NODE_ENV: process.env.NODE_ENV ?? "Nicht gesetzt",
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8">🔧 Debug-Seite</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Supabase-Verbindungstest */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-semibold text-white mb-4">🔗 Supabase-Verbindung</h2>
-            <button
-              onClick={handleConnectionTest}
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              {loading ? 'Teste...' : 'Verbindung testen'}
-            </button>
-            {connectionTest && (
-              <div className={`mt-4 p-3 rounded-lg ${
-                connectionTest.success ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-              }`}>
-                <p className="font-medium">{connectionTest.message}</p>
-              </div>
-            )}
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="mx-auto max-w-4xl px-4">
+        <h1 className="mb-8 text-3xl font-bold text-gray-900">
+          🔧 Debug-Seite
+        </h1>
 
-          {/* Session-Test */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-semibold text-white mb-4">👤 Session-Test</h2>
-            <div className="space-y-2">
-              <button
-                onClick={handleSessionTest}
-                disabled={loading}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                {loading ? 'Lade...' : 'Session prüfen'}
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Abmelden
-              </button>
-            </div>
-            {sessionTest !== null && (
-              <div className="mt-4 p-3 rounded-lg bg-blue-500/20 text-blue-400">
-                <pre className="text-xs overflow-auto">
-                  {JSON.stringify(sessionTest, null, 2)}
-                </pre>
-              </div>
-            )}
-          </div>
-
-          {/* Demo-User erstellen */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-semibold text-white mb-4">👥 Demo-User</h2>
-            <button
-              onClick={handleCreateDemoUsers}
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              {loading ? 'Erstelle...' : 'Demo-User erstellen'}
-            </button>
-          </div>
-
-          {/* Umgebungsvariablen */}
-          <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-semibold text-white mb-4">⚙️ Konfiguration</h2>
-            <div className="space-y-2 text-sm text-gray-300">
-              <div>
-                <span className="font-medium">Supabase URL:</span>
-                <span className="ml-2">
-                  {process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Gesetzt' : '❌ Fehlt'}
+        {/* Umgebungsvariablen */}
+        <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            🌍 Umgebungsvariablen
+          </h2>
+          <div className="space-y-2">
+            {Object.entries(envVars).map(([key, value]) => (
+              <div key={key} className="flex items-center justify-between">
+                <span className="font-mono text-sm text-gray-600">{key}:</span>
+                <span
+                  className={`font-mono text-sm ${value === "Nicht gesetzt" ? "text-red-500" : "text-green-600"}`}
+                >
+                  {value}
                 </span>
               </div>
-              <div>
-                <span className="font-medium">Supabase Key:</span>
-                <span className="ml-2">
-                  {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Gesetzt' : '❌ Fehlt'}
-                </span>
-              </div>
-              <div>
-                <span className="font-medium">Supabase Client:</span>
-                <span className="ml-2">
-                  {supabase ? '✅ Initialisiert' : '❌ Nicht initialisiert'}
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Logs */}
-        <div className="mt-8 bg-white/5 rounded-lg p-6 border border-white/10">
-          <h2 className="text-xl font-semibold text-white mb-4">📋 Browser-Konsole</h2>
-          <p className="text-gray-400 text-sm">
-            Öffne die Browser-Konsole (F12) um detaillierte Logs zu sehen.
-          </p>
+        {/* Verbindungstest */}
+        <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            🔗 Supabase-Verbindungstest
+          </h2>
+          <button
+            onClick={handleConnectionTest}
+            disabled={loading}
+            className="mb-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-400"
+          >
+            {loading ? "Teste..." : "Verbindung testen"}
+          </button>
+          {connectionTest && (
+            <div
+              className={`rounded-md p-4 ${
+                connectionTest.success
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              <pre className="text-sm whitespace-pre-wrap">
+                {connectionTest.message}
+              </pre>
+            </div>
+          )}
+        </div>
+
+        {/* Session-Test */}
+        <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            👤 Session-Test
+          </h2>
+          <div className="mb-4 space-x-2">
+            <button
+              onClick={handleSessionTest}
+              disabled={loading}
+              className="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 disabled:bg-gray-400"
+            >
+              {loading ? "Prüfe..." : "Session prüfen"}
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+            >
+              Abmelden
+            </button>
+          </div>
+          {sessionTest && (
+            <div className="rounded-md bg-gray-100 p-4">
+              <pre className="text-sm whitespace-pre-wrap">
+                {JSON.stringify(sessionTest, null, 2) as string}
+              </pre>
+            </div>
+          )}
+        </div>
+
+        {/* Demo-User erstellen */}
+        <div className="rounded-lg bg-white p-6 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            👥 Demo-User erstellen
+          </h2>
+          <button
+            onClick={handleCreateDemoUsers}
+            disabled={loading}
+            className="rounded-md bg-purple-500 px-4 py-2 text-white hover:bg-purple-600 disabled:bg-gray-400"
+          >
+            {loading ? "Erstelle..." : "Demo-User erstellen"}
+          </button>
         </div>
       </div>
     </div>
   );
-} 
+}
