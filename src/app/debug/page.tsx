@@ -8,18 +8,12 @@ import {
 } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
 
-type SessionTestResult = {
-  user?: { id: string; email: string };
-  profile?: { id: string; name: string; role: string };
-  error?: string;
-} | null;
-
 export default function DebugPage() {
   const [connectionTest, setConnectionTest] = useState<{
     success: boolean;
     message: string;
   } | null>(null);
-  const [sessionTest, setSessionTest] = useState<SessionTestResult>(null);
+  const [sessionTest, setSessionTest] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const handleConnectionTest = async () => {
@@ -40,11 +34,11 @@ export default function DebugPage() {
     setLoading(true);
     try {
       const session = await getCurrentSession();
-      setSessionTest(session);
+      setSessionTest(JSON.stringify(session, null, 2));
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unbekannter Fehler";
-      setSessionTest({ error: errorMessage });
+      setSessionTest(JSON.stringify({ error: errorMessage }, null, 2));
     } finally {
       setLoading(false);
     }
@@ -67,7 +61,7 @@ export default function DebugPage() {
   const handleSignOut = async () => {
     if (supabase) {
       await supabase.auth.signOut();
-      setSessionTest(null);
+      setSessionTest("");
     }
   };
 
@@ -156,9 +150,7 @@ export default function DebugPage() {
           </div>
           {sessionTest && (
             <div className="rounded-md bg-gray-100 p-4">
-              <pre className="text-sm whitespace-pre-wrap">
-                {JSON.stringify(sessionTest, null, 2)}
-              </pre>
+              <pre className="text-sm whitespace-pre-wrap">{sessionTest}</pre>
             </div>
           )}
         </div>
