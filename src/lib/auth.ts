@@ -114,7 +114,10 @@ export const getCurrentSession = async (): Promise<Session | null> => {
   try {
     console.log("🔍 Prüfe Benutzer-Authentifizierung...");
 
-    // Zuerst die aktuelle Session abrufen
+    // Zuerst prüfen, ob ein ungültiger Token im localStorage gespeichert ist
+    console.log("🔍 Prüfe Session-Token...");
+
+    // Versuche die Session abzurufen mit verbesserter Fehlerbehandlung
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession();
 
@@ -124,13 +127,33 @@ export const getCurrentSession = async (): Promise<Session | null> => {
       // Spezielle Behandlung für Refresh Token Fehler
       if (
         sessionError.message.includes("Invalid Refresh Token") ||
-        sessionError.message.includes("Refresh Token Not Found")
+        sessionError.message.includes("Refresh Token Not Found") ||
+        sessionError.message.includes("JWT expired")
       ) {
-        console.log("🔄 Refresh Token Fehler - versuche Token zu erneuern...");
+        console.log("🔄 Refresh Token Fehler - bereinige Session...");
 
-        // Versuche den Benutzer abzumelden und neu anzumelden
-        await supabase.auth.signOut();
-        console.log("✅ Benutzer abgemeldet - bitte melden Sie sich erneut an");
+        // Lokale Session-Daten bereinigen
+        try {
+          await supabase.auth.signOut();
+          console.log("✅ Session bereinigt - bitte melden Sie sich erneut an");
+        } catch (signOutError) {
+          console.error("⚠️ Fehler beim Abmelden:", signOutError);
+        }
+
+        // Lokale Storage bereinigen (falls vorhanden)
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("supabase.auth.token");
+            sessionStorage.removeItem("supabase.auth.token");
+            console.log("✅ Lokale Token-Daten bereinigt");
+          } catch (storageError) {
+            console.error(
+              "⚠️ Fehler beim Bereinigen des lokalen Storage:",
+              storageError,
+            );
+          }
+        }
+
         return null;
       }
 
@@ -382,8 +405,52 @@ export const signOut = async (): Promise<void> => {
 
   try {
     await supabase.auth.signOut();
+
+    // Lokale Storage bereinigen
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("supabase.auth.token");
+        sessionStorage.removeItem("supabase.auth.token");
+        console.log("✅ Lokale Token-Daten bereinigt");
+      } catch (storageError) {
+        console.error(
+          "⚠️ Fehler beim Bereinigen des lokalen Storage:",
+          storageError,
+        );
+      }
+    }
   } catch (error) {
     console.error("Fehler beim Abmelden:", error);
+  }
+};
+
+// Session bereinigen (für Refresh Token Probleme)
+export const clearAuthSession = async (): Promise<void> => {
+  if (!supabase) return;
+
+  try {
+    console.log("🧹 Bereinige Auth-Session...");
+
+    // Abmelden
+    await supabase.auth.signOut();
+
+    // Lokale Storage bereinigen
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("supabase.auth.token");
+        sessionStorage.removeItem("supabase.auth.token");
+        console.log("✅ Lokale Token-Daten bereinigt");
+      } catch (storageError) {
+        console.error(
+          "⚠️ Fehler beim Bereinigen des lokalen Storage:",
+          storageError,
+        );
+      }
+    }
+
+    console.log("✅ Auth-Session erfolgreich bereinigt");
+  } catch (error) {
+    console.error("❌ Fehler beim Bereinigen der Auth-Session:", error);
   }
 };
 
