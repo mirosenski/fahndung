@@ -42,7 +42,6 @@ interface HeaderProps {
   onLogout?: () => void;
   onCreateInvestigation?: () => void;
   onShowTestPanel?: () => void;
-  _showTestPanel?: boolean;
 }
 
 export default function Header({
@@ -51,7 +50,6 @@ export default function Header({
   onLogout,
   onCreateInvestigation,
   onShowTestPanel,
-  _showTestPanel,
 }: HeaderProps) {
   const router = useRouter();
 

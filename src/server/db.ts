@@ -1,10 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Supabase URL und Anon Key müssen in den Umgebungsvariablen gesetzt sein');
+  throw new Error(
+    "Supabase URL und Anon Key müssen in den Umgebungsvariablen gesetzt sein",
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -13,6 +15,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const db = {
   supabase,
   // Alias für einfacheren Zugriff
-  investigations: () => supabase.from('investigations'),
-  investigationImages: () => supabase.from('investigation_images'),
+  investigations: () => supabase.from("investigations"),
+  investigationImages: () => supabase.from("investigation_images"),
 };

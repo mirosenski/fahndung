@@ -308,40 +308,123 @@ export const createDemoUsers = async (): Promise<{
   }
 
   try {
-    console.log("🔄 Erstelle Demo-User Profile...");
+    console.log("�� Erstelle Demo-User...");
 
-    // Demo-User Profile
-    const demoProfiles = [
+    // Demo-User Daten
+    const demoUsers = [
       {
         email: "admin@fahndung.local",
+        password: "admin123",
         role: "admin",
         name: "Administrator",
         department: "IT",
-        status: "approved",
       },
       {
         email: "editor@fahndung.local",
+        password: "editor123",
         role: "editor",
         name: "Editor",
         department: "Redaktion",
-        status: "approved",
       },
       {
         email: "user@fahndung.local",
+        password: "user123",
         role: "user",
         name: "Benutzer",
         department: "Allgemein",
-        status: "approved",
       },
     ];
 
-    // Versuche Profile zu erstellen
-    try {
-      console.log("📝 Versuche Demo-Profile zu erstellen...");
+    const createdUsers = [];
 
-      const { data, error: profileError } = await supabase
+    // Erstelle Auth-Benutzer
+    for (const userData of demoUsers) {
+      try {
+        console.log(`📝 Erstelle Auth-Benutzer: ${userData.email}...`);
+
+        const { data: authData, error: authError } = await supabase.auth.signUp(
+          {
+            email: userData.email,
+            password: userData.password,
+          },
+        );
+
+        if (authError) {
+          console.error(
+            `❌ Fehler beim Erstellen des Auth-Benutzers ${userData.email}:`,
+            authError,
+          );
+
+          // Wenn der Benutzer bereits existiert, versuche ihn zu finden
+          if (authError.message.includes("User already registered")) {
+            console.log(
+              `ℹ️ Benutzer ${userData.email} existiert bereits, versuche Anmeldung...`,
+            );
+
+            const { data: signInData, error: signInError } =
+              await supabase.auth.signInWithPassword({
+                email: userData.email,
+                password: userData.password,
+              });
+
+            if (signInError) {
+              console.error(
+                `❌ Fehler beim Anmelden mit ${userData.email}:`,
+                signInError,
+              );
+              continue;
+            }
+
+            if (signInData.user) {
+              createdUsers.push({
+                ...userData,
+                user_id: signInData.user.id,
+              });
+              console.log(`✅ Benutzer ${userData.email} erfolgreich gefunden`);
+            }
+          } else {
+            continue;
+          }
+        } else if (authData.user) {
+          createdUsers.push({
+            ...userData,
+            user_id: authData.user.id,
+          });
+          console.log(
+            `✅ Auth-Benutzer ${userData.email} erfolgreich erstellt`,
+          );
+        }
+      } catch (error) {
+        console.error(
+          `❌ Unerwarteter Fehler beim Erstellen von ${userData.email}:`,
+          error,
+        );
+      }
+    }
+
+    if (createdUsers.length === 0) {
+      return {
+        success: false,
+        message:
+          "❌ Keine Demo-Benutzer konnten erstellt werden. Bitte überprüfen Sie die Supabase-Konfiguration.",
+      };
+    }
+
+    // Erstelle Profile für die erstellten Benutzer
+    try {
+      console.log("📝 Erstelle Demo-Profile...");
+
+      const profiles = createdUsers.map((user) => ({
+        user_id: user.user_id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        department: user.department,
+      }));
+
+      const { data: profileData, error: profileError } = await supabase
         .from("user_profiles")
-        .upsert(demoProfiles, {
+        .upsert(profiles, {
           onConflict: "user_id",
           ignoreDuplicates: false,
         })
@@ -367,10 +450,14 @@ export const createDemoUsers = async (): Promise<{
         };
       }
 
-      console.log("✅ Demo-Profile erfolgreich erstellt:", data);
+      console.log("✅ Demo-Profile erfolgreich erstellt:", profileData);
+
+      // Melde alle Benutzer ab
+      await supabase.auth.signOut();
+
       return {
         success: true,
-        message: `✅ Demo-Profile erfolgreich erstellt! Du kannst jetzt mit den Demo-Buttons einloggen.`,
+        message: `✅ ${createdUsers.length} Demo-Benutzer erfolgreich erstellt!\n\nDu kannst jetzt mit den Demo-Buttons einloggen:\n• Admin: admin@fahndung.local / admin123\n• Editor: editor@fahndung.local / editor123\n• User: user@fahndung.local / user123`,
       };
     } catch (error) {
       console.error("❌ Fehler beim Erstellen der Demo-Profile:", error);
@@ -564,8 +651,8 @@ export const testSupabaseConnection = async (): Promise<{
     console.log("🔍 Teste Supabase-Verbindung...");
 
     // Prüfe Umgebungsvariablen
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+    const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return {
