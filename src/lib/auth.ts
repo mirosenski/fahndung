@@ -493,6 +493,54 @@ export const testSupabaseConnection = async (): Promise<{
   }
 };
 
+// Verbesserte Session-Prüfung
+export const checkAuthStatus = async (): Promise<{
+  isAuthenticated: boolean;
+  user: { id: string; email: string } | null;
+  error: string | null;
+}> => {
+  if (!supabase) {
+    return {
+      isAuthenticated: false,
+      user: null,
+      error: "Supabase nicht konfiguriert",
+    };
+  }
+
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+      console.error("Auth-Fehler:", error);
+      return { isAuthenticated: false, user: null, error: error.message };
+    }
+
+    if (!user) {
+      return {
+        isAuthenticated: false,
+        user: null,
+        error: "Kein Benutzer angemeldet",
+      };
+    }
+
+    return {
+      isAuthenticated: true,
+      user: user ? { id: user.id, email: user.email ?? "" } : null,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Session-Prüfung fehlgeschlagen:", error);
+    return {
+      isAuthenticated: false,
+      user: null,
+      error: error instanceof Error ? error.message : "Unbekannter Fehler",
+    };
+  }
+};
+
 // Super-Admin Funktionen
 export const getAllUsers = async (): Promise<UserProfile[]> => {
   if (!supabase) return [];

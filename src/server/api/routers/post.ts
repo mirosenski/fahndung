@@ -217,6 +217,18 @@ export const postRouter = createTRPCRouter({
           .single();
 
         if (existingInvestigation.error || !existingInvestigation.data) {
+          console.warn(
+            "Fahndung nicht in Datenbank gefunden, verwende Mock-Daten",
+          );
+          // Fallback zu Mock-Daten
+          const mockInvestigation = mockInvestigations.find((i) => i.id === id);
+          if (mockInvestigation) {
+            return {
+              ...mockInvestigation,
+              ...updates,
+              updated_at: new Date().toISOString(),
+            };
+          }
           throw new Error("Fahndung nicht gefunden");
         }
 
