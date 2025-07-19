@@ -404,9 +404,9 @@ export const signOut = async (): Promise<void> => {
   if (!supabase) return;
 
   try {
-    await supabase.auth.signOut();
+    console.log("🔐 Starte Abmeldung...");
 
-    // Lokale Storage bereinigen
+    // Zuerst lokale Storage bereinigen
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem("supabase.auth.token");
@@ -419,8 +419,39 @@ export const signOut = async (): Promise<void> => {
         );
       }
     }
+
+    // Dann Supabase-Abmeldung mit verbesserter Fehlerbehandlung
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("❌ Supabase Logout-Fehler:", error);
+
+      // Auch bei Fehler lokale Session bereinigen
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          console.log("✅ Lokale Session vollständig bereinigt");
+        } catch (clearError) {
+          console.error("⚠️ Fehler beim vollständigen Bereinigen:", clearError);
+        }
+      }
+    } else {
+      console.log("✅ Abmeldung erfolgreich");
+    }
   } catch (error) {
-    console.error("Fehler beim Abmelden:", error);
+    console.error("❌ Unerwarteter Fehler beim Abmelden:", error);
+
+    // Auch bei unerwarteten Fehlern lokale Session bereinigen
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("✅ Lokale Session nach Fehler bereinigt");
+      } catch (clearError) {
+        console.error("⚠️ Fehler beim Bereinigen nach Fehler:", clearError);
+      }
+    }
   }
 };
 
@@ -431,15 +462,12 @@ export const clearAuthSession = async (): Promise<void> => {
   try {
     console.log("🧹 Bereinige Auth-Session...");
 
-    // Abmelden
-    await supabase.auth.signOut();
-
-    // Lokale Storage bereinigen
+    // Zuerst lokale Storage bereinigen
     if (typeof window !== "undefined") {
       try {
-        localStorage.removeItem("supabase.auth.token");
-        sessionStorage.removeItem("supabase.auth.token");
-        console.log("✅ Lokale Token-Daten bereinigt");
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("✅ Lokale Session-Daten bereinigt");
       } catch (storageError) {
         console.error(
           "⚠️ Fehler beim Bereinigen des lokalen Storage:",
@@ -448,9 +476,29 @@ export const clearAuthSession = async (): Promise<void> => {
       }
     }
 
-    console.log("✅ Auth-Session erfolgreich bereinigt");
+    // Dann Supabase-Abmeldung
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("❌ Supabase Session-Bereinigung Fehler:", error);
+    } else {
+      console.log("✅ Supabase Session erfolgreich bereinigt");
+    }
+
+    console.log("✅ Auth-Session vollständig bereinigt");
   } catch (error) {
     console.error("❌ Fehler beim Bereinigen der Auth-Session:", error);
+
+    // Auch bei Fehler lokale Session bereinigen
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("✅ Lokale Session nach Fehler bereinigt");
+      } catch (clearError) {
+        console.error("⚠️ Fehler beim Bereinigen nach Fehler:", clearError);
+      }
+    }
   }
 };
 
@@ -582,6 +630,17 @@ export const checkAuthStatus = async (): Promise<{
 
     if (error) {
       console.error("Auth-Fehler:", error);
+
+      // Bei Auth-Fehlern automatisch Session bereinigen
+      if (
+        error.message.includes("Invalid Refresh Token") ||
+        error.message.includes("JWT expired") ||
+        error.message.includes("Forbidden")
+      ) {
+        console.log("🔄 Automatische Session-Bereinigung bei Auth-Fehler...");
+        await clearAuthSession();
+      }
+
       return { isAuthenticated: false, user: null, error: error.message };
     }
 
@@ -600,6 +659,10 @@ export const checkAuthStatus = async (): Promise<{
     };
   } catch (error) {
     console.error("Session-Prüfung fehlgeschlagen:", error);
+
+    // Bei unerwarteten Fehlern auch Session bereinigen
+    await clearAuthSession();
+
     return {
       isAuthenticated: false,
       user: null,
@@ -855,5 +918,26 @@ export const logUserActivity = async (
     });
   } catch (error) {
     console.error("❌ Fehler beim Loggen der Benutzeraktivität:", error);
+  }
+};
+
+// Funktion zur Behandlung von 403-Fehlern
+export const handleAuthError = async (error: unknown): Promise<void> => {
+  if (!error) return;
+
+  console.error("🔐 Auth-Fehler erkannt:", error);
+
+  // Bei 403-Fehlern oder anderen Auth-Problemen Session bereinigen
+  const errorMessage =
+    error instanceof Error ? error.message : JSON.stringify(error);
+
+  if (
+    errorMessage.includes("Forbidden") ||
+    errorMessage.includes("403") ||
+    errorMessage.includes("Invalid Refresh Token") ||
+    errorMessage.includes("JWT expired")
+  ) {
+    console.log("🔄 Bereinige Session aufgrund von Auth-Fehler...");
+    await clearAuthSession();
   }
 };
