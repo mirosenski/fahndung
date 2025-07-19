@@ -49,4 +49,7 @@ yarn-error.log*
 supabase.backup.*/
 
 # vscode settings (optional)
-.vscode/.env.local.backup
+.vscode/
+
+# backup files
+.env.local.backup
