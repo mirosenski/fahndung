@@ -36,7 +36,8 @@ const mockInvestigations: Investigation[] = [
   {
     id: "550e8400-e29b-41d4-a716-446655440001",
     title: "Vermisste Person - Max Mustermann",
-    description: "Max Mustermann wurde zuletzt am 15.03.2024 gesehen. Er trug eine blaue Jacke und schwarze Jeans.",
+    description:
+      "Max Mustermann wurde zuletzt am 15.03.2024 gesehen. Er trug eine blaue Jacke und schwarze Jeans.",
     status: "active",
     priority: "high",
     tags: ["vermisst", "person"],
@@ -47,7 +48,8 @@ const mockInvestigations: Investigation[] = [
   {
     id: "550e8400-e29b-41d4-a716-446655440002",
     title: "Diebstahl in der Innenstadt",
-    description: "Mehrere Diebstähle in der Fußgängerzone gemeldet. Verdächtige Person mit Kapuze beobachtet.",
+    description:
+      "Mehrere Diebstähle in der Fußgängerzone gemeldet. Verdächtige Person mit Kapuze beobachtet.",
     status: "active",
     priority: "medium",
     tags: ["diebstahl", "innenstadt"],
@@ -58,7 +60,8 @@ const mockInvestigations: Investigation[] = [
   {
     id: "550e8400-e29b-41d4-a716-446655440003",
     title: "Unfallflucht auf der A1",
-    description: "Unfallflucht am 20.03.2024 auf der A1, Kilometer 45. Fahrzeug mit beschädigter Stoßstange.",
+    description:
+      "Unfallflucht am 20.03.2024 auf der A1, Kilometer 45. Fahrzeug mit beschädigter Stoßstange.",
     status: "active",
     priority: "high",
     tags: ["unfallflucht", "autobahn"],
@@ -70,9 +73,9 @@ const mockInvestigations: Investigation[] = [
 
 // UUID-Generator für Mock-Daten
 function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -88,58 +91,70 @@ export const postRouter = createTRPCRouter({
 
   // Fahndungen abrufen
   getInvestigations: publicProcedure
-    .input(z.object({
-      limit: z.number().min(1).max(100).default(10),
-      offset: z.number().min(0).default(0),
-      status: z.string().optional(),
-      priority: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+        offset: z.number().min(0).default(0),
+        status: z.string().optional(),
+        priority: z.string().optional(),
+      }),
+    )
     .query(async ({ ctx, input }): Promise<Investigation[]> => {
       try {
         // Versuche Supabase zu verwenden
-        let query = ctx.db.investigations()
-          .select('*')
-          .order('created_at', { ascending: false })
+        let query = ctx.db
+          .investigations()
+          .select("*")
+          .order("created_at", { ascending: false })
           .range(input.offset, input.offset + input.limit - 1);
 
         if (input.status) {
-          query = query.eq('status', input.status);
+          query = query.eq("status", input.status);
         }
 
         if (input.priority) {
-          query = query.eq('priority', input.priority);
+          query = query.eq("priority", input.priority);
         }
 
         const { data, error } = await query;
 
         if (error) {
-          console.warn('Supabase-Fehler, verwende Mock-Daten:', error.message);
+          console.warn("Supabase-Fehler, verwende Mock-Daten:", error.message);
           // Fallback zu Mock-Daten
-          return mockInvestigations.slice(input.offset, input.offset + input.limit);
+          return mockInvestigations.slice(
+            input.offset,
+            input.offset + input.limit,
+          );
         }
 
         return (data as Investigation[]) || [];
       } catch (error) {
-        console.warn('Supabase nicht verfügbar, verwende Mock-Daten:', error);
+        console.warn("Supabase nicht verfügbar, verwende Mock-Daten:", error);
         // Fallback zu Mock-Daten
-        return mockInvestigations.slice(input.offset, input.offset + input.limit);
+        return mockInvestigations.slice(
+          input.offset,
+          input.offset + input.limit,
+        );
       }
     }),
 
   // Neue Fahndung erstellen
   createInvestigation: publicProcedure
-    .input(z.object({
-      title: z.string().min(1),
-      description: z.string().optional(),
-      status: z.string().default('active'),
-      priority: z.string().default('medium'),
-      tags: z.array(z.string()).default([]),
-      location: z.string().optional(),
-      contact_info: z.record(z.any()).optional(),
-    }))
+    .input(
+      z.object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        status: z.string().default("active"),
+        priority: z.string().default("medium"),
+        tags: z.array(z.string()).default([]),
+        location: z.string().optional(),
+        contact_info: z.record(z.any()).optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }): Promise<Investigation> => {
       try {
-        const result = await ctx.db.investigations()
+        const result = await ctx.db
+          .investigations()
           .insert({
             title: input.title,
             description: input.description,
@@ -153,12 +168,14 @@ export const postRouter = createTRPCRouter({
           .single();
 
         if (result.error) {
-          throw new Error(`Fehler beim Erstellen der Fahndung: ${result.error.message}`);
+          throw new Error(
+            `Fehler beim Erstellen der Fahndung: ${result.error.message}`,
+          );
         }
 
         return result.data as Investigation;
       } catch (error) {
-        console.warn('Supabase nicht verfügbar, Mock-Erstellung:', error);
+        console.warn("Supabase nicht verfügbar, Mock-Erstellung:", error);
         // Mock-Erstellung mit UUID
         const newInvestigation: Investigation = {
           id: generateUUID(),
@@ -172,60 +189,85 @@ export const postRouter = createTRPCRouter({
 
   // Fahndung aktualisieren
   updateInvestigation: publicProcedure
-    .input(z.object({
-      id: z.string().uuid().optional(), // UUID optional für Mock-Daten
-      title: z.string().min(1).optional(),
-      description: z.string().optional(),
-      status: z.string().optional(),
-      priority: z.string().optional(),
-      tags: z.array(z.string()).optional(),
-      location: z.string().optional(),
-      contact_info: z.record(z.any()).optional(),
-    }))
+    .input(
+      z.object({
+        id: z.string().uuid().optional(), // UUID optional für Mock-Daten
+        title: z.string().min(1).optional(),
+        description: z.string().optional(),
+        status: z.string().optional(),
+        priority: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        location: z.string().optional(),
+        contact_info: z.record(z.any()).optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }): Promise<Investigation> => {
       try {
         const { id, ...updates } = input;
-        
+
         if (!id) {
-          throw new Error('ID ist erforderlich für Updates');
+          throw new Error("ID ist erforderlich für Updates");
         }
 
-        const result = await ctx.db.investigations()
+        // Zuerst prüfen, ob die Fahndung existiert
+        const existingInvestigation = await ctx.db
+          .investigations()
+          .select("id")
+          .eq("id", id)
+          .single();
+
+        if (existingInvestigation.error || !existingInvestigation.data) {
+          throw new Error("Fahndung nicht gefunden");
+        }
+
+        const result = await ctx.db
+          .investigations()
           .update(updates)
-          .eq('id', id)
+          .eq("id", id)
           .select()
           .single();
 
         if (result.error) {
-          throw new Error(`Fehler beim Aktualisieren der Fahndung: ${result.error.message}`);
+          throw new Error(
+            `Fehler beim Aktualisieren der Fahndung: ${result.error.message}`,
+          );
         }
 
         return result.data as Investigation;
       } catch (error) {
-        console.warn('Supabase nicht verfügbar, Mock-Update:', error);
+        console.warn("Supabase nicht verfügbar, Mock-Update:", error);
         // Mock-Update
-        const mockInvestigation = mockInvestigations.find(i => i.id === input.id);
+        const mockInvestigation = mockInvestigations.find(
+          (i) => i.id === input.id,
+        );
         if (mockInvestigation) {
-          return { ...mockInvestigation, ...input, updated_at: new Date().toISOString() };
+          return {
+            ...mockInvestigation,
+            ...input,
+            updated_at: new Date().toISOString(),
+          };
         }
-        throw new Error('Fahndung nicht gefunden');
+        throw new Error("Fahndung nicht gefunden");
       }
     }),
 
   // Fahndung löschen
   deleteInvestigation: publicProcedure
-    .input(z.object({
-      id: z.string().uuid().optional(), // UUID optional für Mock-Daten
-    }))
+    .input(
+      z.object({
+        id: z.string().uuid().optional(), // UUID optional für Mock-Daten
+      }),
+    )
     .mutation(async ({ ctx, input }): Promise<{ success: boolean }> => {
       try {
         if (!input.id) {
-          throw new Error('ID ist erforderlich für Löschungen');
+          throw new Error("ID ist erforderlich für Löschungen");
         }
 
-        const { error } = await ctx.db.investigations()
+        const { error } = await ctx.db
+          .investigations()
           .delete()
-          .eq('id', input.id);
+          .eq("id", input.id);
 
         if (error) {
           throw new Error(`Fehler beim Löschen der Fahndung: ${error.message}`);
@@ -233,7 +275,7 @@ export const postRouter = createTRPCRouter({
 
         return { success: true };
       } catch (error) {
-        console.warn('Supabase nicht verfügbar, Mock-Löschung:', error);
+        console.warn("Supabase nicht verfügbar, Mock-Löschung:", error);
         // Mock-Löschung
         return { success: true };
       }
@@ -241,19 +283,22 @@ export const postRouter = createTRPCRouter({
 
   // Bilder zu einer Fahndung abrufen
   getInvestigationImages: publicProcedure
-    .input(z.object({
-      investigation_id: z.string().uuid().optional(), // UUID optional für Mock-Daten
-    }))
+    .input(
+      z.object({
+        investigation_id: z.string().uuid().optional(), // UUID optional für Mock-Daten
+      }),
+    )
     .query(async ({ ctx, input }): Promise<InvestigationImage[]> => {
       try {
         if (!input.investigation_id) {
           return [];
         }
 
-        const { data, error } = await ctx.db.investigationImages()
-          .select('*')
-          .eq('investigation_id', input.investigation_id)
-          .order('uploaded_at', { ascending: false });
+        const { data, error } = await ctx.db
+          .investigationImages()
+          .select("*")
+          .eq("investigation_id", input.investigation_id)
+          .order("uploaded_at", { ascending: false });
 
         if (error) {
           throw new Error(`Fehler beim Abrufen der Bilder: ${error.message}`);
@@ -261,7 +306,7 @@ export const postRouter = createTRPCRouter({
 
         return (data as InvestigationImage[]) || [];
       } catch (error) {
-        console.warn('Supabase nicht verfügbar, Mock-Bilder:', error);
+        console.warn("Supabase nicht verfügbar, Mock-Bilder:", error);
         // Mock-Bilder
         return [];
       }
@@ -269,36 +314,41 @@ export const postRouter = createTRPCRouter({
 
   // Bild zu einer Fahndung hinzufügen
   addInvestigationImage: publicProcedure
-    .input(z.object({
-      investigation_id: z.string().uuid().optional(), // UUID optional für Mock-Daten
-      file_name: z.string(),
-      file_path: z.string(),
-      file_size: z.number().optional(),
-      mime_type: z.string().optional(),
-      width: z.number().optional(),
-      height: z.number().optional(),
-      tags: z.array(z.string()).default([]),
-      description: z.string().optional(),
-      is_primary: z.boolean().default(false),
-    }))
+    .input(
+      z.object({
+        investigation_id: z.string().uuid().optional(), // UUID optional für Mock-Daten
+        file_name: z.string(),
+        file_path: z.string(),
+        file_size: z.number().optional(),
+        mime_type: z.string().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+        tags: z.array(z.string()).default([]),
+        description: z.string().optional(),
+        is_primary: z.boolean().default(false),
+      }),
+    )
     .mutation(async ({ ctx, input }): Promise<InvestigationImage> => {
       try {
-        const result = await ctx.db.investigationImages()
+        const result = await ctx.db
+          .investigationImages()
           .insert(input)
           .select()
           .single();
 
         if (result.error) {
-          throw new Error(`Fehler beim Hinzufügen des Bildes: ${result.error.message}`);
+          throw new Error(
+            `Fehler beim Hinzufügen des Bildes: ${result.error.message}`,
+          );
         }
 
         return result.data as InvestigationImage;
       } catch (error) {
-        console.warn('Supabase nicht verfügbar, Mock-Bild-Erstellung:', error);
+        console.warn("Supabase nicht verfügbar, Mock-Bild-Erstellung:", error);
         // Mock-Bild-Erstellung mit UUID
         const newImage: InvestigationImage = {
           id: generateUUID(),
-          investigation_id: input.investigation_id ?? '',
+          investigation_id: input.investigation_id ?? "",
           file_name: input.file_name,
           file_path: input.file_path,
           file_size: input.file_size,

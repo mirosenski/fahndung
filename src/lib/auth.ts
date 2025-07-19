@@ -319,7 +319,7 @@ export const createDemoUsers = async (): Promise<{
       const { data, error: profileError } = await supabase
         .from("user_profiles")
         .upsert(demoProfiles, {
-          onConflict: "email",
+          onConflict: "user_id",
           ignoreDuplicates: false,
         })
         .select();
