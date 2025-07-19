@@ -435,6 +435,7 @@ export const signOut = async (): Promise<void> => {
       console.error("❌ Supabase Logout-Fehler:", error);
 
       // Bei AuthSessionMissingError oder ähnlichen Fehlern ist das normal
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       if (
         error?.message?.includes("Auth session missing") ||
         error?.message?.includes("No session")
@@ -499,6 +500,7 @@ export const clearAuthSession = async (): Promise<void> => {
       console.error("❌ Supabase Session-Bereinigung Fehler:", error);
 
       // Bei AuthSessionMissingError ist das normal
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       if (
         error?.message?.includes("Auth session missing") ||
         error?.message?.includes("No session")

@@ -64,7 +64,7 @@ export const useAuth = () => {
           if (error) {
             console.log(
               "ℹ️ Logout-Fehler (normal bei fehlender Session):",
-              error?.message,
+              error && error.message ? error.message : "Unbekannter Fehler",
             );
           }
         } catch (err) {
