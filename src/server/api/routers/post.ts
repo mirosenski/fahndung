@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { mediaRouter } from "./media";
 
 interface Investigation {
   id: string;
@@ -502,4 +503,7 @@ export const postRouter = createTRPCRouter({
       };
     }
   }),
+
+  // Media routes
+  media: mediaRouter,
 });

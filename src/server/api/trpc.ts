@@ -6,11 +6,13 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
+import { getCurrentSession } from "~/lib/auth";
+import { supabase } from "~/lib/supabase";
 
 /**
  * 1. CONTEXT
@@ -25,8 +27,54 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  // Try to get session from headers first (for tRPC calls)
+  let session = null;
+
+  try {
+    const authHeader = opts.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+
+      // Verify token with Supabase
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser(token);
+
+      if (!error && user) {
+        // Get user profile
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+
+        session = {
+          user: {
+            id: user.id,
+            email: user.email ?? "",
+          },
+          profile: profile,
+        };
+
+        console.log("✅ Session from token:", {
+          userId: user.id,
+          role: profile?.["role"],
+        });
+      } else {
+        console.warn("❌ Token validation failed:", error);
+      }
+    }
+  } catch (error) {
+    console.warn("Failed to get session from headers:", error);
+  }
+
+  // Fallback to getCurrentSession if no session from headers
+  session ??= await getCurrentSession();
+
   return {
     db,
+    session,
     ...opts,
   };
 };
@@ -97,6 +145,68 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 /**
+ * Middleware for authentication
+ */
+const authMiddleware = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session) {
+    console.log("❌ Auth middleware: No session found");
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Nicht authentifiziert - Bitte melden Sie sich an",
+    });
+  }
+
+  console.log("✅ Auth middleware: Session found", {
+    userId: ctx.session.user.id,
+    role: ctx.session.profile?.["role"],
+  });
+
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  });
+});
+
+/**
+ * Middleware for admin authorization
+ */
+const adminMiddleware = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session) {
+    console.log("❌ Admin middleware: No session found");
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Nicht authentifiziert - Bitte melden Sie sich an",
+    });
+  }
+
+  if (!ctx.session.profile || ctx.session.profile.role !== "admin") {
+    console.log("❌ Admin middleware: Not admin", {
+      userId: ctx.session.user.id,
+      role: ctx.session.profile?.["role"],
+    });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message:
+        "Admin-Rechte erforderlich - Sie haben keine ausreichenden Berechtigungen",
+    });
+  }
+
+  console.log("✅ Admin middleware: Admin access granted", {
+    userId: ctx.session.user.id,
+    role: ctx.session.profile["role"],
+  });
+
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+    },
+  });
+});
+
+/**
  * Public (unauthenticated) procedure
  *
  * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
@@ -113,4 +223,15 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure.use(timingMiddleware);
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(authMiddleware);
+
+/**
+ * Admin-only procedure
+ *
+ * This procedure requires admin privileges. It verifies the session is valid and the user has admin role.
+ */
+export const adminProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(adminMiddleware);

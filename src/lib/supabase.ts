@@ -1,11 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
-const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+// Environment-basierte Konfiguration
+const isDevelopment = process.env.NODE_ENV === "development";
+const isLocalSupabase =
+  process.env["NEXT_PUBLIC_USE_LOCAL_SUPABASE"] === "true";
+
+// Supabase URLs und Keys basierend auf Environment
+const supabaseUrl = isLocalSupabase
+  ? process.env["NEXT_PUBLIC_LOCAL_SUPABASE_URL"]
+  : process.env["NEXT_PUBLIC_SUPABASE_URL"];
+
+const supabaseAnonKey = isLocalSupabase
+  ? process.env["NEXT_PUBLIC_LOCAL_SUPABASE_ANON_KEY"]
+  : process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 
 // Verbesserte Environment-Variablen-Prüfung
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("❌ Fehlende Supabase Environment-Variablen:");
+  console.error("Environment:", isLocalSupabase ? "LOCAL" : "REMOTE");
   console.error(
     "NEXT_PUBLIC_SUPABASE_URL:",
     supabaseUrl ? "✅ Gesetzt" : "❌ Fehlt",
@@ -14,8 +26,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
     "NEXT_PUBLIC_SUPABASE_ANON_KEY:",
     supabaseAnonKey ? "✅ Gesetzt" : "❌ Fehlt",
   );
+
+  if (isLocalSupabase) {
+    console.error(
+      "NEXT_PUBLIC_LOCAL_SUPABASE_URL:",
+      process.env["NEXT_PUBLIC_LOCAL_SUPABASE_URL"] ? "✅ Gesetzt" : "❌ Fehlt",
+    );
+    console.error(
+      "NEXT_PUBLIC_LOCAL_SUPABASE_ANON_KEY:",
+      process.env["NEXT_PUBLIC_LOCAL_SUPABASE_ANON_KEY"]
+        ? "✅ Gesetzt"
+        : "❌ Fehlt",
+    );
+  }
+
   throw new Error(
-    "Missing Supabase environment variables - Bitte prüfen Sie Ihre .env.local Datei",
+    `Missing Supabase environment variables for ${isLocalSupabase ? "LOCAL" : "REMOTE"} environment`,
   );
 }
 
@@ -31,40 +57,35 @@ let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
 const getSupabaseInstance = () => {
   if (!supabaseInstance) {
-    console.log("✅ Supabase-Konfiguration erfolgreich validiert");
+    console.log(
+      `✅ Supabase-Konfiguration erfolgreich validiert (${isLocalSupabase ? "LOCAL" : "REMOTE"})`,
+    );
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
         flowType: "pkce" as const,
-        // Optimierte Auth-Konfiguration
         storage:
           typeof window !== "undefined" ? window.localStorage : undefined,
-        // Verbesserte Session-Behandlung
       },
-      // Optimierte Realtime-Konfiguration
       realtime: {
         params: {
-          eventsPerSecond: 1 as const, // Reduziert auf 1 für bessere Stabilität
+          eventsPerSecond: 1 as const,
         },
-        // Kürzere Reconnect-Intervalle
-        heartbeatIntervalMs: 10000 as const, // 10 Sekunden statt 15
-        reconnectAfterMs: (tries: number) => Math.min(tries * 200, 2000), // Max 2 Sekunden
+        heartbeatIntervalMs: 10000 as const,
+        reconnectAfterMs: (tries: number) => Math.min(tries * 200, 2000),
       },
-      // Optimierte HTTP-Konfiguration
-      // Verbesserte Global-Konfiguration
       global: {
         headers: {
           "X-Client-Info": "fahndung-web" as const,
           "X-Requested-With": "XMLHttpRequest" as const,
+          "X-Environment": isLocalSupabase ? "local" : ("remote" as const),
         },
-        // Timeouts für bessere Stabilität
         fetch: (url, options = {}) => {
           return fetch(url, {
             ...options,
-            // Timeout für Requests
-            signal: AbortSignal.timeout(30000), // 30 Sekunden Timeout
+            signal: AbortSignal.timeout(30000),
           });
         },
       },
@@ -75,9 +96,16 @@ const getSupabaseInstance = () => {
 
 export const supabase = getSupabaseInstance();
 
+// Environment-Info für Debugging
+export const getSupabaseEnvironment = () => ({
+  isLocal: isLocalSupabase,
+  isDevelopment,
+  url: supabaseUrl,
+  bucketName: isLocalSupabase ? "local-media" : "media-gallery",
+});
+
 // Performance-Monitoring
 if (typeof window !== "undefined") {
-  // Client-seitige Performance-Monitoring
   const originalFetch = window.fetch;
   window.fetch = async (...args) => {
     const start = performance.now();
@@ -85,7 +113,6 @@ if (typeof window !== "undefined") {
       const response = await originalFetch(...args);
       const duration = performance.now() - start;
 
-      // Log langsame Requests (> 2 Sekunden)
       if (duration > 2000) {
         const url =
           typeof args[0] === "string"
@@ -98,17 +125,7 @@ if (typeof window !== "undefined") {
 
       return response;
     } catch (error) {
-      const duration = performance.now() - start;
-      const url =
-        typeof args[0] === "string"
-          ? args[0]
-          : args[0] instanceof URL
-            ? args[0].href
-            : "unknown";
-      console.error(
-        `❌ Request-Fehler: ${url} (${duration.toFixed(0)}ms)`,
-        error,
-      );
+      console.error("❌ Fetch Error:", error);
       throw error;
     }
   };

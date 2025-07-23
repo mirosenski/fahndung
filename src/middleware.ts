@@ -14,13 +14,27 @@ export function middleware(request: NextRequest) {
     );
     response.headers.set(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
+      "Content-Type, Authorization, x-trpc-source",
     );
     response.headers.set("Access-Control-Max-Age", "86400");
 
     // OPTIONS-Requests für CORS-Preflight behandeln
     if (request.method === "OPTIONS") {
       return new NextResponse(null, { status: 200 });
+    }
+
+    // tRPC-spezifische Behandlung
+    if (request.nextUrl.pathname.startsWith("/api/trpc/")) {
+      // Verbesserte Authentifizierungsbehandlung für tRPC
+      const authHeader = request.headers.get("Authorization");
+
+      if (authHeader?.startsWith("Bearer ")) {
+        // Token ist vorhanden - lass die tRPC-Route es verarbeiten
+        response.headers.set("X-Auth-Status", "token-present");
+      } else {
+        // Kein Token - tRPC wird UNAUTHORIZED zurückgeben
+        response.headers.set("X-Auth-Status", "no-token");
+      }
     }
 
     return response;
@@ -65,6 +79,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
+  // Standard-Behandlung für andere Routen
   return NextResponse.next();
 }
 
