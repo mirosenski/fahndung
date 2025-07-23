@@ -23,6 +23,10 @@ export const mediaRouter = createTRPCRouter({
         uploaded_by: z.string().optional(),
         date_from: z.string().optional(),
         date_to: z.string().optional(),
+        sort_by: z
+          .enum(["uploaded_at", "created_at", "original_name", "file_size"])
+          .optional(),
+        sort_order: z.enum(["asc", "desc"]).optional(),
         page: z.number().min(1).default(1),
         limit: z.number().min(1).max(100).default(50),
       }),

@@ -57,7 +57,7 @@ export interface MediaSearchOptions {
   date_to?: string;
   limit?: number;
   offset?: number;
-  sort_by?: "created_at" | "name" | "size";
+  sort_by?: "uploaded_at" | "created_at" | "original_name" | "file_size";
   sort_order?: "asc" | "desc";
 }
 
@@ -266,7 +266,7 @@ export class MediaService {
       tags,
       date_from,
       date_to,
-      sort_by = "created_at",
+      sort_by = "uploaded_at",
       sort_order = "desc",
     } = options;
 

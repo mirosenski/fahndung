@@ -18,7 +18,12 @@ interface MediaState {
   hasMore: boolean;
   total: number;
   viewMode: "grid" | "list";
-  sortBy: "date" | "name" | "size" | "type";
+  sortBy:
+    | "uploaded_at"
+    | "created_at"
+    | "original_name"
+    | "file_size"
+    | "media_type";
   sortOrder: "asc" | "desc";
 }
 
@@ -37,7 +42,14 @@ interface MediaActions {
   setUploadProgress: (progress: UploadProgress | null) => void;
   setPagination: (page: number, hasMore: boolean, total: number) => void;
   setViewMode: (mode: "grid" | "list") => void;
-  setSortBy: (sortBy: "date" | "name" | "size" | "type") => void;
+  setSortBy: (
+    sortBy:
+      | "uploaded_at"
+      | "created_at"
+      | "original_name"
+      | "file_size"
+      | "media_type",
+  ) => void;
   setSortOrder: (order: "asc" | "desc") => void;
   reset: () => void;
 }
@@ -61,7 +73,7 @@ const initialState: MediaState = {
   hasMore: false,
   total: 0,
   viewMode: "grid",
-  sortBy: "date",
+  sortBy: "uploaded_at",
   sortOrder: "desc",
 };
 

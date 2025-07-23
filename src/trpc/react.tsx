@@ -56,17 +56,14 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
 
-            // Get session synchronously from localStorage
+            // Get session from localStorage (Supabase stores it there)
             try {
               if (typeof window !== "undefined") {
-                // Get session from localStorage (Supabase stores it there)
-                // Remote Supabase uses a different key format
+                // Try to get session from localStorage first (faster)
                 const sessionKeys = Object.keys(localStorage).filter(
                   (key) =>
                     key.includes("supabase") && key.includes("auth-token"),
                 );
-
-                console.log("🔍 tRPC: Found session keys:", sessionKeys);
 
                 for (const key of sessionKeys) {
                   const sessionStr = localStorage.getItem(key);
@@ -82,24 +79,26 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                         );
                         console.log(
                           "✅ tRPC: Auth token set from localStorage",
-                          { key, tokenLength: session.access_token.length },
+                          {
+                            tokenLength: session.access_token.length,
+                          },
                         );
-                        break; // Use first valid session found
-                      } else {
-                        console.warn("❌ tRPC: No access_token in session", {
-                          key,
-                        });
+                        break;
                       }
                     } catch (parseError) {
-                      console.warn("Failed to parse session data:", parseError);
-                      continue;
+                      console.warn(
+                        "Failed to parse localStorage session:",
+                        parseError,
+                      );
                     }
                   }
                 }
 
-                // Fallback: Try to get from Supabase client directly
+                // If no token found in localStorage, log for debugging
                 if (!headers.has("Authorization")) {
-                  console.warn("❌ tRPC: No Authorization header set");
+                  console.warn(
+                    "❌ tRPC: No Authorization header set from localStorage",
+                  );
 
                   // Log all localStorage keys for debugging
                   const allKeys = Object.keys(localStorage);
@@ -108,8 +107,6 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                   );
                   console.log("🔍 tRPC: All localStorage keys:", allKeys);
                   console.log("🔍 tRPC: Supabase keys:", supabaseKeys);
-                } else {
-                  console.log("✅ tRPC: Authorization header is set");
                 }
               }
             } catch (error) {

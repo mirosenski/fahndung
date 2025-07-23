@@ -15,7 +15,6 @@ import {
   Shield,
 } from "lucide-react";
 import { useCallback } from "react";
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import type { UserProfile, UserActivity, AdminAction } from "~/lib/auth";
 import {
   blockUser,
@@ -23,8 +22,13 @@ import {
   changeUserRole,
   deleteUser,
   logUserActivity,
-  getIsActiveFromStatus,
 } from "~/lib/auth";
+
+// Lokale Hilfsfunktion um Turbopack-Import-Probleme zu vermeiden
+const getIsActiveFromStatus = (status?: string): boolean => {
+  if (!status) return false;
+  return status === "approved";
+};
 
 interface PendingRegistration {
   id: string;
