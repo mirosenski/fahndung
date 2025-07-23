@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { Upload, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
+import { supabase } from "~/lib/supabase";
 
 interface MediaUploadProps {
   onUploadComplete?: (results: unknown[]) => void;
@@ -36,7 +37,8 @@ export default function MediaUpload({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadMutation = api.media.uploadMedia.useMutation({
+  // Separate mutation nur für Metadaten
+  const saveMediaMutation = api.media.saveMediaRecord.useMutation({
     onSuccess: () => {
       setSuccess(true);
       setError(null);
@@ -45,7 +47,7 @@ export default function MediaUpload({
       setTimeout(() => setSuccess(false), 3000);
     },
     onError: (error) => {
-      console.error("Upload error:", error);
+      console.error("Save media error:", error);
 
       // Handle specific authentication errors
       if (
@@ -60,21 +62,14 @@ export default function MediaUpload({
         error.message.includes("Admin-Rechte")
       ) {
         setError("Sie benötigen Admin-Rechte um Dateien hochzuladen.");
-      } else if (
-        error.message.includes("illegal path") ||
-        error.message.includes("filesystem")
-      ) {
-        setError(
-          "Storage Bucket nicht konfiguriert. Bitte führen Sie das Setup-Script aus.",
-        );
       } else {
-        setError(`Upload fehlgeschlagen: ${error.message}`);
+        setError(`Speichern fehlgeschlagen: ${error.message}`);
       }
     },
   });
 
   const handleFiles = useCallback(
-    (files: File[]) => {
+    async (files: File[]) => {
       if (files.length === 0) return;
 
       // Check authentication before upload
@@ -95,7 +90,9 @@ export default function MediaUpload({
       setUploadProgress({ loaded: 0, total: 0, percentage: 0 });
 
       // Upload files sequentially
-      const uploadFile = async (file: File, index: number) => {
+      for (const file of files) {
+        if (!file) continue; // Skip if file is undefined
+
         try {
           console.log("🚀 Starte Upload für:", file.name, {
             size: file.size,
@@ -104,15 +101,34 @@ export default function MediaUpload({
             userRole: session?.profile?.role,
           });
 
-          await uploadMutation.mutateAsync({
-            file,
+          // 1. Direkt zu Supabase Storage hochladen
+          const timestamp = Date.now();
+          const uniqueFilename = `${timestamp}-${file.name}`;
+          const path = `allgemein/${uniqueFilename}`;
+
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage.from("media-gallery").upload(path, file, {
+              upsert: false,
+            });
+
+          if (uploadError) {
+            throw new Error(`Storage upload failed: ${uploadError.message}`);
+          }
+
+          // 2. Metadaten über tRPC speichern
+          await saveMediaMutation.mutateAsync({
+            filename: uniqueFilename,
+            original_filename: file.name,
+            file_path: uploadData.path,
+            file_size: file.size,
+            mime_type: file.type,
             directory: "allgemein",
             tags: [],
             is_public: true,
           });
 
-          // Simulate progress for UI feedback
-          const progress = ((index + 1) / files.length) * 100;
+          // Progress update
+          const progress = ((files.indexOf(file) + 1) / files.length) * 100;
           setUploadProgress({
             loaded: file.size,
             total: file.size,
@@ -122,24 +138,22 @@ export default function MediaUpload({
           console.log("✅ Upload erfolgreich für:", file.name);
         } catch (error) {
           console.error(`Upload failed for ${file.name}:`, error);
-          // Error is already handled by mutation onError
+          setError(
+            `Upload fehlgeschlagen für ${file.name}: ${error instanceof Error ? error.message : "Unbekannter Fehler"}`,
+          );
+          break; // Stop uploading if one file fails
         }
-      };
+      }
 
-      // Upload files one by one
-      files.forEach((file, index) => {
-        setTimeout(() => {
-          void uploadFile(file, index);
-        }, index * 100); // Small delay between uploads
-      });
+      setUploading(false);
     },
-    [uploadMutation, isAuthenticated, isAdmin, session?.profile?.role],
+    [saveMediaMutation, isAuthenticated, isAdmin, session?.profile?.role],
   );
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
-      handleFiles(files);
+      void handleFiles(files);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }

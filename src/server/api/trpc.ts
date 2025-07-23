@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { getCurrentSession } from "~/lib/auth";
+import { getCurrentSession, validateJWTDirect } from "~/lib/auth";
 import { supabase } from "~/lib/supabase";
 
 /**
@@ -40,36 +40,33 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         tokenStart: token.substring(0, 20) + "...",
       });
 
-      // Verify token with Supabase
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser(token);
+      // FIXED: Use direct JWT validation instead of getUser(token)
+      const userData = await validateJWTDirect(token);
 
-      if (!error && user) {
-        console.log("✅ tRPC: Token validiert für Benutzer:", user.email);
+      if (userData) {
+        console.log("✅ tRPC: Token validiert für Benutzer:", userData.email);
 
         // Get user profile
         const { data: profile } = await supabase
           .from("user_profiles")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", userData.id)
           .single();
 
         session = {
           user: {
-            id: user.id,
-            email: user.email ?? "",
+            id: userData.id,
+            email: userData.email ?? "",
           },
           profile: profile,
         };
 
         console.log("✅ tRPC: Session erstellt", {
-          userId: user.id,
+          userId: userData.id,
           role: profile?.["role"],
         });
       } else {
-        console.warn("❌ tRPC: Token-Validierung fehlgeschlagen:", error);
+        console.warn("❌ tRPC: Token-Validierung fehlgeschlagen");
       }
     } else {
       console.log("ℹ️ tRPC: Kein Authorization-Header gefunden");

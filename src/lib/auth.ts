@@ -1256,7 +1256,45 @@ export const handleAuthError = async (error: unknown): Promise<void> => {
   }
 };
 
-// Verbesserte Token-Validierung
+// Direkte JWT-Validierung für Server-seitige Authentifizierung
+export const validateJWTDirect = async (
+  token: string,
+): Promise<{ id: string; email?: string } | null> => {
+  if (!token) return null;
+
+  try {
+    console.log("🔍 Validiere JWT direkt...", {
+      tokenLength: token.length,
+      tokenStart: token.substring(0, 20) + "...",
+    });
+
+    // Direkte Validierung über Supabase Auth API
+    const response = await fetch(
+      `${process.env["NEXT_PUBLIC_SUPABASE_URL"]}/auth/v1/user`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      console.warn("❌ JWT-Validierung fehlgeschlagen:", response.status);
+      return null;
+    }
+
+    const userData = (await response.json()) as { id: string; email?: string };
+    console.log("✅ JWT erfolgreich validiert für:", userData.email);
+
+    return userData;
+  } catch (error) {
+    console.error("❌ Fehler bei JWT-Validierung:", error);
+    return null;
+  }
+};
+
+// Verbesserte Token-Validierung mit direkter JWT-Prüfung
 export const validateToken = async (): Promise<boolean> => {
   if (!supabase) return false;
 

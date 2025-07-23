@@ -44,17 +44,19 @@ export const mediaRouter = createTRPCRouter({
       }
     }),
 
-  // Upload media file - requires editor or admin privileges
-  uploadMedia: protectedProcedure
+  // Save media record metadata after direct storage upload
+  saveMediaRecord: protectedProcedure
     .input(
       z.object({
-        file: z.custom<File>((val) => val instanceof File, {
-          message: "File must be a valid File object",
-        }),
-        directory: z.string().default("allgemein"),
-        tags: z.array(z.string()).default([]),
+        filename: z.string(),
+        original_filename: z.string(),
+        file_path: z.string(),
+        file_size: z.number(),
+        mime_type: z.string(),
+        directory: z.string(),
+        tags: z.array(z.string()).optional(),
         description: z.string().optional(),
-        is_public: z.boolean().default(true),
+        is_public: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -68,18 +70,51 @@ export const mediaRouter = createTRPCRouter({
       }
 
       try {
-        return await mediaService.uploadMedia({
-          file: input.file,
-          directory: input.directory,
-          tags: input.tags,
-          description: input.description,
-          is_public: input.is_public,
-        });
+        const media_type = input.mime_type.startsWith("image/")
+          ? "image"
+          : input.mime_type.startsWith("video/")
+            ? "video"
+            : "document";
+
+        const { data, error } = await supabase
+          .from("media")
+          .insert({
+            filename: input.filename,
+            original_name: input.original_filename,
+            file_name: input.filename,
+            file_path: input.file_path,
+            file_size: input.file_size,
+            mime_type: input.mime_type,
+            media_type,
+            directory: input.directory,
+            tags: input.tags ?? [],
+            description: input.description,
+            is_public: input.is_public ?? true,
+            uploaded_by: ctx.session.user.id,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Database insert failed: ${error.message}`,
+          });
+        }
+
+        return {
+          success: true,
+          media: data,
+          url: `${process.env["NEXT_PUBLIC_SUPABASE_URL"]}/storage/v1/object/public/media-gallery/${input.file_path}`,
+        };
       } catch (error) {
-        console.error("Fehler beim Upload:", error);
-        throw new Error(
-          `Upload fehlgeschlagen: ${error instanceof Error ? error.message : "Unbekannter Fehler"}`,
-        );
+        console.error("Fehler beim Speichern der Medien-Metadaten:", error);
+        throw error instanceof TRPCError
+          ? error
+          : new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Speichern der Metadaten fehlgeschlagen",
+            });
       }
     }),
 
