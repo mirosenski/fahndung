@@ -109,6 +109,27 @@ export class MediaService {
       );
     }
 
+    // Check if bucket exists
+    try {
+      const { data: buckets, error: bucketError } =
+        await this.supabase.storage.listBuckets();
+      if (bucketError) throw bucketError;
+
+      const bucketExists = buckets?.some(
+        (bucket) => bucket.id === this.bucketName,
+      );
+      if (!bucketExists) {
+        throw new Error(
+          `Storage Bucket '${this.bucketName}' nicht gefunden. Bitte führen Sie das Setup-Script aus.`,
+        );
+      }
+    } catch (error) {
+      console.error("Fehler beim Prüfen des Storage Buckets:", error);
+      throw new Error(
+        "Storage Bucket nicht konfiguriert. Bitte führen Sie das Setup-Script aus.",
+      );
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
@@ -124,7 +145,19 @@ export class MediaService {
             upsert: false,
           });
 
-        if (uploadResult.error) throw uploadResult.error;
+        if (uploadResult.error) {
+          console.error("Storage Upload Error:", uploadResult.error);
+
+          // Handle specific storage errors
+          if (uploadResult.error.message.includes("illegal path")) {
+            throw new Error(
+              "Storage Bucket nicht korrekt konfiguriert. Bitte führen Sie das Setup-Script aus.",
+            );
+          }
+
+          throw uploadResult.error;
+        }
+
         if (!uploadResult.data) throw new Error("Upload failed");
 
         // Extract metadata
@@ -152,7 +185,11 @@ export class MediaService {
           .select()
           .single();
 
-        if (insertResult.error) throw insertResult.error;
+        if (insertResult.error) {
+          console.error("Database Insert Error:", insertResult.error);
+          throw insertResult.error;
+        }
+
         if (!insertResult.data) throw new Error("Database insert failed");
 
         const mediaData = insertResult.data as MediaItem;

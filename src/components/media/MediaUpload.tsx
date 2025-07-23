@@ -24,6 +24,16 @@ export default function MediaUpload({
   const { session, isAuthenticated } = useAuth();
   const isAdmin = session?.profile?.role === "admin";
 
+  // Debug-Logging für Session-Status
+  console.log("🔍 MediaUpload Debug:", {
+    isAuthenticated,
+    hasSession: !!session,
+    userRole: session?.profile?.role,
+    isAdmin,
+    userId: session?.user?.id,
+    userEmail: session?.user?.email,
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadMutation = api.media.uploadMedia.useMutation({
@@ -50,6 +60,13 @@ export default function MediaUpload({
         error.message.includes("Admin-Rechte")
       ) {
         setError("Sie benötigen Admin-Rechte um Dateien hochzuladen.");
+      } else if (
+        error.message.includes("illegal path") ||
+        error.message.includes("filesystem")
+      ) {
+        setError(
+          "Storage Bucket nicht konfiguriert. Bitte führen Sie das Setup-Script aus.",
+        );
       } else {
         setError(`Upload fehlgeschlagen: ${error.message}`);
       }

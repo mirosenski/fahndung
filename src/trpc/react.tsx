@@ -66,6 +66,8 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                     key.includes("supabase") && key.includes("auth-token"),
                 );
 
+                console.log("🔍 tRPC: Found session keys:", sessionKeys);
+
                 for (const key of sessionKeys) {
                   const sessionStr = localStorage.getItem(key);
                   if (sessionStr) {
@@ -78,13 +80,36 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                           "Authorization",
                           `Bearer ${session.access_token}`,
                         );
+                        console.log(
+                          "✅ tRPC: Auth token set from localStorage",
+                          { key, tokenLength: session.access_token.length },
+                        );
                         break; // Use first valid session found
+                      } else {
+                        console.warn("❌ tRPC: No access_token in session", {
+                          key,
+                        });
                       }
                     } catch (parseError) {
                       console.warn("Failed to parse session data:", parseError);
                       continue;
                     }
                   }
+                }
+
+                // Fallback: Try to get from Supabase client directly
+                if (!headers.has("Authorization")) {
+                  console.warn("❌ tRPC: No Authorization header set");
+
+                  // Log all localStorage keys for debugging
+                  const allKeys = Object.keys(localStorage);
+                  const supabaseKeys = allKeys.filter((key) =>
+                    key.includes("supabase"),
+                  );
+                  console.log("🔍 tRPC: All localStorage keys:", allKeys);
+                  console.log("🔍 tRPC: Supabase keys:", supabaseKeys);
+                } else {
+                  console.log("✅ tRPC: Authorization header is set");
                 }
               }
             } catch (error) {

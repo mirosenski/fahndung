@@ -8,12 +8,14 @@ import "./src/env.js";
 const config = {
   experimental: {
     // optimizePackageImports: ["lucide-react"], // Temporär deaktiviert wegen HMR Problem
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
+  },
+
+  // Turbopack-Konfiguration (stabil in Next.js 15)
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
       },
     },
   },
@@ -102,6 +104,13 @@ const config = {
         poll: 1000,
         aggregateTimeout: 300,
         ignored: /node_modules/,
+      };
+
+      // Verbesserte HMR-Konfiguration für Next.js 15
+      config.devServer = {
+        ...config.devServer,
+        hot: true,
+        liveReload: false,
       };
     }
 

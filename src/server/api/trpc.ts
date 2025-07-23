@@ -70,7 +70,13 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   }
 
   // Fallback to getCurrentSession if no session from headers
-  session ??= await getCurrentSession();
+  if (!session) {
+    try {
+      session = await getCurrentSession();
+    } catch (error) {
+      console.warn("Failed to get current session:", error);
+    }
+  }
 
   return {
     db,
