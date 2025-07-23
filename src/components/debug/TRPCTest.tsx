@@ -54,7 +54,7 @@ export default function TRPCTest() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data: unknown = await response.json();
         setTestResult("✅ Direkter API-Call erfolgreich!");
         console.log("✅ Direkter API-Call:", data);
       } else {

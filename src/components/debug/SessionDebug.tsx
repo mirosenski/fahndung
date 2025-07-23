@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "~/hooks/useAuth";
 import { supabase } from "~/lib/supabase";
 import { api } from "~/trpc/react";
+import type { Session } from "@supabase/supabase-js";
 
 export default function SessionDebug() {
   const { session, isAuthenticated, loading } = useAuth();
   const [localStorageData, setLocalStorageData] = useState<
     Record<string, string>
   >({});
-  const [supabaseSession, setSupabaseSession] = useState<any>(null);
+  const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
   const [testResult, setTestResult] = useState<string>("");
 
   // Test tRPC Auth
@@ -22,8 +23,8 @@ export default function SessionDebug() {
       const data: Record<string, string> = {};
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.includes("supabase")) {
-          data[key] = localStorage.getItem(key) || "";
+        if (key?.includes("supabase")) {
+          data[key] = localStorage.getItem(key) ?? "";
         }
       }
       setLocalStorageData(data);
@@ -76,9 +77,9 @@ export default function SessionDebug() {
           <div>Loading: {loading ? "✅" : "❌"}</div>
           <div>Authentifiziert: {isAuthenticated ? "✅" : "❌"}</div>
           <div>Session vorhanden: {session ? "✅" : "❌"}</div>
-          <div>User ID: {session?.user?.id || "N/A"}</div>
-          <div>Email: {session?.user?.email || "N/A"}</div>
-          <div>Rolle: {session?.profile?.role || "N/A"}</div>
+          <div>User ID: {session?.user?.id ?? "N/A"}</div>
+          <div>Email: {session?.user?.email ?? "N/A"}</div>
+          <div>Rolle: {session?.profile?.role ?? "N/A"}</div>
         </div>
       </div>
 

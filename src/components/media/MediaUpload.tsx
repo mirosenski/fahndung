@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Upload, X, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
 
@@ -274,9 +274,9 @@ export default function MediaUpload({
           <div className="mt-2 space-y-1 text-xs text-gray-600 dark:text-gray-400">
             <div>Authentifiziert: {isAuthenticated ? "Ja" : "Nein"}</div>
             <div>Admin: {isAdmin ? "Ja" : "Nein"}</div>
-            <div>User ID: {session?.user?.id || "N/A"}</div>
-            <div>Email: {session?.user?.email || "N/A"}</div>
-            <div>Rolle: {session?.profile?.role || "N/A"}</div>
+            <div>User ID: {session?.user?.id ?? "N/A"}</div>
+            <div>Email: {session?.user?.email ?? "N/A"}</div>
+            <div>Rolle: {session?.profile?.role ?? "N/A"}</div>
             <div>Upload Status: {uploading ? "Läuft" : "Bereit"}</div>
           </div>
         </div>
