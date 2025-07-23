@@ -1,190 +1,289 @@
-# Remote Supabase Setup
+# Remote Supabase Setup für Media-Upload
 
-Dieses Projekt wurde für die ausschließliche Verwendung von Remote-Supabase konfiguriert. Alle lokalen Supabase-Komponenten wurden entfernt.
+## Übersicht
 
-## 🚀 Schnellstart
+Diese Anleitung ist speziell für Remote Supabase konfiguriert und optimiert für die Media-Upload-Funktionalität.
 
-### 1. Environment-Variablen konfigurieren
+## Voraussetzungen
 
-Bearbeiten Sie die `.env.local` Datei und konfigurieren Sie Ihre Remote-Supabase-URLs:
+- Remote Supabase Projekt
+- Korrekte Environment-Variablen
+- Admin-Account
+
+## Environment-Variablen
+
+Stellen Sie sicher, dass in `.env.local` folgende Variablen gesetzt sind:
 
 ```bash
-# Remote Supabase URLs
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-anon-key-here
-
-# Datenbank URL (Remote)
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
-
-# Supabase Service Role Key (Remote)
 SUPABASE_SERVICE_ROLE_KEY=your-remote-service-role-key-here
 ```
 
-### 2. Anwendung starten
+## Automatisches Setup
+
+### 1. Storage Bucket Setup
 
 ```bash
-pnpm dev
+# Im Projektverzeichnis
+chmod +x scripts/setup-storage.sh
+./scripts/setup-storage.sh
 ```
 
-### 3. Benutzer einrichten
+### 2. Manuelles Setup (falls automatisches fehlschlägt)
 
-1. Gehen Sie zu `http://localhost:3000/login`
-2. Klicken Sie auf "Alle Benutzer einrichten"
-3. Melden Sie sich mit `admin@fahndung.local` / `admin123` an
+1. Gehen Sie zu Ihrem Supabase Dashboard
+2. Klicken Sie auf "SQL Editor"
+3. Kopieren Sie den Inhalt von `scripts/setup-storage-bucket.sql`
+4. Führen Sie das Script aus
 
-## 📋 Voraussetzungen
+## Admin-Account erstellen
 
-### Remote Supabase Projekt
+### 1. Benutzer registrieren
 
-Sie benötigen ein Remote-Supabase-Projekt mit:
-
-1. **Datenbank-Tabellen:**
-   - `user_profiles`
-   - `investigations`
-   - `media`
-   - `investigation_media`
-
-2. **Storage Buckets:**
-   - `media-gallery` (für Medien-Uploads)
-
-3. **Authentication:**
-   - Email/Password Authentication aktiviert
-   - Redirect URLs konfiguriert
-
-### Environment-Variablen
-
-Stellen Sie sicher, dass alle erforderlichen Environment-Variablen in `.env.local` gesetzt sind:
-
-```bash
-# Supabase URLs (Remote)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-anon-key-here
-
-# Datenbank URL (Remote)
-DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
-
-# Supabase Service Role Key (Remote)
-SUPABASE_SERVICE_ROLE_KEY=your-remote-service-role-key-here
-
-# Admin E-Mail für Benachrichtigungen
-ADMIN_EMAIL=ptlsweb@gmail.com
-
-# App URLs
-NEXT_PUBLIC_APP_URL=https://fahndung.vercel.app
-
-# Upload-Konfiguration
-MAX_FILE_SIZE=52428800
-ALLOWED_FILE_TYPES=image/jpeg,image/png,image/gif,image/webp
-
-# Sicherheit
-NEXTAUTH_SECRET=your-nextauth-secret-key-here
-NEXTAUTH_URL=https://fahndung.vercel.app
-
-# Entwicklung
-NODE_ENV=development
-
-# Remote Supabase Einstellungen
-NEXT_PUBLIC_USE_LOCAL_SUPABASE=false
+```sql
+-- Im Supabase SQL Editor
+INSERT INTO auth.users (
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  created_at,
+  updated_at
+) VALUES (
+  'admin@example.com',
+  crypt('your-password', gen_salt('bf')),
+  now(),
+  now(),
+  now()
+);
 ```
 
-## 🔧 Setup-Scripts
+### 2. Profil erstellen
 
-### Automatisches Setup
-
-```bash
-# Vollständiges Remote-Supabase-Setup
-pnpm run setup:remote
-
-# Oder direkt
-bash scripts/setup-remote-supabase.sh setup
+```sql
+-- Im Supabase SQL Editor
+INSERT INTO public.user_profiles (
+  user_id,
+  name,
+  role,
+  department,
+  created_at,
+  updated_at
+) VALUES (
+  (SELECT id FROM auth.users WHERE email = 'admin@example.com'),
+  'Administrator',
+  'admin',
+  'IT',
+  now(),
+  now()
+);
 ```
 
-### Verbindungstest
+## RLS-Policies überprüfen
 
-```bash
-# Teste Remote-Supabase-Verbindung
-pnpm run test:remote
+Stellen Sie sicher, dass folgende Policies existieren:
 
-# Oder direkt
-bash scripts/setup-remote-supabase.sh test
+### Storage Policies
+
+```sql
+-- Erlaube Admins und Editoren das Hochladen
+CREATE POLICY "Admins and editors can upload media files" ON storage.objects
+FOR INSERT
+WITH CHECK (
+  bucket_id = 'media-gallery' AND
+  auth.role() = 'authenticated' AND
+  EXISTS (
+    SELECT 1 FROM public.user_profiles
+    WHERE user_id = auth.uid() AND role IN ('admin', 'editor')
+  )
+);
+
+-- Erlaube authentifizierten Benutzern das Lesen
+CREATE POLICY "Authenticated users can read media files" ON storage.objects
+FOR SELECT
+USING (
+  bucket_id = 'media-gallery' AND
+  auth.role() = 'authenticated'
+);
 ```
 
-### Lokale Komponenten entfernen
+### Media Table Policies
 
-```bash
-# Entferne lokale Supabase-Komponenten
-bash scripts/setup-remote-supabase.sh clean
+```sql
+-- Erlaube Admins und Editoren das Einfügen
+CREATE POLICY "Admins and editors can insert media" ON public.media
+FOR INSERT WITH CHECK (
+  auth.role() = 'authenticated' AND
+  EXISTS (
+    SELECT 1 FROM public.user_profiles
+    WHERE user_id = auth.uid() AND role IN ('admin', 'editor')
+  )
+);
+
+-- Erlaube authentifizierten Benutzern das Lesen
+CREATE POLICY "Authenticated users can view all media" ON public.media
+FOR SELECT USING (auth.role() = 'authenticated');
 ```
 
-## 📁 Projektstruktur
+## Test-Prozedur
 
-Nach dem Setup wurden folgende lokale Komponenten entfernt:
+### 1. Anmeldung testen
 
-- ❌ `supabase/` - Lokale Supabase-Konfiguration
-- ❌ `start-database.sh` - Lokales Datenbank-Script
-- ❌ `fix_local_supabase.sql` - Lokales SQL-Script
-- ❌ `scripts/supabase-local.sh` - Lokales Supabase-Script
+```javascript
+// In der Browser-Konsole
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+console.log("Session:", session);
+```
 
-## 🔄 Migration von Lokal zu Remote
+### 2. Admin-Rechte testen
 
-Falls Sie von einer lokalen Supabase-Installation migrieren:
+```javascript
+// In der Browser-Konsole
+const result = await fetch("/api/trpc/auth.getSession", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({}),
+});
+console.log("tRPC Session:", await result.json());
+```
 
-1. **Backup erstellen:**
+### 3. Media-Upload testen
 
-   ```bash
-   cp .env.local .env.local.backup
-   ```
+1. Als Admin anmelden
+2. Zur Medien-Galerie navigieren
+3. Datei hochladen
+4. Browser-Konsole für Fehler prüfen
 
-2. **Remote-Supabase konfigurieren:**
-   - Erstellen Sie ein neues Supabase-Projekt
-   - Konfigurieren Sie die Environment-Variablen
-   - Führen Sie die Datenbank-Migrationen aus
+## Debug-Tools
 
-3. **Setup ausführen:**
-   ```bash
-   pnpm run setup:remote
-   ```
+### SessionDebug-Komponente
 
-## 🐛 Troubleshooting
+Fügen Sie temporär in Ihre Anwendung ein:
 
-### Fehler: "Missing Supabase environment variables"
+```tsx
+import SessionDebug from "~/components/debug/SessionDebug";
 
-**Lösung:** Stellen Sie sicher, dass alle erforderlichen Environment-Variablen in `.env.local` gesetzt sind.
+// In Ihrer Komponente
+{
+  process.env.NODE_ENV === "development" && <SessionDebug />;
+}
+```
 
-### Fehler: "Invalid Supabase URL"
+### Browser-Konsole Befehle
 
-**Lösung:** Überprüfen Sie die `NEXT_PUBLIC_SUPABASE_URL` in `.env.local`. Sie sollte mit `https://` beginnen.
+```javascript
+// Session-Status prüfen
+console.log("Session:", await supabase.auth.getSession());
 
-### Fehler: "Authentication failed"
+// LocalStorage prüfen
+const supabaseKeys = Object.keys(localStorage).filter((key) =>
+  key.includes("supabase"),
+);
+console.log("Supabase Keys:", supabaseKeys);
+
+// tRPC Auth testen
+const result = await fetch("/api/trpc/auth.getSession", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({}),
+});
+console.log("tRPC Auth:", await result.json());
+```
+
+## Häufige Probleme
+
+### Problem: "UNAUTHORIZED"
 
 **Lösung:**
 
-1. Überprüfen Sie die `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-2. Stellen Sie sicher, dass Email/Password Authentication aktiviert ist
-3. Konfigurieren Sie die Redirect URLs in Ihrem Supabase-Projekt
+1. Session bereinigen: `await supabase.auth.signOut()`
+2. Browser-Cache leeren
+3. Neu anmelden
 
-### Fehler: "Storage bucket not found"
+### Problem: "FORBIDDEN"
 
-**Lösung:** Erstellen Sie den `media-gallery` Bucket in Ihrem Supabase-Projekt:
+**Lösung:**
+
+1. Admin-Rolle setzen:
 
 ```sql
--- In Supabase SQL Editor
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('media-gallery', 'media-gallery', true);
+UPDATE public.user_profiles
+SET role = 'admin'
+WHERE user_id = (
+  SELECT id FROM auth.users
+  WHERE email = 'ihre-email@example.com'
+);
 ```
 
-## 📞 Support
+### Problem: "illegal path"
+
+**Lösung:**
+
+1. Storage Bucket Setup ausführen
+2. RLS-Policies überprüfen
+
+## Performance-Optimierungen
+
+### 1. Connection Pooling
+
+Die Konfiguration verwendet bereits optimiertes Connection Pooling.
+
+### 2. Token-Caching
+
+Tokens werden automatisch zwischengespeichert und erneuert.
+
+### 3. Error-Handling
+
+MessagePort-Fehler werden automatisch behandelt.
+
+## Monitoring
+
+### Browser-Konsole
+
+Überprüfen Sie regelmäßig:
+
+- Session-Status
+- Token-Gültigkeit
+- Upload-Fehler
+
+### Supabase Dashboard
+
+Überwachen Sie:
+
+- Storage-Bucket-Nutzung
+- Auth-Logs
+- RLS-Policy-Violations
+
+## Sicherheit
+
+### 1. RLS-Policies
+
+Alle Tabellen haben Row Level Security aktiviert.
+
+### 2. Token-Validierung
+
+Tokens werden bei jedem Request validiert.
+
+### 3. Admin-Access
+
+Nur Admins und Editoren können Dateien hochladen.
+
+## Support
 
 Bei Problemen:
 
-1. Überprüfen Sie die Browser-Konsole für Fehlermeldungen
-2. Prüfen Sie die Network-Tab für fehlgeschlagene Requests
-3. Stellen Sie sicher, dass alle Environment-Variablen korrekt gesetzt sind
-4. Testen Sie die Verbindung mit `pnpm run test:remote`
+1. Überprüfen Sie die Browser-Konsole
+2. Verwenden Sie die Debug-Komponente
+3. Prüfen Sie die Supabase-Logs
+4. Stellen Sie sicher, dass alle Environment-Variablen korrekt sind
 
-## 🔒 Sicherheit
+## Nächste Schritte
 
-- Alle Supabase-Keys werden über Environment-Variablen verwaltet
-- Lokale Supabase-Komponenten wurden vollständig entfernt
-- Backup-Dateien wurden erstellt (`.env.local.backup.*`)
-- Die Anwendung verwendet ausschließlich Remote-Supabase
+Nach erfolgreicher Implementierung:
+
+1. Entfernen Sie Debug-Komponenten aus der Produktion
+2. Implementieren Sie automatische Token-Erneuerung
+3. Fügen Sie Error-Tracking hinzu
+4. Überwachen Sie die Performance

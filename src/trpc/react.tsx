@@ -9,6 +9,7 @@ import SuperJSON from "superjson";
 
 import { type AppRouter } from "~/server/api/root";
 import { createQueryClient } from "./query-client";
+import { supabase } from "~/lib/supabase";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -52,17 +53,43 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
         httpBatchStreamLink({
           transformer: SuperJSON,
           url: getBaseUrl() + "/api/trpc",
-          headers: () => {
+          headers: async () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
 
-            // Get session from localStorage (Supabase stores it there)
+            // Verbesserte Token-Extraktion mit Supabase Client
             try {
               if (typeof window !== "undefined") {
-                // Try to get session from localStorage first (faster)
+                // Methode 1: Direkt über Supabase Client (empfohlen)
+                const {
+                  data: { session },
+                } = await supabase.auth.getSession();
+
+                if (session?.access_token) {
+                  headers.set(
+                    "Authorization",
+                    `Bearer ${session.access_token}`,
+                  );
+                  console.log("✅ tRPC: Token von Supabase Client", {
+                    tokenLength: session.access_token.length,
+                    tokenStart: session.access_token.substring(0, 20) + "...",
+                  });
+                  return headers;
+                }
+
+                // Methode 2: Fallback - localStorage durchsuchen
+                console.log(
+                  "🔍 tRPC: Fallback - Suche Token in localStorage...",
+                );
+
                 const sessionKeys = Object.keys(localStorage).filter(
                   (key) =>
                     key.includes("supabase") && key.includes("auth-token"),
+                );
+
+                console.log(
+                  "🔍 tRPC: Gefundene Supabase-Schlüssel:",
+                  sessionKeys,
                 );
 
                 for (const key of sessionKeys) {
@@ -71,19 +98,21 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                     try {
                       const session = JSON.parse(sessionStr) as {
                         access_token?: string;
+                        currentSession?: { access_token?: string };
                       };
-                      if (session?.access_token) {
-                        headers.set(
-                          "Authorization",
-                          `Bearer ${session.access_token}`,
-                        );
-                        console.log(
-                          "✅ tRPC: Auth token set from localStorage",
-                          {
-                            tokenLength: session.access_token.length,
-                          },
-                        );
-                        break;
+
+                      const authToken =
+                        session?.access_token ??
+                        session?.currentSession?.access_token ??
+                        null;
+
+                      if (authToken) {
+                        headers.set("Authorization", `Bearer ${authToken}`);
+                        console.log("✅ tRPC: Token gefunden in localStorage", {
+                          tokenLength: authToken.length,
+                          tokenStart: authToken.substring(0, 20) + "...",
+                        });
+                        return headers;
                       }
                     } catch (parseError) {
                       console.warn(
@@ -94,19 +123,91 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                   }
                 }
 
-                // If no token found in localStorage, log for debugging
-                if (!headers.has("Authorization")) {
-                  console.warn(
-                    "❌ tRPC: No Authorization header set from localStorage",
-                  );
+                // Methode 3: Erweiterte Suche in allen Supabase-Schlüsseln
+                const allSupabaseKeys = Object.keys(localStorage).filter(
+                  (key) => key.includes("supabase"),
+                );
 
-                  // Log all localStorage keys for debugging
-                  const allKeys = Object.keys(localStorage);
-                  const supabaseKeys = allKeys.filter((key) =>
-                    key.includes("supabase"),
-                  );
-                  console.log("🔍 tRPC: All localStorage keys:", allKeys);
-                  console.log("🔍 tRPC: Supabase keys:", supabaseKeys);
+                for (const key of allSupabaseKeys) {
+                  const value = localStorage.getItem(key);
+                  if (value) {
+                    try {
+                      const parsed = JSON.parse(value) as Record<
+                        string,
+                        unknown
+                      >;
+
+                      // Suche nach access_token
+                      if (
+                        parsed["access_token"] &&
+                        typeof parsed["access_token"] === "string"
+                      ) {
+                        const authToken = parsed["access_token"];
+                        headers.set("Authorization", `Bearer ${authToken}`);
+                        console.log(
+                          "✅ tRPC: Token gefunden in erweiterter Suche",
+                          {
+                            tokenLength: authToken.length,
+                            tokenStart: authToken.substring(0, 20) + "...",
+                          },
+                        );
+                        return headers;
+                      }
+
+                      // Suche in currentSession
+                      if (
+                        parsed["currentSession"] &&
+                        typeof parsed["currentSession"] === "object"
+                      ) {
+                        const currentSession = parsed[
+                          "currentSession"
+                        ] as Record<string, unknown>;
+                        if (
+                          currentSession["access_token"] &&
+                          typeof currentSession["access_token"] === "string"
+                        ) {
+                          const authToken = currentSession["access_token"];
+                          headers.set("Authorization", `Bearer ${authToken}`);
+                          console.log(
+                            "✅ tRPC: Token gefunden in currentSession",
+                            {
+                              tokenLength: authToken.length,
+                              tokenStart: authToken.substring(0, 20) + "...",
+                            },
+                          );
+                          return headers;
+                        }
+                      }
+                    } catch {
+                      // Ignore parse errors
+                    }
+                  }
+                }
+
+                console.warn("❌ tRPC: Kein Auth-Token gefunden");
+
+                // Debug-Informationen
+                const allKeys = Object.keys(localStorage);
+                const supabaseKeys = allKeys.filter((key) =>
+                  key.includes("supabase"),
+                );
+                console.log("🔍 tRPC: Alle localStorage-Schlüssel:", allKeys);
+                console.log("🔍 tRPC: Supabase-Schlüssel:", supabaseKeys);
+
+                // Zeige Inhalt der ersten Supabase-Schlüssel
+                if (supabaseKeys.length > 0) {
+                  const firstKey = supabaseKeys[0];
+                  if (firstKey) {
+                    const firstValue = localStorage.getItem(firstKey);
+                    if (firstValue) {
+                      console.log(
+                        "🔍 tRPC: Inhalt von",
+                        firstKey,
+                        ":",
+                        firstValue.substring(0, 200) + "...",
+                      );
+                    }
+                  }
                 }
               }
             } catch (error) {

@@ -35,6 +35,11 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.substring(7);
 
+      console.log("🔍 tRPC: Token erhalten, validiere...", {
+        tokenLength: token.length,
+        tokenStart: token.substring(0, 20) + "...",
+      });
+
       // Verify token with Supabase
       const {
         data: { user },
@@ -42,6 +47,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       } = await supabase.auth.getUser(token);
 
       if (!error && user) {
+        console.log("✅ tRPC: Token validiert für Benutzer:", user.email);
+
         // Get user profile
         const { data: profile } = await supabase
           .from("user_profiles")
@@ -57,24 +64,36 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
           profile: profile,
         };
 
-        console.log("✅ Session from token:", {
+        console.log("✅ tRPC: Session erstellt", {
           userId: user.id,
           role: profile?.["role"],
         });
       } else {
-        console.warn("❌ Token validation failed:", error);
+        console.warn("❌ tRPC: Token-Validierung fehlgeschlagen:", error);
       }
+    } else {
+      console.log("ℹ️ tRPC: Kein Authorization-Header gefunden");
     }
   } catch (error) {
-    console.warn("Failed to get session from headers:", error);
+    console.warn("❌ tRPC: Fehler beim Token-Handling:", error);
   }
 
   // Fallback to getCurrentSession if no session from headers
   if (!session) {
     try {
+      console.log("🔄 tRPC: Fallback - Verwende getCurrentSession...");
       session = await getCurrentSession();
+
+      if (session) {
+        console.log("✅ tRPC: Session über Fallback erhalten", {
+          userId: session.user.id,
+          role: session.profile?.role,
+        });
+      } else {
+        console.log("ℹ️ tRPC: Keine Session über Fallback verfügbar");
+      }
     } catch (error) {
-      console.warn("Failed to get current session:", error);
+      console.warn("❌ tRPC: Fehler beim Fallback-Session-Check:", error);
     }
   }
 
@@ -88,7 +107,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 /**
  * 2. INITIALIZATION
  *
- * This is where the tRPC API is initialized, connecting the context and transformer. We also parse
+ * This is where the trpc api is initialized, connecting the context and transformer. We also parse
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
@@ -107,25 +126,27 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 });
 
 /**
- * Create a server-side caller.
- *
- * @see https://trpc.io/docs/server/server-side-calls
- */
-export const createCallerFactory = t.createCallerFactory;
-
-/**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
  *
  * These are the pieces you use to build your tRPC API. You should import these a lot in the
- * "/src/server/api/routers" directory.
+ * "~/server/api/routers" directory.
  */
 
 /**
- * This is how you create new routers and sub-routers in your tRPC API.
+ * This is how you create new routers and subrouters in your tRPC API.
  *
  * @see https://trpc.io/docs/router
  */
 export const createTRPCRouter = t.router;
+
+/**
+ * Public (unauthed) procedure
+ *
+ * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
+ * guarantee that a user querying is authorized, but you can still access user session data if they
+ * are logged in.
+ */
+export const publicProcedure = t.procedure;
 
 /**
  * Middleware for timing procedure execution and adding an artificial delay in development.
@@ -155,14 +176,14 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session) {
-    console.log("❌ Auth middleware: No session found");
+    console.log("❌ Auth middleware: Keine Session gefunden");
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
     });
   }
 
-  console.log("✅ Auth middleware: Session found", {
+  console.log("✅ Auth middleware: Session gefunden", {
     userId: ctx.session.user.id,
     role: ctx.session.profile?.role,
   });
@@ -176,30 +197,29 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
 });
 
 /**
- * Middleware for admin authorization
+ * Middleware for admin-only procedures
  */
 const adminMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session) {
-    console.log("❌ Admin middleware: No session found");
+    console.log("❌ Admin middleware: Keine Session gefunden");
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
     });
   }
 
-  if (!ctx.session.profile || ctx.session.profile.role !== "admin") {
-    console.log("❌ Admin middleware: Not admin", {
+  if (ctx.session.profile?.role !== "admin") {
+    console.log("❌ Admin middleware: Keine Admin-Rechte", {
       userId: ctx.session.user.id,
       role: ctx.session.profile?.role,
     });
     throw new TRPCError({
       code: "FORBIDDEN",
-      message:
-        "Admin-Rechte erforderlich - Sie haben keine ausreichenden Berechtigungen",
+      message: "Admin-Rechte erforderlich",
     });
   }
 
-  console.log("✅ Admin middleware: Admin access granted", {
+  console.log("✅ Admin middleware: Admin-Rechte bestätigt", {
     userId: ctx.session.user.id,
     role: ctx.session.profile.role,
   });
@@ -211,15 +231,6 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
     },
   });
 });
-
-/**
- * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
- */
-export const publicProcedure = t.procedure.use(timingMiddleware);
 
 /**
  * Protected (authenticated) procedure
@@ -236,8 +247,14 @@ export const protectedProcedure = t.procedure
 /**
  * Admin-only procedure
  *
- * This procedure requires admin privileges. It verifies the session is valid and the user has admin role.
+ * This is for procedures that require admin privileges.
  */
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
   .use(adminMiddleware);
+
+/**
+ * Create a server-side caller for the tRPC API
+ * @see https://trpc.io/docs/server/server-side-calls
+ */
+export const createCallerFactory = t.createCallerFactory;

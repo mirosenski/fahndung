@@ -1,71 +1,54 @@
 #!/bin/bash
 
 # Supabase Storage Bucket Setup Script
-# Führt das SQL-Script zur Einrichtung des media-gallery Buckets aus
+# Führt das SQL-Script automatisch aus
 
 set -e
 
-echo "🚀 Starte Supabase Storage Bucket Setup..."
+echo "🚀 Supabase Storage Bucket Setup"
+echo "=================================="
 
-# Lade Environment-Variablen aus .env.local
-if [ -f "../.env.local" ]; then
-    echo "📋 Lade Environment-Variablen aus .env.local..."
-    export $(grep -v '^#' ../.env.local | xargs)
-fi
-
-# Prüfe ob die erforderlichen Environment-Variablen gesetzt sind
-if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
-    echo "❌ Fehler: Supabase Environment-Variablen nicht gefunden"
-    echo "Bitte stellen Sie sicher, dass .env.local geladen ist"
+# Prüfe Environment-Variablen
+if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+    echo "❌ NEXT_PUBLIC_SUPABASE_URL ist nicht gesetzt"
+    echo "Bitte setzen Sie die Environment-Variablen in .env.local"
     exit 1
 fi
 
-# Extrahiere Project Reference aus der URL
-PROJECT_REF=$(echo $NEXT_PUBLIC_SUPABASE_URL | sed 's|https://||' | sed 's|\.supabase\.co||')
-
-echo "📋 Projekt-Referenz: $PROJECT_REF"
-echo "🔗 Supabase URL: $NEXT_PUBLIC_SUPABASE_URL"
-
-# Prüfe ob das SQL-Script existiert
-SQL_SCRIPT="scripts/setup-storage-bucket.sql"
-if [ ! -f "$SQL_SCRIPT" ]; then
-    echo "❌ Fehler: SQL-Script nicht gefunden: $SQL_SCRIPT"
+if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+    echo "❌ SUPABASE_SERVICE_ROLE_KEY ist nicht gesetzt"
+    echo "Bitte setzen Sie die Environment-Variablen in .env.local"
     exit 1
 fi
 
-echo "📝 Führe SQL-Script aus..."
+# Extrahiere Project ID aus der URL
+PROJECT_ID=$(echo $NEXT_PUBLIC_SUPABASE_URL | sed 's|https://||' | sed 's|\.supabase\.co||')
 
-# Verwende curl um das SQL-Script an Supabase zu senden
-# Hinweis: Dies erfordert den Service Role Key für Remote-Supabase
-if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-    echo "🔐 Verwende Service Role Key für Remote-Supabase..."
-    
-    # Lade das SQL-Script
-    SQL_CONTENT=$(cat "$SQL_SCRIPT")
-    
-    # Sende an Supabase REST API
-    curl -X POST \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-        -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-        -d "{\"query\": \"$SQL_CONTENT\"}" \
-        "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/rpc/exec_sql" \
-        || echo "⚠️  Hinweis: Automatische Ausführung fehlgeschlagen. Führen Sie das SQL-Script manuell im Supabase Dashboard aus."
-else
-    echo "⚠️  Service Role Key nicht gefunden. Führen Sie das SQL-Script manuell aus:"
-    echo "1. Gehen Sie zu https://supabase.com/dashboard/project/$PROJECT_REF"
-    echo "2. Klicken Sie auf 'SQL Editor'"
-    echo "3. Kopieren Sie den Inhalt von $SQL_SCRIPT"
-    echo "4. Führen Sie das Script aus"
-fi
+echo "📋 Projekt ID: $PROJECT_ID"
+echo "🔗 URL: $NEXT_PUBLIC_SUPABASE_URL"
+
+# SQL Script ausführen
+echo ""
+echo "📝 Führe Storage Bucket Setup aus..."
+
+# Verwende curl um das SQL-Script auszuführen
+curl -X POST \
+  "https://$PROJECT_ID.supabase.co/rest/v1/rpc/exec_sql" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d @scripts/setup-storage-bucket.sql
 
 echo ""
 echo "✅ Storage Bucket Setup abgeschlossen!"
 echo ""
 echo "📋 Nächste Schritte:"
-echo "1. Überprüfen Sie, dass der 'media-gallery' Bucket erstellt wurde"
-echo "2. Testen Sie einen Media-Upload"
-echo "3. Prüfen Sie die RLS Policies"
+echo "1. Gehen Sie zu Ihrem Supabase Dashboard"
+echo "2. Klicken Sie auf 'Storage'"
+echo "3. Überprüfen Sie, ob der 'media-gallery' Bucket existiert"
+echo "4. Testen Sie den Media-Upload in der Anwendung"
 echo ""
-echo "🔗 Supabase Dashboard: https://supabase.com/dashboard/project/$PROJECT_REF"
-echo "📁 Storage: https://supabase.com/dashboard/project/$PROJECT_REF/storage/buckets" 
+echo "🔧 Falls Probleme auftreten:"
+echo "- Prüfen Sie die Browser-Konsole für Fehlermeldungen"
+echo "- Überprüfen Sie die RLS-Policies im Supabase Dashboard"
+echo "- Stellen Sie sicher, dass Sie als Admin angemeldet sind" 

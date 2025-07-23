@@ -1,39 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Remote Supabase Konfiguration
-const isDevelopment = process.env.NODE_ENV === "development";
-
-// Supabase URLs und Keys für Remote-Instanz
+// Environment-Variablen für Remote Supabase
 const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
 const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
-
-// Bereinige alte lokale Supabase-Sessions
-const cleanupOldSessions = () => {
-  if (typeof window !== "undefined") {
-    try {
-      // Entferne alle lokalen Supabase-Sessions
-      const keysToRemove = Object.keys(localStorage).filter(
-        (key) => key.includes("sb-") && key.includes("localhost"),
-      );
-
-      keysToRemove.forEach((key) => {
-        localStorage.removeItem(key);
-        console.log(`🗑️ Entfernt alte Session: ${key}`);
-      });
-
-      if (keysToRemove.length > 0) {
-        console.log(
-          `🧹 ${keysToRemove.length} alte Supabase-Sessions bereinigt`,
-        );
-      }
-    } catch (error) {
-      console.warn("Fehler beim Bereinigen alter Sessions:", error);
-    }
-  }
-};
-
-// Führe Bereinigung beim ersten Laden aus
-cleanupOldSessions();
 
 // Environment-Variablen-Prüfung
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -101,68 +70,18 @@ const getSupabaseInstance = () => {
 
 export const supabase = getSupabaseInstance();
 
-// Environment-Info für Debugging
-export const getSupabaseEnvironment = () => ({
-  isLocal: false,
-  isDevelopment,
-  url: supabaseUrl,
-  bucketName: "media-gallery",
-});
-
-// Performance-Monitoring
-if (typeof window !== "undefined") {
-  const originalFetch = window.fetch;
-  window.fetch = async (...args) => {
-    const start = performance.now();
-    try {
-      const response = await originalFetch(...args);
-      const duration = performance.now() - start;
-
-      if (duration > 2000) {
-        const url =
-          typeof args[0] === "string"
-            ? args[0]
-            : args[0] instanceof URL
-              ? args[0].href
-              : "unknown";
-        console.warn(`🐌 Langsame Request: ${url} (${duration.toFixed(0)}ms)`);
-      }
-
-      return response;
-    } catch (error) {
-      console.error("❌ Fetch Error:", error);
-      throw error;
-    }
-  };
-}
-
-// Verbesserte Error-Behandlung für Message Port Fehler
-const handleMessagePortError = (error: unknown) => {
-  if (error instanceof Error && error.message.includes("message port closed")) {
-    console.log(
-      "ℹ️ Message Port Fehler (normal bei Auth-Listener):",
-      error.message,
-    );
-    return true; // Fehler behandelt
+// Hilfsfunktion für MessagePort-Fehler (häufig bei Auth-Listenern)
+const handleMessagePortError = (error: unknown): boolean => {
+  if (
+    error instanceof Error &&
+    (error.message.includes("MessagePort") ||
+      error.message.includes("port") ||
+      error.message.includes("disconnected"))
+  ) {
+    console.log("ℹ️ MessagePort-Fehler behandelt (normal bei Auth-Listenern)");
+    return true;
   }
-  return false; // Fehler nicht behandelt
-};
-
-// Optimierte Connection-Pooling mit Error-Handling
-let connectionPool: Promise<typeof supabase> | null = null;
-
-export const getSupabaseClient = () => {
-  connectionPool ??= Promise.resolve(supabase).catch((error) => {
-    if (handleMessagePortError(error)) {
-      // Bei Message Port Fehlern neu initialisieren
-      console.log(
-        "🔄 Reinitialisiere Supabase Client nach Message Port Fehler...",
-      );
-      return supabase;
-    }
-    throw error;
-  });
-  return connectionPool;
+  return false;
 };
 
 // Verbesserte Auth-Listener-Behandlung
@@ -195,6 +114,69 @@ export const setupAuthListener = (
     console.error("❌ Auth-Listener Setup Fehler:", error);
     return null;
   }
+};
+
+// Remote Supabase spezifische Konfiguration
+export const REMOTE_SUPABASE_CONFIG = {
+  url: supabaseUrl,
+  projectId: supabaseUrl.replace("https://", "").replace(".supabase.co", ""),
+  isRemote: true,
+  storageBucket: "media-gallery",
+  authTimeout: 30000,
+  retryAttempts: 3,
+} as const;
+
+// Debug-Informationen für Remote Supabase
+if (typeof window !== "undefined") {
+  console.log("🔧 Remote Supabase Konfiguration:", {
+    url: supabaseUrl,
+    projectId: REMOTE_SUPABASE_CONFIG.projectId,
+    storageBucket: REMOTE_SUPABASE_CONFIG.storageBucket,
+  });
+}
+
+// Performance-Monitoring
+if (typeof window !== "undefined") {
+  const originalFetch = window.fetch;
+  window.fetch = async (...args) => {
+    const start = performance.now();
+    try {
+      const response = await originalFetch(...args);
+      const duration = performance.now() - start;
+
+      if (duration > 2000) {
+        const url =
+          typeof args[0] === "string"
+            ? args[0]
+            : args[0] instanceof URL
+              ? args[0].href
+              : "unknown";
+        console.warn(`🐌 Langsame Request: ${url} (${duration.toFixed(0)}ms)`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error("❌ Fetch Error:", error);
+      throw error;
+    }
+  };
+}
+
+// Optimierte Connection-Pooling mit Error-Handling
+let connectionPool: Promise<typeof supabase> | null = null;
+
+export const getSupabaseClient = () => {
+  connectionPool ??= Promise.resolve(supabase).catch((error) => {
+    if (handleMessagePortError(error)) {
+      // Bei Message Port Fehlern neu initialisieren
+      console.log(
+        "🔄 Reinitialisiere Supabase Client nach Message Port Fehler...",
+      );
+      return supabase;
+    }
+    throw error;
+  });
+  return connectionPool;
 };
 
 // Cleanup-Funktion für bessere Memory-Management

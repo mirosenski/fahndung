@@ -97,6 +97,13 @@ export default function MediaUpload({
       // Upload files sequentially
       const uploadFile = async (file: File, index: number) => {
         try {
+          console.log("🚀 Starte Upload für:", file.name, {
+            size: file.size,
+            type: file.type,
+            isAuthenticated,
+            userRole: session?.profile?.role,
+          });
+
           await uploadMutation.mutateAsync({
             file,
             directory: "allgemein",
@@ -111,6 +118,8 @@ export default function MediaUpload({
             total: file.size,
             percentage: progress,
           });
+
+          console.log("✅ Upload erfolgreich für:", file.name);
         } catch (error) {
           console.error(`Upload failed for ${file.name}:`, error);
           // Error is already handled by mutation onError
@@ -124,7 +133,7 @@ export default function MediaUpload({
         }, index * 100); // Small delay between uploads
       });
     },
-    [uploadMutation, isAuthenticated, isAdmin],
+    [uploadMutation, isAuthenticated, isAdmin, session?.profile?.role],
   );
 
   const handleFileInput = useCallback(
@@ -193,24 +202,12 @@ export default function MediaUpload({
           <div className="flex items-center space-x-2">
             <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
             <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="ml-auto text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
-            >
-              <X className="h-4 w-4" />
-            </button>
           </div>
         </div>
       )}
 
       {/* Upload Area */}
-      <div
-        className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-          uploading
-            ? "border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/20"
-            : "border-gray-300 bg-gray-50 hover:border-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500"
-        }`}
-      >
+      <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600">
         <input
           ref={fileInputRef}
           type="file"
@@ -218,63 +215,69 @@ export default function MediaUpload({
           accept="image/*,video/*,.pdf,.doc,.docx"
           onChange={handleFileInput}
           className="hidden"
-          disabled={uploading || !isAuthenticated || !isAdmin}
         />
 
-        {uploading ? (
-          <div className="space-y-4">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Upload läuft...
-              </h3>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {uploadProgress.percentage.toFixed(0)}% abgeschlossen
-              </p>
-              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                <div
-                  className="h-full bg-blue-600 transition-all duration-300"
-                  style={{ width: `${uploadProgress.percentage}%` }}
-                />
-              </div>
-            </div>
+        <div className="space-y-4">
+          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+          <div>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">
+              Dateien hochladen
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Ziehen Sie Dateien hierher oder klicken Sie zum Auswählen
+            </p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <Upload className="mx-auto h-12 w-12 text-gray-400" />
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Dateien hochladen
-              </h3>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Ziehen Sie Dateien hierher oder klicken Sie zum Auswählen
-              </p>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Unterstützt: Bilder, Videos, PDF, DOC, DOCX (max. 50MB)
-              </p>
+
+          <button
+            onClick={openFileDialog}
+            disabled={!isAuthenticated || !isAdmin || uploading}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {uploading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Upload läuft...</span>
+              </div>
+            ) : (
+              "Dateien auswählen"
+            )}
+          </button>
+        </div>
+
+        {/* Progress Bar */}
+        {uploading && uploadProgress.percentage > 0 && (
+          <div className="mt-4">
+            <div className="mb-2 flex justify-between text-sm">
+              <span>Fortschritt</span>
+              <span>{Math.round(uploadProgress.percentage)}%</span>
             </div>
-            <button
-              onClick={openFileDialog}
-              disabled={!isAuthenticated || !isAdmin}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Dateien auswählen
-            </button>
+            <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700">
+              <div
+                className="h-2 rounded-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${uploadProgress.percentage}%` }}
+              />
+            </div>
+            <div className="mt-1 text-xs text-gray-500">
+              {formatFileSize(uploadProgress.loaded)} /{" "}
+              {formatFileSize(uploadProgress.total)}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Upload Progress */}
-      {uploading && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">
-              Fortschritt: {uploadProgress.percentage.toFixed(0)}%
-            </span>
-            <span className="text-gray-600 dark:text-gray-400">
-              {formatFileSize(uploadProgress.loaded)} /{" "}
-              {formatFileSize(uploadProgress.total)}
-            </span>
+      {/* Debug Info (nur in Development) */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+          <h4 className="font-semibold text-gray-900 dark:text-white">
+            Debug Info:
+          </h4>
+          <div className="mt-2 space-y-1 text-xs text-gray-600 dark:text-gray-400">
+            <div>Authentifiziert: {isAuthenticated ? "Ja" : "Nein"}</div>
+            <div>Admin: {isAdmin ? "Ja" : "Nein"}</div>
+            <div>User ID: {session?.user?.id || "N/A"}</div>
+            <div>Email: {session?.user?.email || "N/A"}</div>
+            <div>Rolle: {session?.profile?.role || "N/A"}</div>
+            <div>Upload Status: {uploading ? "Läuft" : "Bereit"}</div>
           </div>
         </div>
       )}
