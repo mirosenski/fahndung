@@ -158,7 +158,7 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
 
   console.log("✅ Auth middleware: Session found", {
     userId: ctx.session.user.id,
-    role: ctx.session.profile?.["role"],
+    role: ctx.session.profile?.role,
   });
 
   return next({
@@ -184,7 +184,7 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session.profile || ctx.session.profile.role !== "admin") {
     console.log("❌ Admin middleware: Not admin", {
       userId: ctx.session.user.id,
-      role: ctx.session.profile?.["role"],
+      role: ctx.session.profile?.role,
     });
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -195,7 +195,7 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
 
   console.log("✅ Admin middleware: Admin access granted", {
     userId: ctx.session.user.id,
-    role: ctx.session.profile["role"],
+    role: ctx.session.profile.role,
   });
 
   return next({

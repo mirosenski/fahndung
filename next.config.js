@@ -10,13 +10,18 @@ const config = {
     // optimizePackageImports: ["lucide-react"], // Temporär deaktiviert wegen HMR Problem
   },
 
-  // Neue Turbopack-Konfiguration (statt experimental.turbo)
+  // Optimierte Turbopack-Konfiguration für bessere HMR-Stabilität
   turbopack: {
     rules: {
       "*.svg": {
         loaders: ["@svgr/webpack"],
         as: "*.js",
       },
+    },
+    // HMR-Optimierungen
+    hmr: {
+      // Längere Timeouts für bessere Stabilität
+      timeout: 30000,
     },
   },
 
@@ -27,7 +32,7 @@ const config = {
   compress: true,
   poweredByHeader: false,
 
-  // Verbesserte Dateisystem-Behandlung
+  // Verbesserte Dateisystem-Behandlung mit HMR-Optimierungen
   onDemandEntries: {
     // Längere TTL für bessere Performance
     maxInactiveAge: 25 * 1000,
@@ -97,6 +102,15 @@ const config = {
       net: false,
       tls: false,
     };
+
+    // HMR-Optimierungen für Development
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+        ignored: /node_modules/,
+      };
+    }
 
     // Optimierungen nur für Production
     if (!dev && !isServer) {
