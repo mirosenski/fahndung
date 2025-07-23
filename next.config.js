@@ -8,14 +8,12 @@ import "./src/env.js";
 const config = {
   experimental: {
     // optimizePackageImports: ["lucide-react"], // Temporär deaktiviert wegen HMR Problem
-  },
-
-  // Optimierte Turbopack-Konfiguration für bessere HMR-Stabilität
-  turbopack: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
+    turbo: {
+      rules: {
+        "*.svg": {
+          loaders: ["@svgr/webpack"],
+          as: "*.js",
+        },
       },
     },
   },
