@@ -32,44 +32,33 @@ export default function GlobalError({
   };
 
   return (
-    <html lang="de">
-      <head>
-        <title>Fehler - Fahndung</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta charSet="utf-8" />
-      </head>
-      <body>
-        <div className="flex min-h-screen items-center justify-center bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
-          <div className="text-center">
-            <div className="mb-8 text-6xl">⚠️</div>
-            <h1 className="mb-4 text-2xl font-bold">
-              Ein Fehler ist aufgetreten
-            </h1>
-            <p className="mb-8 text-gray-600 dark:text-gray-400">
-              Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es
-              erneut.
-            </p>
-            <div className="space-x-4">
-              <button
-                onClick={handleReset}
-                className="rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Erneut versuchen
-              </button>
-              <button
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    window.location.reload();
-                  }
-                }}
-                className="rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-              >
-                Seite neu laden
-              </button>
-            </div>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
+      <div className="text-center">
+        <div className="mb-8 text-6xl">⚠️</div>
+        <h1 className="mb-4 text-2xl font-bold">Ein Fehler ist aufgetreten</h1>
+        <p className="mb-8 text-gray-600 dark:text-gray-400">
+          Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es
+          erneut.
+        </p>
+        <div className="space-x-4">
+          <button
+            onClick={handleReset}
+            className="rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Erneut versuchen
+          </button>
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.location.reload();
+              }
+            }}
+            className="rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Seite neu laden
+          </button>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }
