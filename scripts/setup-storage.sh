@@ -5,6 +5,12 @@
 
 set -e
 
+# Lade Environment-Variablen aus .env.local
+if [ -f ".env.local" ]; then
+    echo "📋 Lade Environment-Variablen aus .env.local..."
+    export $(cat .env.local | grep -v '^#' | xargs)
+fi
+
 echo "🚀 Supabase Storage Bucket Setup"
 echo "=================================="
 

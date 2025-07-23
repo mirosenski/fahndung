@@ -37,8 +37,27 @@ export default function MediaUpload({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Separate mutation nur für Metadaten
-  const saveMediaMutation = api.media.saveMediaRecord.useMutation({
+  // Helper function zum Konvertieren von File zu Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove data URL prefix (e.g., "data:image/png;base64,")
+        const base64 = result.split(",")[1];
+        if (!base64) {
+          reject(new Error("Failed to convert file to base64"));
+          return;
+        }
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Upload mutation mit Base64
+  const uploadMutation = api.media.uploadMedia.useMutation({
     onSuccess: () => {
       setSuccess(true);
       setError(null);
@@ -47,7 +66,7 @@ export default function MediaUpload({
       setTimeout(() => setSuccess(false), 3000);
     },
     onError: (error) => {
-      console.error("Save media error:", error);
+      console.error("❌ Upload error:", error);
 
       // Handle specific authentication errors
       if (
@@ -59,11 +78,12 @@ export default function MediaUpload({
         );
       } else if (
         error.message.includes("FORBIDDEN") ||
-        error.message.includes("Admin-Rechte")
+        error.message.includes("Admin-Rechte") ||
+        error.message.includes("Admin-")
       ) {
         setError("Sie benötigen Admin-Rechte um Dateien hochzuladen.");
       } else {
-        setError(`Speichern fehlgeschlagen: ${error.message}`);
+        setError(`Upload fehlgeschlagen: ${error.message}`);
       }
     },
   });
@@ -101,31 +121,26 @@ export default function MediaUpload({
             userRole: session?.profile?.role,
           });
 
-          // 1. Direkt zu Supabase Storage hochladen
-          const timestamp = Date.now();
-          const uniqueFilename = `${timestamp}-${file.name}`;
-          const path = `allgemein/${uniqueFilename}`;
+          // Konvertiere File zu Base64
+          const base64Data = await fileToBase64(file);
 
-          const { data: uploadData, error: uploadError } =
-            await supabase.storage.from("media-gallery").upload(path, file, {
-              upsert: false,
-            });
-
-          if (uploadError) {
-            throw new Error(`Storage upload failed: ${uploadError.message}`);
-          }
-
-          // 2. Metadaten über tRPC speichern
-          await saveMediaMutation.mutateAsync({
-            filename: uniqueFilename,
-            original_filename: file.name,
-            file_path: uploadData.path,
-            file_size: file.size,
-            mime_type: file.type,
-            directory: "allgemein",
-            tags: [],
-            is_public: true,
+          console.log("📦 Upload-Daten:", {
+            fileBase64Length: base64Data.length,
+            filename: file.name,
+            contentType: file.type,
           });
+
+          // Upload über tRPC mit Base64
+          const result = await uploadMutation.mutateAsync({
+            file: base64Data, // String
+            filename: file.name, // String
+            contentType: file.type, // String
+            directory: "allgemein", // String mit Default
+            tags: [], // Array mit Default
+            is_public: true, // Boolean mit Default
+          });
+
+          console.log("✅ Upload erfolgreich:", result);
 
           // Progress update
           const progress = ((files.indexOf(file) + 1) / files.length) * 100;
@@ -147,7 +162,7 @@ export default function MediaUpload({
 
       setUploading(false);
     },
-    [saveMediaMutation, isAuthenticated, isAdmin, session?.profile?.role],
+    [uploadMutation, isAuthenticated, isAdmin, session?.profile?.role],
   );
 
   const handleFileInput = useCallback(

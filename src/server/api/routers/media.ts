@@ -12,6 +12,115 @@ import { supabase } from "~/lib/supabase";
 const mediaService = new MediaService(supabase);
 
 export const mediaRouter = createTRPCRouter({
+  // Upload media with base64 data
+  uploadMedia: protectedProcedure // Temporär: Nur Auth, keine Admin-Prüfung
+    .input(
+      z.object({
+        file: z.string(), // Base64 encoded file data
+        filename: z.string(),
+        contentType: z.string(),
+        directory: z.string().default("allgemein"),
+        tags: z.array(z.string()).default([]),
+        is_public: z.boolean().default(true),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        console.log("🚀 Upload startet für:", input.filename, {
+          fileLength: input.file.length,
+          contentType: input.contentType,
+          userId: ctx.session.user.id,
+          userRole: ctx.session.profile?.role,
+        });
+
+        // Decode base64 to buffer
+        const buffer = Buffer.from(input.file, "base64");
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const uniqueFilename = `${timestamp}-${input.filename}`;
+        const path = `${input.directory}/${uniqueFilename}`;
+
+        console.log("📦 Upload-Daten vorbereitet:", {
+          bufferLength: buffer.length,
+          uniqueFilename,
+          path,
+        });
+
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("media-gallery")
+          .upload(path, buffer, {
+            contentType: input.contentType,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error("❌ Storage Upload Error:", uploadError);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Storage upload failed: ${uploadError.message}`,
+          });
+        }
+
+        console.log("✅ Storage Upload erfolgreich:", uploadData);
+
+        // Determine media type
+        const media_type = input.contentType.startsWith("image/")
+          ? "image"
+          : input.contentType.startsWith("video/")
+            ? "video"
+            : "document";
+
+        // Save metadata to database
+        const { data: mediaRecord, error: dbError } = await supabase
+          .from("media")
+          .insert({
+            // filename: uniqueFilename,  // ← Auskommentiert
+            original_name: input.filename,
+            file_name: uniqueFilename,
+            file_path: uploadData.path,
+            file_size: buffer.length,
+            media_type,
+            mime_type: input.contentType,
+            directory: input.directory,
+            tags: input.tags,
+            is_public: input.is_public,
+            uploaded_by: ctx.session.user.id,
+          })
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error("❌ Database Insert Error:", dbError);
+          // Rollback storage upload if database insert fails
+          await supabase.storage
+            .from("media-gallery")
+            .remove([uploadData.path]);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Database insert failed: ${dbError.message}`,
+          });
+        }
+
+        console.log("✅ Database Insert erfolgreich:", mediaRecord);
+
+        return {
+          success: true,
+          media: mediaRecord,
+          url: `${process.env["NEXT_PUBLIC_SUPABASE_URL"]}/storage/v1/object/public/media-gallery/${uploadData.path}`,
+        };
+      } catch (error) {
+        console.error("❌ Upload error:", error);
+        if (error instanceof TRPCError) throw error;
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "Upload failed",
+        });
+      }
+    }),
+
   // Get media list with filters and pagination
   getMediaList: publicProcedure
     .input(

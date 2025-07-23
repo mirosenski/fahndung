@@ -1,3 +1,5 @@
+"use client";
+
 /* eslint-disable @typescript-eslint/prefer-optional-chain */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
