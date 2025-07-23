@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import {
   createTRPCRouter,
   publicProcedure,
+  protectedProcedure,
   adminProcedure,
 } from "~/server/api/trpc";
 import { MediaService } from "~/lib/services/media.service";
@@ -38,8 +40,8 @@ export const mediaRouter = createTRPCRouter({
       }
     }),
 
-  // Upload media file - requires admin privileges
-  uploadMedia: adminProcedure
+  // Upload media file - requires editor or admin privileges
+  uploadMedia: protectedProcedure
     .input(
       z.object({
         file: z.custom<File>((val) => val instanceof File, {
@@ -51,7 +53,16 @@ export const mediaRouter = createTRPCRouter({
         is_public: z.boolean().default(true),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // Check if user has editor or admin role
+      const userRole = ctx.session?.profile?.role;
+      if (userRole !== "admin" && userRole !== "editor") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Editor- oder Admin-Rechte erforderlich für Media-Uploads",
+        });
+      }
+
       try {
         return await mediaService.uploadMedia({
           file: input.file,
@@ -87,8 +98,8 @@ export const mediaRouter = createTRPCRouter({
       }
     }),
 
-  // Update media metadata - requires admin privileges
-  updateMedia: adminProcedure
+  // Update media metadata - requires editor or admin privileges
+  updateMedia: protectedProcedure
     .input(
       z.object({
         mediaId: z.string().uuid(),
@@ -98,7 +109,16 @@ export const mediaRouter = createTRPCRouter({
         is_public: z.boolean().optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // Check if user has editor or admin role
+      const userRole = ctx.session?.profile?.role;
+      if (userRole !== "admin" && userRole !== "editor") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Editor- oder Admin-Rechte erforderlich für Media-Updates",
+        });
+      }
+
       try {
         const { mediaId, ...updates } = input;
         return await mediaService.updateMedia(mediaId, updates);
@@ -154,8 +174,8 @@ export const mediaRouter = createTRPCRouter({
       }
     }),
 
-  // Bulk update media items - requires admin privileges
-  bulkUpdateMedia: adminProcedure
+  // Bulk update media items - requires editor or admin privileges
+  bulkUpdateMedia: protectedProcedure
     .input(
       z.object({
         mediaIds: z.array(z.string().uuid()),
@@ -166,7 +186,16 @@ export const mediaRouter = createTRPCRouter({
         }),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // Check if user has editor or admin role
+      const userRole = ctx.session?.profile?.role;
+      if (userRole !== "admin" && userRole !== "editor") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Editor- oder Admin-Rechte erforderlich für Media-Updates",
+        });
+      }
+
       try {
         const results = await Promise.allSettled(
           input.mediaIds.map((id) =>

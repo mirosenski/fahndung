@@ -9,7 +9,6 @@ import SuperJSON from "superjson";
 
 import { type AppRouter } from "~/server/api/root";
 import { createQueryClient } from "./query-client";
-import { supabase } from "~/lib/supabase";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -61,18 +60,30 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             try {
               if (typeof window !== "undefined") {
                 // Get session from localStorage (Supabase stores it there)
-                const sessionStr = localStorage.getItem(
-                  "sb-localhost-54321-auth-token",
+                // Remote Supabase uses a different key format
+                const sessionKeys = Object.keys(localStorage).filter(
+                  (key) =>
+                    key.includes("supabase") && key.includes("auth-token"),
                 );
-                if (sessionStr) {
-                  const session = JSON.parse(sessionStr) as {
-                    access_token?: string;
-                  };
-                  if (session?.access_token) {
-                    headers.set(
-                      "Authorization",
-                      `Bearer ${session.access_token}`,
-                    );
+
+                for (const key of sessionKeys) {
+                  const sessionStr = localStorage.getItem(key);
+                  if (sessionStr) {
+                    try {
+                      const session = JSON.parse(sessionStr) as {
+                        access_token?: string;
+                      };
+                      if (session?.access_token) {
+                        headers.set(
+                          "Authorization",
+                          `Bearer ${session.access_token}`,
+                        );
+                        break; // Use first valid session found
+                      }
+                    } catch (parseError) {
+                      console.warn("Failed to parse session data:", parseError);
+                      continue;
+                    }
                   }
                 }
               }

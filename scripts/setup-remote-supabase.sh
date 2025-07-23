@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Remote Supabase Setup Script
-# Dieses Script richtet die Remote-Supabase-Instanz für Media-Upload ein
+# Dieses Script richtet das Projekt für Remote-Supabase ein
 
 set -e
 
@@ -30,98 +30,164 @@ print_error() {
 
 # Prüfe Environment-Variablen
 check_env() {
+    # Lade .env.local
+    if [ -f ".env.local" ]; then
+        export $(grep -v '^#' .env.local | xargs)
+    fi
+    
     if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
         print_error "Supabase Environment-Variablen fehlen!"
         print_info "Bitte stellen Sie sicher, dass .env.local die folgenden Variablen enthält:"
-        print_info "NEXT_PUBLIC_SUPABASE_URL=your-remote-supabase-url"
-        print_info "NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-supabase-anon-key"
+        print_info "NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co"
+        print_info "NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-anon-key-here"
         exit 1
     fi
     
     print_success "Supabase Environment-Variablen gefunden"
+    print_info "URL: $NEXT_PUBLIC_SUPABASE_URL"
+    print_info "Anon Key: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:0:20}..."
 }
 
-# Führe SQL-Script in Remote-Supabase aus
-run_remote_sql() {
-    local sql_file="$1"
-    local description="$2"
+# Entferne lokale Supabase-Komponenten
+remove_local_supabase() {
+    print_info "Entferne lokale Supabase-Komponenten..."
     
-    print_info "Führe $description aus..."
+    # Entferne Supabase-Verzeichnis
+    if [ -d "supabase" ]; then
+        rm -rf supabase/
+        print_success "Supabase-Verzeichnis entfernt"
+    fi
     
-    # Verwende Supabase CLI für Remote-Ausführung
-    if pnpm dlx supabase db push --db-url "$DATABASE_URL" --file "$sql_file"; then
-        print_success "$description erfolgreich ausgeführt"
-    else
-        print_error "Fehler beim Ausführen von $description"
-        return 1
+    # Entferne lokale Scripts
+    if [ -f "start-database.sh" ]; then
+        rm -f start-database.sh
+        print_success "start-database.sh entfernt"
+    fi
+    
+    if [ -f "fix_local_supabase.sql" ]; then
+        rm -f fix_local_supabase.sql
+        print_success "fix_local_supabase.sql entfernt"
+    fi
+    
+    if [ -f "scripts/supabase-local.sh" ]; then
+        rm -f scripts/supabase-local.sh
+        print_success "scripts/supabase-local.sh entfernt"
     fi
 }
 
-# Hauptfunktion
-main() {
-    print_info "🚀 Starte Remote Supabase Setup..."
+# Aktualisiere .env.local für Remote-Supabase
+update_env_file() {
+    print_info "Aktualisiere .env.local für Remote-Supabase..."
     
-    # Prüfe Environment
-    check_env
-    
-    # Führe Storage-Bucket-Setup aus
-    if [ -f "medien-galerie/supabase_media_bucket_setup.sql" ]; then
-        run_remote_sql "medien-galerie/supabase_media_bucket_setup.sql" "Storage-Bucket-Setup"
-    else
-        print_warning "Storage-Bucket-Setup SQL-Datei nicht gefunden"
+    if [ ! -f ".env.local" ]; then
+        print_error ".env.local Datei nicht gefunden!"
+        print_info "Bitte kopieren Sie env.local.example zu .env.local und konfigurieren Sie Ihre Remote-Supabase-URLs"
+        exit 1
     fi
     
-    # Führe Benutzer-Setup aus
-    print_info "Erstelle Demo-Benutzer in Remote-Supabase..."
+    # Backup erstellen
+    cp .env.local .env.local.backup.$(date +%Y%m%d_%H%M%S)
+    print_success "Backup von .env.local erstellt"
     
-    # Starte die Anwendung für automatisches Setup
-    print_info "Starte Anwendung für automatisches Benutzer-Setup..."
-    pnpm dev &
+    print_info "Bitte konfigurieren Sie Ihre Remote-Supabase-URLs in .env.local:"
+    print_info "NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co"
+    print_info "NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-anon-key-here"
+    print_info "DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+    print_info "SUPABASE_SERVICE_ROLE_KEY=your-remote-service-role-key-here"
+}
+
+# Prüfe Remote-Supabase-Verbindung
+test_remote_connection() {
+    print_info "Teste Remote-Supabase-Verbindung..."
+    
+    # Starte temporär die Anwendung für den Test
+    print_info "Starte Anwendung für Verbindungstest..."
+    timeout 30s pnpm dev > /dev/null 2>&1 &
     local app_pid=$!
     
-    # Warte kurz und öffne Browser
+    # Warte kurz
     sleep 5
-    if command -v xdg-open &> /dev/null; then
-        xdg-open "http://localhost:3000/login"
-    elif command -v open &> /dev/null; then
-        open "http://localhost:3000/login"
+    
+    # Prüfe ob die Anwendung läuft
+    if kill -0 $app_pid 2>/dev/null; then
+        print_success "Anwendung gestartet - Verbindungstest läuft"
+        print_info "Öffnen Sie http://localhost:3000 um die Verbindung zu testen"
+        
+        # Warte auf Benutzer-Input
+        read -p "Drücken Sie Enter um den Test zu beenden..."
+        
+        # Stoppe Anwendung
+        kill $app_pid 2>/dev/null || true
+        print_success "Verbindungstest beendet"
     else
-        print_info "Öffnen Sie manuell: http://localhost:3000/login"
+        print_error "Anwendung konnte nicht gestartet werden"
+        exit 1
     fi
-    
-    print_success "Remote Supabase Setup abgeschlossen!"
-    print_info "Gehen Sie zu http://localhost:3000/login und klicken Sie auf 'Alle Benutzer einrichten'"
-    print_info "Dann können Sie sich mit admin@fahndung.local / admin123 anmelden"
-    
-    # Warte auf Benutzer-Input zum Beenden
-    read -p "Drücken Sie Enter um die Anwendung zu beenden..."
-    kill $app_pid 2>/dev/null || true
+}
+
+# Zeige Setup-Anweisungen
+show_setup_instructions() {
+    print_info "🚀 Remote Supabase Setup abgeschlossen!"
+    print_info ""
+    print_info "Nächste Schritte:"
+    print_info "1. Konfigurieren Sie Ihre Remote-Supabase-URLs in .env.local"
+    print_info "2. Führen Sie 'pnpm dev' aus um die Anwendung zu starten"
+    print_info "3. Gehen Sie zu http://localhost:3000/login"
+    print_info "4. Klicken Sie auf 'Alle Benutzer einrichten'"
+    print_info "5. Melden Sie sich mit admin@fahndung.local / admin123 an"
+    print_info ""
+    print_info "Wichtige Hinweise:"
+    print_info "- Alle lokalen Supabase-Komponenten wurden entfernt"
+    print_info "- Das Projekt verwendet jetzt ausschließlich Remote-Supabase"
+    print_info "- Backup-Dateien wurden erstellt (.env.local.backup.*)"
 }
 
 # Hilfe anzeigen
 show_help() {
     echo "Remote Supabase Setup Script"
     echo ""
-    echo "Verwendung: $0"
+    echo "Verwendung: $0 [COMMAND]"
     echo ""
-    echo "Dieses Script:"
-    echo "1. Prüft die Supabase Environment-Variablen"
-    echo "2. Führt Storage-Bucket-Setup aus"
-    echo "3. Startet die Anwendung für automatisches Benutzer-Setup"
+    echo "Commands:"
+    echo "  setup     - Vollständiges Remote-Supabase-Setup"
+    echo "  test      - Teste Remote-Supabase-Verbindung"
+    echo "  clean     - Entferne lokale Supabase-Komponenten"
+    echo "  help      - Zeige diese Hilfe"
     echo ""
-    echo "Voraussetzungen:"
-    echo "- .env.local mit Remote-Supabase-URLs"
-    echo "- Supabase CLI installiert"
-    echo "- Node.js und pnpm verfügbar"
+    echo "Beispiele:"
+    echo "  $0 setup"
+    echo "  $0 test"
+    echo "  $0 clean"
 }
 
-# Argumente verarbeiten
-case "${1:-}" in
-    help|--help|-h)
-        show_help
-        exit 0
-        ;;
-    *)
-        main
-        ;;
-esac 
+# Hauptfunktion
+main() {
+    case "${1:-setup}" in
+        "setup")
+            print_info "🚀 Starte Remote Supabase Setup..."
+            remove_local_supabase
+            update_env_file
+            check_env
+            show_setup_instructions
+            ;;
+        "test")
+            check_env
+            test_remote_connection
+            ;;
+        "clean")
+            remove_local_supabase
+            print_success "Lokale Supabase-Komponenten entfernt"
+            ;;
+        "help"|"-h"|"--help")
+            show_help
+            ;;
+        *)
+            print_error "Unbekannter Befehl: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+# Script ausführen
+main "$@" 

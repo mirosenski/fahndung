@@ -1,23 +1,43 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Environment-basierte Konfiguration
+// Remote Supabase Konfiguration
 const isDevelopment = process.env.NODE_ENV === "development";
-const isLocalSupabase =
-  process.env["NEXT_PUBLIC_USE_LOCAL_SUPABASE"] === "true";
 
-// Supabase URLs und Keys basierend auf Environment
-const supabaseUrl = isLocalSupabase
-  ? process.env["NEXT_PUBLIC_LOCAL_SUPABASE_URL"]
-  : process.env["NEXT_PUBLIC_SUPABASE_URL"];
+// Supabase URLs und Keys für Remote-Instanz
+const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 
-const supabaseAnonKey = isLocalSupabase
-  ? process.env["NEXT_PUBLIC_LOCAL_SUPABASE_ANON_KEY"]
-  : process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+// Bereinige alte lokale Supabase-Sessions
+const cleanupOldSessions = () => {
+  if (typeof window !== "undefined") {
+    try {
+      // Entferne alle lokalen Supabase-Sessions
+      const keysToRemove = Object.keys(localStorage).filter(
+        (key) => key.includes("sb-") && key.includes("localhost"),
+      );
 
-// Verbesserte Environment-Variablen-Prüfung
+      keysToRemove.forEach((key) => {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Entfernt alte Session: ${key}`);
+      });
+
+      if (keysToRemove.length > 0) {
+        console.log(
+          `🧹 ${keysToRemove.length} alte Supabase-Sessions bereinigt`,
+        );
+      }
+    } catch (error) {
+      console.warn("Fehler beim Bereinigen alter Sessions:", error);
+    }
+  }
+};
+
+// Führe Bereinigung beim ersten Laden aus
+cleanupOldSessions();
+
+// Environment-Variablen-Prüfung
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("❌ Fehlende Supabase Environment-Variablen:");
-  console.error("Environment:", isLocalSupabase ? "LOCAL" : "REMOTE");
   console.error(
     "NEXT_PUBLIC_SUPABASE_URL:",
     supabaseUrl ? "✅ Gesetzt" : "❌ Fehlt",
@@ -27,21 +47,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
     supabaseAnonKey ? "✅ Gesetzt" : "❌ Fehlt",
   );
 
-  if (isLocalSupabase) {
-    console.error(
-      "NEXT_PUBLIC_LOCAL_SUPABASE_URL:",
-      process.env["NEXT_PUBLIC_LOCAL_SUPABASE_URL"] ? "✅ Gesetzt" : "❌ Fehlt",
-    );
-    console.error(
-      "NEXT_PUBLIC_LOCAL_SUPABASE_ANON_KEY:",
-      process.env["NEXT_PUBLIC_LOCAL_SUPABASE_ANON_KEY"]
-        ? "✅ Gesetzt"
-        : "❌ Fehlt",
-    );
-  }
-
   throw new Error(
-    `Missing Supabase environment variables for ${isLocalSupabase ? "LOCAL" : "REMOTE"} environment`,
+    "Missing Supabase environment variables for REMOTE environment",
   );
 }
 
@@ -57,9 +64,7 @@ let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
 const getSupabaseInstance = () => {
   if (!supabaseInstance) {
-    console.log(
-      `✅ Supabase-Konfiguration erfolgreich validiert (${isLocalSupabase ? "LOCAL" : "REMOTE"})`,
-    );
+    console.log("✅ Supabase-Konfiguration erfolgreich validiert (REMOTE)");
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
@@ -80,7 +85,7 @@ const getSupabaseInstance = () => {
         headers: {
           "X-Client-Info": "fahndung-web" as const,
           "X-Requested-With": "XMLHttpRequest" as const,
-          "X-Environment": isLocalSupabase ? "local" : ("remote" as const),
+          "X-Environment": "remote" as const,
         },
         fetch: (url, options = {}) => {
           return fetch(url, {
@@ -98,10 +103,10 @@ export const supabase = getSupabaseInstance();
 
 // Environment-Info für Debugging
 export const getSupabaseEnvironment = () => ({
-  isLocal: isLocalSupabase,
+  isLocal: false,
   isDevelopment,
   url: supabaseUrl,
-  bucketName: isLocalSupabase ? "local-media" : "media-gallery",
+  bucketName: "media-gallery",
 });
 
 // Performance-Monitoring

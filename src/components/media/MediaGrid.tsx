@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import Image from "next/image";
+import NextImage from "next/image";
 import {
   Check,
   X,
@@ -264,7 +264,7 @@ function MediaItemComponent({
       {/* Media Content */}
       <div className="relative h-full w-full">
         {item.media_type === "image" && item.thumbnail_url ? (
-          <Image
+          <NextImage
             src={item.thumbnail_url}
             alt={item.original_name}
             fill

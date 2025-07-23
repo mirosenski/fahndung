@@ -75,10 +75,8 @@ export class MediaService {
 
   constructor(supabaseClient: SupabaseClient) {
     this.supabase = supabaseClient;
-    // Dynamische Bucket-Auswahl basierend auf Environment
-    const isLocalSupabase =
-      process.env["NEXT_PUBLIC_USE_LOCAL_SUPABASE"] === "true";
-    this.bucketName = isLocalSupabase ? "local-media" : "media-gallery";
+    // Remote Supabase Bucket
+    this.bucketName = "media-gallery";
   }
 
   /**
@@ -346,12 +344,10 @@ export class MediaService {
         .select()
         .single();
 
-      const { data, error } = result;
+      if (result.error) throw result.error;
+      if (!result.data) throw new Error("Update fehlgeschlagen");
 
-      if (error) throw error;
-      if (!data) throw new Error("Update fehlgeschlagen");
-
-      const mediaItem = data as MediaItem;
+      const mediaItem = result.data as MediaItem;
 
       return {
         ...mediaItem,
@@ -459,7 +455,7 @@ export class MediaService {
           const uploadedAt =
             item.uploaded_at instanceof Date
               ? item.uploaded_at
-              : new Date(item.uploaded_at as string);
+              : new Date(item.uploaded_at!);
           return uploadedAt > thirtyDaysAgo;
         }).length,
       };

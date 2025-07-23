@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 export default function GlobalError({
   error,
@@ -14,7 +14,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html>
+    <html lang="de">
       <body>
         <div className="flex min-h-screen items-center justify-center bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
           <div className="text-center">
