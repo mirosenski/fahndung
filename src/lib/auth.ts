@@ -10,7 +10,8 @@ export interface UserProfile {
   phone?: string;
   last_login?: string;
   login_count?: number;
-  is_active?: boolean;
+  status?: "pending" | "approved" | "rejected" | "blocked";
+  is_active?: boolean; // Für Kompatibilität
   created_by?: string;
   notes?: string;
   avatar_url?: string;
@@ -490,6 +491,17 @@ export const createDemoUsers = async (): Promise<{
       message: `❌ Fehler beim Erstellen der Demo-User: ${error instanceof Error ? error.message : "Unbekannter Fehler"}\n\nBitte führe das SQL-Script 'disable-rls-temp.sql' in Supabase aus.`,
     };
   }
+};
+
+// Hilfsfunktion um Status in is_active zu konvertieren
+export const getIsActiveFromStatus = (status?: string): boolean => {
+  if (!status) return false;
+  return status === "approved";
+};
+
+// Hilfsfunktion um is_active in Status zu konvertieren
+export const getStatusFromIsActive = (isActive?: boolean): string => {
+  return isActive ? "approved" : "blocked";
 };
 
 // Automatisches Setup aller Benutzer beim Start
@@ -1052,7 +1064,7 @@ export const blockUser = async (
   try {
     const { error } = await supabase
       .from("user_profiles")
-      .update({ is_active: false })
+      .update({ status: "blocked" })
       .eq("user_id", userId);
 
     if (error) {
@@ -1079,7 +1091,7 @@ export const unblockUser = async (
   try {
     const { error } = await supabase
       .from("user_profiles")
-      .update({ is_active: true })
+      .update({ status: "approved" })
       .eq("user_id", userId);
 
     if (error) {

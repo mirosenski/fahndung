@@ -7,6 +7,12 @@ set -e
 
 echo "🚀 Starte Supabase Storage Bucket Setup..."
 
+# Lade Environment-Variablen aus .env.local
+if [ -f "../.env.local" ]; then
+    echo "📋 Lade Environment-Variablen aus .env.local..."
+    export $(grep -v '^#' ../.env.local | xargs)
+fi
+
 # Prüfe ob die erforderlichen Environment-Variablen gesetzt sind
 if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
     echo "❌ Fehler: Supabase Environment-Variablen nicht gefunden"

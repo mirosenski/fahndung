@@ -23,6 +23,7 @@ import {
   changeUserRole,
   deleteUser,
   logUserActivity,
+  getIsActiveFromStatus,
 } from "~/lib/auth";
 
 interface PendingRegistration {
@@ -204,16 +205,16 @@ export default function UsersTab({
     const matchesRole = filterRole === "all" || user.role === filterRole;
     const matchesStatus =
       filterStatus === "all" ||
-      (filterStatus === "active" && user.is_active) ||
-      (filterStatus === "blocked" && !user.is_active);
+      (filterStatus === "active" && getIsActiveFromStatus(user.status)) ||
+      (filterStatus === "blocked" && !getIsActiveFromStatus(user.status));
 
     return matchesSearch && matchesRole && matchesStatus;
   });
 
   const userStats = {
     total: users.length,
-    active: users.filter((u) => u.is_active).length,
-    blocked: users.filter((u) => !u.is_active).length,
+    active: users.filter((u) => getIsActiveFromStatus(u.status)).length,
+    blocked: users.filter((u) => !getIsActiveFromStatus(u.status)).length,
     admins: users.filter((u) => u.role === "admin").length,
     editors: users.filter((u) => u.role === "editor").length,
     users: users.filter((u) => u.role === "user").length,
@@ -542,12 +543,12 @@ function AdminUserList({
                   </span>
                   <span
                     className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      user.is_active
+                      getIsActiveFromStatus(user.status)
                         ? "bg-green-500/20 text-green-600 dark:text-green-400"
                         : "bg-red-500/20 text-red-600 dark:text-red-400"
                     }`}
                   >
-                    {user.is_active ? "Aktiv" : "Gesperrt"}
+                    {getIsActiveFromStatus(user.status) ? "Aktiv" : "Gesperrt"}
                   </span>
                 </div>
               </div>
@@ -575,7 +576,7 @@ function AdminUserList({
                   <option value="admin">Admin</option>
                 </select>
 
-                {user.is_active ? (
+                {getIsActiveFromStatus(user.status) ? (
                   <button
                     onClick={() =>
                       void onUserAction(
