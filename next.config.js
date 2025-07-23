@@ -18,11 +18,6 @@ const config = {
         as: "*.js",
       },
     },
-    // HMR-Optimierungen
-    hmr: {
-      // Längere Timeouts für bessere Stabilität
-      timeout: 30000,
-    },
   },
 
   // Neue serverExternalPackages-Konfiguration (statt experimental.serverComponentsExternalPackages)

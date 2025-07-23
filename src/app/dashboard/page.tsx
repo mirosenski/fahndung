@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   BarChart3,
   FileText,
@@ -18,12 +19,36 @@ import Footer from "~/components/layout/Footer";
 import { useAuth } from "~/hooks/useAuth";
 import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
 
-// Direkte Imports statt Lazy Loading
-import OverviewTab from "~/components/dashboard/OverviewTab";
-import InvestigationsTab from "~/components/dashboard/InvestigationsTab";
-import UsersTab from "~/components/dashboard/UsersTab";
-import MediaTab from "~/components/dashboard/MediaTab";
-import SettingsTab from "~/components/dashboard/SettingsTab";
+// Lazy Loading für bessere HMR-Kompatibilität
+const OverviewTab = dynamic(
+  () => import("~/components/dashboard/OverviewTab"),
+  {
+    loading: () => <LoadingSpinner message="Lade Übersicht..." />,
+    ssr: false,
+  },
+);
+const InvestigationsTab = dynamic(
+  () => import("~/components/dashboard/InvestigationsTab"),
+  {
+    loading: () => <LoadingSpinner message="Lade Fahndungen..." />,
+    ssr: false,
+  },
+);
+const UsersTab = dynamic(() => import("~/components/dashboard/UsersTab"), {
+  loading: () => <LoadingSpinner message="Lade Benutzer..." />,
+  ssr: false,
+});
+const MediaTab = dynamic(() => import("~/components/dashboard/MediaTab"), {
+  loading: () => <LoadingSpinner message="Lade Medien..." />,
+  ssr: false,
+});
+const SettingsTab = dynamic(
+  () => import("~/components/dashboard/SettingsTab"),
+  {
+    loading: () => <LoadingSpinner message="Lade Einstellungen..." />,
+    ssr: false,
+  },
+);
 
 interface PendingRegistration {
   id: string;
