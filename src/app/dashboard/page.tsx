@@ -176,6 +176,13 @@ export default function Dashboard() {
     }
   }, [timeoutReached]);
 
+  // Auth check with useEffect to avoid router updates during render
+  useEffect(() => {
+    if (initialized && !loading && !session?.user) {
+      router.push("/login");
+    }
+  }, [initialized, loading, session?.user, router]);
+
   // Loading state
   if (!initialized || loading) {
     return (
@@ -187,9 +194,8 @@ export default function Dashboard() {
     );
   }
 
-  // Auth check
+  // Auth check - return null instead of router.push to avoid render cycle issues
   if (!session?.user) {
-    router.push("/auth/login");
     return null;
   }
 

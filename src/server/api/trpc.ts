@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 import { createClient } from "@supabase/supabase-js";
 
 import { db } from "~/server/db";
-import { type Session, type UserProfile } from "~/lib/auth";
+import { type Session, type UserProfile, getCurrentSession } from "~/lib/auth";
 
 /**
  * 1. CONTEXT
@@ -37,74 +37,86 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     const authHeader = opts.headers.get("Authorization");
     console.log("🔍 Auth header found:", !!authHeader);
 
-    if (!authHeader?.startsWith("Bearer ")) {
-      console.log("❌ No Authorization header found");
-      return { user: null, supabase: null };
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      if (token) {
+        console.log("🔍 Token extracted, length:", token.length);
+
+        const supabase = createClient(
+          process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+          process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+          {
+            auth: {
+              persistSession: false,
+            },
+          },
+        );
+
+        try {
+          const {
+            data: { user: supabaseUser },
+            error,
+          } = await supabase.auth.getUser(token);
+
+          if (error) {
+            console.log("❌ Token ungültig:", error.message);
+            // Fallback to getCurrentSession
+            session = await getCurrentSession();
+          } else if (supabaseUser) {
+            console.log("✅ User authentifiziert:", supabaseUser.email);
+
+            // Benutzer-Profil abrufen
+            const profileResult = await supabase
+              .from("user_profiles")
+              .select("*")
+              .eq("user_id", supabaseUser.id)
+              .single();
+
+            const { data: profile, error: profileError } = profileResult as {
+              data: UserProfile | null;
+              error: { message: string } | null;
+            };
+
+            if (profileError) {
+              console.warn("❌ Profile fetch failed:", profileError.message);
+            }
+
+            session = {
+              user: {
+                id: supabaseUser.id,
+                email: supabaseUser.email ?? "",
+              },
+              profile: profile,
+            };
+
+            user = supabaseUser;
+
+            console.log(
+              "✅ User authenticated:",
+              supabaseUser.id,
+              "Role:",
+              profile?.role,
+            );
+          }
+        } catch (tokenError) {
+          console.error("❌ Token validation error:", tokenError);
+          // Fallback to getCurrentSession
+          session = await getCurrentSession();
+        }
+      }
+    } else {
+      console.log("❌ No Authorization header found, trying getCurrentSession...");
+      // Fallback to getCurrentSession when no auth header
+      session = await getCurrentSession();
     }
-
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      console.log("❌ No token found in Authorization header");
-      return { user: null, supabase: null };
-    }
-    console.log("🔍 Token extracted, length:", token.length);
-
-    const supabase = createClient(
-      process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-      process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    );
-
-    const {
-      data: { user: supabaseUser },
-      error,
-    } = await supabase.auth.getUser(token);
-
-    if (error || !supabaseUser) {
-      console.log("❌ Token ungültig:", error?.message);
-      return { user: null, supabase: null };
-    }
-
-    console.log("✅ User authentifiziert:", supabaseUser.email);
-
-    // Benutzer-Profil abrufen
-    const profileResult = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("user_id", supabaseUser.id)
-      .single();
-
-    const { data: profile, error: profileError } = profileResult as {
-      data: UserProfile | null;
-      error: { message: string } | null;
-    };
-
-    if (profileError) {
-      console.warn("❌ Profile fetch failed:", profileError.message);
-    }
-
-    session = {
-      user: {
-        id: supabaseUser.id,
-        email: supabaseUser.email ?? "",
-      },
-      profile: profile,
-    };
-
-    user = supabaseUser;
-
-    console.log(
-      "✅ User authenticated:",
-      supabaseUser.id,
-      "Role:",
-      profile?.role,
-    );
   } catch (error) {
     console.error("❌ Context creation error:", error);
+    // Final fallback
+    try {
+      session = await getCurrentSession();
+    } catch (fallbackError) {
+      console.error("❌ Fallback getCurrentSession also failed:", fallbackError);
+    }
   }
 
   return {
