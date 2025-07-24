@@ -74,12 +74,12 @@ export const UploadTestTab = () => {
       </div>
 
       {/* Debug Auth Component */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+      {/* <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
           🔐 Authentifizierung
         </h3>
         <DebugAuth />
-      </div>
+      </div> */}
       
       {/* Upload Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">

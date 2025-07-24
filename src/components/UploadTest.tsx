@@ -68,9 +68,9 @@ export const UploadTest = () => {
       <h2 className="mb-4 text-2xl font-bold">🧪 Upload Test</h2>
 
       {/* Debug Auth Component */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <DebugAuth />
-      </div>
+      </div> */}
 
       {/* Upload Section */}
       <div className="mb-6">

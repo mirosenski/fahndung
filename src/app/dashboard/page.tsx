@@ -254,11 +254,11 @@ export default function Dashboard() {
       label: "Medien",
       icon: ImageIcon,
     },
-    {
-      id: "upload-test",
-      label: "Upload Test",
-      icon: Upload,
-    },
+    // {
+    //   id: "upload-test",
+    //   label: "Upload Test",
+    //   icon: Upload,
+    // },
     {
       id: "settings",
       label: "Einstellungen",
@@ -316,8 +316,8 @@ export default function Dashboard() {
         );
       case "media":
         return <MediaTab />;
-      case "upload-test":
-        return <UploadTestTab />;
+      // case "upload-test":
+      //   return <UploadTestTab />;
       case "settings":
         return <SettingsTab />;
       default:
@@ -368,7 +368,7 @@ export default function Dashboard() {
       <Footer variant="dashboard" session={session} />
 
       {/* 🔥 DEBUG-KOMPONENTE FÜR ENTWICKLUNG */}
-      <AuthDebug />
+      {/* <AuthDebug /> */}
     </div>
   );
 }

@@ -161,31 +161,36 @@ export default function MediaTabEnhanced() {
   }, []);
 
   // Neue Supabase Upload Handler
-  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileUpload = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    try {
-      setUploadError(null);
-      setUploadResult(null);
-      
-      console.log('🚀 MediaTabEnhanced: Starte Upload für:', file.name);
-      
-      const result = await uploadFile(file, 'media');
-      
-      if (result.error) {
-        console.error('❌ MediaTabEnhanced: Upload-Fehler:', result.error);
-        setUploadError(result.error);
-      } else {
-        console.log('✅ MediaTabEnhanced: Upload erfolgreich:', result);
-        setUploadResult(result as UploadResult);
-        void refetchMedia(); // Refresh media list
+      try {
+        setUploadError(null);
+        setUploadResult(null);
+
+        console.log("🚀 MediaTabEnhanced: Starte Upload für:", file.name);
+
+        const result = await uploadFile(file, "media");
+
+        if (result.error) {
+          console.error("❌ MediaTabEnhanced: Upload-Fehler:", result.error);
+          setUploadError(result.error);
+        } else {
+          console.log("✅ MediaTabEnhanced: Upload erfolgreich:", result);
+          setUploadResult(result as UploadResult);
+          void refetchMedia(); // Refresh media list
+        }
+      } catch (err) {
+        console.error("❌ MediaTabEnhanced: Unerwarteter Fehler:", err);
+        setUploadError(
+          err instanceof Error ? err.message : "Unbekannter Fehler",
+        );
       }
-    } catch (err) {
-      console.error('❌ MediaTabEnhanced: Unerwarteter Fehler:', err);
-      setUploadError(err instanceof Error ? err.message : 'Unbekannter Fehler');
-    }
-  }, [uploadFile, refetchMedia]);
+    },
+    [uploadFile, refetchMedia],
+  );
 
   // Fallback directories if query fails
   const availableDirectories = directories ?? [
@@ -255,12 +260,12 @@ export default function MediaTabEnhanced() {
       </div>
 
       {/* Debug Section */}
-      {showDebug && (
+      {/* {showDebug && (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
           <h3 className="mb-3 text-lg font-semibold">🔍 Debug Information</h3>
           <DebugAuth />
         </div>
-      )}
+      )} */}
 
       {/* Upload Section - Only show for admins */}
       {showUpload && isAdmin && (

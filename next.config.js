@@ -45,8 +45,15 @@ const config = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Verbesserte Pfad-Behandlung
-    domains: [],
-    remotePatterns: [],
+    domains: ["rgbxdxrhwrszidbnsmuy.supabase.co"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "rgbxdxrhwrszidbnsmuy.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 
   // Optimierte Headers für Caching
