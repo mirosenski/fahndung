@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import { httpBatchStreamLink, loggerLink } from "@trpc/client";
+import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
@@ -9,7 +9,6 @@ import SuperJSON from "superjson";
 
 import { type AppRouter } from "~/server/api/root";
 import { createQueryClient } from "./query-client";
-import { supabase } from "~/lib/supabase";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -39,6 +38,97 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
+// 🔥 VERBESSERTE TOKEN-EXTRAKTION
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    // Methode 1: Direkte Supabase-Schlüssel suchen
+    const sessionKeys = Object.keys(localStorage).filter(
+      (key) => key.includes("supabase") && key.includes("auth-token"),
+    );
+
+    console.log("🔍 tRPC: Gefundene Auth-Schlüssel:", sessionKeys);
+
+    for (const key of sessionKeys) {
+      const sessionStr = localStorage.getItem(key);
+      if (sessionStr) {
+        try {
+          const session = JSON.parse(sessionStr) as Record<string, unknown>;
+
+          // Verschiedene Token-Pfade versuchen
+          const token =
+            (session?.["access_token"] as string) ??
+            ((session?.["currentSession"] as Record<string, unknown>)?.["access_token"] as string) ??
+            ((session?.["session"] as Record<string, unknown>)?.["access_token"] as string);
+
+          if (token && typeof token === "string") {
+            console.log("✅ tRPC: Token gefunden in", key);
+            return token;
+          }
+        } catch (parseError) {
+          console.warn("Failed to parse localStorage session:", parseError);
+        }
+      }
+    }
+
+    // Methode 2: Alle Supabase-Schlüssel durchsuchen
+    const allSupabaseKeys = Object.keys(localStorage).filter((key) =>
+      key.includes("supabase"),
+    );
+
+    console.log("🔍 tRPC: Alle Supabase-Schlüssel:", allSupabaseKeys);
+
+    for (const key of allSupabaseKeys) {
+      const value = localStorage.getItem(key);
+      if (value) {
+        try {
+          const parsed = JSON.parse(value) as unknown;
+
+          // Rekursive Token-Suche
+          function findToken(obj: unknown): string | null {
+            if (typeof obj !== "object" || obj === null) return null;
+
+            if (
+              typeof obj === "object" &&
+              obj !== null &&
+              "access_token" in obj &&
+              typeof (obj as Record<string, unknown>)["access_token"] === "string"
+            ) {
+              return (obj as Record<string, unknown>)["access_token"] as string;
+            }
+
+            if (typeof obj === "object" && obj !== null) {
+              for (const [, v] of Object.entries(obj)) {
+                const found = findToken(v);
+                if (found) return found;
+              }
+            }
+            return null;
+          }
+
+          const foundToken = findToken(parsed);
+          if (foundToken) {
+            console.log(
+              "✅ tRPC: Token gefunden durch rekursive Suche in",
+              key,
+            );
+            return foundToken;
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
+
+    console.warn("❌ tRPC: Kein Auth-Token gefunden");
+    return null;
+  } catch (error) {
+    console.error("❌ tRPC: Fehler bei Token-Extraktion:", error);
+    return null;
+  }
+}
+
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
@@ -50,168 +140,42 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             process.env.NODE_ENV === "development" ||
             (op.direction === "down" && op.result instanceof Error),
         }),
-        httpBatchStreamLink({
+        unstable_httpBatchStreamLink({
           transformer: SuperJSON,
           url: getBaseUrl() + "/api/trpc",
-          headers: async () => {
+          headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
 
-            // Verbesserte Token-Extraktion mit Supabase Client
+            // 🔥 VERBESSERTE AUTH-HEADER-SETZUNG
             try {
-              if (typeof window !== "undefined") {
-                // Methode 1: Direkt über Supabase Client (empfohlen)
-                const {
-                  data: { session },
-                } = await supabase.auth.getSession();
+              const authToken = getAuthToken();
 
-                if (session?.access_token) {
-                  headers.set(
-                    "Authorization",
-                    `Bearer ${session.access_token}`,
-                  );
-                  console.log("✅ tRPC: Token von Supabase Client", {
-                    tokenLength: session.access_token.length,
-                    tokenStart: session.access_token.substring(0, 20) + "...",
-                  });
-                  return headers;
-                }
-
-                // Methode 2: Fallback - localStorage durchsuchen
-                console.log(
-                  "🔍 tRPC: Fallback - Suche Token in localStorage...",
-                );
-
-                const sessionKeys = Object.keys(localStorage).filter(
-                  (key) =>
-                    key.includes("supabase") && key.includes("auth-token"),
-                );
-
-                console.log(
-                  "🔍 tRPC: Gefundene Supabase-Schlüssel:",
-                  sessionKeys,
-                );
-
-                for (const key of sessionKeys) {
-                  const sessionStr = localStorage.getItem(key);
-                  if (sessionStr) {
-                    try {
-                      const session = JSON.parse(sessionStr) as {
-                        access_token?: string;
-                        currentSession?: { access_token?: string };
-                      };
-
-                      const authToken =
-                        session?.access_token ??
-                        session?.currentSession?.access_token ??
-                        null;
-
-                      if (authToken) {
-                        headers.set("Authorization", `Bearer ${authToken}`);
-                        console.log("✅ tRPC: Token gefunden in localStorage", {
-                          tokenLength: authToken.length,
-                          tokenStart: authToken.substring(0, 20) + "...",
-                        });
-                        return headers;
-                      }
-                    } catch (parseError) {
-                      console.warn(
-                        "Failed to parse localStorage session:",
-                        parseError,
-                      );
-                    }
-                  }
-                }
-
-                // Methode 3: Erweiterte Suche in allen Supabase-Schlüsseln
-                const allSupabaseKeys = Object.keys(localStorage).filter(
-                  (key) => key.includes("supabase"),
-                );
-
-                for (const key of allSupabaseKeys) {
-                  const value = localStorage.getItem(key);
-                  if (value) {
-                    try {
-                      const parsed = JSON.parse(value) as Record<
-                        string,
-                        unknown
-                      >;
-
-                      // Suche nach access_token
-                      if (
-                        parsed["access_token"] &&
-                        typeof parsed["access_token"] === "string"
-                      ) {
-                        const authToken = parsed["access_token"];
-                        headers.set("Authorization", `Bearer ${authToken}`);
-                        console.log(
-                          "✅ tRPC: Token gefunden in erweiterter Suche",
-                          {
-                            tokenLength: authToken.length,
-                            tokenStart: authToken.substring(0, 20) + "...",
-                          },
-                        );
-                        return headers;
-                      }
-
-                      // Suche in currentSession
-                      if (
-                        parsed["currentSession"] &&
-                        typeof parsed["currentSession"] === "object"
-                      ) {
-                        const currentSession = parsed[
-                          "currentSession"
-                        ] as Record<string, unknown>;
-                        if (
-                          currentSession["access_token"] &&
-                          typeof currentSession["access_token"] === "string"
-                        ) {
-                          const authToken = currentSession["access_token"];
-                          headers.set("Authorization", `Bearer ${authToken}`);
-                          console.log(
-                            "✅ tRPC: Token gefunden in currentSession",
-                            {
-                              tokenLength: authToken.length,
-                              tokenStart: authToken.substring(0, 20) + "...",
-                            },
-                          );
-                          return headers;
-                        }
-                      }
-                    } catch {
-                      // Ignore parse errors
-                    }
-                  }
-                }
-
-                console.warn("❌ tRPC: Kein Auth-Token gefunden");
+              if (authToken) {
+                headers.set("Authorization", `Bearer ${authToken}`);
+                console.log("✅ tRPC: Auth-Header gesetzt", {
+                  tokenLength: authToken.length,
+                  tokenStart: authToken.substring(0, 20) + "...",
+                });
+              } else {
+                console.warn("❌ tRPC: Kein Auth-Token für Header verfügbar");
 
                 // Debug-Informationen
                 const allKeys = Object.keys(localStorage);
                 const supabaseKeys = allKeys.filter((key) =>
                   key.includes("supabase"),
                 );
-                console.log("🔍 tRPC: Alle localStorage-Schlüssel:", allKeys);
+                console.log(
+                  "🔍 tRPC: Alle localStorage-Schlüssel:",
+                  allKeys.length,
+                );
                 console.log("🔍 tRPC: Supabase-Schlüssel:", supabaseKeys);
-
-                // Zeige Inhalt der ersten Supabase-Schlüssel
-                if (supabaseKeys.length > 0) {
-                  const firstKey = supabaseKeys[0];
-                  if (firstKey) {
-                    const firstValue = localStorage.getItem(firstKey);
-                    if (firstValue) {
-                      console.log(
-                        "🔍 tRPC: Inhalt von",
-                        firstKey,
-                        ":",
-                        firstValue.substring(0, 200) + "...",
-                      );
-                    }
-                  }
-                }
               }
             } catch (error) {
-              console.warn("Failed to get auth token for tRPC headers:", error);
+              console.error(
+                "❌ tRPC: Fehler beim Setzen des Auth-Headers:",
+                error,
+              );
             }
 
             return headers;

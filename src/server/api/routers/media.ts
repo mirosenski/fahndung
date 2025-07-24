@@ -13,7 +13,7 @@ const mediaService = new MediaService(supabase);
 
 export const mediaRouter = createTRPCRouter({
   // Upload media with base64 data
-  uploadMedia: protectedProcedure // Temporär: Nur Auth, keine Admin-Prüfung
+  uploadMedia: protectedProcedure
     .input(
       z.object({
         file: z.string(), // Base64 encoded file data
@@ -25,6 +25,17 @@ export const mediaRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Prüfe ob User authentifiziert ist
+      if (!ctx.session?.user?.id) {
+        console.error("❌ No user session found");
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Nicht authentifiziert - Bitte melden Sie sich an",
+        });
+      }
+
+      console.log("✅ User authenticated:", ctx.session.user.id);
+
       try {
         console.log("🚀 Upload startet für:", input.filename, {
           fileLength: input.file.length,
@@ -72,11 +83,10 @@ export const mediaRouter = createTRPCRouter({
             ? "video"
             : "document";
 
-        // Save metadata to database
+        // INSERT mit uploaded_by gesetzt
         const { data: mediaRecord, error: dbError } = await supabase
           .from("media")
           .insert({
-            // filename: uniqueFilename,  // ← Auskommentiert
             original_name: input.filename,
             file_name: uniqueFilename,
             file_path: uploadData.path,
@@ -86,13 +96,13 @@ export const mediaRouter = createTRPCRouter({
             directory: input.directory,
             tags: input.tags,
             is_public: input.is_public,
-            uploaded_by: ctx.session.user.id,
+            uploaded_by: ctx.session.user.id, // 🔥 KRITISCH: User ID setzen
           })
           .select()
           .single();
 
         if (dbError) {
-          console.error("❌ Database Insert Error:", dbError);
+          console.error("❌ Database insert failed:", dbError);
           // Rollback storage upload if database insert fails
           await supabase.storage
             .from("media-gallery")
@@ -103,8 +113,7 @@ export const mediaRouter = createTRPCRouter({
           });
         }
 
-        console.log("✅ Database Insert erfolgreich:", mediaRecord);
-
+        console.log("✅ Media uploaded successfully:", mediaRecord["id"]);
         return {
           success: true,
           media: mediaRecord,
@@ -112,8 +121,6 @@ export const mediaRouter = createTRPCRouter({
         };
       } catch (error) {
         console.error("❌ Upload error:", error);
-        if (error instanceof TRPCError) throw error;
-
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: error instanceof Error ? error.message : "Upload failed",

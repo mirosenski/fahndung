@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from "react";
 import { Upload, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
-import { supabase } from "~/lib/supabase";
 
 interface MediaUploadProps {
   onUploadComplete?: (results: unknown[]) => void;
@@ -52,7 +51,7 @@ export default function MediaUpload({
         }
         resolve(base64);
       };
-      reader.onerror = (error) => reject(error);
+      reader.onerror = () => reject(new Error("Failed to read file"));
     });
   };
 
