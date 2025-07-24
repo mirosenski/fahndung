@@ -140,6 +140,15 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }): Promise<Investigation[]> => {
       try {
+        // Prüfe ob db verfügbar ist
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, verwende Mock-Daten");
+          return mockInvestigations.slice(
+            input.offset,
+            Math.min(input.offset + input.limit, mockInvestigations.length),
+          );
+        }
+
         // Optimierte Supabase-Abfrage mit selektiven Feldern
         let query = ctx.db
           .investigations()
@@ -199,6 +208,32 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }): Promise<Investigation> => {
       try {
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, Mock-Erstellung");
+          // Mock-Erstellung mit UUID
+          const newInvestigation: Investigation = {
+            id: generateUUID(),
+            case_number: `F-${Date.now()}`,
+            short_description: input.title,
+            category: "WANTED_PERSON",
+            station: "Allgemein",
+            features: "",
+            date: new Date().toISOString(),
+            created_by: "user-1",
+            assigned_to: "user-1",
+            metadata: {},
+            title: input.title,
+            description: input.description ?? "",
+            status: input.status,
+            priority: input.priority,
+            tags: input.tags,
+            location: input.location ?? "",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          return newInvestigation;
+        }
+
         const result = await ctx.db
           .investigations()
           .insert({
@@ -263,6 +298,22 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }): Promise<Investigation> => {
       try {
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, Mock-Update");
+          // Mock-Update
+          const mockInvestigation = mockInvestigations.find(
+            (inv) => inv.id === input.id,
+          );
+          if (mockInvestigation) {
+            return {
+              ...mockInvestigation,
+              ...input,
+              updated_at: new Date().toISOString(),
+            };
+          }
+          throw new Error("Fahndung nicht gefunden");
+        }
+
         const { id, ...updateData } = input;
 
         const result = await ctx.db
@@ -304,6 +355,19 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }): Promise<boolean> => {
       try {
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, Mock-Delete");
+          // Mock-Delete
+          const index = mockInvestigations.findIndex(
+            (inv) => inv.id === input.id,
+          );
+          if (index !== -1) {
+            mockInvestigations.splice(index, 1);
+            return true;
+          }
+          return false;
+        }
+
         const result = await ctx.db
           .investigations()
           .delete()
@@ -340,6 +404,11 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }): Promise<InvestigationImage[]> => {
       try {
         if (!input.investigation_id) {
+          return [];
+        }
+
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, Mock-Bilder");
           return [];
         }
 
@@ -385,6 +454,20 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }): Promise<InvestigationImage> => {
       try {
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, Mock-Bild-Add");
+          // Mock-Bild-Add
+          const newImage: InvestigationImage = {
+            id: generateUUID(),
+            ...input,
+            uploaded_at: new Date().toISOString(),
+            uploaded_by: "user-1",
+            is_public: true,
+            metadata: {},
+          };
+          return newImage;
+        }
+
         const result = await ctx.db
           .investigationImages()
           .insert({
@@ -429,6 +512,35 @@ export const postRouter = createTRPCRouter({
   // Statistiken abrufen
   getStatistics: publicProcedure.query(async ({ ctx }) => {
     try {
+      if (!ctx.db) {
+        console.warn("Database nicht verfügbar, Mock-Statistiken");
+        // Mock-Statistiken
+        return {
+          total: mockInvestigations.length,
+          byStatus: {
+            active: mockInvestigations.filter((inv) => inv.status === "active")
+              .length,
+            published: 0,
+            draft: 0,
+            closed: 0,
+          },
+          byPriority: {
+            high: mockInvestigations.filter((inv) => inv.priority === "high")
+              .length,
+            medium: mockInvestigations.filter(
+              (inv) => inv.priority === "medium",
+            ).length,
+            low: 0,
+          },
+          byCategory: {
+            WANTED_PERSON: 0,
+            MISSING_PERSON: 0,
+            UNKNOWN_DEAD: 0,
+            STOLEN_GOODS: 0,
+          },
+        };
+      }
+
       // Optimierte Statistiken-Abfrage
       const { data, error } = await ctx.db
         .investigations()

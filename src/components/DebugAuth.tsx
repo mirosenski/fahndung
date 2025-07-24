@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '~/lib/supabase';
+import type { Session } from '@supabase/supabase-js';
 
 export const DebugAuth = () => {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,11 +42,13 @@ export const DebugAuth = () => {
 
     // Verzögerung für Client-Side Rendering
     const timer = setTimeout(() => {
-      checkAuth();
+      void checkAuth();
     }, 100);
 
     return () => clearTimeout(timer);
+  }, []);
 
+  useEffect(() => {
     // Listener für Auth-Änderungen
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -130,7 +133,7 @@ export const DebugAuth = () => {
         <div className="flex items-center gap-2">
           <span className="font-medium">User:</span>
           <span className={session?.user ? 'text-green-600' : 'text-red-600'}>
-            {session?.user?.email || 'Nicht eingeloggt'}
+            {session?.user?.email ?? 'Nicht eingeloggt'}
           </span>
         </div>
         

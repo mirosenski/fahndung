@@ -175,7 +175,6 @@ export default function MediaUpload({
 
           // Prüfe ob Bildkompression nötig ist
           let fileToUpload = file;
-          let compressionInfo = null;
 
           if (shouldCompressImage(file)) {
             console.log("🖼️ Bildkompression wird angewendet...");
@@ -262,7 +261,7 @@ export default function MediaUpload({
 
   const handleFileInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(event.target.files || []);
+      const files = Array.from(event.target.files ?? []);
       if (files.length > 0) {
         void handleFiles(files);
       }

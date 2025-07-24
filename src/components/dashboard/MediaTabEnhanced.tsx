@@ -1,31 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Upload,
-  Search,
-  Filter,
   Grid3X3,
   List,
   RefreshCw,
-  X,
+  Search,
+  Filter,
   LogIn,
-  Shield,
   Crown,
-  AlertTriangle,
+  X,
+  Shield,
   CheckCircle,
-  Loader2,
-  Image,
-  FileText,
-  Video,
+  AlertCircle,
 } from "lucide-react";
 import { api } from "~/trpc/react";
+import { useAuth } from "~/hooks/useAuth";
+import { useSupabaseUpload } from "~/hooks/useSupabaseUpload";
 import { useMediaStore } from "~/stores/media.store";
 import MediaUpload from "~/components/media/MediaUpload";
 import MediaGrid from "~/components/media/MediaGrid";
 import type { MediaItem } from "~/lib/services/media.service";
 import { supabase } from "~/lib/supabase";
-import { useAuth } from "~/hooks/useAuth";
-import { useSupabaseUpload } from "~/hooks/useSupabaseUpload";
 import { DebugAuth } from "~/components/DebugAuth";
+
+interface UploadResult {
+  path: string;
+  url: string;
+  error?: string;
+}
 
 export default function MediaTabEnhanced() {
   const [showUpload, setShowUpload] = useState(false);
@@ -35,7 +37,7 @@ export default function MediaTabEnhanced() {
   >("all");
   const [selectedDirectory, setSelectedDirectory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
 
@@ -159,37 +161,31 @@ export default function MediaTabEnhanced() {
   }, []);
 
   // Neue Supabase Upload Handler
-  const handleFileUpload = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
+  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-      try {
-        setUploadError(null);
-        setUploadResult(null);
-
-        console.log("🚀 MediaTab: Starte Supabase Upload für:", file.name);
-
-        const result = await uploadFile(file, "media");
-
-        if (result.error) {
-          console.error("❌ MediaTab: Upload-Fehler:", result.error);
-          setUploadError(result.error);
-        } else {
-          console.log("✅ MediaTab: Upload erfolgreich:", result);
-          setUploadResult(result);
-          // Refresh media list after successful upload
-          void refetchMedia();
-        }
-      } catch (err) {
-        console.error("❌ MediaTab: Unerwarteter Fehler:", err);
-        setUploadError(
-          err instanceof Error ? err.message : "Unbekannter Fehler",
-        );
+    try {
+      setUploadError(null);
+      setUploadResult(null);
+      
+      console.log('🚀 MediaTabEnhanced: Starte Upload für:', file.name);
+      
+      const result = await uploadFile(file, 'media');
+      
+      if (result.error) {
+        console.error('❌ MediaTabEnhanced: Upload-Fehler:', result.error);
+        setUploadError(result.error);
+      } else {
+        console.log('✅ MediaTabEnhanced: Upload erfolgreich:', result);
+        setUploadResult(result as UploadResult);
+        void refetchMedia(); // Refresh media list
       }
-    },
-    [uploadFile, refetchMedia],
-  );
+    } catch (err) {
+      console.error('❌ MediaTabEnhanced: Unerwarteter Fehler:', err);
+      setUploadError(err instanceof Error ? err.message : 'Unbekannter Fehler');
+    }
+  }, [uploadFile, refetchMedia]);
 
   // Fallback directories if query fails
   const availableDirectories = directories ?? [
@@ -299,7 +295,7 @@ export default function MediaTabEnhanced() {
           {uploadError && (
             <div className="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">
               <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-5 w-5" />
+                <AlertCircle className="h-5 w-5" />
                 <span>❌ Fehler: {uploadError}</span>
               </div>
             </div>

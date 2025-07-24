@@ -5,12 +5,13 @@ import { useAuth } from "~/hooks/useAuth";
 import { api } from "~/trpc/react";
 import { supabase } from "~/lib/supabase";
 import { toast } from "sonner";
+import type { Session } from "@supabase/supabase-js";
 
 export default function AuthDebug() {
   const { session, isAuthenticated, loading } = useAuth();
   const [testResult, setTestResult] = useState<string>("");
   const [isTesting, setIsTesting] = useState(false);
-  const [supabaseSession, setSupabaseSession] = useState<any>(null);
+  const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
   const [localStorageData, setLocalStorageData] = useState<Record<string, string>>({});
 
   // tRPC Auth Test

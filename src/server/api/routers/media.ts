@@ -44,7 +44,12 @@ export const mediaRouter = createTRPCRouter({
         });
       }
 
-      console.log("✅ User authenticated:", ctx.session.user.id, "Role:", userRole);
+      console.log(
+        "✅ User authenticated:",
+        ctx.session.user.id,
+        "Role:",
+        userRole,
+      );
 
       try {
         console.log("🚀 Upload startet für:", input.filename, {
@@ -126,29 +131,25 @@ export const mediaRouter = createTRPCRouter({
           .single();
 
         if (dbError) {
-          console.error("❌ Database insert failed:", dbError);
-          // Rollback storage upload if database insert fails
-          await supabase.storage
-            .from("media-gallery")
-            .remove([uploadData.path]);
+          console.error("❌ Database Insert Error:", dbError);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: `Database insert failed: ${dbError.message}`,
           });
         }
 
-        console.log("✅ Media uploaded successfully:", mediaRecord["id"]);
+        console.log("✅ Media record created:", mediaRecord);
+
+        // Return success response
         return {
           success: true,
           media: mediaRecord,
+          path: uploadData.path,
           url: `${process.env["NEXT_PUBLIC_SUPABASE_URL"]}/storage/v1/object/public/media-gallery/${uploadData.path}`,
         };
       } catch (error) {
-        console.error("❌ Upload error:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "Upload failed",
-        });
+        console.error("❌ Upload failed:", error);
+        throw error;
       }
     }),
 

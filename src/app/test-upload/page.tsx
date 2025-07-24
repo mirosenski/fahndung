@@ -15,7 +15,7 @@ export default function TestUploadPage() {
             <li>Diese Seite ist nur für Tests gedacht</li>
             <li>Überprüfe die Browser-Console für detaillierte Logs</li>
             <li>Stelle sicher, dass du bei Supabase eingeloggt bist</li>
-            <li>Der 'media' Bucket muss in Supabase existieren</li>
+            <li>Der &apos;media&apos; Bucket muss in Supabase existieren</li>
           </ul>
         </div>
 

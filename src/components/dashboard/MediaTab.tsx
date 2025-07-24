@@ -1,28 +1,31 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Upload,
-  Search,
-  Filter,
   Grid3X3,
   List,
   RefreshCw,
-  X,
+  Search,
+  Filter,
   LogIn,
-  Shield,
   Crown,
-  AlertTriangle,
-  CheckCircle,
-  Loader2,
+  X,
+  Shield,
 } from "lucide-react";
 import { api } from "~/trpc/react";
+import { useAuth } from "~/hooks/useAuth";
+import { useSupabaseUpload } from "~/hooks/useSupabaseUpload";
 import { useMediaStore } from "~/stores/media.store";
 import MediaUpload from "~/components/media/MediaUpload";
 import MediaGrid from "~/components/media/MediaGrid";
 import type { MediaItem } from "~/lib/services/media.service";
 import { supabase } from "~/lib/supabase";
-import { useAuth } from "~/hooks/useAuth";
-import { useSupabaseUpload } from "~/hooks/useSupabaseUpload";
 import { DebugAuth } from "~/components/DebugAuth";
+
+interface UploadResult {
+  path: string;
+  url: string;
+  error?: string;
+}
 
 export default function MediaTab() {
   const [showUpload, setShowUpload] = useState(false);
@@ -32,7 +35,7 @@ export default function MediaTab() {
   >("all");
   const [selectedDirectory, setSelectedDirectory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { session, loading: authLoading, isAuthenticated } = useAuth();
@@ -166,7 +169,7 @@ export default function MediaTab() {
         setUploadError(null);
         setUploadResult(null);
 
-        console.log("🚀 MediaTab: Starte Supabase Upload für:", file.name);
+        console.log("🚀 MediaTab: Starte Upload für:", file.name);
 
         const result = await uploadFile(file, "media");
 
@@ -175,9 +178,8 @@ export default function MediaTab() {
           setUploadError(result.error);
         } else {
           console.log("✅ MediaTab: Upload erfolgreich:", result);
-          setUploadResult(result);
-          // Refresh media list after successful upload
-          void refetchMedia();
+          setUploadResult(result as UploadResult);
+          void refetchMedia(); // Refresh media list
         }
       } catch (err) {
         console.error("❌ MediaTab: Unerwarteter Fehler:", err);
@@ -262,45 +264,50 @@ export default function MediaTab() {
               <X className="h-5 w-5" />
             </button>
           </div>
-          
+
           {/* Debug Auth Component */}
           <div className="mb-4">
             <DebugAuth />
           </div>
-          
+
           {/* Supabase Upload Progress */}
           {isUploading && (
             <div className="mb-4 space-y-2">
               <div className="text-sm text-blue-600">⏳ Upload läuft...</div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              <div className="h-2 w-full rounded-full bg-gray-200">
+                <div
+                  className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
               <div className="text-xs text-gray-600">{progress}%</div>
             </div>
           )}
-          
+
           {/* Upload Error */}
           {uploadError && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">
               ❌ Fehler: {uploadError}
             </div>
           )}
-          
+
           {/* Upload Success */}
           {uploadResult && (
-            <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded">
-              <h4 className="font-semibold text-green-800 mb-2">✅ Upload erfolgreich!</h4>
+            <div className="mb-4 rounded border border-green-400 bg-green-100 p-4">
+              <h4 className="mb-2 font-semibold text-green-800">
+                ✅ Upload erfolgreich!
+              </h4>
               <div className="space-y-1 text-sm text-green-700">
-                <div><strong>Pfad:</strong> {uploadResult.path}</div>
-                <div><strong>URL:</strong> 
-                  <a 
-                    href={uploadResult.url} 
-                    target="_blank" 
+                <div>
+                  <strong>Pfad:</strong> {uploadResult.path}
+                </div>
+                <div>
+                  <strong>URL:</strong>
+                  <a
+                    href={uploadResult.url}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline ml-1"
+                    className="ml-1 text-blue-600 hover:underline"
                   >
                     {uploadResult.url}
                   </a>
@@ -308,25 +315,27 @@ export default function MediaTab() {
               </div>
             </div>
           )}
-          
+
           {/* File Upload Input */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="mb-2 block text-sm font-medium">
                 Wähle eine Datei zum Hochladen:
               </label>
               <input
                 type="file"
                 onChange={handleFileUpload}
                 disabled={isUploading}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
               />
             </div>
           </div>
-          
+
           {/* Legacy MediaUpload Component (fallback) */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Legacy Upload (tRPC):</h4>
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h4 className="mb-3 text-sm font-medium text-gray-700">
+              Legacy Upload (tRPC):
+            </h4>
             <MediaUpload onUploadComplete={() => void refetchMedia()} />
           </div>
         </div>

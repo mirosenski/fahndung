@@ -12,8 +12,7 @@ import { ZodError } from "zod";
 import { createClient } from "@supabase/supabase-js";
 
 import { db } from "~/server/db";
-import { getCurrentSession, type Session, type UserProfile } from "~/lib/auth";
-import { supabase } from "~/lib/supabase";
+import { type Session, type UserProfile } from "~/lib/auth";
 
 /**
  * 1. CONTEXT
@@ -37,34 +36,41 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   try {
     const authHeader = opts.headers.get("Authorization");
     console.log("🔍 Auth header found:", !!authHeader);
-    
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.log('❌ No Authorization header found');
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      console.log("❌ No Authorization header found");
       return { user: null, supabase: null };
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      console.log("❌ No token found in Authorization header");
+      return { user: null, supabase: null };
+    }
     console.log("🔍 Token extracted, length:", token.length);
-    
+
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+      process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
       {
         auth: {
           persistSession: false,
         },
-      }
+      },
     );
 
-    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
-    
+    const {
+      data: { user: supabaseUser },
+      error,
+    } = await supabase.auth.getUser(token);
+
     if (error || !supabaseUser) {
-      console.log('❌ Token ungültig:', error?.message);
+      console.log("❌ Token ungültig:", error?.message);
       return { user: null, supabase: null };
     }
 
-    console.log('✅ User authentifiziert:', supabaseUser.email);
-    
+    console.log("✅ User authentifiziert:", supabaseUser.email);
+
     // Benutzer-Profil abrufen
     const profileResult = await supabase
       .from("user_profiles")
@@ -88,52 +94,23 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       },
       profile: profile,
     };
-    
+
     user = supabaseUser;
-    
+
     console.log(
       "✅ User authenticated:",
       supabaseUser.id,
       "Role:",
       profile?.role,
     );
-    
   } catch (error) {
-    console.error("❌ Auth context creation failed:", error);
-  }
-
-  // Fallback: Verwende getCurrentSession wenn keine Session über Header gefunden wurde
-  if (!session) {
-    try {
-      console.log("🔄 Fallback: Verwende getCurrentSession...");
-      session = await getCurrentSession();
-      if (session?.user) {
-        user = session.user;
-        console.log("✅ Fallback session erfolgreich:", session.user.id);
-      }
-    } catch (fallbackError) {
-      console.warn("❌ Fallback session failed:", fallbackError);
-    }
+    console.error("❌ Context creation error:", error);
   }
 
   return {
     db,
     session,
     user,
-    supabase: createClient(
-      process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-      process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
-      {
-        global: {
-          headers: session?.user
-            ? {
-                Authorization: `Bearer ${opts.headers.get("Authorization")?.substring(7)}`,
-              }
-            : {},
-        },
-      },
-    ),
-    ...opts,
   };
 };
 
@@ -182,20 +159,15 @@ export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 
 /**
- * Middleware for timing procedure execution and adding an artificial delay in development.
- *
- * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
- * network latency that would occur in production but not in local development.
+ * Middleware for timing
  */
-const timingMiddleware = t.middleware(async ({ next, path }) => {
+const timingMiddleware = t.middleware(async ({ path, next }) => {
   const start = Date.now();
+  console.log(`[TRPC] ${path} starting...`);
 
-  if (t._config.isDev) {
-    // artificial delay in dev
-    const waitMs = Math.floor(Math.random() * 400) + 100;
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-  }
-
+  // artificial delay in dev
+  const waitMs = Math.floor(Math.random() * 400) + 100;
+  await new Promise((resolve) => setTimeout(resolve, waitMs));
   const result = await next();
 
   const end = Date.now();

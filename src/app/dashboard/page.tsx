@@ -9,9 +9,9 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
+  Upload,
 } from "lucide-react";
 import { api } from "~/trpc/react";
-import { supabase } from "~/lib/supabase";
 import { isAdmin, isEditor, getAllUsers, getAdminActions } from "~/lib/auth";
 import type { UserProfile, UserActivity, AdminAction } from "~/lib/auth";
 import Header from "~/components/layout/Header";
@@ -39,7 +39,7 @@ const UsersTab = dynamic(() => import("~/components/dashboard/UsersTab"), {
   ssr: false,
 });
 const MediaTab = dynamic(
-  () => import("~/components/dashboard/MediaTabEnhanced"),
+  () => import("~/components/dashboard/MediaTabSimple"),
   {
     loading: () => <LoadingSpinner message="Lade Medien..." />,
     ssr: false,
@@ -52,23 +52,21 @@ const SettingsTab = dynamic(
     ssr: false,
   },
 );
+const UploadTestTab = dynamic(
+  () =>
+    import("~/components/dashboard/UploadTestTab").then((mod) => ({
+      default: mod.UploadTestTab,
+    })),
+  {
+    loading: () => <LoadingSpinner message="Lade Upload Test..." />,
+    ssr: false,
+  },
+);
 
 // Debug-Komponenten
 const AuthDebug = dynamic(() => import("~/components/debug/AuthDebug"), {
   ssr: false,
 });
-
-interface PendingRegistration {
-  id: string;
-  email: string;
-  name: string;
-  department?: string;
-  phone?: string;
-  status: "pending" | "approved" | "rejected";
-  admin_notes?: string;
-  created_at: string;
-  updated_at: string;
-}
 
 interface Investigation {
   id: string;
@@ -102,16 +100,12 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedPriority, setSelectedPriority] = useState("all");
-  const [connectionError, setConnectionError] = useState(false);
 
   // Admin state
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [userActivity] = useState<UserActivity[]>([]);
   const [adminActions, setAdminActions] = useState<AdminAction[]>([]);
-  const [pendingRegistrations, setPendingRegistrations] = useState<
-    PendingRegistration[]
-  >([]);
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -125,21 +119,18 @@ export default function Dashboard() {
   });
 
   // Optimierte tRPC Queries mit reduziertem Limit und besseren Optionen
-  const {
-    data: investigationsData,
-    error: investigationsError,
-    isLoading: investigationsLoading,
-  } = api.post.getInvestigations.useQuery(
-    {
-      limit: 20, // Reduziert von 100 auf 20 für schnellere Initialladung
-      offset: 0,
-    },
-    {
-      staleTime: 5 * 60 * 1000, // 5 Minuten Cache
-      refetchOnWindowFocus: false, // Verhindert unnötige Refetches
-      refetchOnMount: false, // Verhindert Refetch beim Tab-Wechsel
-    },
-  );
+  const { data: investigationsData, isLoading: investigationsLoading } =
+    api.post.getInvestigations.useQuery(
+      {
+        limit: 20, // Reduziert von 100 auf 20 für schnellere Initialladung
+        offset: 0,
+      },
+      {
+        staleTime: 5 * 60 * 1000, // 5 Minuten Cache
+        refetchOnWindowFocus: false, // Verhindert unnötige Refetches
+        refetchOnMount: false, // Verhindert Refetch beim Tab-Wechsel
+      },
+    );
 
   // Alle useCallback Hooks
   const handleLogout = useCallback(async () => {
@@ -151,18 +142,16 @@ export default function Dashboard() {
   }, [router]);
 
   const loadAdminData = useCallback(async () => {
-    if (!isAdmin(session?.profile)) return;
+    if (!isAdmin(session?.profile ?? null)) return;
 
     try {
-      const [usersData, actionsData, registrationsData] = await Promise.all([
+      const [usersData, actionsData] = await Promise.all([
         getAllUsers(),
         getAdminActions(),
-        // getPendingRegistrations(), // Falls verfügbar
       ]);
 
       setUsers(usersData);
       setAdminActions(actionsData);
-      // setPendingRegistrations(registrationsData); // Falls verfügbar
     } catch (error) {
       console.error("Fehler beim Laden der Admin-Daten:", error);
     }
@@ -170,7 +159,7 @@ export default function Dashboard() {
 
   // useEffect Hooks
   useEffect(() => {
-    if (isAdmin(session?.profile)) {
+    if (isAdmin(session?.profile ?? null)) {
       void loadAdminData();
     }
   }, [session?.profile, loadAdminData]);
@@ -198,75 +187,44 @@ export default function Dashboard() {
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-gray-900">
-        <div className="flex h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mb-4 text-4xl">❌</div>
-            <div className="text-xl font-semibold">Fehler beim Laden</div>
-            <div className="mt-2 text-gray-400">{error}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Erneut versuchen
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  // Auth check
+  if (!session?.user) {
+    router.push("/auth/login");
+    return null;
   }
 
-  // Connection error state
-  if (connectionError) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-gray-900">
-        <div className="flex h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mb-4 text-4xl">🌐</div>
-            <div className="text-xl font-semibold">Verbindungsfehler</div>
-            <div className="mt-2 text-gray-400">
-              Keine Verbindung zum Server
-            </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Erneut versuchen
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Investigations data with proper typing
+  const investigations = (investigationsData as Investigation[]) ?? [];
 
-  // Investigations data
-  const investigations = investigationsData?.investigations ?? [];
-  const totalInvestigations = investigationsData?.total ?? 0;
+  // Filter investigations with proper typing
+  const filteredInvestigations = investigations.filter(
+    (investigation: Investigation) => {
+      const matchesSearch = searchTerm
+        ? investigation.title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          investigation.case_number
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          investigation.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        : true;
 
-  // Filter investigations
-  const filteredInvestigations = investigations.filter((investigation) => {
-    const matchesSearch = searchTerm
-      ? investigation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        investigation.case_number
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        investigation.description
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      : true;
+      const matchesCategory =
+        selectedCategory === "all" ||
+        investigation.category === selectedCategory;
+      const matchesStatus =
+        selectedStatus === "all" || investigation.status === selectedStatus;
+      const matchesPriority =
+        selectedPriority === "all" ||
+        investigation.priority === selectedPriority;
 
-    const matchesCategory =
-      selectedCategory === "all" || investigation.category === selectedCategory;
-    const matchesStatus =
-      selectedStatus === "all" || investigation.status === selectedStatus;
-    const matchesPriority =
-      selectedPriority === "all" || investigation.priority === selectedPriority;
-
-    return matchesSearch && matchesCategory && matchesStatus && matchesPriority;
-  });
+      return (
+        matchesSearch && matchesCategory && matchesStatus && matchesPriority
+      );
+    },
+  );
 
   // Tab configuration
   const tabs = [
@@ -289,6 +247,11 @@ export default function Dashboard() {
       id: "media",
       label: "Medien",
       icon: ImageIcon,
+    },
+    {
+      id: "upload-test",
+      label: "Upload Test",
+      icon: Upload,
     },
     {
       id: "settings",
@@ -330,7 +293,7 @@ export default function Dashboard() {
             setSelectedUser={setSelectedUser}
             userActivity={userActivity}
             adminActions={adminActions}
-            pendingRegistrations={pendingRegistrations}
+            pendingRegistrations={[]} // Removed as per new_code
             userSearchTerm={userSearchTerm}
             setUserSearchTerm={setUserSearchTerm}
             filterRole={filterRole}
@@ -347,6 +310,8 @@ export default function Dashboard() {
         );
       case "media":
         return <MediaTab />;
+      case "upload-test":
+        return <UploadTestTab />;
       case "settings":
         return <SettingsTab />;
       default:
