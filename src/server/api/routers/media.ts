@@ -34,7 +34,17 @@ export const mediaRouter = createTRPCRouter({
         });
       }
 
-      console.log("✅ User authenticated:", ctx.session.user.id);
+      // Prüfe Admin-Rechte
+      const userRole = ctx.session?.profile?.role;
+      if (userRole !== "admin" && userRole !== "editor") {
+        console.error("❌ Insufficient permissions:", userRole);
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Admin- oder Editor-Rechte erforderlich für Media-Uploads",
+        });
+      }
+
+      console.log("✅ User authenticated:", ctx.session.user.id, "Role:", userRole);
 
       try {
         console.log("🚀 Upload startet für:", input.filename, {
@@ -46,6 +56,20 @@ export const mediaRouter = createTRPCRouter({
 
         // Decode base64 to buffer
         const buffer = Buffer.from(input.file, "base64");
+
+        // Prüfe Dateigröße (max 8MB nach Base64-Kodierung)
+        const maxSize = 8 * 1024 * 1024; // 8MB
+        if (buffer.length > maxSize) {
+          console.error("❌ File too large:", {
+            size: buffer.length,
+            maxSize,
+            filename: input.filename,
+          });
+          throw new TRPCError({
+            code: "PAYLOAD_TOO_LARGE",
+            message: `Datei zu groß (${Math.round(buffer.length / 1024 / 1024)}MB). Maximale Größe: 8MB`,
+          });
+        }
 
         // Generate unique filename
         const timestamp = Date.now();

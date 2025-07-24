@@ -38,10 +38,13 @@ const UsersTab = dynamic(() => import("~/components/dashboard/UsersTab"), {
   loading: () => <LoadingSpinner message="Lade Benutzer..." />,
   ssr: false,
 });
-const MediaTab = dynamic(() => import("~/components/dashboard/MediaTab"), {
-  loading: () => <LoadingSpinner message="Lade Medien..." />,
-  ssr: false,
-});
+const MediaTab = dynamic(
+  () => import("~/components/dashboard/MediaTabEnhanced"),
+  {
+    loading: () => <LoadingSpinner message="Lade Medien..." />,
+    ssr: false,
+  },
+);
 const SettingsTab = dynamic(
   () => import("~/components/dashboard/SettingsTab"),
   {
@@ -49,6 +52,11 @@ const SettingsTab = dynamic(
     ssr: false,
   },
 );
+
+// Debug-Komponenten
+const AuthDebug = dynamic(() => import("~/components/debug/AuthDebug"), {
+  ssr: false,
+});
 
 interface PendingRegistration {
   id: string;
@@ -142,132 +150,114 @@ export default function Dashboard() {
     router.push("/fahndungen/neu");
   }, [router]);
 
-  const handleRetry = useCallback(() => {
-    setConnectionError(false);
-    // Seite neu laden
-    window.location.reload();
-  }, []);
-
-  // Optimierte Admin-Daten-Ladung mit Memoization
   const loadAdminData = useCallback(async () => {
-    if (!session?.profile || !isAdmin(session?.profile)) return;
+    if (!isAdmin(session?.profile)) return;
 
     try {
-      // Parallel laden für bessere Performance
       const [usersData, actionsData, registrationsData] = await Promise.all([
         getAllUsers(),
         getAdminActions(),
-        supabase
-          ?.from("pending_registrations")
-          .select("*")
-          .eq("status", "pending")
-          .order("created_at", { ascending: false })
-          .limit(50), // Limit für bessere Performance
+        // getPendingRegistrations(), // Falls verfügbar
       ]);
 
       setUsers(usersData);
       setAdminActions(actionsData);
-      setPendingRegistrations(
-        (registrationsData?.data ?? []) as unknown as PendingRegistration[],
-      );
+      // setPendingRegistrations(registrationsData); // Falls verfügbar
     } catch (error) {
       console.error("Fehler beim Laden der Admin-Daten:", error);
-      setConnectionError(true);
     }
   }, [session?.profile]);
 
-  // Optimierte useEffect Hooks
+  // useEffect Hooks
   useEffect(() => {
-    console.log("🔍 Dashboard: Prüfe Authentifizierung...", {
-      loading,
-      initialized,
-      hasSession: !!session,
-      error,
-      timeoutReached,
-    });
-
-    // Vereinfachte Redirect-Logik
-    if (initialized && !loading && !session) {
-      console.log("❌ Dashboard: Keine Session - Weiterleitung zu Login");
-      router.replace("/login");
-    }
-  }, [session, loading, initialized, router, error, timeoutReached]);
-
-  // Load admin data when session is available and user is admin
-  useEffect(() => {
-    if (session?.profile && isAdmin(session?.profile)) {
+    if (isAdmin(session?.profile)) {
       void loadAdminData();
     }
   }, [session?.profile, loadAdminData]);
 
-  // Connection error handling
   useEffect(() => {
-    if (investigationsError) {
-      console.error("❌ Fahndungen-Loading-Fehler:", investigationsError);
-      setConnectionError(true);
+    if (error) {
+      console.error("Auth error:", error);
     }
-  }, [investigationsError]);
+  }, [error]);
 
-  // Verbesserte Fehlerbehandlung für Session-Probleme
   useEffect(() => {
-    if (error?.includes("Timeout")) {
-      console.log("🔄 Timeout-Fehler erkannt - versuche erneut...");
-      setConnectionError(true);
+    if (timeoutReached) {
+      console.log("Auth timeout reached");
     }
-  }, [error, timeoutReached]);
+  }, [timeoutReached]);
 
-  // Loading state für Hydration mit verbesserter Fehlerbehandlung
+  // Loading state
   if (!initialized || loading) {
     return (
-      <LoadingSpinner
-        message={timeoutReached ? "Verbindungsfehler" : "Lade Dashboard..."}
-        subMessage={
-          !initialized
-            ? "Initialisiere..."
-            : timeoutReached
-              ? "Server nicht erreichbar - versuche erneut"
-              : "Prüfe Authentifizierung..."
-        }
-        type={timeoutReached ? "timeout" : "loading"}
-        onRetry={timeoutReached ? handleRetry : undefined}
-        showRetry={timeoutReached}
-      />
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="flex h-screen items-center justify-center">
+          <LoadingSpinner message="Lade Dashboard..." />
+        </div>
+      </div>
     );
   }
 
-  // Wenn keine Session nach Initialisierung
-  if (!session) {
+  // Error state
+  if (error) {
     return (
-      <LoadingSpinner
-        message="Nicht authentifiziert"
-        subMessage="Weiterleitung zu Login..."
-        type="error"
-      />
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4 text-4xl">❌</div>
+            <div className="text-xl font-semibold">Fehler beim Laden</div>
+            <div className="mt-2 text-gray-400">{error}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Erneut versuchen
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   // Connection error state
   if (connectionError) {
     return (
-      <LoadingSpinner
-        message="Verbindungsfehler"
-        subMessage="Die Verbindung zum Server konnte nicht hergestellt werden. Prüfen Sie Ihre Internetverbindung."
-        type="error"
-        onRetry={handleRetry}
-        showRetry={true}
-      />
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4 text-4xl">🌐</div>
+            <div className="text-xl font-semibold">Verbindungsfehler</div>
+            <div className="mt-2 text-gray-400">
+              Keine Verbindung zum Server
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Erneut versuchen
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  // Filtered investigations
-  const investigations = (investigationsData as Investigation[]) ?? [];
+  // Investigations data
+  const investigations = investigationsData?.investigations ?? [];
+  const totalInvestigations = investigationsData?.total ?? 0;
+
+  // Filter investigations
   const filteredInvestigations = investigations.filter((investigation) => {
-    const matchesSearch =
-      investigation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      investigation.case_number
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      investigation.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = searchTerm
+      ? investigation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        investigation.case_number
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        investigation.description
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      : true;
+
     const matchesCategory =
       selectedCategory === "all" || investigation.category === selectedCategory;
     const matchesStatus =
@@ -278,15 +268,35 @@ export default function Dashboard() {
     return matchesSearch && matchesCategory && matchesStatus && matchesPriority;
   });
 
+  // Tab configuration
   const tabs = [
-    { id: "overview", label: "Übersicht", icon: BarChart3 },
-    { id: "investigations", label: "Fahndungen", icon: FileText },
-    { id: "media", label: "Medien", icon: ImageIcon },
-    { id: "users", label: "Benutzer", icon: Users },
-    { id: "settings", label: "Einstellungen", icon: Settings },
+    {
+      id: "overview",
+      label: "Übersicht",
+      icon: BarChart3,
+    },
+    {
+      id: "investigations",
+      label: "Fahndungen",
+      icon: FileText,
+    },
+    {
+      id: "users",
+      label: "Benutzer",
+      icon: Users,
+    },
+    {
+      id: "media",
+      label: "Medien",
+      icon: ImageIcon,
+    },
+    {
+      id: "settings",
+      label: "Einstellungen",
+      icon: Settings,
+    },
   ];
 
-  // Render Tab Content
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
@@ -385,6 +395,9 @@ export default function Dashboard() {
       </div>
 
       <Footer variant="dashboard" session={session} />
+
+      {/* 🔥 DEBUG-KOMPONENTE FÜR ENTWICKLUNG */}
+      <AuthDebug />
     </div>
   );
 }

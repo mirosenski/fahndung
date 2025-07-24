@@ -13,6 +13,9 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
+  Image,
+  FileText,
+  Video,
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useMediaStore } from "~/stores/media.store";
@@ -24,7 +27,7 @@ import { useAuth } from "~/hooks/useAuth";
 import { useSupabaseUpload } from "~/hooks/useSupabaseUpload";
 import { DebugAuth } from "~/components/DebugAuth";
 
-export default function MediaTab() {
+export default function MediaTabEnhanced() {
   const [showUpload, setShowUpload] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<
@@ -34,6 +37,7 @@ export default function MediaTab() {
   const [isLoading, setIsLoading] = useState(true);
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   const { session, loading: authLoading, isAuthenticated } = useAuth();
   const { uploadFile, isUploading, progress } = useSupabaseUpload();
@@ -141,14 +145,12 @@ export default function MediaTab() {
 
   const handleLogin = useCallback(async () => {
     try {
-      // Verwende die bestehende Admin-Authentifizierung
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
         // Session wird automatisch durch useAuth aktualisiert
       } else {
-        // Zeige Hinweis für Admin-Login
         alert("Bitte melden Sie sich als Admin an, um Dateien hochzuladen.");
       }
     } catch (error) {
@@ -223,6 +225,14 @@ export default function MediaTab() {
         </div>
 
         <div className="flex items-center space-x-3">
+          {/* Debug Toggle */}
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:text-gray-100"
+          >
+            {showDebug ? "Debug ausblenden" : "Debug anzeigen"}
+          </button>
+
           {!isAuthenticated ? (
             <button
               onClick={handleLogin}
@@ -248,12 +258,20 @@ export default function MediaTab() {
         </div>
       </div>
 
+      {/* Debug Section */}
+      {showDebug && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+          <h3 className="mb-3 text-lg font-semibold">🔍 Debug Information</h3>
+          <DebugAuth />
+        </div>
+      )}
+
       {/* Upload Section - Only show for admins */}
       {showUpload && isAdmin && (
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Dateien hochladen
+              🚀 Supabase Upload (Neue Funktion)
             </h3>
             <button
               onClick={() => setShowUpload(false)}
@@ -262,45 +280,51 @@ export default function MediaTab() {
               <X className="h-5 w-5" />
             </button>
           </div>
-          
-          {/* Debug Auth Component */}
-          <div className="mb-4">
-            <DebugAuth />
-          </div>
-          
+
           {/* Supabase Upload Progress */}
           {isUploading && (
             <div className="mb-4 space-y-2">
               <div className="text-sm text-blue-600">⏳ Upload läuft...</div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              <div className="h-2 w-full rounded-full bg-gray-200">
+                <div
+                  className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
               <div className="text-xs text-gray-600">{progress}%</div>
             </div>
           )}
-          
+
           {/* Upload Error */}
           {uploadError && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              ❌ Fehler: {uploadError}
+            <div className="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-5 w-5" />
+                <span>❌ Fehler: {uploadError}</span>
+              </div>
             </div>
           )}
-          
+
           {/* Upload Success */}
           {uploadResult && (
-            <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded">
-              <h4 className="font-semibold text-green-800 mb-2">✅ Upload erfolgreich!</h4>
+            <div className="mb-4 rounded border border-green-400 bg-green-100 p-4">
+              <div className="mb-2 flex items-center space-x-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <h4 className="font-semibold text-green-800">
+                  ✅ Upload erfolgreich!
+                </h4>
+              </div>
               <div className="space-y-1 text-sm text-green-700">
-                <div><strong>Pfad:</strong> {uploadResult.path}</div>
-                <div><strong>URL:</strong> 
-                  <a 
-                    href={uploadResult.url} 
-                    target="_blank" 
+                <div>
+                  <strong>Pfad:</strong> {uploadResult.path}
+                </div>
+                <div>
+                  <strong>URL:</strong>
+                  <a
+                    href={uploadResult.url}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline ml-1"
+                    className="ml-1 text-blue-600 hover:underline"
                   >
                     {uploadResult.url}
                   </a>
@@ -308,25 +332,39 @@ export default function MediaTab() {
               </div>
             </div>
           )}
-          
+
           {/* File Upload Input */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="mb-2 block text-sm font-medium">
                 Wähle eine Datei zum Hochladen:
               </label>
               <input
                 type="file"
                 onChange={handleFileUpload}
                 disabled={isUploading}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                accept="image/*,video/*,.pdf,.doc,.docx"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
               />
             </div>
+
+            {/* Upload Instructions */}
+            <div className="rounded bg-blue-50 p-3 text-sm text-blue-700">
+              <h4 className="mb-2 font-medium">📋 Upload-Anweisungen:</h4>
+              <ul className="list-inside list-disc space-y-1">
+                <li>Unterstützte Formate: Bilder, Videos, PDF, Dokumente</li>
+                <li>Maximale Dateigröße: 10MB</li>
+                <li>Dateien werden automatisch komprimiert</li>
+                <li>Öffentliche URLs werden generiert</li>
+              </ul>
+            </div>
           </div>
-          
+
           {/* Legacy MediaUpload Component (fallback) */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Legacy Upload (tRPC):</h4>
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h4 className="mb-3 text-sm font-medium text-gray-700">
+              Legacy Upload (tRPC):
+            </h4>
             <MediaUpload onUploadComplete={() => void refetchMedia()} />
           </div>
         </div>

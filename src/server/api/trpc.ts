@@ -37,50 +37,67 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   try {
     const authHeader = opts.headers.get("Authorization");
     console.log("🔍 Auth header found:", !!authHeader);
-
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      console.log("🔍 Token extracted, length:", token.length);
-
-      // User mit Token validieren
-      const {
-        data: { user: authUser },
-        error,
-      } = await supabase.auth.getUser(token);
-
-      if (!error && authUser) {
-        user = authUser;
-
-        // Benutzer-Profil abrufen
-        const profileResult = await supabase
-          .from("user_profiles")
-          .select("*")
-          .eq("user_id", authUser.id)
-          .single();
-
-        const { data: profile, error: profileError } = profileResult as {
-          data: UserProfile | null;
-          error: { message: string } | null;
-        };
-
-        if (profileError) {
-          console.warn("❌ Profile fetch failed:", profileError.message);
-        }
-
-        session = {
-          user: {
-            id: authUser.id,
-            email: authUser.email ?? "",
-          },
-          profile: profile,
-        };
-        console.log("✅ User authenticated:", authUser.id);
-      } else {
-        console.warn("❌ Token validation failed:", error?.message);
-      }
-    } else {
-      console.warn("❌ No Authorization header found");
+    
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.log('❌ No Authorization header found');
+      return { user: null, supabase: null };
     }
+
+    const token = authHeader.split(' ')[1];
+    console.log("🔍 Token extracted, length:", token.length);
+    
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          persistSession: false,
+        },
+      }
+    );
+
+    const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !supabaseUser) {
+      console.log('❌ Token ungültig:', error?.message);
+      return { user: null, supabase: null };
+    }
+
+    console.log('✅ User authentifiziert:', supabaseUser.email);
+    
+    // Benutzer-Profil abrufen
+    const profileResult = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", supabaseUser.id)
+      .single();
+
+    const { data: profile, error: profileError } = profileResult as {
+      data: UserProfile | null;
+      error: { message: string } | null;
+    };
+
+    if (profileError) {
+      console.warn("❌ Profile fetch failed:", profileError.message);
+    }
+
+    session = {
+      user: {
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+      },
+      profile: profile,
+    };
+    
+    user = supabaseUser;
+    
+    console.log(
+      "✅ User authenticated:",
+      supabaseUser.id,
+      "Role:",
+      profile?.role,
+    );
+    
   } catch (error) {
     console.error("❌ Auth context creation failed:", error);
   }
@@ -88,9 +105,11 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   // Fallback: Verwende getCurrentSession wenn keine Session über Header gefunden wurde
   if (!session) {
     try {
+      console.log("🔄 Fallback: Verwende getCurrentSession...");
       session = await getCurrentSession();
       if (session?.user) {
         user = session.user;
+        console.log("✅ Fallback session erfolgreich:", session.user.id);
       }
     } catch (fallbackError) {
       console.warn("❌ Fallback session failed:", fallbackError);
@@ -199,6 +218,7 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
 
   console.log("✅ Auth middleware: Session gefunden", {
     userId: ctx.session.user.id,
+    userRole: ctx.session.profile?.role,
   });
 
   return next({
@@ -221,9 +241,19 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  // TODO: Implement proper role checking when profile is available
+  // Prüfe Admin-Rechte
+  const userRole = ctx.session.profile?.role;
+  if (userRole !== "admin" && userRole !== "editor") {
+    console.log("❌ Admin middleware: Insufficient permissions:", userRole);
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin- oder Editor-Rechte erforderlich",
+    });
+  }
+
   console.log("✅ Admin middleware: Admin-Rechte bestätigt", {
     userId: ctx.session.user.id,
+    userRole: userRole,
   });
 
   return next({

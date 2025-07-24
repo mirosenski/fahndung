@@ -1,7 +1,20 @@
 import { useState, useCallback, useRef } from "react";
-import { Upload, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import {
+  Upload,
+  AlertTriangle,
+  CheckCircle,
+  Loader2,
+  Image,
+} from "lucide-react";
 import { api } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  compressImage,
+  shouldCompressImage,
+  estimateCompressedSize,
+} from "~/lib/utils/imageCompression";
 
 interface MediaUploadProps {
   onUploadComplete?: (results: unknown[]) => void;
@@ -20,8 +33,14 @@ export default function MediaUpload({
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<{
+    originalSize: number;
+    compressedSize: number;
+    isCompressing: boolean;
+  } | null>(null);
 
   const { session, isAuthenticated } = useAuth();
+  const router = useRouter();
   const isAdmin = session?.profile?.role === "admin";
 
   // Debug-Logging für Session-Status
@@ -43,7 +62,7 @@ export default function MediaUpload({
       reader.readAsDataURL(file);
       reader.onload = () => {
         const result = reader.result as string;
-        // Remove data URL prefix (e.g., "data:image/png;base64,")
+    
         const base64 = result.split(",")[1];
         if (!base64) {
           reject(new Error("Failed to convert file to base64"));
@@ -75,14 +94,30 @@ export default function MediaUpload({
         setError(
           "Sie sind nicht angemeldet. Bitte melden Sie sich als Admin an.",
         );
+        toast.error("Bitte erst einloggen!");
+        router.push("/login");
       } else if (
         error.message.includes("FORBIDDEN") ||
         error.message.includes("Admin-Rechte") ||
-        error.message.includes("Admin-")
+        error.message.includes("Admin-") ||
+        error.message.includes("Editor-Rechte")
       ) {
-        setError("Sie benötigen Admin-Rechte um Dateien hochzuladen.");
+        setError(
+          "Sie benötigen Admin- oder Editor-Rechte um Dateien hochzuladen.",
+        );
+        toast.error("Admin-Rechte erforderlich!");
+      } else if (
+        error.message.includes("PAYLOAD_TOO_LARGE") ||
+        error.message.includes("413") ||
+        error.message.includes("Content Too Large")
+      ) {
+        setError(
+          "Datei ist zu groß. Bitte wählen Sie eine kleinere Datei aus oder komprimieren Sie das Bild.",
+        );
+        toast.error("Datei zu groß!");
       } else {
         setError(`Upload fehlgeschlagen: ${error.message}`);
+        toast.error("Upload fehlgeschlagen!");
       }
     },
   });
@@ -91,18 +126,35 @@ export default function MediaUpload({
     async (files: File[]) => {
       if (files.length === 0) return;
 
-      // Check authentication before upload
+      // 🔥 VERBESSERTE AUTHENTIFIZIERUNGSPRÜFUNG
       if (!isAuthenticated) {
         setError(
           "Sie sind nicht angemeldet. Bitte melden Sie sich als Admin an.",
         );
+        toast.error("Bitte erst einloggen!");
+        router.push("/login");
         return;
       }
 
       if (!isAdmin) {
         setError("Sie benötigen Admin-Rechte um Dateien hochzuladen.");
+        toast.error("Admin-Rechte erforderlich!");
         return;
       }
+
+      // Zusätzliche Session-Validierung
+      if (!session?.user?.id) {
+        setError("Session ungültig. Bitte melden Sie sich erneut an.");
+        toast.error("Session ungültig!");
+        router.push("/login");
+        return;
+      }
+
+      console.log("✅ Upload-Authentifizierung erfolgreich:", {
+        userId: session.user.id,
+        userRole: session.profile?.role,
+        isAdmin,
+      });
 
       setUploading(true);
       setError(null);
@@ -118,10 +170,54 @@ export default function MediaUpload({
             type: file.type,
             isAuthenticated,
             userRole: session?.profile?.role,
+            userId: session?.user?.id,
           });
 
+          // Prüfe ob Bildkompression nötig ist
+          let fileToUpload = file;
+          let compressionInfo = null;
+
+          if (shouldCompressImage(file)) {
+            console.log("🖼️ Bildkompression wird angewendet...");
+            setCompressionInfo({
+              originalSize: file.size,
+              compressedSize: estimateCompressedSize(file),
+              isCompressing: true,
+            });
+
+            try {
+              fileToUpload = await compressImage(file, {
+                maxWidth: 1920,
+                maxHeight: 1080,
+                quality: 0.8,
+              });
+
+              setCompressionInfo({
+                originalSize: file.size,
+                compressedSize: fileToUpload.size,
+                isCompressing: false,
+              });
+
+              console.log("✅ Bildkompression erfolgreich:", {
+                original: formatFileSize(file.size),
+                compressed: formatFileSize(fileToUpload.size),
+                reduction:
+                  Math.round(
+                    ((file.size - fileToUpload.size) / file.size) * 100,
+                  ) + "%",
+              });
+            } catch (compressionError) {
+              console.warn(
+                "⚠️ Bildkompression fehlgeschlagen, verwende Original:",
+                compressionError,
+              );
+              fileToUpload = file;
+              setCompressionInfo(null);
+            }
+          }
+
           // Konvertiere File zu Base64
-          const base64Data = await fileToBase64(file);
+          const base64Data = await fileToBase64(fileToUpload);
 
           console.log("📦 Upload-Daten:", {
             fileBase64Length: base64Data.length,
@@ -132,8 +228,8 @@ export default function MediaUpload({
           // Upload über tRPC mit Base64
           const result = await uploadMutation.mutateAsync({
             file: base64Data, // String
-            filename: file.name, // String
-            contentType: file.type, // String
+            filename: fileToUpload.name, // String
+            contentType: fileToUpload.type, // String
             directory: "allgemein", // String mit Default
             tags: [], // Array mit Default
             is_public: true, // Boolean mit Default
@@ -161,25 +257,39 @@ export default function MediaUpload({
 
       setUploading(false);
     },
-    [uploadMutation, isAuthenticated, isAdmin, session?.profile?.role],
+    [uploadMutation, isAuthenticated, isAdmin, session?.profile?.role, session?.user?.id, router],
   );
 
   const handleFileInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? []);
-      void handleFiles(files);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files || []);
+      if (files.length > 0) {
+        void handleFiles(files);
       }
     },
     [handleFiles],
   );
 
-  const openFileDialog = useCallback(() => {
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      const files = Array.from(event.dataTransfer.files);
+      if (files.length > 0) {
+        void handleFiles(files);
+      }
+    },
+    [handleFiles],
+  );
+
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  }, []);
+
+  const handleClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
@@ -189,25 +299,40 @@ export default function MediaUpload({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Authentication Status */}
-      {!isAuthenticated && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20">
+      {/* Upload Progress */}
+      {uploading && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900/20">
           <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-            <p className="text-sm text-red-800 dark:text-red-200">
-              Sie sind nicht angemeldet. Bitte melden Sie sich als Admin an.
-            </p>
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" />
+            <div className="flex-1">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                Upload läuft... {Math.round(uploadProgress.percentage)}%
+              </p>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-blue-200 dark:bg-blue-700">
+                <div
+                  className="h-full bg-blue-600 transition-all duration-300 dark:bg-blue-400"
+                  style={{ width: `${uploadProgress.percentage}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {isAuthenticated && !isAdmin && (
+      {/* Compression Info */}
+      {compressionInfo && (
         <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-700 dark:bg-orange-900/20">
           <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-            <p className="text-sm text-orange-800 dark:text-orange-200">
-              Sie benötigen Admin-Rechte um Dateien hochzuladen.
-            </p>
+            <Image className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <div className="flex-1">
+              <p className="text-sm text-orange-800 dark:text-orange-200">
+                {compressionInfo.isCompressing
+                  ? "Bild wird komprimiert..."
+                  : `Bild komprimiert: ${formatFileSize(
+                      compressionInfo.originalSize,
+                    )} → ${formatFileSize(compressionInfo.compressedSize)}`}
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -255,60 +380,25 @@ export default function MediaUpload({
               Ziehen Sie Dateien hierher oder klicken Sie zum Auswählen
             </p>
           </div>
-
           <button
-            onClick={openFileDialog}
-            disabled={!isAuthenticated || !isAdmin || uploading}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handleClick}
+            disabled={uploading}
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-800"
           >
-            {uploading ? (
-              <div className="flex items-center space-x-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Upload läuft...</span>
-              </div>
-            ) : (
-              "Dateien auswählen"
-            )}
+            {uploading ? "Upload läuft..." : "Dateien auswählen"}
           </button>
         </div>
 
-        {/* Progress Bar */}
-        {uploading && uploadProgress.percentage > 0 && (
-          <div className="mt-4">
-            <div className="mb-2 flex justify-between text-sm">
-              <span>Fortschritt</span>
-              <span>{Math.round(uploadProgress.percentage)}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700">
-              <div
-                className="h-2 rounded-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${uploadProgress.percentage}%` }}
-              />
-            </div>
-            <div className="mt-1 text-xs text-gray-500">
-              {formatFileSize(uploadProgress.loaded)} /{" "}
-              {formatFileSize(uploadProgress.total)}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Debug Info (nur in Development) */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-          <h4 className="font-semibold text-gray-900 dark:text-white">
-            Debug Info:
-          </h4>
-          <div className="mt-2 space-y-1 text-xs text-gray-600 dark:text-gray-400">
-            <div>Authentifiziert: {isAuthenticated ? "Ja" : "Nein"}</div>
-            <div>Admin: {isAdmin ? "Ja" : "Nein"}</div>
-            <div>User ID: {session?.user?.id ?? "N/A"}</div>
-            <div>Email: {session?.user?.email ?? "N/A"}</div>
-            <div>Rolle: {session?.profile?.role ?? "N/A"}</div>
-            <div>Upload Status: {uploading ? "Läuft" : "Bereit"}</div>
-          </div>
+        <div
+          className="mt-4 min-h-[100px] rounded-lg border-2 border-dashed border-gray-300 p-4 dark:border-gray-600"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Hier Dateien ablegen
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
