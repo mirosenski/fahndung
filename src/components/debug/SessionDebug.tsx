@@ -5,12 +5,13 @@ import { api } from "~/trpc/react";
 import type { Session } from "@supabase/supabase-js";
 
 export default function SessionDebug() {
-  const { session, isAuthenticated, loading } = useAuth();
+  const { session, isAuthenticated, loading, error, initialized } = useAuth();
   const [localStorageData, setLocalStorageData] = useState<
     Record<string, string>
   >({});
   const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
   const [testResult, setTestResult] = useState<string>("");
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Test tRPC Auth
   const testAuth = api.auth.getSession.useQuery(undefined, {
@@ -45,6 +46,29 @@ export default function SessionDebug() {
     void checkSupabaseSession();
   }, []);
 
+  // Debug-Informationen sammeln
+  useEffect(() => {
+    const info = [
+      `Loading: ${loading}`,
+      `Initialized: ${initialized}`,
+      `Has Session: ${!!session}`,
+      `Is Authenticated: ${isAuthenticated}`,
+      `Error: ${error ?? "None"}`,
+      `Supabase Session: ${!!supabaseSession}`,
+      `LocalStorage Keys: ${Object.keys(localStorageData).length}`,
+    ].join("\n");
+
+    setDebugInfo(info);
+  }, [
+    loading,
+    initialized,
+    session,
+    isAuthenticated,
+    error,
+    supabaseSession,
+    localStorageData,
+  ]);
+
   const runAuthTest = async () => {
     try {
       setTestResult("Teste tRPC Auth...");
@@ -67,87 +91,47 @@ export default function SessionDebug() {
   };
 
   return (
-    <div className="space-y-6 rounded-lg bg-gray-50 p-6 dark:bg-gray-900">
-      <h2 className="text-xl font-bold">🔍 Session Debug</h2>
+    <div className="rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
+      <h3 className="mb-4 text-lg font-semibold">Session Debug</h3>
 
-      {/* Auth Status */}
-      <div className="space-y-2">
-        <h3 className="font-semibold">Authentifizierungsstatus:</h3>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div>Loading: {loading ? "✅" : "❌"}</div>
-          <div>Authentifiziert: {isAuthenticated ? "✅" : "❌"}</div>
-          <div>Session vorhanden: {session ? "✅" : "❌"}</div>
-          <div>User ID: {session?.user?.id ?? "N/A"}</div>
-          <div>Email: {session?.user?.email ?? "N/A"}</div>
-          <div>Rolle: {session?.profile?.role ?? "N/A"}</div>
-        </div>
-      </div>
-
-      {/* Supabase Session */}
-      <div className="space-y-2">
-        <h3 className="font-semibold">Supabase Session:</h3>
-        <pre className="max-h-40 overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
-          {JSON.stringify(supabaseSession, null, 2)}
+      <div className="mb-4">
+        <h4 className="mb-2 font-medium">Debug Info:</h4>
+        <pre className="overflow-auto rounded bg-gray-200 p-2 text-xs dark:bg-gray-700">
+          {debugInfo}
         </pre>
       </div>
 
-      {/* LocalStorage */}
-      <div className="space-y-2">
-        <h3 className="font-semibold">LocalStorage (Supabase):</h3>
-        <div className="space-y-1">
-          {Object.entries(localStorageData).map(([key, value]) => (
-            <div key={key} className="text-xs">
-              <strong>{key}:</strong>
-              <pre className="mt-1 max-h-20 overflow-auto rounded bg-gray-100 p-1 dark:bg-gray-800">
-                {value.substring(0, 200)}...
-              </pre>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Test Buttons */}
-      <div className="space-y-2">
-        <h3 className="font-semibold">Tests:</h3>
-        <div className="flex space-x-2">
+      <div className="mb-4">
+        <h4 className="mb-2 font-medium">Actions:</h4>
+        <div className="space-x-2">
           <button
             onClick={runAuthTest}
-            className="rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600"
+            className="rounded bg-blue-500 px-3 py-1 text-sm text-white"
           >
-            tRPC Auth Test
+            Test tRPC Auth
           </button>
           <button
             onClick={clearSession}
-            className="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
+            className="rounded bg-red-500 px-3 py-1 text-sm text-white"
           >
-            Session löschen
+            Clear Session
           </button>
         </div>
-        {testResult && (
-          <div className="rounded bg-gray-100 p-2 text-sm dark:bg-gray-800">
-            {testResult}
-          </div>
-        )}
       </div>
 
-      {/* Token Info */}
-      {supabaseSession?.access_token && (
-        <div className="space-y-2">
-          <h3 className="font-semibold">Token Info:</h3>
-          <div className="space-y-1 text-xs">
-            <div>Token Länge: {supabaseSession.access_token.length}</div>
-            <div>
-              Token Start: {supabaseSession.access_token.substring(0, 50)}...
-            </div>
-            <div>
-              Token Ende: ...
-              {supabaseSession.access_token.substring(
-                supabaseSession.access_token.length - 20,
-              )}
-            </div>
-          </div>
+      {testResult && (
+        <div className="mb-4">
+          <h4 className="mb-2 font-medium">Test Result:</h4>
+          <p className="text-sm">{testResult}</p>
         </div>
       )}
+
+      <div className="mb-4">
+        <h4 className="mb-2 font-medium">LocalStorage Data:</h4>
+        <pre className="max-h-32 overflow-auto rounded bg-gray-200 p-2 text-xs dark:bg-gray-700">
+          {JSON.stringify(localStorageData, null, 2)}
+        </pre>
+      </div>
     </div>
   );
 }

@@ -46,8 +46,20 @@ async function getAuthToken(): Promise<string | null> {
   try {
     console.log("🔍 tRPC: Hole Auth-Token von Supabase...");
     
-    // Direkte Supabase Session-Abfrage
-    const { data: { session }, error } = await supabase.auth.getSession();
+    // Direkte Supabase Session-Abfrage mit Timeout
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<null>((resolve) => 
+      setTimeout(() => resolve(null), 2000)
+    );
+    
+    const result = await Promise.race([sessionPromise, timeoutPromise]);
+    
+    if (!result) {
+      console.warn("❌ tRPC: Session-Abfrage Timeout");
+      return null;
+    }
+    
+    const { data: { session }, error } = result;
     
     if (error) {
       console.warn("❌ tRPC: Supabase Session-Fehler:", error.message);

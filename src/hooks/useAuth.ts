@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/prefer-optional-chain */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "~/lib/supabase";
@@ -24,7 +23,7 @@ export const useAuth = () => {
   const hasInitialized = useRef(false);
   const authListenerSetup = useRef(false);
   const retryCount = useRef(0);
-  const maxRetries = 3;
+  const maxRetries = 2; // Reduziert von 3 auf 2
 
   // Verbesserte Session-Prüfung mit Retry-Logic
   const checkSession = useCallback(async (force = false) => {
@@ -36,7 +35,10 @@ export const useAuth = () => {
 
     // Verhindere zu viele Retries
     if (retryCount.current >= maxRetries && !force) {
-      console.log("🔍 useAuth: Max Retries erreicht, überspringe...");
+      console.log(
+        "🔍 useAuth: Max Retries erreicht, setze Session auf null...",
+      );
+      setSession(null);
       setLoading(false);
       setInitialized(true);
       return;
@@ -90,64 +92,12 @@ export const useAuth = () => {
     }
   }, []);
 
-  // Verbesserte Logout-Funktion
   const logout = useCallback(async () => {
     try {
-      console.log("🔐 Starte Logout-Prozess...");
+      console.log("🔐 useAuth: Starte Logout...");
 
-      // Zuerst lokale Storage bereinigen
-      if (typeof window !== "undefined") {
-        try {
-          // Alle Supabase-bezogenen Daten bereinigen
-          const keysToRemove = [];
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.includes("supabase")) {
-              keysToRemove.push(key);
-            }
-          }
-          keysToRemove.forEach((key) => localStorage.removeItem(key));
-          sessionStorage.clear();
-          console.log("✅ Lokale Storage bereinigt");
-        } catch (storageError) {
-          console.error(
-            "⚠️ Fehler beim Bereinigen des lokalen Storage:",
-            storageError,
-          );
-        }
-      }
-
-      // Dann Supabase-Abmeldung mit verbesserter Fehlerbehandlung
-      if (supabase) {
-        try {
-          // Zuerst prüfen, ob eine Session existiert
-          const {
-            data: { session },
-            error: sessionError,
-          } = await supabase.auth.getSession();
-
-          if (sessionError) {
-            console.log(
-              "ℹ️ Session-Fehler beim Logout (normal):",
-              sessionError.message,
-            );
-          } else if (!session) {
-            console.log("ℹ️ Keine aktive Session gefunden - normal");
-          } else {
-            // Nur abmelden, wenn eine Session existiert
-            const { error } = await supabase.auth.signOut({
-              scope: "local", // Verwende lokalen Scope statt global
-            });
-            if (error) {
-              console.log("ℹ️ Supabase Logout-Fehler (normal):", error.message);
-            } else {
-              console.log("✅ Supabase Logout erfolgreich");
-            }
-          }
-        } catch (err) {
-          console.log("ℹ️ Logout-Ausnahme (normal):", err);
-        }
-      }
+      // Session bereinigen
+      await clearAuthSession();
 
       // Session-State zurücksetzen
       setSession(null);

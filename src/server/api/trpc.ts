@@ -53,10 +53,27 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         );
 
         try {
+          // Timeout für Token-Validierung hinzufügen
+          const userPromise = supabase.auth.getUser(token);
+          const timeoutPromise = new Promise<{
+            data: { user: null };
+            error: { message: string };
+          }>((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  data: { user: null },
+                  error: { message: "Timeout" },
+                }),
+              3000,
+            ),
+          );
+
+          const result = await Promise.race([userPromise, timeoutPromise]);
           const {
             data: { user: supabaseUser },
             error,
-          } = await supabase.auth.getUser(token);
+          } = result;
 
           if (error) {
             console.log("❌ Token ungültig:", error.message);
@@ -105,7 +122,9 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         }
       }
     } else {
-      console.log("❌ No Authorization header found, trying getCurrentSession...");
+      console.log(
+        "❌ No Authorization header found, trying getCurrentSession...",
+      );
       // Fallback to getCurrentSession when no auth header
       session = await getCurrentSession();
     }
@@ -115,7 +134,10 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     try {
       session = await getCurrentSession();
     } catch (fallbackError) {
-      console.error("❌ Fallback getCurrentSession also failed:", fallbackError);
+      console.error(
+        "❌ Fallback getCurrentSession also failed:",
+        fallbackError,
+      );
     }
   }
 
@@ -197,6 +219,15 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
+    });
+  }
+
+  // Zusätzliche Session-Validierung
+  if (!ctx.session.user?.id) {
+    console.log("❌ Auth middleware: Ungültige Session - keine User-ID");
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Ungültige Session - Bitte melden Sie sich erneut an",
     });
   }
 
