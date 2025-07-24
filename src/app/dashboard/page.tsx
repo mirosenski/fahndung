@@ -52,9 +52,6 @@ const SettingsTab = dynamic(
   },
 );
 
-
-
-
 interface Investigation {
   id: string;
   title: string;
@@ -175,21 +172,32 @@ export default function Dashboard() {
   useEffect(() => {
     if (error) {
       console.error("Dashboard Auth error:", error);
-      
+
       // Bei Auth-Fehlern zur Login-Seite weiterleiten
-      if (error.includes("403") || error.includes("Forbidden") || error.includes("Unauthorized")) {
-        console.log("🔐 Dashboard: Auth-Fehler erkannt, weiterleitung zu Login...");
+      if (
+        error.includes("403") ||
+        error.includes("Forbidden") ||
+        error.includes("Unauthorized")
+      ) {
+        console.log(
+          "🔐 Dashboard: Auth-Fehler erkannt, weiterleitung zu Login...",
+        );
         router.push("/login");
       }
     }
   }, [error, router]);
 
-  // Loading state mit Timeout
+  // Loading state mit verbesserter UX
   if (!initialized || loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="flex h-screen items-center justify-center">
-          <LoadingSpinner message="Lade Dashboard..." />
+          <div className="text-center">
+            <LoadingSpinner message="Lade Dashboard..." />
+            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+              {!initialized ? "Initialisiere..." : "Prüfe Authentifizierung..."}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -198,7 +206,17 @@ export default function Dashboard() {
   // Auth check - return null instead of router.push to avoid render cycle issues
   if (!session?.user) {
     console.log("🔐 Dashboard: Keine Session gefunden, rendere nichts...");
-    return null;
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4 text-4xl">🔐</div>
+            <div className="text-xl font-semibold">Nicht authentifiziert</div>
+            <div className="mt-2 text-gray-400">Weiterleitung zu Login...</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Investigations data with proper typing

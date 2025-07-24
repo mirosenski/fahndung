@@ -56,8 +56,13 @@ export const useAuth = () => {
         ")",
       );
 
-      // Einfache Session-Prüfung ohne Race-Conditions
-      const currentSession = await getCurrentSession();
+      // Optimierte Session-Prüfung mit kürzerem Timeout
+      const sessionPromise = getCurrentSession();
+      const timeoutPromise = new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 1500), // Reduziert von 3000ms auf 1500ms
+      );
+
+      const currentSession = await Promise.race([sessionPromise, timeoutPromise]);
 
       if (currentSession) {
         setSession(currentSession);

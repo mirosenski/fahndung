@@ -98,7 +98,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
   try {
     console.log("🔍 Prüfe Benutzer-Authentifizierung...");
 
-    // Session-Prüfung mit Timeout
+    // Session-Prüfung mit kürzerem Timeout
     const sessionPromise = supabase.auth.getSession();
     const timeoutPromise = new Promise<{
       data: { session: null };
@@ -107,7 +107,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
       setTimeout(
         () =>
           resolve({ data: { session: null }, error: { message: "Timeout" } }),
-        3000,
+        1500, // Reduziert von 3000ms auf 1500ms
       ),
     );
 
