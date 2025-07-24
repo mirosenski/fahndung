@@ -27,13 +27,8 @@ const config = {
   compress: true,
   poweredByHeader: false,
 
-  // 🔥 API-KONFIGURATION FÜR GRÖSSERE UPLOADS
-  api: {
-    bodyParser: {
-      sizeLimit: "10mb",
-    },
-    responseLimit: "10mb",
-  },
+  // API body size limits are now handled in API route handlers
+  // using config export in individual API files
 
   // Verbesserte Dateisystem-Behandlung mit HMR-Optimierungen
   onDemandEntries: {

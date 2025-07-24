@@ -32,3 +32,17 @@ const handler = (req: NextRequest) =>
   });
 
 export { handler as GET, handler as POST };
+
+// Configure API route for larger uploads
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// Configure body size limits for this API route
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb",
+    },
+    responseLimit: "10mb",
+  },
+};

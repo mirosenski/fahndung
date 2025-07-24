@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import {
   Video,
   Hand,
-  Users,
   Phone,
   Mail,
   FileText,
