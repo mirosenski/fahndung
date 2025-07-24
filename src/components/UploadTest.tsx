@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useSupabaseUpload } from "~/hooks/useSupabaseUpload";
-import { DebugAuth } from "./DebugAuth";
 
 interface UploadResult {
   path: string;

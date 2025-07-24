@@ -9,7 +9,6 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
-  Upload,
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { isAdmin, isEditor, getAllUsers, getAdminActions } from "~/lib/auth";
@@ -52,21 +51,9 @@ const SettingsTab = dynamic(
     ssr: false,
   },
 );
-const UploadTestTab = dynamic(
-  () =>
-    import("~/components/dashboard/UploadTestTab").then((mod) => ({
-      default: mod.UploadTestTab,
-    })),
-  {
-    loading: () => <LoadingSpinner message="Lade Upload Test..." />,
-    ssr: false,
-  },
-);
 
-// Debug-Komponenten
-const AuthDebug = dynamic(() => import("~/components/debug/AuthDebug"), {
-  ssr: false,
-});
+
+
 
 interface Investigation {
   id: string;
@@ -316,8 +303,6 @@ export default function Dashboard() {
         );
       case "media":
         return <MediaTab />;
-      // case "upload-test":
-      //   return <UploadTestTab />;
       case "settings":
         return <SettingsTab />;
       default:
@@ -366,9 +351,6 @@ export default function Dashboard() {
       </div>
 
       <Footer variant="dashboard" session={session} />
-
-      {/* 🔥 DEBUG-KOMPONENTE FÜR ENTWICKLUNG */}
-      {/* <AuthDebug /> */}
     </div>
   );
 }
