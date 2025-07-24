@@ -2,20 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  User,
-  Shield,
-  Crown,
-  Database,
-} from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { supabase } from "~/lib/supabase";
-import { setupAllUsers, clearAuthSession } from "~/lib/auth";
+import { clearAuthSession } from "~/lib/auth";
 import Header from "~/components/layout/Header";
+import Footer from "~/components/layout/Footer";
 import AutoSetup from "~/components/AutoSetup";
 
 export default function Login() {
@@ -23,7 +14,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [setupLoading, setSetupLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -71,90 +61,6 @@ export default function Login() {
     }
   };
 
-  // Demo-Login-Daten automatisch ausfüllen
-  const fillDemoData = (role: "admin" | "editor" | "user") => {
-    const demoData = {
-      admin: { email: "admin@fahndung.local", password: "admin123" },
-      editor: { email: "editor@fahndung.local", password: "editor123" },
-      user: { email: "user@fahndung.local", password: "user123" },
-    };
-
-    setEmail(demoData[role].email);
-    setPassword(demoData[role].password);
-    setError("");
-  };
-
-  // Demo-Login mit automatischer Anmeldung
-  const handleDemoLogin = async (role: "admin" | "editor" | "user") => {
-    fillDemoData(role);
-
-    // Kurze Verzögerung für bessere UX
-    setTimeout(() => {
-      void (async () => {
-        setLoading(true);
-        setError("");
-
-        try {
-          if (!supabase) {
-            setError("Supabase ist nicht konfiguriert");
-            return;
-          }
-
-          const { error } = await supabase.auth.signInWithPassword({
-            email:
-              role === "admin"
-                ? "admin@fahndung.local"
-                : role === "editor"
-                  ? "editor@fahndung.local"
-                  : "user@fahndung.local",
-            password:
-              role === "admin"
-                ? "admin123"
-                : role === "editor"
-                  ? "editor123"
-                  : "user123",
-          });
-
-          if (error) {
-            console.error("Login-Fehler:", error);
-            if (error.message.includes("Invalid login credentials")) {
-              setError(
-                `Demo-User ${role} existiert nicht. Bitte erstelle zuerst die Demo-User mit dem "Demo-Benutzer erstellen" Button.`,
-              );
-            } else {
-              setError(`Login-Fehler: ${error.message}`);
-            }
-          } else {
-            router.push("/dashboard");
-          }
-        } catch (error) {
-          console.error("Unerwarteter Fehler:", error);
-          setError("Ein unerwarteter Fehler ist aufgetreten");
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }, 100);
-  };
-
-  // Alle Benutzer einrichten (Demo + PTLS Web)
-  const handleSetupAllUsers = async () => {
-    setSetupLoading(true);
-    setError("");
-
-    try {
-      const result = await setupAllUsers();
-      setError(result.message);
-    } catch (error) {
-      console.error("Setup-Fehler:", error);
-      setError(
-        "Fehler beim Erstellen der Benutzer. Bitte überprüfen Sie die Supabase-Konfiguration.",
-      );
-    } finally {
-      setSetupLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <AutoSetup />
@@ -178,59 +84,6 @@ export default function Login() {
                   <span className="text-sm text-red-400">{error}</span>
                 </div>
               )}
-
-              {/* Demo-Login-Buttons */}
-              <div className="space-y-3">
-                <p className="text-center text-sm text-gray-400">
-                  Demo-Accounts zum Testen:
-                </p>
-                <div className="flex space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("admin")}
-                    disabled={loading}
-                    className="flex flex-1 items-center justify-center space-x-2 rounded-lg border border-red-500/30 bg-red-600/20 px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-600/30 disabled:opacity-50"
-                  >
-                    <Crown className="h-4 w-4" />
-                    <span>{loading ? "Anmelden..." : "Admin"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("editor")}
-                    disabled={loading}
-                    className="flex flex-1 items-center justify-center space-x-2 rounded-lg border border-blue-500/30 bg-blue-600/20 px-3 py-2 text-sm text-blue-400 transition-colors hover:bg-blue-600/30 disabled:opacity-50"
-                  >
-                    <Shield className="h-4 w-4" />
-                    <span>{loading ? "Anmelden..." : "Editor"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("user")}
-                    disabled={loading}
-                    className="flex flex-1 items-center justify-center space-x-2 rounded-lg border border-green-500/30 bg-green-600/20 px-3 py-2 text-sm text-green-400 transition-colors hover:bg-green-600/30 disabled:opacity-50"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>{loading ? "Anmelden..." : "User"}</span>
-                  </button>
-                </div>
-
-                {/* Setup All Users Button */}
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={handleSetupAllUsers}
-                    disabled={setupLoading}
-                    className="mx-auto flex items-center justify-center space-x-2 rounded-lg border border-purple-500/30 bg-purple-600/20 px-4 py-2 text-sm text-purple-400 transition-colors hover:bg-purple-600/30 disabled:opacity-50"
-                  >
-                    <Database className="h-4 w-4" />
-                    <span>
-                      {setupLoading
-                        ? "Erstelle alle Benutzer..."
-                        : "Alle Benutzer einrichten"}
-                    </span>
-                  </button>
-                </div>
-              </div>
 
               <div>
                 <div className="mb-2 flex items-center space-x-2">
@@ -323,6 +176,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <Footer variant="login" />
     </div>
   );
 }

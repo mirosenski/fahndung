@@ -12,6 +12,7 @@ import {
   Building,
   Phone,
   ArrowLeft,
+  CheckCircle,
 } from "lucide-react";
 import { supabase } from "~/lib/supabase";
 import { sendRegistrationNotification } from "~/lib/email-notifications";
@@ -29,6 +30,7 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleInputChange = (field: string, value: string) => {
@@ -66,6 +68,7 @@ export default function RegisterForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
     if (!validateForm()) {
       setLoading(false);
@@ -75,43 +78,88 @@ export default function RegisterForm() {
     try {
       if (!supabase) {
         setError("Supabase ist nicht konfiguriert");
+        setLoading(false);
         return;
       }
 
-      // Speichere Registrierung in pending_registrations
-      const result = await supabase
-        .from("pending_registrations")
-        .insert({
+      console.log("🔐 Starte Supabase Auth Registrierung...");
+
+      // Prüfe zuerst, ob der Benutzer bereits existiert
+      const { data: existingUser, error: checkError } =
+        await supabase.auth.signInWithPassword({
           email: formData.email,
-          name: formData.name,
-          department: formData.department || "Allgemein",
-          phone: formData.phone,
-          password_hash: formData.password, // In Produktion sollte das gehasht werden
-          status: "pending",
-        })
-        .select()
-        .single();
+          password: formData.password,
+        });
 
-      const registrationData = result.data as { id: string } | null;
-      const registrationError = result.error;
-
-      if (registrationError) {
-        console.error("Registrierungs-Fehler:", registrationError);
-        if (registrationError.message.includes("duplicate key")) {
-          setError(
-            "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.",
-          );
-        } else {
-          setError(`Registrierungs-Fehler: ${registrationError.message}`);
-        }
+      if (existingUser.user) {
+        // Benutzer existiert bereits und Passwort ist korrekt
+        setError(
+          "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an.",
+        );
+        setLoading(false);
         return;
       }
 
-      if (registrationData) {
+      // Verwende Supabase Auth signUp
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            department: formData.department || "Allgemein",
+            phone: formData.phone,
+          },
+        },
+      });
+
+      if (authError) {
+        console.error("❌ Supabase Auth Fehler:", authError);
+
+        if (authError.message.includes("User already registered")) {
+          setError(
+            "Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an oder verwenden Sie eine andere E-Mail-Adresse.",
+          );
+        } else if (authError.message.includes("Invalid email")) {
+          setError("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+        } else if (authError.message.includes("Password")) {
+          setError("Das Passwort muss mindestens 6 Zeichen lang sein.");
+        } else {
+          setError(`Registrierungs-Fehler: ${authError.message}`);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
         console.log(
-          "Registrierung gespeichert:",
-          registrationData.id ?? "unknown",
+          "✅ Supabase Auth Registrierung erfolgreich:",
+          data.user.email,
         );
+
+        // Erstelle Benutzer-Profil in der Datenbank
+        try {
+          const { error: profileError } = await supabase
+            .from("user_profiles")
+            .insert({
+              user_id: data.user.id,
+              name: formData.name,
+              email: formData.email,
+              department: formData.department || "Allgemein",
+              phone: formData.phone,
+              role: "user", // Standard-Rolle
+              status: "pending", // Wartet auf Admin-Genehmigung
+            });
+
+          if (profileError) {
+            console.warn("⚠️ Profil-Erstellung fehlgeschlagen:", profileError);
+            // Das ist nicht kritisch, da der Auth-Benutzer bereits erstellt wurde
+          } else {
+            console.log("✅ Benutzer-Profil erstellt");
+          }
+        } catch (profileError) {
+          console.warn("⚠️ Fehler beim Erstellen des Profils:", profileError);
+        }
 
         // E-Mail-Benachrichtigung an Super-Admin senden
         try {
@@ -124,21 +172,40 @@ export default function RegisterForm() {
           });
           console.log("✅ E-Mail-Benachrichtigung an Super-Admin gesendet");
         } catch (emailError) {
-          console.warn("E-Mail-Benachrichtigung fehlgeschlagen:", emailError);
+          console.warn(
+            "⚠️ E-Mail-Benachrichtigung fehlgeschlagen:",
+            emailError,
+          );
         }
 
-        setError(
-          "✅ Registrierung erfolgreich eingereicht! Eine Bestätigungs-E-Mail wurde an ptlsweb@gmail.com gesendet. Bitte warten Sie auf die Genehmigung durch einen Administrator.",
+        setSuccess(
+          "✅ Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mail-Adresse und bestätigen Sie Ihr Konto. Ein Administrator wird Ihr Konto genehmigen.",
         );
 
-        // Nach 3 Sekunden zur Login-Seite weiterleiten
+        // Formular zurücksetzen
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          department: "",
+          phone: "",
+        });
+
+        // Nach 5 Sekunden zur Login-Seite weiterleiten
         setTimeout(() => {
           router.push("/login");
-        }, 3000);
+        }, 5000);
+      } else {
+        setError(
+          "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        );
       }
     } catch (error) {
-      console.error("Unerwarteter Registrierungs-Fehler:", error);
-      setError("Ein unerwarteter Fehler ist aufgetreten");
+      console.error("❌ Unerwarteter Registrierungs-Fehler:", error);
+      setError(
+        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      );
     } finally {
       setLoading(false);
     }
@@ -162,6 +229,13 @@ export default function RegisterForm() {
               <div className="flex items-center space-x-2 rounded-lg border border-red-500/30 bg-red-500/20 p-3">
                 <AlertCircle className="h-5 w-5 text-red-400" />
                 <span className="text-sm text-red-400">{error}</span>
+              </div>
+            )}
+
+            {success && (
+              <div className="flex items-center space-x-2 rounded-lg border border-green-500/30 bg-green-500/20 p-3">
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <span className="text-sm text-green-400">{success}</span>
               </div>
             )}
 
@@ -227,13 +301,13 @@ export default function RegisterForm() {
                     handleInputChange("password", e.target.value)
                   }
                   required
-                  className="input-dark-mode py-3 pl-10 pr-12"
-                  placeholder="••••••••"
+                  className="input-dark-mode py-3 pl-10 pr-10"
+                  placeholder="Mindestens 6 Zeichen"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -242,9 +316,6 @@ export default function RegisterForm() {
                   )}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                Mindestens 6 Zeichen
-              </p>
             </div>
 
             {/* Passwort bestätigen */}
@@ -265,13 +336,13 @@ export default function RegisterForm() {
                     handleInputChange("confirmPassword", e.target.value)
                   }
                   required
-                  className="input-dark-mode py-3 pl-10 pr-12"
-                  placeholder="••••••••"
+                  className="input-dark-mode py-3 pl-10 pr-10"
+                  placeholder="Passwort wiederholen"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />

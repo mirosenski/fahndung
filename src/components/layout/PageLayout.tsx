@@ -39,6 +39,7 @@ interface PageLayoutProps {
   showBreadcrumb?: boolean;
   showHero?: boolean;
   showFooter?: boolean;
+  className?: string;
 }
 
 export default function PageLayout({
@@ -50,10 +51,11 @@ export default function PageLayout({
   showHeader = true,
   showBreadcrumb = false,
   showHero = false,
-  showFooter = false,
+  showFooter = true,
+  className = "",
 }: PageLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className={`min-h-screen bg-white dark:bg-gray-900 ${className}`}>
       {/* Header */}
       {showHeader && (
         <Header
