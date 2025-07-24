@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Mail, Phone, MapPin, Clock, AlertTriangle } from "lucide-react";
 import PublicPageLayout from "~/components/layout/PublicPageLayout";
 

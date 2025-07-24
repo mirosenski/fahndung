@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import PublicPageLayout from "~/components/layout/PublicPageLayout";
 
 export const metadata: Metadata = {

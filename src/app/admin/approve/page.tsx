@@ -1,18 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "~/lib/supabase";
 import { sendUserConfirmationEmail } from "~/lib/email-notifications";
 
-export default function AdminApprovalPage() {
+interface UserProfile {
+  name: string;
+  email: string;
+  department: string;
+  phone?: string;
+  created_at: string;
+  status: string;
+}
+
+function AdminApprovalContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserProfile | null>(null);
 
   const email = searchParams.get("email");
   const action = searchParams.get("action");
@@ -45,7 +54,26 @@ export default function AdminApprovalPage() {
           return;
         }
 
-        setUserData(userProfile);
+        if (!userProfile) {
+          setError("Benutzer nicht gefunden");
+          setLoading(false);
+          return;
+        }
+
+        // Type assertion with proper validation
+        const typedUserProfile: UserProfile = {
+          name: String(userProfile["name"]),
+          email: String(userProfile["email"]),
+          department: String(userProfile["department"]),
+          phone:
+            userProfile["phone"] && typeof userProfile["phone"] === "string"
+              ? userProfile["phone"]
+              : undefined,
+          created_at: String(userProfile["created_at"]),
+          status: String(userProfile["status"]),
+        };
+
+        setUserData(typedUserProfile);
 
         // Führe Genehmigung/Ablehnung durch
         const newStatus = action === "approve" ? "approved" : "rejected";
@@ -72,7 +100,7 @@ export default function AdminApprovalPage() {
         try {
           await sendUserConfirmationEmail(
             email,
-            userProfile.name,
+            userProfile["name"] as string,
             action === "approve",
           );
           console.log("✅ Bestätigungs-E-Mail gesendet");
@@ -83,8 +111,8 @@ export default function AdminApprovalPage() {
         // Erfolgsmeldung
         const successMessage =
           action === "approve"
-            ? `✅ Benutzer ${userProfile.name} wurde erfolgreich genehmigt!`
-            : `❌ Benutzer ${userProfile.name} wurde abgelehnt.`;
+            ? `✅ Benutzer ${userProfile["name"] as string} wurde erfolgreich genehmigt!`
+            : `❌ Benutzer ${userProfile["name"] as string} wurde abgelehnt.`;
 
         setSuccess(successMessage);
         console.log("✅ Admin-Aktion erfolgreich:", action);
@@ -99,7 +127,6 @@ export default function AdminApprovalPage() {
           error,
         );
         setError("Ein unerwarteter Fehler ist aufgetreten");
-      } finally {
         setLoading(false);
       }
     };
@@ -109,14 +136,11 @@ export default function AdminApprovalPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
-          <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+          <p className="mt-4 text-gray-600 dark:text-gray-400">
             Verarbeite Anfrage...
-          </h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Bitte warten Sie einen Moment.
           </p>
         </div>
       </div>
@@ -124,11 +148,11 @@ export default function AdminApprovalPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-4 dark:bg-gray-900">
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
           {error && (
-            <div className="mb-6 flex items-center space-x-3 rounded-lg border border-red-500/30 bg-red-500/20 p-4">
+            <div className="mb-6 flex items-center space-x-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
               <AlertCircle className="h-6 w-6 text-red-400" />
               <div>
                 <h3 className="font-semibold text-red-400">Fehler</h3>
@@ -138,7 +162,7 @@ export default function AdminApprovalPage() {
           )}
 
           {success && (
-            <div className="mb-6 flex items-center space-x-3 rounded-lg border border-green-500/30 bg-green-500/20 p-4">
+            <div className="mb-6 flex items-center space-x-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
               {action === "approve" ? (
                 <CheckCircle className="h-6 w-6 text-green-400" />
               ) : (
@@ -239,5 +263,22 @@ export default function AdminApprovalPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminApprovalPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Lade...</p>
+          </div>
+        </div>
+      }
+    >
+      <AdminApprovalContent />
+    </Suspense>
   );
 }

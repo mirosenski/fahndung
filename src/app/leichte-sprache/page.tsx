@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import {
   Accessibility,
   Users,
@@ -12,7 +12,7 @@ import PublicPageLayout from "~/components/layout/PublicPageLayout";
 export const metadata: Metadata = {
   title: "Leichte Sprache | LKA Baden-Württemberg",
   description:
-    "Informationen in Leichter Sprache vom Landeskriminalamt Baden-Württemberg",
+    "Informationen in Leichter Sprache zum Landeskriminalamt Baden-Württemberg",
 };
 
 export default function LeichteSprachePage() {

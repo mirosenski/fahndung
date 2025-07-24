@@ -4,7 +4,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
-  Image,
+  FileImage,
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
@@ -62,7 +62,7 @@ export default function MediaUpload({
       reader.readAsDataURL(file);
       reader.onload = () => {
         const result = reader.result as string;
-    
+
         const base64 = result.split(",")[1];
         if (!base64) {
           reject(new Error("Failed to convert file to base64"));
@@ -256,7 +256,14 @@ export default function MediaUpload({
 
       setUploading(false);
     },
-    [uploadMutation, isAuthenticated, isAdmin, session?.profile?.role, session?.user?.id, router],
+    [
+      uploadMutation,
+      isAuthenticated,
+      isAdmin,
+      session?.profile?.role,
+      session?.user?.id,
+      router,
+    ],
   );
 
   const handleFileInput = useCallback(
@@ -280,9 +287,12 @@ export default function MediaUpload({
     [handleFiles],
   );
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-  }, []);
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+    },
+    [],
+  );
 
   const handleClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -322,7 +332,7 @@ export default function MediaUpload({
       {compressionInfo && (
         <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-700 dark:bg-orange-900/20">
           <div className="flex items-center space-x-2">
-            <Image className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <FileImage className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <div className="flex-1">
               <p className="text-sm text-orange-800 dark:text-orange-200">
                 {compressionInfo.isCompressing

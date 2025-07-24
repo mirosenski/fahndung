@@ -27,7 +27,7 @@ export async function sendRegistrationNotification(notification: RegistrationNot
     console.log(`Name: ${notification.userName}`);
     console.log(`E-Mail: ${notification.userEmail}`);
     console.log(`Abteilung: ${notification.department}`);
-    console.log(`Telefon: ${notification.phone || 'Nicht angegeben'}`);
+    console.log(`Telefon: ${notification.phone ?? 'Nicht angegeben'}`);
     console.log(`Registriert am: ${notification.registrationDate}`);
     console.log('');
 
@@ -41,7 +41,7 @@ Ein neuer Benutzer hat sich registriert und wartet auf Ihre Genehmigung.
 Name: ${notification.userName}
 E-Mail: ${notification.userEmail}
 Abteilung: ${notification.department}
-Telefon: ${notification.phone || 'Nicht angegeben'}
+Telefon: ${notification.phone ?? 'Nicht angegeben'}
 Registriert am: ${notification.registrationDate}
 
 🔗 AKTIONEN:
@@ -60,7 +60,7 @@ Fahndung System - Automatische Benachrichtigung
 `;
 
     // Verwende Supabase Edge Function für E-Mail-Versand
-    const { data, error } = await supabase.functions.invoke('send-email', {
+    const result = await supabase.functions.invoke('send-email', {
       body: {
         to: 'ptlsweb@gmail.com',
         subject: '🔔 Neue Registrierung - Fahndung System',
@@ -69,8 +69,8 @@ Fahndung System - Automatische Benachrichtigung
       }
     });
 
-    if (error) {
-      console.error('❌ E-Mail-Versand fehlgeschlagen:', error);
+    if (result.error) {
+      console.error('❌ E-Mail-Versand fehlgeschlagen:', result.error);
       // Fallback: Speichere in Datenbank für späteren Versand
       await saveEmailNotification(notification);
     } else {
@@ -112,7 +112,7 @@ async function saveEmailNotification(notification: RegistrationNotification) {
   if (!supabase) return;
 
   try {
-    const { error } = await supabase
+    const result = await supabase
       .from('user_notifications')
       .insert({
         user_email: notification.userEmail,
@@ -123,67 +123,48 @@ async function saveEmailNotification(notification: RegistrationNotification) {
         created_at: new Date().toISOString()
       });
 
-    if (error) {
-      console.error('❌ Fehler beim Speichern der Benachrichtigung:', error);
+    if (result.error) {
+      console.error('❌ Fehler beim Speichern der Benachrichtigung:', result.error);
     } else {
       console.log('✅ Benachrichtigung in Datenbank gespeichert');
     }
   } catch (error) {
-    console.error('❌ Fehler beim Speichern der Benachrichtigung:', error);
+    console.error('❌ Unerwarteter Fehler beim Speichern:', error);
   }
 }
 
 /**
- * Sendet Bestätigungs-E-Mail an den Benutzer
+ * Sendet Bestätigungs-E-Mail an Benutzer nach Admin-Entscheidung
  */
 export async function sendUserConfirmationEmail(userEmail: string, userName: string, approved: boolean) {
   try {
-    console.log(approved ? '✅ REGISTRIERUNG GENEHMIGT' : '❌ REGISTRIERUNG ABGELEHNT');
-    console.log(`Hallo ${userName},`);
+    console.log(`📧 Sende Bestätigungs-E-Mail an ${userEmail} (${approved ? 'Genehmigt' : 'Abgelehnt'})`);
 
     const subject = approved 
       ? '✅ Registrierung genehmigt - Fahndung System'
       : '❌ Registrierung abgelehnt - Fahndung System';
 
-    const emailContent = approved ? `
-✅ REGISTRIERUNG GENEHMIGT
+    const emailContent = `
+${approved ? '✅ GENEHMIGT' : '❌ ABGELEHNT'} - FAHNDUNG SYSTEM
 
 Hallo ${userName},
 
-Ihre Registrierung für das Fahndung System wurde erfolgreich genehmigt!
+${approved 
+  ? `Ihre Registrierung für das Fahndung System wurde erfolgreich genehmigt!
 
-🔗 Nächste Schritte:
-1. Gehen Sie zu: http://localhost:3000/login
-2. Melden Sie sich mit Ihrer E-Mail-Adresse und Ihrem Passwort an
-3. Sie können jetzt das System nutzen
+Sie können sich jetzt unter http://localhost:3000/login anmelden und das System nutzen.
 
-📧 Bei Fragen kontaktieren Sie: ptlsweb@gmail.com
+Bei Fragen wenden Sie sich bitte an den Administrator.`
+  : `Ihre Registrierung für das Fahndung System wurde leider abgelehnt.
 
----
-Fahndung System - Admin-Team
-` : `
-❌ REGISTRIERUNG ABGELEHNT
-
-Hallo ${userName},
-
-Leider wurde Ihre Registrierung für das Fahndung System abgelehnt.
-
-Dies kann verschiedene Gründe haben:
-- Unvollständige oder ungenaue Angaben
-- Nicht autorisierte E-Mail-Domain
-- System-interne Richtlinien
-
-📧 Bei Fragen kontaktieren Sie: ptlsweb@gmail.com
-
-💡 ALTERNATIVE:
-Sie können sich gerne erneut registrieren, falls sich Ihre Umstände geändert haben.
+Bei Fragen wenden Sie sich bitte an den Administrator.`}
 
 ---
-Fahndung System - Admin-Team
+Fahndung System - Automatische Benachrichtigung
 `;
 
-    // Echte E-Mail an Benutzer senden
-    const { data, error } = await supabase.functions.invoke('send-email', {
+    // Verwende Supabase Edge Function für E-Mail-Versand
+    const result = await supabase.functions.invoke('send-email', {
       body: {
         to: userEmail,
         subject: subject,
@@ -192,8 +173,8 @@ Fahndung System - Admin-Team
       }
     });
 
-    if (error) {
-      console.error('❌ E-Mail-Versand an Benutzer fehlgeschlagen:', error);
+    if (result.error) {
+      console.error('❌ E-Mail-Versand an Benutzer fehlgeschlagen:', result.error);
     } else {
       console.log('✅ Bestätigungs-E-Mail an Benutzer gesendet');
     }
@@ -232,16 +213,18 @@ export async function sendDailySummary() {
     if (!supabase) return false;
 
     // Hole alle ausstehenden Registrierungen
-    const { data: pendingUsers, error } = await supabase
+    const result = await supabase
       .from('user_profiles')
       .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('❌ Fehler beim Abrufen ausstehender Registrierungen:', error);
+    if (result.error) {
+      console.error('❌ Fehler beim Abrufen ausstehender Registrierungen:', result.error);
       return false;
     }
+
+    const pendingUsers = result.data;
 
     if (!pendingUsers || pendingUsers.length === 0) {
       console.log('ℹ️ Keine ausstehenden Registrierungen');
@@ -254,9 +237,9 @@ export async function sendDailySummary() {
 Es warten ${pendingUsers.length} Registrierung(en) auf Ihre Genehmigung:
 
 ${pendingUsers.map((user, index) => `
-${index + 1}. ${user.name} (${user.email})
-   Abteilung: ${user.department}
-   Registriert: ${new Date(user.created_at).toLocaleDateString('de-DE')}
+${index + 1}. ${String(user['name'])} (${String(user['email'])})
+   Abteilung: ${String(user['department'])}
+   Registriert: ${new Date(String(user['created_at'])).toLocaleDateString('de-DE')}
 `).join('')}
 
 🔗 Admin-Panel: http://localhost:3000/admin/users
@@ -266,7 +249,7 @@ Fahndung System - Automatische Zusammenfassung
 `;
 
     // Sende Zusammenfassung an Admin
-    const { error: emailError } = await supabase.functions.invoke('send-email', {
+    const emailResult = await supabase.functions.invoke('send-email', {
       body: {
         to: 'ptlsweb@gmail.com',
         subject: `📊 ${pendingUsers.length} ausstehende Registrierung(en) - Fahndung System`,
@@ -275,8 +258,8 @@ Fahndung System - Automatische Zusammenfassung
       }
     });
 
-    if (emailError) {
-      console.error('❌ Fehler beim Senden der Zusammenfassung:', emailError);
+    if (emailResult.error) {
+      console.error('❌ Fehler beim Senden der Zusammenfassung:', emailResult.error);
     } else {
       console.log('✅ Tägliche Zusammenfassung gesendet');
     }

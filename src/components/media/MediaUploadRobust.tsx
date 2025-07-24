@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
+import Image from "next/image";
 
 // Supabase Client initialisieren
 const supabase = createClient(
@@ -305,9 +306,11 @@ export default function MediaUploadRobust({
       {preview && (
         <div className="mb-6">
           <h4 className="mb-2 text-sm font-medium text-gray-700">Vorschau:</h4>
-          <img
+          <Image
             src={preview}
             alt="Vorschau"
+            width={192}
+            height={192}
             className="max-h-48 rounded-lg shadow-md"
           />
         </div>

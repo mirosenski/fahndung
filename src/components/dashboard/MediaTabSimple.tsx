@@ -11,11 +11,12 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
 import MediaUploadRobust from "../media/MediaUploadRobust";
+import Image from "next/image";
 
 // Supabase Client
 const supabase = createClient(
-  process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? "",
-  process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] ?? "",
+  process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "",
+  process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ?? "",
 );
 
 interface MediaItem {
@@ -78,14 +79,14 @@ export default function MediaTabSimple() {
     setError(null);
 
     try {
-      console.log('📂 Lade Medien aus Bucket...');
-      
+      console.log("📂 Lade Medien aus Bucket...");
+
       const { data, error: listError } = await supabase.storage
-        .from('media')
-        .list('', {
+        .from("media")
+        .list("", {
           limit: 100,
           offset: 0,
-          sortBy: { column: 'created_at', order: 'desc' }
+          sortBy: { column: "created_at", order: "desc" },
         });
 
       if (listError) {
@@ -94,8 +95,8 @@ export default function MediaTabSimple() {
 
       // Konvertiere zu MediaItems mit proper type checking
       const items: MediaItem[] = (data ?? []).map((file: SupabaseFile) => ({
-        id: file.id ?? '',
-        name: file.name ?? '',
+        id: file.id ?? "",
+        name: file.name ?? "",
         url: supabase.storage.from("media").getPublicUrl(file.name).data
           .publicUrl,
         type: file.metadata?.mimetype ?? "unknown",
@@ -240,9 +241,11 @@ export default function MediaTabSimple() {
             <div key={item.id} className="group relative">
               <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
                 {item.type.startsWith("image/") ? (
-                  <img
+                  <Image
                     src={item.url}
                     alt={item.name}
+                    width={300}
+                    height={300}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
                 ) : (
@@ -264,9 +267,11 @@ export default function MediaTabSimple() {
             >
               <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-gray-100">
                 {item.type.startsWith("image/") ? (
-                  <img
+                  <Image
                     src={item.url}
                     alt={item.name}
+                    width={64}
+                    height={64}
                     className="h-full w-full object-cover"
                   />
                 ) : (

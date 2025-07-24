@@ -1,10 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import {
   Video,
   Hand,
   Phone,
   Mail,
-  FileText,
   AlertTriangle,
 } from "lucide-react";
 import PublicPageLayout from "~/components/layout/PublicPageLayout";
