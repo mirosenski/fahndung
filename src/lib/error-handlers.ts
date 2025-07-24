@@ -1,7 +1,6 @@
 import { toast } from "sonner";
 import {
   getErrorMessage,
-  getErrorCode,
   getErrorDetails,
   handleSupabaseError,
   handleStorageError,
@@ -20,27 +19,19 @@ export function showErrorToast(error: unknown): void {
   }
 }
 
-// Console error logger
-export function logError(error: unknown, context?: string): void {
-  const message = getErrorMessage(error);
-  const code = getErrorCode(error);
-  const details = getErrorDetails(error);
+// Error Handler für häufige Browser-Fehler
 
-  console.error(`[${context ?? "Error"}]:`, {
-    message,
-    code,
-    details,
-    error,
-  });
-}
-
-// Spezifische Handler für die drei Fehler
-
-// 1. Message Port Fehler Handler
+// 1. Message Port Error Handler
 export function handleMessagePortError(error: unknown): boolean {
-  if (error instanceof Error && error.message.includes("message port closed")) {
+  if (
+    error instanceof Error &&
+    (error.message.includes("message port closed") ||
+      error.message.includes(
+        "The message port closed before a response was received",
+      ))
+  ) {
     console.log(
-      "ℹ️ Message Port Fehler (normal bei Auth-Listener):",
+      "ℹ️ Message Port Error (normal bei Tab-Wechsel):",
       error.message,
     );
     return true; // Fehler behandelt
@@ -48,13 +39,15 @@ export function handleMessagePortError(error: unknown): boolean {
   return false; // Fehler nicht behandelt
 }
 
-// 2. Filesystem Fehler Handler
+// 2. Filesystem Error Handler
 export function handleFilesystemError(error: unknown): boolean {
-  if (error instanceof Error && error.message.includes("illegal path")) {
-    console.log(
-      "ℹ️ Filesystem Pfad-Fehler (normal bei Next.js):",
-      error.message,
-    );
+  if (
+    error instanceof Error &&
+    (error.message.includes("filesystem") ||
+      error.message.includes("storage") ||
+      error.message.includes("localStorage"))
+  ) {
+    console.log("ℹ️ Filesystem Error (normal):", error.message);
     return true; // Fehler behandelt
   }
   return false; // Fehler nicht behandelt
@@ -66,7 +59,8 @@ export function handle403AuthError(error: unknown): boolean {
     error instanceof Error &&
     (error.message.includes("403") ||
       error.message.includes("Forbidden") ||
-      error.message.includes("auth/v1/logout"))
+      error.message.includes("auth/v1/logout") ||
+      error.message.includes("Unauthorized"))
   ) {
     console.log("ℹ️ 403 Auth-Fehler (normal bei Logout):", error.message);
     return true; // Fehler behandelt
@@ -92,6 +86,59 @@ export function handleCommonErrors(error: unknown, context?: string): boolean {
   // Wenn keiner der spezifischen Fehler, logge normal
   logError(error, context);
   return false;
+}
+
+// Standard Error Logger
+function logError(error: unknown, context?: string): void {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.error(`❌ ${context ? `[${context}] ` : ""}Error:`, errorMessage);
+}
+
+// Global Error Handler für Browser
+export function setupGlobalErrorHandlers(): void {
+  if (typeof window === "undefined") return;
+
+  const originalOnError = window.onerror;
+  const originalOnUnhandledRejection = window.onunhandledrejection;
+
+  // Error Handler
+  window.onerror = function (message, source, lineno, colno, error) {
+    const errorMessage =
+      typeof message === "string" ? message : "Unknown error";
+    if (handleCommonErrors(error ?? new Error(errorMessage), "Global")) {
+      return true; // Fehler behandelt
+    }
+
+    // Fallback zu original handler
+    if (originalOnError) {
+      return Boolean(
+        originalOnError.call(this, message, source, lineno, colno, error),
+      );
+    }
+    return false;
+  };
+
+  // Unhandled Rejection Handler
+  window.onunhandledrejection = function (event) {
+    if (handleCommonErrors(event.reason, "UnhandledRejection")) {
+      event.preventDefault(); // Verhindere Standard-Behandlung
+      return;
+    }
+
+    // Fallback zu original handler
+    if (originalOnUnhandledRejection) {
+      originalOnUnhandledRejection.call(window, event);
+    }
+  };
+}
+
+// Cleanup Function
+export function cleanupGlobalErrorHandlers(): void {
+  if (typeof window === "undefined") return;
+
+  // Restore original handlers if needed
+  window.onerror = null;
+  window.onunhandledrejection = null;
 }
 
 // Async error wrapper
@@ -163,8 +210,14 @@ export function handleApiError(error: unknown): AppError {
     return error;
   }
 
-  if (typeof error === "object" && error !== null) {
-    return error as AppError;
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  ) {
+    const appError = error as { message: string };
+    return { message: appError.message } as AppError;
   }
 
   return new Error(getErrorMessage(error));

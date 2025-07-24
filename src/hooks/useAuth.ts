@@ -23,12 +23,22 @@ export const useAuth = () => {
   const isCheckingSession = useRef(false);
   const hasInitialized = useRef(false);
   const authListenerSetup = useRef(false);
+  const retryCount = useRef(0);
+  const maxRetries = 3;
 
-  // Vereinfachte Session-Prüfung ohne komplexe Timeouts
+  // Verbesserte Session-Prüfung mit Retry-Logic
   const checkSession = useCallback(async (force = false) => {
     // Verhindere gleichzeitige Session-Checks
     if (isCheckingSession.current && !force) {
       console.log("🔍 useAuth: Session-Check bereits läuft, überspringe...");
+      return;
+    }
+
+    // Verhindere zu viele Retries
+    if (retryCount.current >= maxRetries && !force) {
+      console.log("🔍 useAuth: Max Retries erreicht, überspringe...");
+      setLoading(false);
+      setInitialized(true);
       return;
     }
 
@@ -38,13 +48,18 @@ export const useAuth = () => {
     setTimeoutReached(false);
 
     try {
-      console.log("🔍 useAuth: Prüfe Session...");
+      console.log(
+        "🔍 useAuth: Prüfe Session... (Versuch",
+        retryCount.current + 1,
+        ")",
+      );
 
       // Einfache Session-Prüfung ohne Race-Conditions
       const currentSession = await getCurrentSession();
 
       if (currentSession) {
         setSession(currentSession);
+        retryCount.current = 0; // Reset retry count on success
         console.log("✅ Session erfolgreich geladen");
       } else {
         setSession(null);
@@ -64,6 +79,9 @@ export const useAuth = () => {
         setTimeoutReached(true);
         await clearAuthSession();
       }
+
+      // Increment retry count
+      retryCount.current++;
     } finally {
       setLoading(false);
       setInitialized(true);
@@ -72,7 +90,7 @@ export const useAuth = () => {
     }
   }, []);
 
-  // Logout
+  // Verbesserte Logout-Funktion
   const logout = useCallback(async () => {
     try {
       console.log("🔐 Starte Logout-Prozess...");
@@ -117,7 +135,9 @@ export const useAuth = () => {
             console.log("ℹ️ Keine aktive Session gefunden - normal");
           } else {
             // Nur abmelden, wenn eine Session existiert
-            const { error } = await supabase.auth.signOut();
+            const { error } = await supabase.auth.signOut({
+              scope: "local", // Verwende lokalen Scope statt global
+            });
             if (error) {
               console.log("ℹ️ Supabase Logout-Fehler (normal):", error.message);
             } else {
@@ -134,6 +154,7 @@ export const useAuth = () => {
       setLoading(false);
       setInitialized(true);
       setError(null);
+      retryCount.current = 0; // Reset retry count
 
       console.log("✅ Logout erfolgreich abgeschlossen");
       router.push("/login");
@@ -175,8 +196,10 @@ export const useAuth = () => {
         setSession(null);
         setLoading(false);
         setInitialized(true);
+        retryCount.current = 0; // Reset retry count
       } else if (event === "SIGNED_IN" && session) {
         // Nur bei SIGNED_IN erneut prüfen
+        retryCount.current = 0; // Reset retry count
         await checkSession(true);
       }
       // TOKEN_REFRESHED ignorieren um Schleifen zu vermeiden
@@ -187,6 +210,44 @@ export const useAuth = () => {
       subscription?.unsubscribe();
     };
   }, [checkSession]);
+
+  // Zusätzlicher Effect für Message Port Error Handling
+  useEffect(() => {
+    const handleMessagePortError = (event: ErrorEvent) => {
+      if (event.message.includes("message port closed")) {
+        console.log("ℹ️ Message Port Error (normal):", event.message);
+        // Ignoriere Message Port Fehler - sie sind normal bei Tab-Wechsel
+        return true;
+      }
+      return false;
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason as unknown;
+      if (reason && typeof reason === "object" && "message" in reason) {
+        const message = String((reason as { message: unknown }).message);
+        if (message.includes("403") || message.includes("Forbidden")) {
+          console.log("ℹ️ 403 Error in unhandled rejection (normal):", reason);
+          // Behandle 403-Fehler automatisch
+          void handle403Error(reason);
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Event Listener hinzufügen
+    window.addEventListener("error", handleMessagePortError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", handleMessagePortError);
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection,
+      );
+    };
+  }, []);
 
   return {
     session,

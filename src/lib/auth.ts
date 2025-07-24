@@ -1354,13 +1354,27 @@ export const handle403Error = async (error: unknown): Promise<void> => {
     errorMessage.includes("Forbidden") ||
     errorMessage.includes("403") ||
     errorMessage.includes("Unauthorized") ||
-    errorMessage.includes("401")
+    errorMessage.includes("401") ||
+    errorMessage.includes("auth/v1/logout") ||
+    errorMessage.includes("message port closed")
   ) {
     console.log("🔄 Bereinige Session aufgrund von 403-Fehler...");
-    await clearAuthSession();
 
-    // Zur Login-Seite weiterleiten, wenn im Browser
-    if (typeof window !== "undefined") {
+    try {
+      await clearAuthSession();
+    } catch (clearError) {
+      console.log(
+        "ℹ️ Session-Bereinigung fehlgeschlagen (normal):",
+        clearError,
+      );
+    }
+
+    // Zur Login-Seite weiterleiten, wenn im Browser und nicht bereits auf Login-Seite
+    if (
+      typeof window !== "undefined" &&
+      !window.location.pathname.includes("/login")
+    ) {
+      console.log("🔄 Weiterleitung zur Login-Seite...");
       window.location.href = "/login";
     }
   }

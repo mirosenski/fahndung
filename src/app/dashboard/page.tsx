@@ -166,11 +166,25 @@ export default function Dashboard() {
   // Auth check with useEffect to avoid router updates during render
   useEffect(() => {
     if (initialized && !loading && !session?.user) {
+      console.log("🔐 Dashboard: Keine Session, weiterleitung zu Login...");
       router.push("/login");
     }
   }, [initialized, loading, session?.user, router]);
 
-  // Loading state
+  // Zusätzlicher Effect für Error-Handling
+  useEffect(() => {
+    if (error) {
+      console.error("Dashboard Auth error:", error);
+      
+      // Bei Auth-Fehlern zur Login-Seite weiterleiten
+      if (error.includes("403") || error.includes("Forbidden") || error.includes("Unauthorized")) {
+        console.log("🔐 Dashboard: Auth-Fehler erkannt, weiterleitung zu Login...");
+        router.push("/login");
+      }
+    }
+  }, [error, router]);
+
+  // Loading state mit Timeout
   if (!initialized || loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -183,6 +197,7 @@ export default function Dashboard() {
 
   // Auth check - return null instead of router.push to avoid render cycle issues
   if (!session?.user) {
+    console.log("🔐 Dashboard: Keine Session gefunden, rendere nichts...");
     return null;
   }
 

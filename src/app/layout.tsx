@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "~/styles/globals.css";
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SessionManager } from "~/components/SessionManager";
+// Der Import von GlobalErrorHandler wurde entfernt, da das Modul nicht gefunden werden kann.
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +38,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <SessionManager />
             {children}
           </ThemeProvider>
         </TRPCReactProvider>
