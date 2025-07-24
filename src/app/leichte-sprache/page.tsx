@@ -7,8 +7,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import Header from "~/components/layout/Header";
-import Footer from "~/components/layout/Footer";
+import PublicPageLayout from "~/components/layout/PublicPageLayout";
 
 export const metadata: Metadata = {
   title: "Leichte Sprache | LKA Baden-Württemberg",
@@ -18,8 +17,7 @@ export const metadata: Metadata = {
 
 export default function LeichteSprachePage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <Header variant="home" />
+    <PublicPageLayout>
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <h1 className="mb-8 text-3xl font-bold">Leichte Sprache</h1>
@@ -34,8 +32,8 @@ export default function LeichteSprachePage() {
                     Willkommen beim LKA Baden-Württemberg
                   </h2>
                   <p className="text-lg text-blue-700 dark:text-blue-300">
-                    Das LKA ist die Polizei für ganz Baden-Württemberg. Wir helfen
-                    bei der Aufklärung von Verbrechen.
+                    Das LKA ist die Polizei für ganz Baden-Württemberg. Wir
+                    helfen bei der Aufklärung von Verbrechen.
                   </p>
                 </div>
               </div>
@@ -114,7 +112,9 @@ export default function LeichteSprachePage() {
 
             {/* Kontakt */}
             <section>
-              <h2 className="mb-4 text-2xl font-semibold">Wie können Sie uns erreichen?</h2>
+              <h2 className="mb-4 text-2xl font-semibold">
+                Wie können Sie uns erreichen?
+              </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <Mail className="mt-1 h-5 w-5 text-gray-600" />
@@ -125,7 +125,7 @@ export default function LeichteSprachePage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3">
                   <Phone className="mt-1 h-5 w-5 text-gray-600" />
                   <div>
@@ -142,8 +142,9 @@ export default function LeichteSprachePage() {
             <section>
               <h2 className="mb-4 text-2xl font-semibold">Barrierefreiheit</h2>
               <p className="text-lg">
-                Wir möchten, dass alle Menschen unsere Informationen verstehen können.
-                Deshalb bieten wir auch Informationen in Gebärdensprache an.
+                Wir möchten, dass alle Menschen unsere Informationen verstehen
+                können. Deshalb bieten wir auch Informationen in Gebärdensprache
+                an.
               </p>
               <div className="mt-4">
                 <a
@@ -157,7 +158,6 @@ export default function LeichteSprachePage() {
           </div>
         </div>
       </div>
-      <Footer variant="home" />
-    </div>
+    </PublicPageLayout>
   );
 }

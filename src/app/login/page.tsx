@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { supabase } from "~/lib/supabase";
 import { clearAuthSession } from "~/lib/auth";
-import Header from "~/components/layout/Header";
-import Footer from "~/components/layout/Footer";
+import AuthPageLayout from "~/components/layout/AuthPageLayout";
 import AutoSetup from "~/components/AutoSetup";
 
 export default function Login() {
@@ -62,9 +61,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <AuthPageLayout variant="login">
       <AutoSetup />
-      <Header variant="login" />
       <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
@@ -176,7 +174,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-      <Footer variant="login" />
-    </div>
+    </AuthPageLayout>
   );
 }

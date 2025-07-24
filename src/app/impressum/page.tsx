@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import Header from "~/components/layout/Header";
-import Footer from "~/components/layout/Footer";
+import PublicPageLayout from "~/components/layout/PublicPageLayout";
 
 export const metadata: Metadata = {
   title: "Impressum | LKA Baden-Württemberg",
@@ -9,8 +8,7 @@ export const metadata: Metadata = {
 
 export default function ImpressumPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <Header variant="home" />
+    <PublicPageLayout>
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <h1 className="mb-8 text-3xl font-bold">Impressum</h1>
@@ -188,7 +186,6 @@ export default function ImpressumPage() {
           </div>
         </div>
       </div>
-      <Footer variant="home" />
-    </div>
+    </PublicPageLayout>
   );
 }
