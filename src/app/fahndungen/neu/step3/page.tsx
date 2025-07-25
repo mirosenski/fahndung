@@ -63,8 +63,14 @@ function Step3PageContent() {
       return;
     }
 
+    // Ensure imagePreviews is always present
+    const updatedStep3Data = {
+      ...step3Data,
+      imagePreviews: step3Data.imagePreviews || [],
+    };
+
     // Prepare data for next step
-    const step3Param = encodeURIComponent(JSON.stringify(step3Data));
+    const step3Param = encodeURIComponent(JSON.stringify(updatedStep3Data));
     const step1Param = encodeURIComponent(JSON.stringify(step1Data));
     const step2Param = encodeURIComponent(JSON.stringify(step2Data));
 

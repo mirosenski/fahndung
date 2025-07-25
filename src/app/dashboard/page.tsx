@@ -9,6 +9,8 @@ import {
   Image as ImageIcon,
   Users,
   Settings,
+  Plus,
+  Wand2,
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { isAdmin, isEditor, getAllUsers, getAdminActions } from "~/lib/auth";
@@ -130,6 +132,15 @@ export default function Dashboard() {
   }, [logout]);
 
   const handleCreateInvestigation = useCallback(() => {
+    router.push("/fahndungen/neu");
+  }, [router]);
+
+  // Neue Handler für Wizard-Tests
+  const handleTestSimpleWizard = useCallback(() => {
+    router.push("/dashboard/simple-wizard");
+  }, [router]);
+
+  const handleTestEnhancedWizard = useCallback(() => {
     router.push("/fahndungen/neu");
   }, [router]);
 
@@ -378,6 +389,51 @@ export default function Dashboard() {
         {process.env.NODE_ENV === "development" && (
           <div className="mb-6">
             <StorageDebug />
+          </div>
+        )}
+
+        {/* WIZARD TEST BUTTONS - Nur für angemeldete Benutzer */}
+        {session?.user && (
+          <div className="mb-8 rounded-lg border border-blue-200 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-900/20">
+            <h3 className="mb-4 text-lg font-semibold text-blue-900 dark:text-blue-100">
+              🧪 Wizard-Tests (Entwicklung)
+            </h3>
+            <p className="mb-4 text-sm text-blue-700 dark:text-blue-300">
+              Testen Sie die beiden verschiedenen Wizard-Systeme:
+            </p>
+
+            <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+              {/* Einfacher Wizard Test */}
+              <button
+                onClick={handleTestSimpleWizard}
+                className="flex items-center justify-center space-x-2 rounded-lg bg-green-600 px-6 py-3 text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+              >
+                <Plus className="h-5 w-5" />
+                <span className="font-medium">Einfacher Wizard</span>
+                <span className="text-xs opacity-75">(5 Schritte)</span>
+              </button>
+
+              {/* Erweiterter Wizard Test */}
+              <button
+                onClick={handleTestEnhancedWizard}
+                className="flex items-center justify-center space-x-2 rounded-lg bg-purple-600 px-6 py-3 text-white transition-colors hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
+              >
+                <Wand2 className="h-5 w-5" />
+                <span className="font-medium">Erweiterter Wizard</span>
+                <span className="text-xs opacity-75">(Multi-Step)</span>
+              </button>
+            </div>
+
+            <div className="mt-4 text-xs text-blue-600 dark:text-blue-400">
+              <p>
+                <strong>Einfacher Wizard:</strong> 5 Schritte in einer
+                Komponente, Step 4 = Medien
+              </p>
+              <p>
+                <strong>Erweiterter Wizard:</strong> Separate Pages, Step 3 =
+                Medien, Step 4 = Standort
+              </p>
+            </div>
           </div>
         )}
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, FileText } from "lucide-react";
 import PageLayout from "~/components/layout/PageLayout";
 
@@ -28,12 +28,27 @@ function generateCaseNumber(category: string): string {
 }
 
 export default function NeueFahndungPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("WANTED_PERSON");
   const [error, setError] = useState<string | null>(null);
   const [generatedCaseNumber, setGeneratedCaseNumber] = useState("");
 
-  const router = useRouter();
+  // Load data from URL if coming back from step 2
+  useEffect(() => {
+    const step1Param = searchParams.get("step1");
+    if (step1Param) {
+      try {
+        const step1Data = JSON.parse(decodeURIComponent(step1Param));
+        setTitle(step1Data.title || "");
+        setCategory(step1Data.category || "WANTED_PERSON");
+        setGeneratedCaseNumber(step1Data.caseNumber || "");
+      } catch (error) {
+        console.error("Fehler beim Laden der Daten:", error);
+      }
+    }
+  }, [searchParams]);
 
   // Aktenzeichen bei Kategorie-Änderung neu generieren
   useEffect(() => {
@@ -60,9 +75,8 @@ export default function NeueFahndungPage() {
     };
 
     // Zur Schritt 2 Seite weiterleiten mit Daten
-    router.push(
-      `/fahndungen/neu/step2?data=${encodeURIComponent(JSON.stringify(step1Data))}`,
-    );
+    const step1Param = encodeURIComponent(JSON.stringify(step1Data));
+    router.push(`/fahndungen/neu/step2?step1=${step1Param}`);
   };
 
   return (
@@ -134,7 +148,7 @@ export default function NeueFahndungPage() {
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
                     placeholder="z.B. Vermisste Person in Stuttgart..."
                     required
                     disabled={false}
@@ -156,7 +170,7 @@ export default function NeueFahndungPage() {
                     id="category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
                     disabled={false}
                   >
                     <option value="WANTED_PERSON">Straftäter</option>

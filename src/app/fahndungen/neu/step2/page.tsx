@@ -21,10 +21,22 @@ function Step2PageContent() {
 
   useEffect(() => {
     const dataParam = searchParams.get("data");
+    const step1Param = searchParams.get("step1");
+
     if (dataParam) {
       try {
         const parsedData = JSON.parse(
           decodeURIComponent(dataParam),
+        ) as Step1Data;
+        setStep1Data(parsedData);
+      } catch (error) {
+        console.error("Fehler beim Parsen der Daten:", error);
+        router.push("/fahndungen/neu");
+      }
+    } else if (step1Param) {
+      try {
+        const parsedData = JSON.parse(
+          decodeURIComponent(step1Param),
         ) as Step1Data;
         setStep1Data(parsedData);
       } catch (error) {
@@ -43,16 +55,22 @@ function Step2PageContent() {
 
   const handleNext = () => {
     // Weiter zu Schritt 3 mit beiden Datensätzen
-    const params = new URLSearchParams({
-      step1: encodeURIComponent(JSON.stringify(step1Data)),
-      step2: encodeURIComponent(JSON.stringify(step2Data)),
-    });
+    const step1Param = encodeURIComponent(JSON.stringify(step1Data));
+    const step2Param = encodeURIComponent(JSON.stringify(step2Data));
 
-    router.push(`/fahndungen/neu/step3?${params.toString()}`);
+    router.push(
+      `/fahndungen/neu/step3?step1=${step1Param}&step2=${step2Param}`,
+    );
   };
 
   const handleBack = () => {
-    router.push("/fahndungen/neu");
+    if (step1Data) {
+      // Zurück zu Schritt 1 mit Daten
+      const step1Param = encodeURIComponent(JSON.stringify(step1Data));
+      router.push(`/fahndungen/neu?step1=${step1Param}`);
+    } else {
+      router.push("/fahndungen/neu");
+    }
   };
 
   if (!step1Data) {

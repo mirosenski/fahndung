@@ -11,6 +11,7 @@ import {
   Check,
   Search,
   FolderOpen,
+  AlertCircle,
 } from "lucide-react";
 import { supabase } from "~/lib/supabase";
 
@@ -33,6 +34,7 @@ interface Step3MediaProps {
   documents: File[];
   onUpdate: (data: any) => void;
   errors?: any;
+  isValid?: boolean;
 }
 
 export default function Step3MediaGallery({
@@ -41,6 +43,7 @@ export default function Step3MediaGallery({
   documents,
   onUpdate,
   errors,
+  isValid,
 }: Step3MediaProps) {
   const [dragActive, setDragActive] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
@@ -129,16 +132,28 @@ export default function Step3MediaGallery({
 
     if (imageFiles.length > 0) {
       if (!mainImage && imageFiles[0]) {
-        onUpdate({ mainImage: imageFiles[0] });
+        onUpdate({ 
+          mainImage: imageFiles[0],
+          additionalImages: additionalImages,
+          documents: documents
+        });
         imageFiles.shift();
       }
       if (imageFiles.length > 0) {
-        onUpdate({ additionalImages: [...additionalImages, ...imageFiles] });
+        onUpdate({ 
+          mainImage: mainImage,
+          additionalImages: [...additionalImages, ...imageFiles],
+          documents: documents
+        });
       }
     }
 
     if (docFiles.length > 0) {
-      onUpdate({ documents: [...documents, ...docFiles] });
+      onUpdate({ 
+        mainImage: mainImage,
+        additionalImages: additionalImages,
+        documents: [...documents, ...docFiles]
+      });
     }
   };
 
@@ -174,13 +189,21 @@ export default function Step3MediaGallery({
 
       // Add first selected as main image if none exists
       if (!mainImage && newFiles[0]) {
-        onUpdate({ mainImage: newFiles[0] });
+        onUpdate({ 
+          mainImage: newFiles[0],
+          additionalImages: additionalImages,
+          documents: documents
+        });
         newFiles.shift();
       }
 
       // Add rest as additional images
       if (newFiles.length > 0) {
-        onUpdate({ additionalImages: [...additionalImages, ...newFiles] });
+        onUpdate({ 
+          mainImage: mainImage,
+          additionalImages: [...additionalImages, ...newFiles],
+          documents: documents
+        });
       }
 
       // Reset selection and close gallery
@@ -192,17 +215,29 @@ export default function Step3MediaGallery({
   };
 
   const removeMainImage = () => {
-    onUpdate({ mainImage: null });
+    onUpdate({ 
+      mainImage: null,
+      additionalImages: additionalImages,
+      documents: documents
+    });
   };
 
   const removeAdditionalImage = (index: number) => {
     const newImages = additionalImages.filter((_, i) => i !== index);
-    onUpdate({ additionalImages: newImages });
+    onUpdate({ 
+      mainImage: mainImage,
+      additionalImages: newImages,
+      documents: documents
+    });
   };
 
   const removeDocument = (index: number) => {
     const newDocs = documents.filter((_, i) => i !== index);
-    onUpdate({ documents: newDocs });
+    onUpdate({ 
+      mainImage: mainImage,
+      additionalImages: additionalImages,
+      documents: newDocs
+    });
   };
 
   const makeMainImage = (index: number) => {
@@ -217,6 +252,7 @@ export default function Step3MediaGallery({
     onUpdate({
       mainImage: newMainImage,
       additionalImages: newAdditionalImages,
+      documents: documents
     });
   };
 
@@ -485,6 +521,33 @@ export default function Step3MediaGallery({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Validation Status */}
+      {isValid !== undefined && (
+        <div className={`mt-4 rounded-lg p-3 ${
+          isValid 
+            ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+            : 'bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+        }`}>
+          <div className="flex items-center">
+            {isValid ? (
+              <Check className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
+            ) : (
+              <AlertCircle className="mr-2 h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+            )}
+            <span className={`text-sm ${
+              isValid 
+                ? 'text-green-800 dark:text-green-200' 
+                : 'text-yellow-800 dark:text-yellow-200'
+            }`}>
+              {isValid 
+                ? '✓ Mindestens ein Bild ausgewählt - Sie können fortfahren' 
+                : '⚠️ Bitte laden Sie mindestens ein Bild hoch oder wählen Sie eines aus der Galerie'
+              }
+            </span>
           </div>
         </div>
       )}
