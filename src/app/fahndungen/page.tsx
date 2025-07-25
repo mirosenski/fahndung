@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { AlertCircle, FileText, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
+import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
 
 interface Investigation {
@@ -16,41 +16,27 @@ interface Investigation {
 }
 
 export default function FahndungenPage() {
-  const [investigations, setInvestigations] = useState<Investigation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    void fetchInvestigations();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function fetchInvestigations() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: supabaseError } = await supabase
-        .from("investigations")
-        .select("id, title, case_number, category, status, created_at")
-        .order("created_at", { ascending: false });
-
-      if (supabaseError) {
-        console.error("Supabase Fehler:", supabaseError);
-        setError(`Fehler beim Laden der Daten: ${supabaseError.message}`);
-        return;
-      }
-
-      setInvestigations(data || []);
-    } catch (error) {
-      console.error("Unerwarteter Fehler:", error);
-      setError(
-        "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
-      );
-    } finally {
-      setLoading(false);
+  // tRPC Query für Fahndungen
+  const { data: investigations = [], isLoading: loading, error: queryError } = api.post.getInvestigations.useQuery(
+    {
+      limit: 50,
+      offset: 0,
+    },
+    {
+      onError: (error) => {
+        console.error("❌ Fehler beim Laden der Fahndungen:", error);
+        setError(`Fehler beim Laden der Fahndungen: ${error.message}`);
+      },
+      onSuccess: (data) => {
+        console.log("✅ Geladene Fahndungen:", data);
+        console.log("📊 Anzahl Fahndungen:", data.length);
+      },
+      retry: 3,
+      retryDelay: 1000,
     }
-  }
+  );
 
   // Loading State
   if (loading) {
@@ -80,7 +66,7 @@ export default function FahndungenPage() {
             </h2>
             <p className="mb-4 text-gray-600 dark:text-gray-400">{error}</p>
             <button
-              onClick={fetchInvestigations}
+              onClick={() => window.location.reload()}
               className="rounded bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
             >
               Erneut versuchen

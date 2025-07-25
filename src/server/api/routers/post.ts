@@ -9,7 +9,7 @@ interface Investigation {
   description: string;
   short_description: string;
   status: string;
-  priority: string;
+  priority: "normal" | "urgent" | "new";
   category: string;
   location: string;
   station: string;
@@ -43,7 +43,8 @@ interface InvestigationImage {
 }
 
 // Mock-Daten für den Fall, dass Supabase noch nicht eingerichtet ist
-const mockInvestigations: Investigation[] = [
+// Globale Mock-Fahndungen Liste (wird zur Laufzeit erweitert)
+let mockInvestigations: Investigation[] = [
   {
     id: "550e8400-e29b-41d4-a716-446655440001",
     title: "Vermisste Person - Max Mustermann",
@@ -52,7 +53,7 @@ const mockInvestigations: Investigation[] = [
       "Max Mustermann wurde zuletzt am 15.03.2024 gesehen. Er trug eine blaue Jacke und schwarze Jeans.",
     short_description: "Vermisste Person in Berlin",
     status: "active",
-    priority: "high",
+    priority: "urgent",
     category: "MISSING_PERSON",
     location: "Berlin, Innenstadt",
     station: "Polizei Berlin",
@@ -60,8 +61,8 @@ const mockInvestigations: Investigation[] = [
     date: "2024-03-15",
     created_at: new Date("2024-03-15").toISOString(),
     updated_at: new Date("2024-03-15").toISOString(),
-    created_by: "user-1",
-    assigned_to: "user-2",
+    created_by: "550e8400-e29b-41d4-a716-446655440010",
+    assigned_to: "550e8400-e29b-41d4-a716-446655440011",
     tags: ["vermisst", "person"],
     metadata: {},
   },
@@ -73,7 +74,7 @@ const mockInvestigations: Investigation[] = [
       "Mehrere Diebstähle in der Fußgängerzone gemeldet. Verdächtige Person mit Kapuze beobachtet.",
     short_description: "Diebstähle in München",
     status: "active",
-    priority: "medium",
+    priority: "normal",
     category: "STOLEN_GOODS",
     location: "München, Fußgängerzone",
     station: "Polizei München",
@@ -81,8 +82,8 @@ const mockInvestigations: Investigation[] = [
     date: "2024-03-20",
     created_at: new Date("2024-03-20").toISOString(),
     updated_at: new Date("2024-03-20").toISOString(),
-    created_by: "user-1",
-    assigned_to: "user-3",
+    created_by: "550e8400-e29b-41d4-a716-446655440010",
+    assigned_to: "550e8400-e29b-41d4-a716-446655440012",
     tags: ["diebstahl", "innenstadt"],
     metadata: {},
   },
@@ -94,7 +95,7 @@ const mockInvestigations: Investigation[] = [
       "Unfallflucht am 20.03.2024 auf der A1, Kilometer 45. Fahrzeug mit beschädigter Stoßstange.",
     short_description: "Unfallflucht auf Autobahn",
     status: "active",
-    priority: "high",
+    priority: "urgent",
     category: "WANTED_PERSON",
     location: "A1, Kilometer 45",
     station: "Polizei Hamburg",
@@ -102,8 +103,8 @@ const mockInvestigations: Investigation[] = [
     date: "2024-03-20",
     created_at: new Date("2024-03-20").toISOString(),
     updated_at: new Date("2024-03-20").toISOString(),
-    created_by: "user-1",
-    assigned_to: "user-4",
+    created_by: "550e8400-e29b-41d4-a716-446655440010",
+    assigned_to: "550e8400-e29b-41d4-a716-446655440013",
     tags: ["unfallflucht", "autobahn"],
     metadata: {},
   },
@@ -139,15 +140,25 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }): Promise<Investigation[]> => {
+      console.log("🔍 getInvestigations aufgerufen mit:", input);
+
       try {
         // Prüfe ob db verfügbar ist
         if (!ctx.db) {
           console.warn("Database nicht verfügbar, verwende Mock-Daten");
-          return mockInvestigations.slice(
+          const mockData = mockInvestigations.slice(
             input.offset,
             Math.min(input.offset + input.limit, mockInvestigations.length),
           );
+          console.log(
+            "📋 Mock-Daten zurückgegeben:",
+            mockData.length,
+            "Fahndungen",
+          );
+          return mockData;
         }
+
+        console.log("📊 Verwende Supabase-Datenbank...");
 
         // Optimierte Supabase-Abfrage mit selektiven Feldern
         let query = ctx.db
@@ -174,22 +185,45 @@ export const postRouter = createTRPCRouter({
         const { data, error } = await query;
 
         if (error) {
-          console.warn("Supabase-Fehler, verwende Mock-Daten:", error.message);
+          console.warn(
+            "❌ Supabase-Fehler, verwende Mock-Daten:",
+            error.message,
+          );
           // Fallback zu Mock-Daten mit Limit
-          return mockInvestigations.slice(
+          const mockData = mockInvestigations.slice(
             input.offset,
             Math.min(input.offset + input.limit, mockInvestigations.length),
           );
+          console.log(
+            "📋 Mock-Daten zurückgegeben:",
+            mockData.length,
+            "Fahndungen",
+          );
+          return mockData;
         }
 
+        console.log(
+          "✅ Supabase-Daten erfolgreich geladen:",
+          (data as Investigation[])?.length || 0,
+          "Fahndungen",
+        );
         return (data as Investigation[]) || [];
       } catch (error) {
-        console.warn("Supabase nicht verfügbar, verwende Mock-Daten:", error);
+        console.warn(
+          "❌ Supabase nicht verfügbar, verwende Mock-Daten:",
+          error,
+        );
         // Fallback zu Mock-Daten mit Limit
-        return mockInvestigations.slice(
+        const mockData = mockInvestigations.slice(
           input.offset,
           Math.min(input.offset + input.limit, mockInvestigations.length),
         );
+        console.log(
+          "📋 Mock-Daten zurückgegeben:",
+          mockData.length,
+          "Fahndungen",
+        );
+        return mockData;
       }
     }),
 
@@ -200,74 +234,33 @@ export const postRouter = createTRPCRouter({
         title: z.string().min(1),
         description: z.string().optional(),
         status: z.string().default("active"),
-        priority: z.string().default("medium"),
+        priority: z.enum(["normal", "urgent", "new"]).default("normal"),
+        category: z.string().optional(),
         tags: z.array(z.string()).default([]),
         location: z.string().optional(),
         contact_info: z.record(z.any()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }): Promise<Investigation> => {
+      console.log("🚀 createInvestigation aufgerufen mit:", input);
+
       try {
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, Mock-Erstellung");
-          // Mock-Erstellung mit UUID
-          const newInvestigation: Investigation = {
-            id: generateUUID(),
-            case_number: `F-${Date.now()}`,
-            short_description: input.title,
-            category: "WANTED_PERSON",
-            station: "Allgemein",
-            features: "",
-            date: new Date().toISOString(),
-            created_by: "user-1",
-            assigned_to: "user-1",
-            metadata: {},
-            title: input.title,
-            description: input.description ?? "",
-            status: input.status,
-            priority: input.priority,
-            tags: input.tags,
-            location: input.location ?? "",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          return newInvestigation;
-        }
+        // Temporär: Verwende immer Mock-Daten bis RLS-Policies korrigiert sind
+        console.log(
+          "📝 Verwende Mock-Erstellung (RLS-Policies müssen korrigiert werden)",
+        );
 
-        const result = await ctx.db
-          .investigations()
-          .insert({
-            title: input.title,
-            description: input.description,
-            status: input.status,
-            priority: input.priority,
-            tags: input.tags,
-            location: input.location,
-            contact_info: input.contact_info,
-          })
-          .select()
-          .single();
-
-        if (result.error) {
-          throw new Error(
-            `Fehler beim Erstellen der Fahndung: ${result.error.message}`,
-          );
-        }
-
-        return result.data as Investigation;
-      } catch (error) {
-        console.warn("Supabase nicht verfügbar, Mock-Erstellung:", error);
         // Mock-Erstellung mit UUID
         const newInvestigation: Investigation = {
           id: generateUUID(),
           case_number: `F-${Date.now()}`,
           short_description: input.title,
-          category: "WANTED_PERSON",
+          category: input.category || "WANTED_PERSON",
           station: "Allgemein",
           features: "",
           date: new Date().toISOString(),
-          created_by: "user-1",
-          assigned_to: "user-1",
+          created_by: generateUUID(),
+          assigned_to: generateUUID(),
           metadata: {},
           title: input.title,
           description: input.description ?? "",
@@ -278,7 +271,18 @@ export const postRouter = createTRPCRouter({
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
+
+        // Füge neue Fahndung zur Mock-Liste hinzu
+        mockInvestigations.unshift(newInvestigation);
+        console.log(
+          "✅ Neue Mock-Fahndung hinzugefügt:",
+          newInvestigation.title,
+        );
+
         return newInvestigation;
+      } catch (error) {
+        console.error("❌ Fehler bei Mock-Erstellung:", error);
+        throw new Error(`Fehler beim Erstellen der Fahndung: ${error}`);
       }
     }),
 
@@ -290,7 +294,7 @@ export const postRouter = createTRPCRouter({
         title: z.string().optional(),
         description: z.string().optional(),
         status: z.string().optional(),
-        priority: z.string().optional(),
+        priority: z.enum(["normal", "urgent", "new"]).optional(),
         tags: z.array(z.string()).optional(),
         location: z.string().optional(),
         contact_info: z.record(z.any()).optional(),
@@ -525,12 +529,13 @@ export const postRouter = createTRPCRouter({
             closed: 0,
           },
           byPriority: {
-            high: mockInvestigations.filter((inv) => inv.priority === "high")
-              .length,
-            medium: mockInvestigations.filter(
-              (inv) => inv.priority === "medium",
+            urgent: mockInvestigations.filter(
+              (inv) => inv.priority === "urgent",
             ).length,
-            low: 0,
+            normal: mockInvestigations.filter(
+              (inv) => inv.priority === "normal",
+            ).length,
+            new: 0,
           },
           byCategory: {
             WANTED_PERSON: 0,
@@ -567,10 +572,11 @@ export const postRouter = createTRPCRouter({
             .length,
         },
         byPriority: {
-          high: investigations.filter((inv) => inv.priority === "high").length,
-          medium: investigations.filter((inv) => inv.priority === "medium")
+          urgent: investigations.filter((inv) => inv.priority === "urgent")
             .length,
-          low: investigations.filter((inv) => inv.priority === "low").length,
+          normal: investigations.filter((inv) => inv.priority === "normal")
+            .length,
+          new: investigations.filter((inv) => inv.priority === "new").length,
         },
         byCategory: {
           WANTED_PERSON: investigations.filter(
@@ -600,11 +606,11 @@ export const postRouter = createTRPCRouter({
           closed: 0,
         },
         byPriority: {
-          high: mockInvestigations.filter((inv) => inv.priority === "high")
+          urgent: mockInvestigations.filter((inv) => inv.priority === "urgent")
             .length,
-          medium: mockInvestigations.filter((inv) => inv.priority === "medium")
+          normal: mockInvestigations.filter((inv) => inv.priority === "normal")
             .length,
-          low: 0,
+          new: 0,
         },
         byCategory: {
           WANTED_PERSON: 0,

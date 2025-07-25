@@ -38,7 +38,7 @@ export default function MediaTabEnhanced() {
   const [isLoading, setIsLoading] = useState(true);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
+
 
   const { session, loading: authLoading, isAuthenticated } = useAuth();
   const { uploadFile, isUploading, progress } = useSupabaseUpload();
@@ -225,13 +225,6 @@ export default function MediaTabEnhanced() {
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* Debug Toggle */}
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:text-gray-100"
-          >
-            {showDebug ? "Debug ausblenden" : "Debug anzeigen"}
-          </button>
 
           {!isAuthenticated ? (
             <button
@@ -258,13 +251,7 @@ export default function MediaTabEnhanced() {
         </div>
       </div>
 
-      {/* Debug Section */}
-      {/* {showDebug && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="mb-3 text-lg font-semibold">🔍 Debug Information</h3>
-          <DebugAuth />
-        </div>
-      )} */}
+
 
       {/* Upload Section - Only show for admins */}
       {showUpload && isAdmin && (

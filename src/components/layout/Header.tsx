@@ -8,7 +8,6 @@ import {
   Crown,
   Shield,
   FileText,
-  Globe,
 } from "lucide-react";
 import { Logo } from "~/components/ui/Logo";
 import { Breadcrumb } from "~/components/ui/Breadcrumb";
@@ -111,16 +110,13 @@ export default function Header({
           </button>
         )}
 
-        {/* NEW: Artikel Button - nur anzeigen, wenn wir nicht bereits auf der Artikel-Seite sind */}
-        {!pathname.startsWith("/artikel") && (
-          <button
-            onClick={() => router.push("/artikel")}
-            className="flex cursor-pointer items-center space-x-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
-          >
-            <Globe className="h-4 w-4" />
-            <span>Artikel</span>
-          </button>
-        )}
+
+
+
+
+
+
+
 
         {session?.profile?.role === "editor" && (
           <button

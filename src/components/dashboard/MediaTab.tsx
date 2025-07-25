@@ -264,10 +264,7 @@ export default function MediaTab() {
             </button>
           </div>
 
-          {/* Debug Auth Component */}
-          {/* <div className="mb-4">
-            <DebugAuth />
-          </div> */}
+
 
           {/* Supabase Upload Progress */}
           {isUploading && (

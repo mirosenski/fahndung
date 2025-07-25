@@ -93,9 +93,9 @@ FOR DELETE USING (
    npm run dev
    ```
 
-2. **Testen Sie den Wizard**
-   - Gehen Sie zu `/fahndungen/neu`
-   - Navigieren Sie zu Schritt 3
+2. **Testen Sie die Media-Galerie**
+   - Gehen Sie zu `/dashboard`
+   - Navigieren Sie zum Media-Tab
    - Testen Sie das Hochladen von Bildern
    - Testen Sie die Galerie-Funktionalität
 

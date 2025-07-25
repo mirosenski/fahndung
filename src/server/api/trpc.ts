@@ -65,7 +65,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
                   data: { user: null },
                   error: { message: "Timeout" },
                 }),
-              3000,
+              2000, // Reduziert auf 2000ms für schnellere Antwort
             ),
           );
 
@@ -77,8 +77,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
           if (error) {
             console.log("❌ Token ungültig:", error.message);
-            // Fallback to getCurrentSession
-            session = await getCurrentSession();
+            console.log("🔄 Auth-Fehler - verwende öffentlichen Zugriff");
           } else if (supabaseUser) {
             console.log("✅ User authentifiziert:", supabaseUser.email);
 
@@ -117,29 +116,18 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
           }
         } catch (tokenError) {
           console.error("❌ Token validation error:", tokenError);
-          // Fallback to getCurrentSession
-          session = await getCurrentSession();
+          console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
         }
       }
     } else {
-      console.log(
-        "❌ No Authorization header found, trying getCurrentSession...",
-      );
-      // Fallback to getCurrentSession when no auth header
-      session = await getCurrentSession();
+      console.log("ℹ️ No Authorization header found - verwende öffentlichen Zugriff");
     }
   } catch (error) {
     console.error("❌ Context creation error:", error);
-    // Final fallback
-    try {
-      session = await getCurrentSession();
-    } catch (fallbackError) {
-      console.error(
-        "❌ Fallback getCurrentSession also failed:",
-        fallbackError,
-      );
-    }
+    console.log("🔄 Context-Fehler - verwende öffentlichen Zugriff");
   }
+
+  console.log("✅ tRPC Context erstellt - Session:", !!session, "User:", !!user);
 
   return {
     db,

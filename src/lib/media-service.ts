@@ -79,7 +79,7 @@ export class MediaService {
       const filePath = `${directory}/${fileName}`;
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from(this.bucketName)
         .upload(filePath, file, {
           cacheControl: "3600",
@@ -98,9 +98,7 @@ export class MediaService {
       });
 
       // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(this.bucketName)
-        .getPublicUrl(filePath);
+      supabase.storage.from(this.bucketName).getPublicUrl(filePath);
 
       // Create media record in database
       const { data: mediaData, error: dbError } = await supabase
@@ -182,7 +180,7 @@ export class MediaService {
       if (options.offset) {
         query = query.range(
           options.offset,
-          options.offset + (options.limit || 50) - 1,
+          options.offset + (options.limit ?? 50) - 1,
         );
       }
 
@@ -194,7 +192,7 @@ export class MediaService {
         throw new Error(`Failed to fetch media gallery: ${error.message}`);
       }
 
-      return data || [];
+      return (data ?? []) as unknown as MediaItem[];
     } catch (error) {
       console.error("Error fetching media gallery:", error);
       throw error;
@@ -204,7 +202,7 @@ export class MediaService {
   /**
    * Get media items for a specific investigation (placeholder for future)
    */
-  async getInvestigationMedia(investigationId: string): Promise<MediaItem[]> {
+  async getInvestigationMedia(_investigationId: string): Promise<MediaItem[]> {
     try {
       // For now, return all media items
       // This will be updated when investigations table exists
@@ -217,7 +215,7 @@ export class MediaService {
         throw new Error(`Failed to fetch media: ${error.message}`);
       }
 
-      return data || [];
+      return (data ?? []) as unknown as MediaItem[];
     } catch (error) {
       console.error("Error fetching media:", error);
       throw error;
@@ -243,7 +241,7 @@ export class MediaService {
       // Delete from storage
       const { error: storageError } = await supabase.storage
         .from(this.bucketName)
-        .remove([mediaItem.file_path]);
+        .remove([mediaItem.file_path as string]);
 
       if (storageError) {
         console.warn("Failed to delete from storage:", storageError);
@@ -273,7 +271,7 @@ export class MediaService {
       is_primary?: boolean;
       tags?: string[];
       description?: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     },
   ): Promise<MediaItem> {
     try {
@@ -290,8 +288,8 @@ export class MediaService {
 
       return {
         ...data,
-        public_url: `${this.supabaseUrl}/storage/v1/object/public/${this.bucketName}/${data.file_path}`,
-        formatted_size: this.formatFileSize(data.file_size),
+        public_url: `${this.supabaseUrl}/storage/v1/object/public/${this.bucketName}/${String(data["file_path"])}`,
+        formatted_size: this.formatFileSize(data["file_size"] as number),
       } as MediaItem;
     } catch (error) {
       console.error("Error updating media:", error);
@@ -316,7 +314,7 @@ export class MediaService {
       const directories = [
         ...new Set(data?.map((item) => item.directory) || []),
       ];
-      return directories.sort();
+      return directories.sort() as string[];
     } catch (error) {
       console.error("Error fetching directories:", error);
       return [];
@@ -340,7 +338,7 @@ export class MediaService {
 
       const { data, error } = await supabase.storage
         .from(this.bucketName)
-        .download(mediaItem.file_path);
+        .download(mediaItem.file_path as string);
 
       if (error) {
         throw new Error(`Failed to download file: ${error.message}`);

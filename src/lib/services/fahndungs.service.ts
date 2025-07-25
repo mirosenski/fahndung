@@ -39,7 +39,11 @@ export interface InvestigationData {
     | "STOLEN_GOODS";
   location: string;
   station: string;
-  contact_info: Record<string, unknown>;
+  contact_info: {
+    person?: string;
+    phone?: string;
+    email?: string;
+  };
   features?: string;
   date: string;
   created_by: string;

@@ -107,7 +107,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
       setTimeout(
         () =>
           resolve({ data: { session: null }, error: { message: "Timeout" } }),
-        1500, // Reduziert von 3000ms auf 1500ms
+        2000, // Erhöht auf 2000ms für stabilere Verbindung
       ),
     );
 
@@ -123,7 +123,9 @@ export const getCurrentSession = async (): Promise<Session | null> => {
         sessionError.message.includes("Refresh Token Not Found") ||
         sessionError.message.includes("JWT expired") ||
         sessionError.message.includes("Token has expired") ||
-        sessionError.message.includes("Auth session missing")
+        sessionError.message.includes("Auth session missing") ||
+        sessionError.message.includes("Forbidden") ||
+        sessionError.message.includes("403")
       ) {
         console.log("🔄 Auth Session Fehler - bereinige Session...");
         await clearAuthSession();
@@ -815,7 +817,9 @@ export const clearAuthSession = async (): Promise<void> => {
         console.log("ℹ️ Keine Session für Bereinigung gefunden - normal");
       } else {
         // Nur abmelden, wenn eine Session existiert
-        const { error } = await supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut({
+          scope: "local", // Verwende lokalen Scope für bessere Kompatibilität
+        });
         if (error) {
           console.log(
             "ℹ️ Supabase Session-Bereinigung Fehler (normal):",
@@ -1245,7 +1249,7 @@ export const logUserActivity = async (
   }
 };
 
-// Funktion zur Behandlung von 403-Fehlern
+// Automatische Auth-Fehler-Behandlung
 export const handleAuthError = async (error: unknown): Promise<void> => {
   if (!error) return;
 

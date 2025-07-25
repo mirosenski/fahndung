@@ -30,6 +30,7 @@ export default function RootLayout({
     <html lang="de" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         <TRPCReactProvider>
           <ThemeProvider

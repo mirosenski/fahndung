@@ -51,7 +51,7 @@ const defaultLabels: Record<string, string> = {
   login: "Anmeldung",
   register: "Registrierung",
   investigations: "Fahndungen",
-  wizard: "Neue Fahndung",
+
   settings: "Einstellungen",
   users: "Benutzer",
   media: "Medien",

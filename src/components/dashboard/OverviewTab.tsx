@@ -1,4 +1,4 @@
-import { BarChart3, Globe, FileText, AlertTriangle } from "lucide-react";
+import { BarChart3, Eye, FileText, AlertTriangle } from "lucide-react";
 
 interface Investigation {
   id: string;
@@ -57,7 +57,7 @@ export default function OverviewTab({
           color="blue"
         />
         <StatCard
-          icon={Globe}
+          icon={Eye}
           title="Veröffentlicht"
           value={stats.published}
           loading={investigationsLoading}

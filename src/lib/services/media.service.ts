@@ -135,7 +135,7 @@ export class MediaService {
       if (!file) continue;
 
       // Sanitize filename to prevent illegal path errors
-      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
       const fileName = `${directory}/${Date.now()}_${crypto.randomUUID()}_${sanitizedFileName}`;
 
       try {
@@ -155,6 +155,24 @@ export class MediaService {
             console.error("❌ Illegal path error - Bucket nicht konfiguriert");
             throw new Error(
               "Storage Bucket nicht korrekt konfiguriert. Bitte führen Sie das Setup-Script aus.",
+            );
+          }
+
+          // Handle other storage errors
+          if (uploadResult.error.message.includes("Bucket not found")) {
+            console.error("❌ Bucket nicht gefunden");
+            throw new Error(
+              "Storage Bucket 'media-gallery' nicht gefunden. Bitte führen Sie das Setup-Script aus.",
+            );
+          }
+
+          if (
+            uploadResult.error.message.includes("Forbidden") ||
+            uploadResult.error.message.includes("403")
+          ) {
+            console.error("❌ Keine Berechtigung für Storage-Upload");
+            throw new Error(
+              "Keine Berechtigung für Storage-Upload. Bitte melden Sie sich als Admin an.",
             );
           }
 

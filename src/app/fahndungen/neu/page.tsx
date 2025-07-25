@@ -1,222 +1,293 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, FileText } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Save, X } from "lucide-react";
+import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
 
-function generateCaseNumber(category: string): string {
-  const year = new Date().getFullYear();
-  const month = String(new Date().getMonth() + 1).padStart(2, "0");
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0");
-
-  // Kategorie-Präfix
-  const prefixes: Record<string, string> = {
-    WANTED_PERSON: "ST", // Straftäter
-    MISSING_PERSON: "VM", // Vermisste
-    UNKNOWN_DEAD: "UT", // Unbekannte Tote
-    STOLEN_GOODS: "SG", // Sachen
-  };
-
-  const prefix = prefixes[category] ?? "XX";
-
-  // Format: ST-2024-01-001
-  return `${prefix}-${year}-${month}-${random}`;
+interface NewFahndungForm {
+  title: string;
+  description: string;
+  category:
+    | "WANTED_PERSON"
+    | "MISSING_PERSON"
+    | "UNKNOWN_DEAD"
+    | "STOLEN_GOODS";
+  priority: "normal" | "urgent" | "new";
+  location: string;
+  contact_person: string;
+  contact_phone: string;
+  contact_email: string;
 }
 
 export default function NeueFahndungPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("WANTED_PERSON");
-  const [error, setError] = useState<string | null>(null);
-  const [generatedCaseNumber, setGeneratedCaseNumber] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<NewFahndungForm>({
+    title: "",
+    description: "",
+    category: "MISSING_PERSON",
+    priority: "normal",
+    location: "",
+    contact_person: "",
+    contact_phone: "",
+    contact_email: "",
+  });
 
-  // Load data from URL if coming back from step 2
-  useEffect(() => {
-    const step1Param = searchParams.get("step1");
-    if (step1Param) {
-      try {
-        const step1Data = JSON.parse(decodeURIComponent(step1Param));
-        setTitle(step1Data.title || "");
-        setCategory(step1Data.category || "WANTED_PERSON");
-        setGeneratedCaseNumber(step1Data.caseNumber || "");
-      } catch (error) {
-        console.error("Fehler beim Laden der Daten:", error);
-      }
-    }
-  }, [searchParams]);
+  // tRPC Mutation für das Erstellen von Fahndungen
+  const createInvestigation = api.post.createInvestigation.useMutation({
+    onSuccess: (data) => {
+      console.log("✅ Fahndung erfolgreich erstellt:", data);
+      // Erfolgreich erstellt - zur Fahndungen-Übersicht weiterleiten
+      router.push("/fahndungen");
+    },
+    onError: (error) => {
+      console.error("❌ Fehler beim Erstellen der Fahndung:", error);
+      console.error("Fehler-Details:", {
+        message: error.message,
+        code: error.code,
+        data: error.data,
+        shape: error.shape,
+      });
+      // TODO: Fehlermeldung anzeigen
+    },
+  });
 
-  // Aktenzeichen bei Kategorie-Änderung neu generieren
-  useEffect(() => {
-    setGeneratedCaseNumber(generateCaseNumber(category));
-  }, [category]);
+  const handleInputChange = (field: keyof NewFahndungForm, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-  const handleNext = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    if (!title.trim()) {
-      setError("Bitte geben Sie einen Titel ein");
-      return;
+    console.log("🚀 Starte Fahndung-Erstellung mit Daten:", formData);
+
+    try {
+      // Erstelle die Fahndung über die tRPC API
+      const result = await createInvestigation.mutateAsync({
+        title: formData.title,
+        description: formData.description,
+        status: "active",
+        priority: formData.priority,
+        category: formData.category,
+        location: formData.location,
+        contact_info: {
+          person: formData.contact_person,
+          phone: formData.contact_phone,
+          email: formData.contact_email,
+        },
+        tags: [formData.category], // Kategorie auch als Tag
+      });
+      
+      console.log("✅ Fahndung erfolgreich erstellt:", result);
+    } catch (error) {
+      console.error("❌ Fehler beim Erstellen der Fahndung:", error);
+      console.error("Fehler-Typ:", typeof error);
+      console.error("Fehler-Stack:", error instanceof Error ? error.stack : "Kein Stack verfügbar");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Daten für Schritt 2 vorbereiten
-    const step1Data = {
-      title: title.trim(),
-      category: category as
-        | "WANTED_PERSON"
-        | "MISSING_PERSON"
-        | "UNKNOWN_DEAD"
-        | "STOLEN_GOODS",
-      caseNumber: generatedCaseNumber,
-    };
-
-    // Zur Schritt 2 Seite weiterleiten mit Daten
-    const step1Param = encodeURIComponent(JSON.stringify(step1Data));
-    router.push(`/fahndungen/neu/step2?step1=${step1Param}`);
   };
 
   return (
-    <PageLayout variant="dashboard">
+    <PageLayout>
       <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Zurück</span>
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Neue Fahndung erstellen
+            </h1>
+          </div>
+        </div>
+
+        {/* Form */}
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
-            <div className="flex items-center border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-              <Link
-                href="/fahndungen"
-                className="mr-4 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Schritt 1: Basis-Informationen
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Neue Fahndung erstellen
-                </p>
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basis-Informationen */}
+            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                Basis-Informationen
+              </h2>
 
-            <div className="p-6">
-              {/* Fortschrittsanzeige */}
-              <div className="mb-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Fortschritt: 1 von 6 Schritten
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    17% abgeschlossen
-                  </span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                  <div
-                    className="h-2 rounded-full bg-blue-600"
-                    style={{ width: "17%" }}
-                  ></div>
-                </div>
-                <div className="mt-2 flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>Basis-Info</span>
-                  <span>Beschreibung</span>
-                  <span>Bilder</span>
-                  <span>Ort</span>
-                  <span>Kontakt</span>
-                  <span>Zusammenfassung</span>
-                </div>
-              </div>
-
-              {/* Error Anzeige */}
-              {error && (
-                <div className="mb-4 rounded border border-red-200 bg-red-100 p-3 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleNext} className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="title"
-                    className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Titel der Fahndung
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Titel *
                   </label>
                   <input
                     type="text"
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-                    placeholder="z.B. Vermisste Person in Stuttgart..."
+                    value={formData.title}
+                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="Titel der Fahndung"
                     required
-                    disabled={false}
                   />
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Geben Sie einen aussagekräftigen Titel ein. Die restlichen
-                    Details können Sie später ergänzen.
-                  </p>
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="category"
-                    className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Kategorie
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Kategorie *
                   </label>
                   <select
-                    id="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-                    disabled={false}
+                    value={formData.category}
+                    onChange={(e) =>
+                      handleInputChange("category", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="WANTED_PERSON">Straftäter</option>
                     <option value="MISSING_PERSON">Vermisste Person</option>
-                    <option value="UNKNOWN_DEAD">Unbekannte Tote</option>
-                    <option value="STOLEN_GOODS">Sachen</option>
+                    <option value="WANTED_PERSON">Gesuchte Person</option>
+                    <option value="UNKNOWN_DEAD">Unbekannter Toter</option>
+                    <option value="STOLEN_GOODS">Gestohlene Gegenstände</option>
                   </select>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Wählen Sie die passende Kategorie für diese Fahndung.
-                  </p>
                 </div>
 
-                {/* Aktenzeichen-Vorschau */}
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
-                  <div className="flex items-center space-x-2">
-                    <FileText className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Aktenzeichen wird generiert:
-                    </span>
-                  </div>
-                  <div className="mt-2 font-mono text-lg font-bold text-blue-600 dark:text-blue-400">
-                    {generatedCaseNumber}
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Format: [Präfix]-[Jahr]-[Monat]-[Nummer]
-                  </p>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Priorität *
+                  </label>
+                  <select
+                    value={formData.priority}
+                    onChange={(e) =>
+                      handleInputChange("priority", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="urgent">Dringend</option>
+                    <option value="new">Neu</option>
+                  </select>
                 </div>
 
-                <div className="flex justify-end space-x-3">
-                  <Link
-                    href="/fahndungen"
-                    className="rounded bg-gray-200 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                  >
-                    Abbrechen
-                  </Link>
-                  <button
-                    type="submit"
-                    disabled={!title.trim()}
-                    className="flex items-center rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-                  >
-                    Schritt 2
-                  </button>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Standort
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) =>
+                      handleInputChange("location", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="Stadt, Straße, etc."
+                  />
                 </div>
-              </form>
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Beschreibung *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  placeholder="Detaillierte Beschreibung der Fahndung..."
+                  required
+                />
+              </div>
             </div>
-          </div>
+
+            {/* Kontakt-Informationen */}
+            <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                Kontakt-Informationen
+              </h2>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Kontaktperson
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.contact_person}
+                    onChange={(e) =>
+                      handleInputChange("contact_person", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="Name der Kontaktperson"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Telefon
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.contact_phone}
+                    onChange={(e) =>
+                      handleInputChange("contact_phone", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="+49 123 456789"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    E-Mail
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.contact_email}
+                    onChange={(e) =>
+                      handleInputChange("contact_email", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    placeholder="kontakt@polizei.de"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-4">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex items-center space-x-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <X className="h-4 w-4" />
+                <span>Abbrechen</span>
+              </button>
+
+              <button
+                type="submit"
+                disabled={
+                  createInvestigation.isPending ||
+                  !formData.title ||
+                  !formData.description
+                }
+                className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" />
+                <span>
+                  {createInvestigation.isPending
+                    ? "Erstelle..."
+                    : "Fahndung erstellen"}
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </PageLayout>

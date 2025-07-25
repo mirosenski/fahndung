@@ -50,7 +50,7 @@ interface FooterProps {
   session?: Session | null;
 }
 
-export default function Footer({ variant = "home", session }: FooterProps) {
+export default function Footer({ variant = "home" }: FooterProps) {
   // Automatisch generierte Menüpunkte basierend auf Header-Varianten
   const getMenuItems = () => {
     switch (variant) {
@@ -61,9 +61,7 @@ export default function Footer({ variant = "home", session }: FooterProps) {
         return [
           { href: "/dashboard", label: "Dashboard", icon: User },
           { href: "/fahndungen", label: "Alle Fahndungen", icon: FileText },
-          ...(session?.profile?.role === "editor"
-            ? [{ href: "/wizard", label: "Neue Fahndung", icon: FileText }]
-            : []),
+
         ];
 
       case "login":

@@ -321,10 +321,6 @@ export default function InvestigationDisplay({
   className = "",
 }: InvestigationDisplayProps) {
   // Memoized calculations
-  const imageCount = useMemo(
-    () => (data.step3.mainImage ? 1 : 0) + data.step3.additionalImages.length,
-    [data.step3],
-  );
 
   const locationCount = useMemo(
     () =>
@@ -735,7 +731,7 @@ export default function InvestigationDisplay({
           <section>
             <h2 className="mb-4 text-2xl font-bold">Bildmaterial</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {data.step3.imagePreviews.map((image, index) => (
+              {data.step3.imagePreviews.map((image) => (
                 <div key={image.id} className="group relative">
                   <img
                     src={image.preview}

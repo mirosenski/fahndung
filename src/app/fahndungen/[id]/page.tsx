@@ -13,23 +13,89 @@ import {
 // Import components
 import InvestigationDisplay from "@/components/investigation/InvestigationDisplay";
 import PageLayout from "@/components/layout/PageLayout";
-import PublishAsArticleButton from "@/components/fahndung/PublishAsArticleButton";
-import type {
-  Step1Data,
-  Step2Data,
-  Step3Data,
-  Step4Data,
-  Step5Data,
-} from "@/types/fahndung-wizard";
 
 // Types
 interface Investigation {
   id: string;
-  step1: Step1Data;
-  step2: Step2Data;
-  step3: Step3Data;
-  step4: Step4Data;
-  step5: Step5Data;
+  step1: {
+    title: string;
+    category:
+      | "WANTED_PERSON"
+      | "MISSING_PERSON"
+      | "UNKNOWN_DEAD"
+      | "STOLEN_GOODS";
+    caseNumber: string;
+  };
+  step2: {
+    shortDescription: string;
+    description: string;
+    priority: "normal" | "urgent" | "new";
+    tags: string[];
+    features: string;
+  };
+  step3: {
+    mainImage: File | null;
+    additionalImages: File[];
+    documents: File[];
+  };
+  step4: {
+    mainLocation: {
+      id: string;
+      address: string;
+      lat: number;
+      lng: number;
+      type: "main";
+      description: string;
+    };
+    additionalLocations: Array<{
+      id: string;
+      lat: number;
+      lng: number;
+      address: string;
+      type:
+        | "main"
+        | "tatort"
+        | "wohnort"
+        | "arbeitsplatz"
+        | "sichtung"
+        | "sonstiges";
+      description?: string;
+      timestamp?: Date;
+    }>;
+    searchRadius: number;
+  };
+  step5: {
+    contactPerson: string;
+    contactPhone: string;
+    contactEmail: string;
+    department: string;
+    availableHours: string;
+    publishStatus: "draft" | "review" | "scheduled" | "immediate";
+    urgencyLevel: "low" | "medium" | "high" | "critical";
+    requiresApproval: boolean;
+    visibility: {
+      internal: boolean;
+      regional: boolean;
+      national: boolean;
+      international: boolean;
+    };
+    notifications: {
+      emailAlerts: boolean;
+      smsAlerts: boolean;
+      appNotifications: boolean;
+      pressRelease: boolean;
+    };
+    articlePublishing: {
+      publishAsArticle: boolean;
+      generateSeoUrl: boolean;
+      customSlug?: string;
+      seoTitle?: string;
+      seoDescription?: string;
+      keywords: string[];
+      author?: string;
+      readingTime?: number;
+    };
+  };
   metadata: {
     createdAt: string;
     updatedAt: string;
@@ -168,7 +234,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
             {/* Right side */}
             <div className="flex items-center space-x-2">
               {/* View counter */}
-              <div className="hidden items-center space-x-1 rounded-lg bg-gray-100 px-3 py-1 sm:flex dark:bg-gray-700">
+              <div className="hidden items-center space-x-1 rounded-lg bg-gray-100 px-3 py-1 dark:bg-gray-700 sm:flex">
                 <Eye className="h-4 w-4 text-gray-500" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {investigation.metadata.views.toLocaleString()}
@@ -176,22 +242,10 @@ export default async function FahndungDetailPage({ params }: PageProps) {
               </div>
 
               {/* Status badge */}
-              <div className="hidden items-center space-x-1 rounded-lg bg-green-100 px-3 py-1 text-green-700 sm:flex dark:bg-green-900/30 dark:text-green-300">
+              <div className="hidden items-center space-x-1 rounded-lg bg-green-100 px-3 py-1 text-green-700 dark:bg-green-900/30 dark:text-green-300 sm:flex">
                 <Shield className="h-4 w-4" />
                 <span className="text-sm font-medium">Aktiv</span>
               </div>
-
-              {/* NEW: Publish as Article Button */}
-              <PublishAsArticleButton
-                investigationId={investigation.id}
-                investigationTitle={investigation.step1.title}
-                isPublished={investigation.published_as_article || false}
-                articleSlug={investigation.article_slug}
-                onSuccess={() => {
-                  // Optional: Refresh the page or update state
-                  window.location.reload();
-                }}
-              />
 
               {/* Action buttons */}
               <Link
@@ -226,7 +280,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
       {/* Main Content */}
       <main className="mx-auto max-w-7xl">
         {/* Last updated info */}
-        <div className="border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8 dark:border-gray-700">
+        <div className="border-b border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <Clock className="h-4 w-4" />

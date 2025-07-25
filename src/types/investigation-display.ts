@@ -1,22 +1,10 @@
-import type {
-  Step1Data,
-  Step2Data,
-  Step3Data,
-  Step4Data,
-  Step5Data,
-} from "@/types/fahndung-wizard";
+
 
 export type DisplayMode = "summary" | "detail" | "card" | "preview";
 
 export interface InvestigationDisplayProps {
   mode: DisplayMode;
-  data: {
-    step1: Step1Data;
-    step2: Step2Data;
-    step3: Step3Data;
-    step4: Step4Data;
-    step5: Step5Data;
-  };
+  data: Record<string, unknown>; // TODO: Replace with proper investigation type
   onEdit?: (step: string) => void;
   className?: string;
   showEditButtons?: boolean;
