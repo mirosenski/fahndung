@@ -79,6 +79,65 @@ export interface Session {
   profile: UserProfile | null;
 }
 
+// AuthPermissions Interface für Rollen-basierte Berechtigungen
+export interface AuthPermissions {
+  canRead: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canPublish: boolean;
+  canManageUsers: boolean;
+}
+
+// Rollen-basierte Berechtigungen
+export const getRolePermissions = (role: string): AuthPermissions => {
+  const permissions: Record<string, AuthPermissions> = {
+    user: {
+      canRead: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canPublish: false,
+      canManageUsers: false,
+    },
+    editor: {
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: false,
+      canPublish: true,
+      canManageUsers: false,
+    },
+    admin: {
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canPublish: true,
+      canManageUsers: true,
+    },
+    super_admin: {
+      canRead: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canPublish: true,
+      canManageUsers: true,
+    },
+  };
+
+  const userPermissions: AuthPermissions = {
+    canRead: true,
+    canCreate: false,
+    canEdit: false,
+    canDelete: false,
+    canPublish: false,
+    canManageUsers: false,
+  };
+
+  return permissions[role] ?? userPermissions;
+};
+
 // Hilfsfunktionen für Rollenprüfung
 export const isAdmin = (profile: UserProfile | null): boolean => {
   return profile?.role === "admin";
@@ -172,7 +231,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
     if (profileError) {
       console.log("⚠️ Profile Error Details:", {
         code: profileError.code,
-        message: profileError.message,
+        message: profileError.message ?? "Unbekannter Fehler",
       });
 
       if (profileError.code === "PGRST116") {

@@ -202,6 +202,12 @@ export const mediaRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Check if user has editor or admin role
+      if (!ctx.session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Nicht authentifiziert - Bitte melden Sie sich an",
+        });
+      }
       const userRole = ctx.session?.profile?.role;
       if (userRole !== "admin" && userRole !== "editor") {
         throw new TRPCError({
@@ -291,6 +297,12 @@ export const mediaRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Check if user has editor or admin role
+      if (!ctx.session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Nicht authentifiziert - Bitte melden Sie sich an",
+        });
+      }
       const userRole = ctx.session?.profile?.role;
       if (userRole !== "admin" && userRole !== "editor") {
         throw new TRPCError({
@@ -368,6 +380,12 @@ export const mediaRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Check if user has editor or admin role
+      if (!ctx.session?.user?.id) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Nicht authentifiziert - Bitte melden Sie sich an",
+        });
+      }
       const userRole = ctx.session?.profile?.role;
       if (userRole !== "admin" && userRole !== "editor") {
         throw new TRPCError({

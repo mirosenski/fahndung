@@ -57,6 +57,10 @@ export interface InvestigationData {
     name: string;
     email: string;
   };
+  assigned_to_user?: {
+    name: string;
+    email: string;
+  };
 
   // Article publishing features
   published_as_article?: boolean;
@@ -130,7 +134,7 @@ export class FahndungsService {
       .select(
         `
         *,
-        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
+        created_by_user:user_profiles(name, email),
         images:investigation_images(*)
       `,
       )
@@ -170,13 +174,12 @@ export class FahndungsService {
 
   // Get single investigation
   async getInvestigation(id: string): Promise<InvestigationData> {
-    const { data, error } = (await this.supabase
+    // First get the investigation with basic data and images
+    const { data: investigation, error } = (await this.supabase
       .from("investigations")
       .select(
         `
         *,
-        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
-        assigned_to_user:user_profiles!investigations_assigned_to_fkey(name, email),
         images:investigation_images(*)
       `,
       )
@@ -184,7 +187,29 @@ export class FahndungsService {
       .single()) as { data: InvestigationData | null; error: Error | null };
 
     if (error) throw error;
-    return data!;
+
+    // Then get user data separately if needed
+    if (investigation?.created_by) {
+      const { data: createdByUser } = await this.supabase
+        .from("user_profiles")
+        .select("name, email")
+        .eq("id", investigation.created_by)
+        .single();
+
+      investigation.created_by_user = createdByUser ?? undefined;
+    }
+
+    if (investigation?.assigned_to) {
+      const { data: assignedToUser } = await this.supabase
+        .from("user_profiles")
+        .select("name, email")
+        .eq("id", investigation.assigned_to)
+        .single();
+
+      investigation.assigned_to_user = assignedToUser ?? undefined;
+    }
+
+    return investigation!;
   }
 
   // Update investigation
@@ -192,9 +217,31 @@ export class FahndungsService {
     id: string,
     data: Partial<InvestigationData>,
   ): Promise<InvestigationData> {
+    // Filter out non-updatable fields
+    const {
+      created_by_user: _created_by_user,
+      assigned_to_user: _assigned_to_user,
+      images: _images,
+      created_at: _created_at,
+      updated_at: _updated_at,
+      id: _id,
+      ...updateableData
+    } = data;
+
+    // Suppress unused variable warnings
+    void _created_by_user;
+    void _assigned_to_user;
+    void _images;
+    void _created_at;
+    void _updated_at;
+    void _id;
+
     const { data: investigation, error } = (await this.supabase
       .from("investigations")
-      .update(data)
+      .update({
+        ...updateableData,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single()) as { data: InvestigationData | null; error: Error | null };
@@ -316,7 +363,7 @@ export class FahndungsService {
       .select(
         `
         *,
-        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
+        created_by_user:user_profiles(name, email),
         images:investigation_images(*)
       `,
       )
@@ -407,7 +454,7 @@ export class FahndungsService {
       .select(
         `
         *,
-        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
+        created_by_user:user_profiles(name, email),
         images:investigation_images(*)
       `,
       )
@@ -453,7 +500,7 @@ export class FahndungsService {
       .select(
         `
         *,
-        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
+        created_by_user:user_profiles(name, email),
         images:investigation_images(*)
       `,
       )

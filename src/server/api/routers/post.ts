@@ -1,7 +1,13 @@
+// src/server/api/routers/post.ts - Erweitert mit Auth & CRUD
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { mediaRouter } from "./media";
 
+// TypeScript-Typen für Supabase-Responses
 interface Investigation {
   id: string;
   title: string;
@@ -18,116 +24,71 @@ interface Investigation {
   created_at: string;
   updated_at: string;
   created_by: string;
-  assigned_to: string;
+  assigned_to?: string;
   tags: string[];
   metadata: Record<string, unknown>;
+  contact_info?: Record<string, unknown>;
+  created_by_user?: {
+    name: string;
+    email: string;
+  };
+  assigned_to_user?: {
+    name: string;
+    email: string;
+  };
+  images?: Array<{
+    id: string;
+    url: string;
+    alt_text?: string;
+    caption?: string;
+  }>;
+  // Article publishing features
+  published_as_article?: boolean;
+  article_slug?: string;
+  article_content?: {
+    blocks: Array<{
+      type: string;
+      content: Record<string, unknown>;
+      id?: string;
+    }>;
+  };
+  article_meta?: {
+    seo_title?: string;
+    seo_description?: string;
+    og_image?: string;
+    keywords?: string[];
+    author?: string;
+    reading_time?: number;
+  };
+  article_published_at?: string;
+  article_views?: number;
 }
 
-interface InvestigationImage {
+interface UserProfile {
   id: string;
-  investigation_id: string;
-  file_name: string;
-  original_name: string;
-  file_path: string;
-  file_size: number;
-  mime_type: string;
-  width?: number;
-  height?: number;
-  uploaded_at: string;
-  uploaded_by: string;
-  tags: string[];
-  description?: string;
-  is_primary: boolean;
-  is_public: boolean;
-  metadata: Record<string, unknown>;
+  user_id: string;
+  email: string;
+  name?: string;
+  role: string;
+  department?: string;
+  status?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-// Mock-Daten für Fahndungen (temporär bis RLS-Policies korrigiert sind)
-const mockInvestigations: Investigation[] = [
-  {
-    id: "1",
-    title: "Vermisste Person - Anna Schmidt",
-    case_number: "F-2024-001",
-    description:
-      "Anna Schmidt wurde zuletzt am 15. März 2024 gesehen. Sie trug eine blaue Jacke und hatte einen roten Rucksack dabei.",
-    short_description: "Vermisste Person seit 15. März 2024",
-    status: "active",
-    priority: "urgent",
-    category: "MISSING_PERSON",
-    location: "Berlin, Prenzlauer Berg",
-    station: "Polizei Berlin",
-    features: "Blaue Jacke, roter Rucksack",
-    date: "2024-03-15T10:00:00Z",
-    created_at: "2024-03-16T08:00:00Z",
-    updated_at: "2024-03-16T08:00:00Z",
-    created_by: "admin-1",
-    assigned_to: "officer-1",
-    tags: ["MISSING_PERSON", "URGENT"],
-    metadata: {},
-  },
-  {
-    id: "2",
-    title: "Gestohlener Laptop - Büro Einbruch",
-    case_number: "F-2024-002",
-    description:
-      "Einbruch in Bürogebäude. Gestohlen wurden mehrere Laptops und elektronische Geräte.",
-    short_description: "Büro Einbruch mit Diebstahl",
-    status: "active",
-    priority: "normal",
-    category: "STOLEN_GOODS",
-    location: "Hamburg, Hafencity",
-    station: "Polizei Hamburg",
-    features: "Mehrere Laptops, elektronische Geräte",
-    date: "2024-03-14T22:30:00Z",
-    created_at: "2024-03-15T09:00:00Z",
-    updated_at: "2024-03-15T09:00:Z",
-    created_by: "admin-1",
-    assigned_to: "officer-2",
-    tags: ["STOLEN_GOODS", "BURGLARY"],
-    metadata: {},
-  },
-  {
-    id: "3",
-    title: "Unbekannter Toter - Park",
-    case_number: "F-2024-003",
-    description:
-      "Unbekannter männlicher Toter im Stadtpark gefunden. Alter geschätzt 45-55 Jahre.",
-    short_description: "Unbekannter Toter im Stadtpark",
-    status: "active",
-    priority: "normal",
-    category: "UNKNOWN_DEAD",
-    location: "München, Englischer Garten",
-    station: "Polizei München",
-    features: "Männlich, 45-55 Jahre, dunkle Kleidung",
-    date: "2024-03-13T07:15:00Z",
-    created_at: "2024-03-13T08:00:00Z",
-    updated_at: "2024-03-13T08:00:00Z",
-    created_by: "admin-1",
-    assigned_to: "officer-3",
-    tags: ["UNKNOWN_DEAD", "PARK"],
-    metadata: {},
-  },
-];
-
-// UUID-Generator für Mock-Daten
-function generateUUID(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+// Typ für Supabase-Response
+interface SupabaseResponse<T> {
+  data: T | null;
+  error: {
+    message: string;
+    details?: string;
+    hint?: string;
+    code?: string;
+  } | null;
 }
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
-  // ✅ KORRIGIERTE Version - getInvestigations
+  // Öffentlich: Fahndungen lesen
   getInvestigations: publicProcedure
     .input(
       z.object({
@@ -138,28 +99,10 @@ export const postRouter = createTRPCRouter({
         category: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }): Promise<Investigation[]> => {
+    .query(async ({ ctx, input }) => {
       console.log("🔍 getInvestigations aufgerufen mit:", input);
 
       try {
-        // Prüfe ob db verfügbar ist
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, verwende Mock-Daten");
-          const mockData = mockInvestigations.slice(
-            input.offset,
-            Math.min(input.offset + input.limit, mockInvestigations.length),
-          );
-          console.log(
-            "📋 Mock-Daten zurückgegeben:",
-            mockData.length,
-            "Fahndungen",
-          );
-          return mockData;
-        }
-
-        console.log("📊 Verwende Supabase-Datenbank...");
-
-        // ✅ KORRIGIERT: Verwende ctx.db direkt (ist der Supabase Client)
         let query = ctx.db
           .from("investigations")
           .select("*")
@@ -177,52 +120,88 @@ export const postRouter = createTRPCRouter({
           query = query.eq("category", input.category);
         }
 
-        const { data, error } = await query;
+        const response = (await query) as SupabaseResponse<Investigation[]>;
+        const { data, error } = response;
 
         if (error) {
-          console.warn(
-            "❌ Supabase-Fehler, verwende Mock-Daten:",
-            error.message,
+          console.error("❌ Supabase-Fehler:", error);
+          throw new Error(
+            `Fehler beim Abrufen der Fahndungen: ${error.message}`,
           );
-          // Fallback zu Mock-Daten mit Limit
-          const mockData = mockInvestigations.slice(
-            input.offset,
-            Math.min(input.offset + input.limit, mockInvestigations.length),
-          );
-          console.log(
-            "📋 Mock-Daten zurückgegeben:",
-            mockData.length,
-            "Fahndungen",
-          );
-          return mockData;
         }
 
-        console.log(
-          "✅ Supabase-Daten erfolgreich geladen:",
-          (data as Investigation[])?.length || 0,
-          "Fahndungen",
-        );
-        return (data as Investigation[]) || [];
+        console.log("✅ Fahndungen erfolgreich geladen:", data?.length ?? 0);
+        return data ?? [];
       } catch (error) {
-        console.warn(
-          "❌ Supabase nicht verfügbar, verwende Mock-Daten:",
-          error,
-        );
-        // Fallback zu Mock-Daten mit Limit
-        const mockData = mockInvestigations.slice(
-          input.offset,
-          Math.min(input.offset + input.limit, mockInvestigations.length),
-        );
-        console.log(
-          "📋 Mock-Daten zurückgegeben:",
-          mockData.length,
-          "Fahndungen",
-        );
-        return mockData;
+        console.error("❌ Fehler beim Abrufen der Fahndungen:", error);
+        throw new Error(`Fehler beim Abrufen der Fahndungen: ${String(error)}`);
       }
     }),
 
-  // ✅ KORRIGIERTE Version - createInvestigation
+  // Öffentlich: Einzelne Fahndung lesen
+  getInvestigation: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // First get the investigation with basic data and images
+        const response = (await ctx.db
+          .from("investigations")
+          .select(
+            `
+            *,
+            images:investigation_images(*)
+          `,
+          )
+          .eq("id", input.id)
+          .single()) as SupabaseResponse<Investigation>;
+
+        const { data, error } = response;
+
+        if (error) {
+          throw new Error(`Fahndung nicht gefunden: ${error.message}`);
+        }
+
+        // Then get user data separately if needed
+        if (data?.created_by) {
+          const { data: createdByUser } = await ctx.db
+            .from("user_profiles")
+            .select("name, email")
+            .eq("id", data.created_by)
+            .single();
+
+          if (data && createdByUser?.name && createdByUser?.email) {
+            data.created_by_user = {
+              name: String(createdByUser.name),
+              email: String(createdByUser.email),
+            };
+          }
+        }
+
+        if (data?.assigned_to) {
+          const { data: assignedToUser } = await ctx.db
+            .from("user_profiles")
+            .select("name, email")
+            .eq("id", data.assigned_to)
+            .single();
+
+          if (data && assignedToUser?.name && assignedToUser?.email) {
+            data.assigned_to_user = {
+              name: String(assignedToUser.name),
+              email: String(assignedToUser.email),
+            };
+          }
+        }
+
+        console.log("✅ Fahndung erfolgreich geladen:", data?.title);
+
+        return data!;
+      } catch (error) {
+        console.error("❌ Fehler beim Laden der Fahndung:", error);
+        throw new Error(`Fehler beim Laden der Fahndung: ${String(error)}`);
+      }
+    }),
+
+  // Öffentlich: Fahndung erstellen (temporär für Tests)
   createInvestigation: publicProcedure
     .input(
       z.object({
@@ -234,52 +213,15 @@ export const postRouter = createTRPCRouter({
         tags: z.array(z.string()).default([]),
         location: z.string().optional(),
         contact_info: z.record(z.any()).optional(),
+        case_number: z.string().optional(),
+        features: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }): Promise<Investigation> => {
+    .mutation(async ({ ctx, input }) => {
       console.log("🚀 createInvestigation aufgerufen mit:", input);
-      console.log("🔧 Context verfügbar:", !!ctx.db);
 
       try {
-        // Prüfe ob Supabase verfügbar ist
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, verwende Mock-Daten");
-
-          // Mock-Erstellung mit UUID
-          const newInvestigation: Investigation = {
-            id: generateUUID(),
-            case_number: `F-${Date.now()}`,
-            short_description: input.title,
-            category: input.category ?? "WANTED_PERSON",
-            station: "Allgemein",
-            features: "",
-            date: new Date().toISOString(),
-            created_by: generateUUID(),
-            assigned_to: generateUUID(),
-            metadata: {},
-            title: input.title,
-            description: input.description ?? "",
-            status: input.status,
-            priority: input.priority,
-            tags: input.tags,
-            location: input.location ?? "",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-
-          // Füge neue Fahndung zur Mock-Liste hinzu
-          mockInvestigations.unshift(newInvestigation);
-          console.log(
-            "✅ Neue Mock-Fahndung hinzugefügt:",
-            newInvestigation.title,
-          );
-          return newInvestigation;
-        }
-
-        console.log("📊 Verwende Supabase-Datenbank...");
-
-        // ✅ KORRIGIERT: Verwende ctx.db direkt (ist der Supabase Client)
-        const { data, error } = await ctx.db
+        const response = (await ctx.db
           .from("investigations")
           .insert({
             title: input.title,
@@ -289,16 +231,19 @@ export const postRouter = createTRPCRouter({
             category: input.category ?? "MISSING_PERSON",
             tags: input.tags,
             location: input.location ?? "",
-            short_description: input.title, // Verwende title als short_description
+            short_description: input.title,
             station: "Allgemein",
-            features: "",
+            features: input.features ?? "",
             date: new Date().toISOString(),
-            case_number: `F-${Date.now()}`, // Automatische Aktenzeichen-Generierung
+            case_number: input.case_number ?? `F-${Date.now()}`,
             contact_info: input.contact_info ?? {},
             metadata: {},
+            created_by: "305f1ebf-01ed-4007-8cd7-951f6105b8c1", // ptlsweb@gmail.com (wichtigster User)
           })
           .select()
-          .single();
+          .single()) as SupabaseResponse<Investigation>;
+
+        const { data, error } = response;
 
         if (error) {
           console.error("❌ Supabase-Fehler:", error);
@@ -307,15 +252,15 @@ export const postRouter = createTRPCRouter({
           );
         }
 
-        console.log("✅ Fahndung erfolgreich erstellt:", data.title);
-        return data as Investigation;
+        console.log("✅ Fahndung erfolgreich erstellt:", data?.title);
+        return data!;
       } catch (error) {
         console.error("❌ Fehler beim Erstellen der Fahndung:", error);
         throw new Error(`Fehler beim Erstellen der Fahndung: ${String(error)}`);
       }
     }),
 
-  // ✅ KORRIGIERTE Version - updateInvestigation
+  // Öffentlich: Fahndung bearbeiten (temporär für Tests)
   updateInvestigation: publicProcedure
     .input(
       z.object({
@@ -327,29 +272,29 @@ export const postRouter = createTRPCRouter({
         tags: z.array(z.string()).optional(),
         location: z.string().optional(),
         contact_info: z.record(z.any()).optional(),
+        features: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }): Promise<Investigation> => {
+    .mutation(async ({ ctx, input }) => {
+      console.log("✏️ updateInvestigation aufgerufen mit:", input);
+
       try {
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, Mock-Update");
-          // Mock-Update
-          const mockInvestigation = mockInvestigations.find(
-            (inv) => inv.id === input.id,
-          );
-          if (mockInvestigation) {
-            return {
-              ...mockInvestigation,
-              ...input,
-              updated_at: new Date().toISOString(),
-            };
-          }
+        // Prüfe ob Fahndung existiert
+        const existingResponse = (await ctx.db
+          .from("investigations")
+          .select("id")
+          .eq("id", input.id)
+          .single()) as SupabaseResponse<{ id: string }>;
+
+        const { error: fetchError } = existingResponse;
+
+        if (fetchError) {
           throw new Error("Fahndung nicht gefunden");
         }
 
         const { id, ...updateData } = input;
 
-        const { data, error } = await ctx.db
+        const response = (await ctx.db
           .from("investigations")
           .update({
             ...updateData,
@@ -357,7 +302,9 @@ export const postRouter = createTRPCRouter({
           })
           .eq("id", id)
           .select()
-          .single();
+          .single()) as SupabaseResponse<Investigation>;
+
+        const { data, error } = response;
 
         if (error) {
           throw new Error(
@@ -365,290 +312,220 @@ export const postRouter = createTRPCRouter({
           );
         }
 
-        return data as Investigation;
+        console.log("✅ Fahndung erfolgreich aktualisiert:", data?.title);
+        return data!;
       } catch (error) {
-        console.warn("Supabase nicht verfügbar, Mock-Update:", error);
-        // Mock-Update
-        const mockInvestigation = mockInvestigations.find(
-          (inv) => inv.id === input.id,
+        console.error("❌ Fehler beim Aktualisieren der Fahndung:", error);
+        throw new Error(
+          `Fehler beim Aktualisieren der Fahndung: ${String(error)}`,
         );
-        if (mockInvestigation) {
-          return { ...mockInvestigation, ...input };
-        }
-        throw new Error("Fahndung nicht gefunden");
       }
     }),
 
-  // ✅ KORRIGIERTE Version - deleteInvestigation
-  deleteInvestigation: publicProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-      }),
-    )
-    .mutation(async ({ ctx, input }): Promise<boolean> => {
+  // Geschützt: Fahndung löschen (nur Admins)
+  deleteInvestigation: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      console.log("🗑️ deleteInvestigation aufgerufen mit:", input);
+      console.log("👤 Benutzer:", ctx.user?.email, "Rolle:", ctx.user?.role);
+
+      // Berechtigung prüfen
+      const user = ctx.user as { permissions?: { canDelete?: boolean } };
+      if (!user?.permissions?.canDelete) {
+        throw new Error("Keine Berechtigung zum Löschen von Fahndungen");
+      }
+
       try {
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, Mock-Delete");
-          // Mock-Delete
-          const index = mockInvestigations.findIndex(
-            (inv) => inv.id === input.id,
-          );
-          if (index !== -1) {
-            mockInvestigations.splice(index, 1);
-            return true;
-          }
-          return false;
+        // Prüfe ob Fahndung existiert
+        const existingResponse = (await ctx.db
+          .from("investigations")
+          .select("created_by, title")
+          .eq("id", input.id)
+          .single()) as SupabaseResponse<{ created_by: string; title: string }>;
+
+        const { data: existing, error: fetchError } = existingResponse;
+
+        if (fetchError) {
+          throw new Error("Fahndung nicht gefunden");
         }
 
-        const { error } = await ctx.db
+        // Lösche die Fahndung
+        const deleteResponse = (await ctx.db
           .from("investigations")
           .delete()
-          .eq("id", input.id);
+          .eq("id", input.id)) as SupabaseResponse<unknown>;
+
+        const { error } = deleteResponse;
 
         if (error) {
           throw new Error(`Fehler beim Löschen der Fahndung: ${error.message}`);
         }
 
+        console.log("✅ Fahndung erfolgreich gelöscht:", existing?.title);
         return true;
       } catch (error) {
-        console.warn("Supabase nicht verfügbar, Mock-Delete:", error);
-        // Mock-Delete
-        const index = mockInvestigations.findIndex(
-          (inv) => inv.id === input.id,
+        console.error("❌ Fehler beim Löschen der Fahndung:", error);
+        throw new Error(`Fehler beim Löschen der Fahndung: ${String(error)}`);
+      }
+    }),
+
+  // Geschützt: Fahndung veröffentlichen/unveröffentlichen
+  publishInvestigation: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        publish: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log("📢 publishInvestigation aufgerufen mit:", input);
+
+      // Berechtigung prüfen
+      const user = ctx.user as { permissions?: { canPublish?: boolean } };
+      if (!user?.permissions?.canPublish) {
+        throw new Error(
+          "Keine Berechtigung zum Veröffentlichen von Fahndungen",
         );
-        if (index !== -1) {
-          mockInvestigations.splice(index, 1);
-          return true;
-        }
-        return false;
       }
-    }),
 
-  // Bilder zu einer Fahndung abrufen mit optimierter Abfrage
-  getInvestigationImages: publicProcedure
-    .input(
-      z.object({
-        investigation_id: z.string().uuid().optional(), // UUID optional für Mock-Daten
-      }),
-    )
-    .query(async ({ ctx, input }): Promise<InvestigationImage[]> => {
       try {
-        if (!input.investigation_id) {
-          return [];
-        }
+        const newStatus = input.publish ? "published" : "active";
 
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, Mock-Bilder");
-          return [];
-        }
-
-        // Optimierte Abfrage mit Limit und selektiven Feldern
-        const { data, error } = await ctx.db
-          .from("investigation_images")
-          .select(
-            "id, file_name, original_name, file_path, file_size, mime_type, uploaded_at, is_primary",
-          )
-          .eq("investigation_id", input.investigation_id)
-          .order("is_primary", { ascending: false })
-          .order("uploaded_at", { ascending: false })
-          .limit(20); // Limit für bessere Performance
-
-        if (error) {
-          throw new Error(`Fehler beim Abrufen der Bilder: ${error.message}`);
-        }
-
-        return (data as InvestigationImage[]) || [];
-      } catch (error) {
-        console.warn("Supabase nicht verfügbar, Mock-Bilder:", error);
-        // Mock-Bilder
-        return [];
-      }
-    }),
-
-  // Bild zu einer Fahndung hinzufügen
-  addInvestigationImage: publicProcedure
-    .input(
-      z.object({
-        investigation_id: z.string().uuid(),
-        file_name: z.string(),
-        original_name: z.string(),
-        file_path: z.string(),
-        file_size: z.number(),
-        mime_type: z.string(),
-        width: z.number().optional(),
-        height: z.number().optional(),
-        description: z.string().optional(),
-        is_primary: z.boolean().default(false),
-        tags: z.array(z.string()).default([]),
-      }),
-    )
-    .mutation(async ({ ctx, input }): Promise<InvestigationImage> => {
-      try {
-        if (!ctx.db) {
-          console.warn("Database nicht verfügbar, Mock-Bild-Add");
-          // Mock-Bild-Add
-          const newImage: InvestigationImage = {
-            id: generateUUID(),
-            ...input,
-            uploaded_at: new Date().toISOString(),
-            uploaded_by: "user-1",
-            is_public: true,
-            metadata: {},
-          };
-          return newImage;
-        }
-
-        const { data, error } = await ctx.db
-          .from("investigation_images")
-          .insert({
-            investigation_id: input.investigation_id,
-            file_name: input.file_name,
-            original_name: input.original_name,
-            file_path: input.file_path,
-            file_size: input.file_size,
-            mime_type: input.mime_type,
-            width: input.width,
-            height: input.height,
-            description: input.description,
-            is_primary: input.is_primary,
-            tags: input.tags,
-            uploaded_at: new Date().toISOString(),
+        const response = (await ctx.db
+          .from("investigations")
+          .update({
+            status: newStatus,
+            updated_at: new Date().toISOString(),
+            ...(input.publish && {
+              article_published_at: new Date().toISOString(),
+            }),
           })
+          .eq("id", input.id)
           .select()
-          .single();
+          .single()) as SupabaseResponse<Investigation>;
+
+        const { data, error } = response;
 
         if (error) {
+          throw new Error(`Fehler beim Veröffentlichen: ${error.message}`);
+        }
+
+        console.log(
+          `✅ Fahndung ${input.publish ? "veröffentlicht" : "unveröffentlicht"}:`,
+          data?.title,
+        );
+        return data!;
+      } catch (error) {
+        console.error("❌ Fehler beim Veröffentlichen:", error);
+        throw new Error(`Fehler beim Veröffentlichen: ${String(error)}`);
+      }
+    }),
+
+  // Öffentlich: Meine Fahndungen (alle vom ptlsweb User)
+  getMyInvestigations: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(20),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      console.log("🔍 getMyInvestigations aufgerufen mit:", input);
+
+      try {
+        // Zeige alle Fahndungen vom ptlsweb User (da alle neuen Fahndungen diesem User zugeordnet werden)
+        const response = (await ctx.db
+          .from("investigations")
+          .select("*")
+          .eq("created_by", "305f1ebf-01ed-4007-8cd7-951f6105b8c1") // ptlsweb@gmail.com
+          .order("created_at", { ascending: false })
+          .range(
+            input.offset,
+            input.offset + input.limit - 1,
+          )) as SupabaseResponse<Investigation[]>;
+
+        const { data, error } = response;
+
+        if (error) {
+          console.error("❌ Supabase-Fehler:", error);
           throw new Error(
-            `Fehler beim Hinzufügen des Bildes: ${error.message}`,
+            `Fehler beim Abrufen der Fahndungen: ${error.message}`,
           );
         }
 
-        return data as InvestigationImage;
+        console.log(
+          "✅ Meine Fahndungen erfolgreich geladen:",
+          data?.length ?? 0,
+        );
+        return data ?? [];
       } catch (error) {
-        console.warn("Supabase nicht verfügbar, Mock-Bild-Add:", error);
-        // Mock-Bild-Add
-        const newImage: InvestigationImage = {
-          id: generateUUID(),
-          ...input,
-          uploaded_at: new Date().toISOString(),
-          uploaded_by: "user-1",
-          is_public: true,
-          metadata: {},
-        };
-        return newImage;
+        console.error("❌ Fehler beim Abrufen eigener Fahndungen:", error);
+        throw new Error(`Fehler beim Abrufen der Fahndungen: ${String(error)}`);
       }
     }),
 
-  // Statistiken abrufen
-  getStatistics: publicProcedure.query(async ({ ctx }) => {
-    try {
-      if (!ctx.db) {
-        console.warn("Database nicht verfügbar, Mock-Statistiken");
-        // Mock-Statistiken
-        return {
-          total: mockInvestigations.length,
-          byStatus: {
-            active: mockInvestigations.filter((inv) => inv.status === "active")
-              .length,
-            published: 0,
-            draft: 0,
-            closed: 0,
-          },
-          byPriority: {
-            urgent: mockInvestigations.filter(
-              (inv) => inv.priority === "urgent",
-            ).length,
-            normal: mockInvestigations.filter(
-              (inv) => inv.priority === "normal",
-            ).length,
-            new: 0,
-          },
-          byCategory: {
-            WANTED_PERSON: 0,
-            MISSING_PERSON: 0,
-            UNKNOWN_DEAD: 0,
-            STOLEN_GOODS: 0,
-          },
-        };
-      }
+  // Admin: Alle Benutzer verwalten
+  getUsers: protectedProcedure.query(async ({ ctx }) => {
+    const user = ctx.user as { permissions?: { canManageUsers?: boolean } };
+    if (!user?.permissions?.canManageUsers) {
+      throw new Error("Keine Berechtigung zur Benutzerverwaltung");
+    }
 
-      // Optimierte Statistiken-Abfrage
-      const { data, error } = await ctx.db
-        .from("investigations")
-        .select("status, priority, category")
-        .limit(1000); // Limit für Performance
+    try {
+      const response = (await ctx.db
+        .from("user_profiles")
+        .select("*")
+        .order("created_at", { ascending: false })) as SupabaseResponse<
+        UserProfile[]
+      >;
+
+      const { data, error } = response;
 
       if (error) {
-        throw new Error(
-          `Fehler beim Abrufen der Statistiken: ${error.message}`,
-        );
+        throw new Error(`Fehler beim Abrufen der Benutzer: ${error.message}`);
       }
 
-      const investigations = data as Investigation[];
-
-      return {
-        total: investigations.length,
-        byStatus: {
-          active: investigations.filter((inv) => inv.status === "active")
-            .length,
-          published: investigations.filter((inv) => inv.status === "published")
-            .length,
-          draft: investigations.filter((inv) => inv.status === "draft").length,
-          closed: investigations.filter((inv) => inv.status === "closed")
-            .length,
-        },
-        byPriority: {
-          urgent: investigations.filter((inv) => inv.priority === "urgent")
-            .length,
-          normal: investigations.filter((inv) => inv.priority === "normal")
-            .length,
-          new: investigations.filter((inv) => inv.priority === "new").length,
-        },
-        byCategory: {
-          WANTED_PERSON: investigations.filter(
-            (inv) => inv.category === "WANTED_PERSON",
-          ).length,
-          MISSING_PERSON: investigations.filter(
-            (inv) => inv.category === "MISSING_PERSON",
-          ).length,
-          UNKNOWN_DEAD: investigations.filter(
-            (inv) => inv.category === "UNKNOWN_DEAD",
-          ).length,
-          STOLEN_GOODS: investigations.filter(
-            (inv) => inv.category === "STOLEN_GOODS",
-          ).length,
-        },
-      };
+      return data ?? [];
     } catch (error) {
-      console.warn("Supabase nicht verfügbar, Mock-Statistiken:", error);
-      // Mock-Statistiken
-      return {
-        total: mockInvestigations.length,
-        byStatus: {
-          active: mockInvestigations.filter((inv) => inv.status === "active")
-            .length,
-          published: 0,
-          draft: 0,
-          closed: 0,
-        },
-        byPriority: {
-          urgent: mockInvestigations.filter((inv) => inv.priority === "urgent")
-            .length,
-          normal: mockInvestigations.filter((inv) => inv.priority === "normal")
-            .length,
-          new: 0,
-        },
-        byCategory: {
-          WANTED_PERSON: 0,
-          MISSING_PERSON: 0,
-          UNKNOWN_DEAD: 0,
-          STOLEN_GOODS: 0,
-        },
-      };
+      console.error("❌ Fehler beim Abrufen der Benutzer:", error);
+      throw new Error(`Fehler beim Abrufen der Benutzer: ${String(error)}`);
     }
   }),
 
-  // Media routes
+  // Admin: Benutzer genehmigen
+  approveUser: protectedProcedure
+    .input(z.object({ userId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = ctx.user as { permissions?: { canManageUsers?: boolean } };
+      if (!user?.permissions?.canManageUsers) {
+        throw new Error("Keine Berechtigung zur Benutzerverwaltung");
+      }
+
+      try {
+        const response = (await ctx.db
+          .from("user_profiles")
+          .update({ status: "approved" })
+          .eq("user_id", input.userId)
+          .select()
+          .single()) as SupabaseResponse<UserProfile>;
+
+        const { data, error } = response;
+
+        if (error) {
+          throw new Error(
+            `Fehler beim Genehmigen des Benutzers: ${error.message}`,
+          );
+        }
+
+        return data!;
+      } catch (error) {
+        console.error("❌ Fehler beim Genehmigen des Benutzers:", error);
+        throw new Error(
+          `Fehler beim Genehmigen des Benutzers: ${String(error)}`,
+        );
+      }
+    }),
+
+  // Media Router
   media: mediaRouter,
 });

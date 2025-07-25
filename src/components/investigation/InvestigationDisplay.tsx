@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import {
   FileText,
   MapPin,
@@ -194,10 +195,11 @@ const FlipCard: React.FC<{
                       (preview) => preview.name === data.step3.mainImage!.name,
                     );
                     return mainPreview ? (
-                      <img
+                      <Image
                         src={mainPreview.preview}
                         alt="Hauptbild"
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : null;
                   })()}
@@ -481,9 +483,11 @@ export default function InvestigationDisplay({
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {data.step3.imagePreviews.slice(0, 4).map((image, index) => (
                 <div key={image.id} className="relative">
-                  <img
+                  <Image
                     src={image.preview}
                     alt={image.name}
+                    width={80}
+                    height={80}
                     className="h-20 w-full rounded object-cover"
                   />
                   {data.step3.mainImage &&
@@ -733,9 +737,11 @@ export default function InvestigationDisplay({
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {data.step3.imagePreviews.map((image) => (
                 <div key={image.id} className="group relative">
-                  <img
+                  <Image
                     src={image.preview}
                     alt={image.name}
+                    width={300}
+                    height={300}
                     className="aspect-square w-full rounded-lg object-cover shadow-md transition-transform hover:scale-105"
                   />
                   {data.step3.mainImage &&

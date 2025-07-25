@@ -63,7 +63,7 @@ export const authRouter = createTRPCRouter({
       throw new Error("Admin-Rechte erforderlich");
     }
 
-    const usersResult = await _ctx.db.supabase
+    const usersResult = await _ctx.db
       .from("user_profiles")
       .select("*")
       .order("created_at", { ascending: false });
@@ -94,7 +94,7 @@ export const authRouter = createTRPCRouter({
         throw new Error("Admin-Rechte erforderlich");
       }
 
-      const updateResult = await ctx.db.supabase
+      const updateResult = await ctx.db
         .from("user_profiles")
         .update({ role: input.role })
         .eq("user_id", input.userId)
@@ -128,7 +128,7 @@ export const authRouter = createTRPCRouter({
         throw new Error("Admin-Rechte erforderlich");
       }
 
-      const { error } = await ctx.db.supabase
+      const { error } = await ctx.db
         .from("user_profiles")
         .delete()
         .eq("user_id", input.userId);

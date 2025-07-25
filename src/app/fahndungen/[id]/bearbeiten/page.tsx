@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useFahndung } from "@/lib/hooks/useFahndung";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Loader2, AlertCircle } from "lucide-react";
 import { getErrorMessage } from "@/types/errors";
+import { api } from "@/trpc/react";
 
 const editSchema = z.object({
   title: z.string().min(5, "Titel muss mindestens 5 Zeichen haben"),
@@ -45,9 +45,6 @@ type EditFormData = z.infer<typeof editSchema>;
 export default function FahndungBearbeitenPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { investigation, loading, error, updateInvestigation } = useFahndung(
-    id as string,
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
 
@@ -55,20 +52,44 @@ export default function FahndungBearbeitenPage() {
     resolver: zodResolver(editSchema),
   });
 
+  // Direct tRPC query
+  const {
+    data: investigation,
+    isLoading: loading,
+    error,
+  } = api.post.getInvestigation.useQuery(
+    { id: id as string },
+    {
+      enabled: !!id,
+    },
+  );
+
+  // Effect to handle investigation data
   useEffect(() => {
     if (investigation) {
+      console.log("🔍 Investigation loaded:", investigation);
       form.reset({
-        title: investigation.title,
-        case_number: investigation.case_number,
-        category: investigation.category,
-        priority: investigation.priority,
-        status: investigation.status,
-        date: investigation.date.split("T")[0],
-        short_description: investigation.short_description,
-        description: investigation.description,
+        title: investigation.title ?? "",
+        case_number: investigation.case_number ?? "",
+        category:
+          (investigation.category as
+            | "MISSING_PERSON"
+            | "WANTED_PERSON"
+            | "UNKNOWN_DEAD"
+            | "STOLEN_GOODS") ?? "MISSING_PERSON",
+        priority: investigation.priority ?? "normal",
+        status:
+          (investigation.status as
+            | "draft"
+            | "active"
+            | "published"
+            | "closed") ?? "active",
+        date: investigation.date?.split("T")[0] ?? "",
+        short_description: investigation.short_description ?? "",
+        description: investigation.description ?? "",
         features: investigation.features ?? "",
-        location: investigation.location,
-        station: investigation.station,
+        location: investigation.location ?? "",
+        station: investigation.station ?? "",
         contact_info: investigation.contact_info ?? {},
         tags: investigation.tags ?? [],
       });
@@ -76,14 +97,26 @@ export default function FahndungBearbeitenPage() {
     }
   }, [investigation, form]);
 
+  // Update mutation
+  const updateInvestigationMutation = api.post.updateInvestigation.useMutation({
+    onSuccess: () => {
+      toast.success("Fahndung erfolgreich aktualisiert");
+      router.push(`/fahndungen/${id as string}`);
+    },
+    onError: (error) => {
+      toast.error("Fehler beim Aktualisieren: " + getErrorMessage(error));
+    },
+  });
+
   const onSubmit = async (data: EditFormData) => {
     setIsSubmitting(true);
     try {
-      await updateInvestigation(data);
-      toast.success("Fahndung erfolgreich aktualisiert");
-      router.push(`/fahndungen/${id as string}`);
+      await updateInvestigationMutation.mutateAsync({
+        id: id as string,
+        ...data,
+      });
     } catch (error: unknown) {
-      toast.error("Fehler beim Aktualisieren: " + getErrorMessage(error));
+      console.error("Update error:", error);
     } finally {
       setIsSubmitting(false);
     }

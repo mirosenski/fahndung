@@ -11,17 +11,35 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { createClient } from "@supabase/supabase-js";
 
-import { type Session, type UserProfile } from "~/lib/auth";
+import {
+  type Session,
+  type UserProfile,
+  type AuthPermissions,
+} from "~/lib/auth";
 
 // Supabase Client für Server-Side
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"]!;
+const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Erweiterte User-Typen für tRPC Context
+interface TRPCUser {
+  id: string;
+  email: string;
+  role: string;
+  permissions: AuthPermissions;
+}
+
+interface TRPCContext {
+  db: typeof supabase;
+  session: Session | null;
+  user: TRPCUser | null;
+}
 
 /**
  * 1. CONTEXT
@@ -35,12 +53,14 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async (opts: {
+  headers: Headers;
+}): Promise<TRPCContext> => {
   console.log("🔧 Creating tRPC context with Supabase...");
 
   // Session aus Headers extrahieren
   let session: Session | null = null;
-  let user = null;
+  let user: TRPCUser | null = null;
 
   try {
     const authHeader = opts.headers.get("Authorization");
@@ -114,7 +134,18 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
               profile: profile,
             };
 
-            user = supabaseUser;
+            // Erstelle TRPCUser mit Permissions
+            if (profile) {
+              const { getRolePermissions } = await import("~/lib/auth");
+              const permissions = getRolePermissions(profile.role);
+
+              user = {
+                id: supabaseUser.id,
+                email: supabaseUser.email ?? "",
+                role: profile.role,
+                permissions: permissions,
+              };
+            }
 
             console.log(
               "✅ User authenticated:",
@@ -218,32 +249,23 @@ const timingMiddleware = t.middleware(async ({ path, next }) => {
  * Middleware for authentication
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session) {
-    console.log("❌ Auth middleware: Keine Session gefunden");
+  if (!ctx.user) {
+    console.log("❌ Auth middleware: Kein User gefunden");
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
     });
   }
 
-  // Zusätzliche Session-Validierung
-  if (!ctx.session.user?.id) {
-    console.log("❌ Auth middleware: Ungültige Session - keine User-ID");
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Ungültige Session - Bitte melden Sie sich erneut an",
-    });
-  }
-
-  console.log("✅ Auth middleware: Session gefunden", {
-    userId: ctx.session.user.id,
-    userRole: ctx.session.profile?.role,
+  console.log("✅ Auth middleware: User gefunden", {
+    userId: ctx.user.id,
+    userRole: ctx.user.role,
   });
 
   return next({
     ctx: {
       ...ctx,
-      session: ctx.session,
+      user: ctx.user,
     },
   });
 });
@@ -252,8 +274,8 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
  * Middleware for admin-only procedures
  */
 const adminMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session) {
-    console.log("❌ Admin middleware: Keine Session gefunden");
+  if (!ctx.user) {
+    console.log("❌ Admin middleware: Kein User gefunden");
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
@@ -261,24 +283,24 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
   }
 
   // Prüfe Admin-Rechte
-  const userRole = ctx.session.profile?.role;
-  if (userRole !== "admin" && userRole !== "editor") {
+  const userRole = ctx.user.role;
+  if (userRole !== "admin" && userRole !== "super_admin") {
     console.log("❌ Admin middleware: Insufficient permissions:", userRole);
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Admin- oder Editor-Rechte erforderlich",
+      message: "Admin-Rechte erforderlich",
     });
   }
 
   console.log("✅ Admin middleware: Admin-Rechte bestätigt", {
-    userId: ctx.session.user.id,
+    userId: ctx.user.id,
     userRole: userRole,
   });
 
   return next({
     ctx: {
       ...ctx,
-      session: ctx.session,
+      user: ctx.user,
     },
   });
 });
@@ -287,7 +309,7 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
  * Protected (authenticated) procedure
  *
  * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
- * the session is valid and guarantees `ctx.session.user` is not null.
+ * the session is valid and guarantees `ctx.user` is not null.
  *
  * @see https://trpc.io/docs/procedures
  */
