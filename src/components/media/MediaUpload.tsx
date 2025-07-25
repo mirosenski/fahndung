@@ -43,15 +43,7 @@ export default function MediaUpload({
   const router = useRouter();
   const isAdmin = session?.profile?.role === "admin";
 
-  // Debug-Logging für Session-Status
-  console.log("🔍 MediaUpload Debug:", {
-    isAuthenticated,
-    hasSession: !!session,
-    userRole: session?.profile?.role,
-    isAdmin,
-    userId: session?.user?.id,
-    userEmail: session?.user?.email,
-  });
+
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

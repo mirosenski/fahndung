@@ -18,7 +18,8 @@ const getQueryClient = () => {
     return createQueryClient();
   }
   // Browser: use singleton pattern to keep the same query client
-  clientQueryClientSingleton = clientQueryClientSingleton ?? createQueryClient();
+  clientQueryClientSingleton =
+    clientQueryClientSingleton ?? createQueryClient();
 
   return clientQueryClientSingleton;
 };
@@ -44,34 +45,32 @@ async function getAuthToken(): Promise<string | null> {
   if (typeof window === "undefined") return null;
 
   try {
-    console.log("🔍 tRPC: Hole Auth-Token von Supabase...");
-    
     // Direkte Supabase Session-Abfrage mit kürzerem Timeout
     const sessionPromise = supabase.auth.getSession();
-    const timeoutPromise = new Promise<null>((resolve) => 
-      setTimeout(() => resolve(null), 1000) // Reduziert von 2000ms auf 1000ms
+    const timeoutPromise = new Promise<null>(
+      (resolve) => setTimeout(() => resolve(null), 1000), // Reduziert von 2000ms auf 1000ms
     );
-    
+
     const result = await Promise.race([sessionPromise, timeoutPromise]);
-    
+
     if (!result) {
-      console.warn("❌ tRPC: Session-Abfrage Timeout");
       return null;
     }
-    
-    const { data: { session }, error } = result;
-    
+
+    const {
+      data: { session },
+      error,
+    } = result;
+
     if (error) {
-      console.warn("❌ tRPC: Supabase Session-Fehler:", error.message);
       return null;
     }
 
     if (!session?.access_token) {
-      console.warn("❌ tRPC: Kein Access-Token in Session gefunden");
       return null;
     }
 
-    console.log("✅ tRPC: Token erfolgreich extrahiert", {
+    console.log("🔑 Token gefunden:", {
       tokenLength: session.access_token.length,
       tokenStart: session.access_token.substring(0, 20) + "...",
     });
@@ -107,12 +106,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 
               if (authToken) {
                 headers.set("Authorization", `Bearer ${authToken}`);
-                console.log("✅ tRPC: Auth-Header gesetzt", {
+                console.log("🔑 Auth-Token gesetzt:", {
                   tokenLength: authToken.length,
                   tokenStart: authToken.substring(0, 20) + "...",
                 });
               } else {
-                console.warn("❌ tRPC: Kein Auth-Token für Header verfügbar");
+                console.log("⚠️ Kein Auth-Token verfügbar");
               }
             } catch (error) {
               console.error(

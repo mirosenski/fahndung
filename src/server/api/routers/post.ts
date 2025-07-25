@@ -42,70 +42,69 @@ interface InvestigationImage {
   metadata: Record<string, unknown>;
 }
 
-// Mock-Daten für den Fall, dass Supabase noch nicht eingerichtet ist
-// Globale Mock-Fahndungen Liste (wird zur Laufzeit erweitert)
-let mockInvestigations: Investigation[] = [
+// Mock-Daten für Fahndungen (temporär bis RLS-Policies korrigiert sind)
+const mockInvestigations: Investigation[] = [
   {
-    id: "550e8400-e29b-41d4-a716-446655440001",
-    title: "Vermisste Person - Max Mustermann",
+    id: "1",
+    title: "Vermisste Person - Anna Schmidt",
     case_number: "F-2024-001",
     description:
-      "Max Mustermann wurde zuletzt am 15.03.2024 gesehen. Er trug eine blaue Jacke und schwarze Jeans.",
-    short_description: "Vermisste Person in Berlin",
+      "Anna Schmidt wurde zuletzt am 15. März 2024 gesehen. Sie trug eine blaue Jacke und hatte einen roten Rucksack dabei.",
+    short_description: "Vermisste Person seit 15. März 2024",
     status: "active",
     priority: "urgent",
     category: "MISSING_PERSON",
-    location: "Berlin, Innenstadt",
+    location: "Berlin, Prenzlauer Berg",
     station: "Polizei Berlin",
-    features: "Blaue Jacke, schwarze Jeans",
-    date: "2024-03-15",
-    created_at: new Date("2024-03-15").toISOString(),
-    updated_at: new Date("2024-03-15").toISOString(),
-    created_by: "550e8400-e29b-41d4-a716-446655440010",
-    assigned_to: "550e8400-e29b-41d4-a716-446655440011",
-    tags: ["vermisst", "person"],
+    features: "Blaue Jacke, roter Rucksack",
+    date: "2024-03-15T10:00:00Z",
+    created_at: "2024-03-16T08:00:00Z",
+    updated_at: "2024-03-16T08:00:00Z",
+    created_by: "admin-1",
+    assigned_to: "officer-1",
+    tags: ["MISSING_PERSON", "URGENT"],
     metadata: {},
   },
   {
-    id: "550e8400-e29b-41d4-a716-446655440002",
-    title: "Diebstahl in der Innenstadt",
+    id: "2",
+    title: "Gestohlener Laptop - Büro Einbruch",
     case_number: "F-2024-002",
     description:
-      "Mehrere Diebstähle in der Fußgängerzone gemeldet. Verdächtige Person mit Kapuze beobachtet.",
-    short_description: "Diebstähle in München",
+      "Einbruch in Bürogebäude. Gestohlen wurden mehrere Laptops und elektronische Geräte.",
+    short_description: "Büro Einbruch mit Diebstahl",
     status: "active",
     priority: "normal",
     category: "STOLEN_GOODS",
-    location: "München, Fußgängerzone",
-    station: "Polizei München",
-    features: "Person mit Kapuze",
-    date: "2024-03-20",
-    created_at: new Date("2024-03-20").toISOString(),
-    updated_at: new Date("2024-03-20").toISOString(),
-    created_by: "550e8400-e29b-41d4-a716-446655440010",
-    assigned_to: "550e8400-e29b-41d4-a716-446655440012",
-    tags: ["diebstahl", "innenstadt"],
+    location: "Hamburg, Hafencity",
+    station: "Polizei Hamburg",
+    features: "Mehrere Laptops, elektronische Geräte",
+    date: "2024-03-14T22:30:00Z",
+    created_at: "2024-03-15T09:00:00Z",
+    updated_at: "2024-03-15T09:00Z",
+    created_by: "admin-1",
+    assigned_to: "officer-2",
+    tags: ["STOLEN_GOODS", "BURGLARY"],
     metadata: {},
   },
   {
-    id: "550e8400-e29b-41d4-a716-446655440003",
-    title: "Unfallflucht auf der A1",
+    id: "3",
+    title: "Unbekannter Toter - Park",
     case_number: "F-2024-003",
     description:
-      "Unfallflucht am 20.03.2024 auf der A1, Kilometer 45. Fahrzeug mit beschädigter Stoßstange.",
-    short_description: "Unfallflucht auf Autobahn",
+      "Unbekannter männlicher Toter im Stadtpark gefunden. Alter geschätzt 45-55 Jahre.",
+    short_description: "Unbekannter Toter im Stadtpark",
     status: "active",
-    priority: "urgent",
-    category: "WANTED_PERSON",
-    location: "A1, Kilometer 45",
-    station: "Polizei Hamburg",
-    features: "Fahrzeug mit beschädigter Stoßstange",
-    date: "2024-03-20",
-    created_at: new Date("2024-03-20").toISOString(),
-    updated_at: new Date("2024-03-20").toISOString(),
-    created_by: "550e8400-e29b-41d4-a716-446655440010",
-    assigned_to: "550e8400-e29b-41d4-a716-446655440013",
-    tags: ["unfallflucht", "autobahn"],
+    priority: "normal",
+    category: "UNKNOWN_DEAD",
+    location: "München, Englischer Garten",
+    station: "Polizei München",
+    features: "Männlich, 45-55 Jahre, dunkle Kleidung",
+    date: "2024-03-13T07:15:00Z",
+    created_at: "2024-03-13T08:00:00Z",
+    updated_at: "2024-03-13T08:00:00Z",
+    created_by: "admin-1",
+    assigned_to: "officer-3",
+    tags: ["UNKNOWN_DEAD", "PARK"],
     metadata: {},
   },
 ];
@@ -241,7 +240,7 @@ export const postRouter = createTRPCRouter({
         contact_info: z.record(z.any()).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }): Promise<Investigation> => {
+    .mutation(async ({ input }): Promise<Investigation> => {
       console.log("🚀 createInvestigation aufgerufen mit:", input);
 
       try {
@@ -255,7 +254,7 @@ export const postRouter = createTRPCRouter({
           id: generateUUID(),
           case_number: `F-${Date.now()}`,
           short_description: input.title,
-          category: input.category || "WANTED_PERSON",
+          category: input.category ?? "WANTED_PERSON",
           station: "Allgemein",
           features: "",
           date: new Date().toISOString(),
@@ -282,7 +281,7 @@ export const postRouter = createTRPCRouter({
         return newInvestigation;
       } catch (error) {
         console.error("❌ Fehler bei Mock-Erstellung:", error);
-        throw new Error(`Fehler beim Erstellen der Fahndung: ${error}`);
+        throw new Error(`Fehler beim Erstellen der Fahndung: ${String(error)}`);
       }
     }),
 

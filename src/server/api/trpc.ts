@@ -12,7 +12,7 @@ import { ZodError } from "zod";
 import { createClient } from "@supabase/supabase-js";
 
 import { db } from "~/server/db";
-import { type Session, type UserProfile, getCurrentSession } from "~/lib/auth";
+import { type Session, type UserProfile } from "~/lib/auth";
 
 /**
  * 1. CONTEXT
@@ -120,14 +120,21 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         }
       }
     } else {
-      console.log("ℹ️ No Authorization header found - verwende öffentlichen Zugriff");
+      console.log(
+        "ℹ️ No Authorization header found - verwende öffentlichen Zugriff",
+      );
     }
   } catch (error) {
     console.error("❌ Context creation error:", error);
     console.log("🔄 Context-Fehler - verwende öffentlichen Zugriff");
   }
 
-  console.log("✅ tRPC Context erstellt - Session:", !!session, "User:", !!user);
+  console.log(
+    "✅ tRPC Context erstellt - Session:",
+    !!session,
+    "User:",
+    !!user,
+  );
 
   return {
     db,

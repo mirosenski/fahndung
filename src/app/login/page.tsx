@@ -28,10 +28,10 @@ export default function Login() {
       }
 
       // Zuerst Session bereinigen
-      console.log("🧹 Bereinige alte Session vor Login...");
+  
       await clearAuthSession();
 
-      console.log("🔐 Starte Login-Prozess...");
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -49,7 +49,7 @@ export default function Login() {
           setError(`Login-Fehler: ${error.message}`);
         }
       } else {
-        console.log("✅ Login erfolgreich");
+
         router.push("/dashboard");
       }
     } catch (err) {

@@ -32,39 +32,23 @@ try {
 let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
 const getSupabaseInstance = () => {
-  if (!supabaseInstance) {
-    console.log("✅ Supabase-Konfiguration erfolgreich validiert (REMOTE)");
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        flowType: "pkce" as const,
-        storage:
-          typeof window !== "undefined" ? window.localStorage : undefined,
+  supabaseInstance ??= createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
       },
-      realtime: {
-        params: {
-          eventsPerSecond: 1 as const,
-        },
-        heartbeatIntervalMs: 10000 as const,
-        reconnectAfterMs: (tries: number) => Math.min(tries * 200, 2000),
+    },
+    global: {
+      headers: {
+        "x-application-name": "fahndung-app",
       },
-      global: {
-        headers: {
-          "X-Client-Info": "fahndung-web" as const,
-          "X-Requested-With": "XMLHttpRequest" as const,
-          "X-Environment": "remote" as const,
-        },
-        fetch: (url, options = {}) => {
-          return fetch(url, {
-            ...options,
-            signal: AbortSignal.timeout(30000),
-          });
-        },
-      },
-    });
-  }
+    },
+  });
   return supabaseInstance;
 };
 
@@ -78,7 +62,6 @@ const handleMessagePortError = (error: unknown): boolean => {
       error.message.includes("port") ||
       error.message.includes("disconnected"))
   ) {
-    console.log("ℹ️ MessagePort-Fehler behandelt (normal bei Auth-Listenern)");
     return true;
   }
   return false;
@@ -98,7 +81,6 @@ export const setupAuthListener = (
         callback(event, session);
       } catch (error) {
         if (handleMessagePortError(error)) {
-          console.log("ℹ️ Auth-Listener Fehler behandelt");
         } else {
           console.error("❌ Auth-Listener Fehler:", error);
         }
@@ -108,7 +90,6 @@ export const setupAuthListener = (
     return subscription;
   } catch (error) {
     if (handleMessagePortError(error)) {
-      console.log("ℹ️ Auth-Listener Setup Fehler behandelt");
       return null;
     }
     console.error("❌ Auth-Listener Setup Fehler:", error);
@@ -126,9 +107,8 @@ export const REMOTE_SUPABASE_CONFIG = {
   retryAttempts: 3,
 } as const;
 
-// Debug-Informationen für Remote Supabase
 if (typeof window !== "undefined") {
-  console.log("🔧 Remote Supabase Konfiguration:", {
+  console.log("🔧 Supabase Client Konfiguration:", {
     url: supabaseUrl,
     projectId: REMOTE_SUPABASE_CONFIG.projectId,
     storageBucket: REMOTE_SUPABASE_CONFIG.storageBucket,
@@ -169,9 +149,7 @@ export const getSupabaseClient = () => {
   connectionPool ??= Promise.resolve(supabase).catch((error) => {
     if (handleMessagePortError(error)) {
       // Bei Message Port Fehlern neu initialisieren
-      console.log(
-        "🔄 Reinitialisiere Supabase Client nach Message Port Fehler...",
-      );
+
       return supabase;
     }
     throw error;
@@ -197,7 +175,7 @@ export const subscribeToInvestigations = (
     );
     return {
       unsubscribe: () => {
-        console.log("Real-time subscription für Fahndungen beendet (Mock)");
+        // No-op da Supabase nicht verfügbar
       },
     };
   }
@@ -213,8 +191,8 @@ export const subscribeToInvestigations = (
       },
       callback,
     )
-    .subscribe((status: string) => {
-      console.log("🔌 Real-time Status:", status);
+    .subscribe(() => {
+      // intentionally left blank
     });
 };
 

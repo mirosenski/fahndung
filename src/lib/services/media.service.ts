@@ -446,7 +446,6 @@ export class MediaService {
           .remove(filePaths);
 
         if (storageError) {
-          console.warn("Fehler beim Löschen aus Storage:", storageError);
         }
       }
 
@@ -619,8 +618,8 @@ export class MediaService {
           };
           img.src = objectUrl;
         });
-      } catch (error) {
-        console.warn("Fehler beim Extrahieren der Bild-Metadaten:", error);
+      } catch {
+        // Ignoriere Fehler beim Extrahieren der Metadaten
       }
     }
 

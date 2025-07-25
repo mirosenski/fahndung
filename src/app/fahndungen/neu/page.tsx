@@ -23,7 +23,6 @@ interface NewFahndungForm {
 
 export default function NeueFahndungPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<NewFahndungForm>({
     title: "",
     description: "",
@@ -37,8 +36,7 @@ export default function NeueFahndungPage() {
 
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
-    onSuccess: (data) => {
-      console.log("✅ Fahndung erfolgreich erstellt:", data);
+    onSuccess: () => {
       // Erfolgreich erstellt - zur Fahndungen-Übersicht weiterleiten
       router.push("/fahndungen");
     },
@@ -46,11 +44,9 @@ export default function NeueFahndungPage() {
       console.error("❌ Fehler beim Erstellen der Fahndung:", error);
       console.error("Fehler-Details:", {
         message: error.message,
-        code: error.code,
         data: error.data,
         shape: error.shape,
       });
-      // TODO: Fehlermeldung anzeigen
     },
   });
 
@@ -63,13 +59,10 @@ export default function NeueFahndungPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    console.log("🚀 Starte Fahndung-Erstellung mit Daten:", formData);
 
     try {
       // Erstelle die Fahndung über die tRPC API
-      const result = await createInvestigation.mutateAsync({
+      await createInvestigation.mutateAsync({
         title: formData.title,
         description: formData.description,
         status: "active",
@@ -83,14 +76,13 @@ export default function NeueFahndungPage() {
         },
         tags: [formData.category], // Kategorie auch als Tag
       });
-      
-      console.log("✅ Fahndung erfolgreich erstellt:", result);
     } catch (error) {
       console.error("❌ Fehler beim Erstellen der Fahndung:", error);
       console.error("Fehler-Typ:", typeof error);
-      console.error("Fehler-Stack:", error instanceof Error ? error.stack : "Kein Stack verfügbar");
-    } finally {
-      setIsSubmitting(false);
+      console.error(
+        "Fehler-Stack:",
+        error instanceof Error ? error.stack : "Kein Stack verfügbar",
+      );
     }
   };
 

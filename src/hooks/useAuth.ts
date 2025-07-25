@@ -29,15 +29,11 @@ export const useAuth = () => {
   const checkSession = useCallback(async (force = false) => {
     // Verhindere gleichzeitige Session-Checks
     if (isCheckingSession.current && !force) {
-      console.log("🔍 useAuth: Session-Check bereits läuft, überspringe...");
       return;
     }
 
     // Verhindere zu viele Retries
     if (retryCount.current >= maxRetries && !force) {
-      console.log(
-        "🔍 useAuth: Max Retries erreicht, setze Session auf null...",
-      );
       setSession(null);
       setLoading(false);
       setInitialized(true);
@@ -50,27 +46,22 @@ export const useAuth = () => {
     setTimeoutReached(false);
 
     try {
-      console.log(
-        "🔍 useAuth: Prüfe Session... (Versuch",
-        retryCount.current + 1,
-        ")",
-      );
-
       // Optimierte Session-Prüfung mit kürzerem Timeout
       const sessionPromise = getCurrentSession();
-      const timeoutPromise = new Promise<null>((resolve) =>
-        setTimeout(() => resolve(null), 1500), // Reduziert von 3000ms auf 1500ms
+      const timeoutPromise = new Promise<null>(
+        (resolve) => setTimeout(() => resolve(null), 1500), // Reduziert von 3000ms auf 1500ms
       );
 
-      const currentSession = await Promise.race([sessionPromise, timeoutPromise]);
+      const currentSession = await Promise.race([
+        sessionPromise,
+        timeoutPromise,
+      ]);
 
       if (currentSession) {
         setSession(currentSession);
         retryCount.current = 0; // Reset retry count on success
-        console.log("✅ Session erfolgreich geladen");
       } else {
         setSession(null);
-        console.log("ℹ️ Keine aktive Session gefunden");
       }
     } catch (err) {
       console.error("❌ Fehler beim Prüfen der Session:", err);
@@ -99,8 +90,6 @@ export const useAuth = () => {
 
   const logout = useCallback(async () => {
     try {
-      console.log("🔐 useAuth: Starte Logout...");
-
       // Session bereinigen
       await clearAuthSession();
 
@@ -111,7 +100,6 @@ export const useAuth = () => {
       setError(null);
       retryCount.current = 0; // Reset retry count
 
-      console.log("✅ Logout erfolgreich abgeschlossen");
       router.push("/login");
     } catch (err) {
       console.error("❌ Unerwarteter Fehler beim Logout:", err);
@@ -126,7 +114,6 @@ export const useAuth = () => {
   useEffect(() => {
     if (hasInitialized.current) return;
 
-    console.log("🚀 useAuth: Initial Session-Check...");
     void checkSession();
   }, [checkSession]);
 
@@ -134,7 +121,6 @@ export const useAuth = () => {
   useEffect(() => {
     if (!supabase || authListenerSetup.current) return;
 
-    console.log("🔐 useAuth: Setup Auth State Listener...");
     authListenerSetup.current = true;
 
     const {
@@ -161,7 +147,6 @@ export const useAuth = () => {
     });
 
     return () => {
-      console.log("🔐 useAuth: Cleanup Auth State Listener...");
       subscription?.unsubscribe();
     };
   }, [checkSession]);
@@ -170,7 +155,6 @@ export const useAuth = () => {
   useEffect(() => {
     const handleMessagePortError = (event: ErrorEvent) => {
       if (event.message.includes("message port closed")) {
-        console.log("ℹ️ Message Port Error (normal):", event.message);
         // Ignoriere Message Port Fehler - sie sind normal bei Tab-Wechsel
         return true;
       }
@@ -182,7 +166,6 @@ export const useAuth = () => {
       if (reason && typeof reason === "object" && "message" in reason) {
         const message = String((reason as { message: unknown }).message);
         if (message.includes("403") || message.includes("Forbidden")) {
-          console.log("ℹ️ 403 Error in unhandled rejection (normal):", reason);
           // Behandle 403-Fehler automatisch
           void handle403Error(reason);
           return true;

@@ -156,14 +156,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (timeoutReached) {
-      console.log("Auth timeout reached");
+      
     }
   }, [timeoutReached]);
 
   // Auth check with useEffect to avoid router updates during render
   useEffect(() => {
     if (initialized && !loading && !session?.user) {
-      console.log("🔐 Dashboard: Keine Session, weiterleitung zu Login...");
+
       router.push("/login");
     }
   }, [initialized, loading, session?.user, router]);
@@ -205,7 +205,7 @@ export default function Dashboard() {
 
   // Auth check - return null instead of router.push to avoid render cycle issues
   if (!session?.user) {
-    console.log("🔐 Dashboard: Keine Session gefunden, rendere nichts...");
+    
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="flex h-screen items-center justify-center">

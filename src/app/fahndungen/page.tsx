@@ -1,41 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AlertCircle, FileText, Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
 
-interface Investigation {
-  id: string;
-  title: string;
-  case_number: string;
-  category: string;
-  status: string;
-  created_at: string;
-}
-
 export default function FahndungenPage() {
-  const [error, setError] = useState<string | null>(null);
-
   // tRPC Query für Fahndungen
-  const { data: investigations = [], isLoading: loading, error: queryError } = api.post.getInvestigations.useQuery(
+  const {
+    data: investigations = [],
+    isLoading: loading,
+    error: queryError,
+  } = api.post.getInvestigations.useQuery(
     {
       limit: 50,
       offset: 0,
     },
     {
-      onError: (error) => {
-        console.error("❌ Fehler beim Laden der Fahndungen:", error);
-        setError(`Fehler beim Laden der Fahndungen: ${error.message}`);
-      },
-      onSuccess: (data) => {
-        console.log("✅ Geladene Fahndungen:", data);
-        console.log("📊 Anzahl Fahndungen:", data.length);
-      },
       retry: 3,
       retryDelay: 1000,
-    }
+    },
   );
 
   // Loading State
@@ -55,7 +39,7 @@ export default function FahndungenPage() {
   }
 
   // Error State
-  if (error) {
+  if (queryError) {
     return (
       <PageLayout variant="dashboard">
         <div className="flex min-h-screen items-center justify-center">
@@ -64,7 +48,9 @@ export default function FahndungenPage() {
             <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Fehler beim Laden
             </h2>
-            <p className="mb-4 text-gray-600 dark:text-gray-400">{error}</p>
+            <p className="mb-4 text-gray-600 dark:text-gray-400">
+              {queryError.message}
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="rounded bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"

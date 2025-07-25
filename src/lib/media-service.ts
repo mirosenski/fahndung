@@ -244,7 +244,6 @@ export class MediaService {
         .remove([mediaItem.file_path as string]);
 
       if (storageError) {
-        console.warn("Failed to delete from storage:", storageError);
       }
 
       // Delete from database (this will cascade to related tables)

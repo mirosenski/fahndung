@@ -4,7 +4,7 @@ export type DisplayMode = "summary" | "detail" | "card" | "preview";
 
 export interface InvestigationDisplayProps {
   mode: DisplayMode;
-  data: Record<string, unknown>; // TODO: Replace with proper investigation type
+  data: Record<string, unknown>;
   onEdit?: (step: string) => void;
   className?: string;
   showEditButtons?: boolean;
