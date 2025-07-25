@@ -12,6 +12,10 @@ import {
   Lock,
   Bell,
   Shield,
+  FileText,
+  Link,
+  Search,
+  UserCheck,
 } from "lucide-react";
 import type { Step5Data } from "@/types/fahndung-wizard";
 
@@ -497,6 +501,149 @@ export default function Step5ContactPublication({
               className="w-full rounded-md border border-yellow-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               placeholder="Hinweise für den Prüfer..."
             />
+          </div>
+        )}
+      </div>
+
+      {/* Artikel-Publishing (NEU) */}
+      <div className="rounded-lg border border-green-200 bg-green-50 p-6">
+        <h3 className="mb-4 flex items-center text-lg font-semibold text-green-800">
+          <FileText className="mr-2 h-5 w-5 text-green-600" />
+          Als Artikel veröffentlichen
+        </h3>
+        
+        <div className="mb-4">
+          <label className="flex cursor-pointer items-start">
+            <input
+              type="checkbox"
+              checked={formData.articlePublishing.publishAsArticle}
+              onChange={(e) =>
+                updateNestedField("articlePublishing", "publishAsArticle", e.target.checked)
+              }
+              className="mr-3 mt-1"
+            />
+            <div>
+              <div className="font-medium text-green-800">
+                Als Blog-Artikel veröffentlichen
+              </div>
+              <div className="mt-1 text-sm text-green-700">
+                Diese Fahndung wird zusätzlich als öffentlicher Blog-Artikel mit SEO-optimierter URL veröffentlicht
+              </div>
+            </div>
+          </label>
+        </div>
+
+        {formData.articlePublishing.publishAsArticle && (
+          <div className="space-y-4">
+            {/* SEO-URL Generierung */}
+            <div className="rounded-lg border border-green-300 bg-white p-4">
+              <label className="flex cursor-pointer items-start">
+                <input
+                  type="checkbox"
+                  checked={formData.articlePublishing.generateSeoUrl}
+                  onChange={(e) =>
+                    updateNestedField("articlePublishing", "generateSeoUrl", e.target.checked)
+                  }
+                  className="mr-3 mt-1"
+                />
+                <div>
+                  <div className="font-medium text-green-800">
+                    SEO-optimierte URL generieren
+                  </div>
+                  <div className="mt-1 text-sm text-green-700">
+                    Automatische Generierung einer benutzerfreundlichen URL basierend auf dem Titel
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* SEO-Metadaten */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-green-800">
+                  SEO-Titel (optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.articlePublishing.seoTitle ?? ""}
+                  onChange={(e) =>
+                    updateNestedField("articlePublishing", "seoTitle", e.target.value)
+                  }
+                  className="w-full rounded-md border border-green-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="SEO-optimierter Titel für Suchmaschinen"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-green-800">
+                  Autor (optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.articlePublishing.author ?? ""}
+                  onChange={(e) =>
+                    updateNestedField("articlePublishing", "author", e.target.value)
+                  }
+                  className="w-full rounded-md border border-green-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Name des Autors"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-green-800">
+                SEO-Beschreibung (optional)
+              </label>
+              <textarea
+                value={formData.articlePublishing.seoDescription ?? ""}
+                onChange={(e) =>
+                  updateNestedField("articlePublishing", "seoDescription", e.target.value)
+                }
+                rows={3}
+                className="w-full rounded-md border border-green-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Kurze Beschreibung für Suchmaschinen (max. 160 Zeichen)"
+                maxLength={160}
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-green-800">
+                Keywords (optional)
+              </label>
+              <input
+                type="text"
+                value={formData.articlePublishing.keywords?.join(", ") ?? ""}
+                onChange={(e) => {
+                  const keywords = e.target.value
+                    .split(",")
+                    .map((k) => k.trim())
+                    .filter((k) => k.length > 0);
+                  updateNestedField("articlePublishing", "keywords", keywords);
+                }}
+                className="w-full rounded-md border border-green-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Keyword1, Keyword2, Keyword3"
+              />
+              <p className="mt-1 text-xs text-green-600">
+                Keywords durch Kommas getrennt eingeben
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-green-800">
+                Geschätzte Lesezeit (Minuten)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="60"
+                value={formData.articlePublishing.readingTime ?? ""}
+                onChange={(e) =>
+                  updateNestedField("articlePublishing", "readingTime", parseInt(e.target.value) || undefined)
+                }
+                className="w-full rounded-md border border-green-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="5"
+              />
+            </div>
           </div>
         )}
       </div>

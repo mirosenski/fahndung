@@ -13,6 +13,7 @@ import {
 // Import components
 import InvestigationDisplay from "@/components/investigation/InvestigationDisplay";
 import PageLayout from "@/components/layout/PageLayout";
+import PublishAsArticleButton from "@/components/fahndung/PublishAsArticleButton";
 import type {
   Step1Data,
   Step2Data,
@@ -35,6 +36,16 @@ interface Investigation {
     createdBy: string;
     views: number;
     status: string;
+  };
+  // Article publishing features
+  published_as_article?: boolean;
+  article_slug?: string | null;
+  article_meta?: {
+    seo_title?: string;
+    seo_description?: string;
+    keywords?: string[];
+    author?: string;
+    reading_time?: number;
   };
 }
 
@@ -99,6 +110,16 @@ export default async function FahndungDetailPage({ params }: PageProps) {
         appNotifications: true,
         pressRelease: false,
       },
+      articlePublishing: {
+        publishAsArticle: false,
+        generateSeoUrl: true,
+        customSlug: undefined,
+        seoTitle: undefined,
+        seoDescription: undefined,
+        keywords: [],
+        author: undefined,
+        readingTime: undefined,
+      },
     },
     metadata: {
       createdAt: "2024-01-15T10:00:00Z",
@@ -106,6 +127,16 @@ export default async function FahndungDetailPage({ params }: PageProps) {
       createdBy: "admin@polizei.de",
       views: 1234,
       status: "active",
+    },
+    // Article publishing features (simulated)
+    published_as_article: false,
+    article_slug: null,
+    article_meta: {
+      seo_title: undefined,
+      seo_description: undefined,
+      keywords: [],
+      author: undefined,
+      reading_time: undefined,
     },
   };
 
@@ -149,6 +180,18 @@ export default async function FahndungDetailPage({ params }: PageProps) {
                 <Shield className="h-4 w-4" />
                 <span className="text-sm font-medium">Aktiv</span>
               </div>
+
+              {/* NEW: Publish as Article Button */}
+              <PublishAsArticleButton
+                investigationId={investigation.id}
+                investigationTitle={investigation.step1.title}
+                isPublished={investigation.published_as_article || false}
+                articleSlug={investigation.article_slug}
+                onSuccess={() => {
+                  // Optional: Refresh the page or update state
+                  window.location.reload();
+                }}
+              />
 
               {/* Action buttons */}
               <Link

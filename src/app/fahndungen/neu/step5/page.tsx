@@ -64,6 +64,18 @@ function Step5PageContent() {
     urgencyLevel: "medium",
     requiresApproval: false,
     approvalNotes: undefined,
+
+    // Artikel-Publishing (NEU)
+    articlePublishing: {
+      publishAsArticle: false,
+      generateSeoUrl: true,
+      customSlug: undefined,
+      seoTitle: undefined,
+      seoDescription: undefined,
+      keywords: [],
+      author: undefined,
+      readingTime: undefined,
+    },
   });
 
   useEffect(() => {

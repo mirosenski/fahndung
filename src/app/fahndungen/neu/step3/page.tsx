@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import PageLayout from "~/components/layout/PageLayout";
 import Step3ImagesDocuments from "~/app/components/fahndungs-wizard/Step3-ImagesDocuments";
+import Step3ImagesDocumentsEnhanced from "~/app/components/fahndungs-wizard/Step3-ImagesDocumentsEnhanced";
 import type { Step1Data, Step2Data, Step3Data } from "@/types/fahndung-wizard";
 
 function Step3PageContent() {
@@ -17,7 +18,9 @@ function Step3PageContent() {
     mainImage: null,
     additionalImages: [],
     documents: [],
+    imagePreviews: [],
   });
+  const [useEnhancedVersion, setUseEnhancedVersion] = useState(true);
 
   useEffect(() => {
     const step1Param = searchParams.get("step1");
@@ -39,36 +42,66 @@ function Step3PageContent() {
   }, [searchParams, router]);
 
   const handleUpdate = (data: Step3Data) => {
-    setStep3Data(data);
-    console.log("Schritt 3 Daten aktualisiert:", data);
+    // Ensure imagePreviews is always present
+    const updatedData = {
+      ...data,
+      imagePreviews: data.imagePreviews || [],
+    };
+    setStep3Data(updatedData);
+    console.log("Schritt 3 Daten aktualisiert:", updatedData);
   };
 
   const handleNext = () => {
-    // Weiter zu Schritt 4 mit allen bisherigen Daten
-    const params = new URLSearchParams({
-      step1: encodeURIComponent(JSON.stringify(step1Data)),
-      step2: encodeURIComponent(JSON.stringify(step2Data)),
-      step3: encodeURIComponent(JSON.stringify(step3Data)),
-    });
+    if (!step1Data) {
+      console.error("Step1 Daten fehlen");
+      return;
+    }
 
-    router.push(`/fahndungen/neu/step4?${params.toString()}`);
+    // Validate that we have at least one image
+    if (!step3Data.mainImage && step3Data.additionalImages.length === 0) {
+      alert("Bitte laden Sie mindestens ein Bild hoch.");
+      return;
+    }
+
+    // Prepare data for next step
+    const step3Param = encodeURIComponent(JSON.stringify(step3Data));
+    const step1Param = encodeURIComponent(JSON.stringify(step1Data));
+    const step2Param = encodeURIComponent(JSON.stringify(step2Data));
+
+    // Navigate to step 4 with all data
+    router.push(
+      `/fahndungen/neu/step4?step1=${step1Param}&step2=${step2Param}&step3=${step3Param}`,
+    );
   };
 
   const handleBack = () => {
-    // Zurück zu Schritt 2 mit Daten
-    const params = new URLSearchParams({
-      data: encodeURIComponent(JSON.stringify(step1Data)),
-    });
-    router.push(`/fahndungen/neu/step2?${params.toString()}`);
+    if (!step1Data) {
+      router.push("/fahndungen/neu");
+      return;
+    }
+
+    // Navigate back to step 2 with step1 data
+    const step1Param = encodeURIComponent(JSON.stringify(step1Data));
+    router.push(`/fahndungen/neu/step2?step1=${step1Param}`);
   };
 
   if (!step1Data || !step2Data) {
     return (
       <PageLayout variant="dashboard">
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">Lade Daten...</p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+              <div className="text-center">
+                <div className="mb-4 text-6xl">⏳</div>
+                <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                  Lade Daten...
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Bitte warten Sie, während die vorherigen Schritte geladen
+                  werden.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </PageLayout>
@@ -137,14 +170,58 @@ function Step3PageContent() {
                 </div>
               </div>
 
+              {/* Version Toggle */}
+              <div className="mb-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      Komponenten-Version
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Wählen Sie zwischen der erweiterten Version mit
+                      Media-Galerie und der klassischen Version
+                    </p>
+                  </div>
+                  <label className="flex cursor-pointer items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={useEnhancedVersion}
+                      onChange={(e) => setUseEnhancedVersion(e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium">
+                      Erweiterte Version verwenden
+                    </span>
+                  </label>
+                </div>
+              </div>
+
               {/* Schritt 3 Komponente */}
-              <Step3ImagesDocuments
-                data={step3Data}
-                onUpdate={handleUpdate}
-                onNext={handleNext}
-                onBack={handleBack}
-                caseNumber={step1Data.caseNumber}
-              />
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center p-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                  </div>
+                }
+              >
+                {useEnhancedVersion ? (
+                  <Step3ImagesDocumentsEnhanced
+                    data={step3Data}
+                    onUpdate={handleUpdate}
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    caseNumber={step1Data.caseNumber}
+                  />
+                ) : (
+                  <Step3ImagesDocuments
+                    data={step3Data}
+                    onUpdate={handleUpdate}
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    caseNumber={step1Data.caseNumber}
+                  />
+                )}
+              </Suspense>
             </div>
           </div>
         </div>
@@ -157,14 +234,9 @@ export default function Step3Page() {
   return (
     <Suspense
       fallback={
-        <PageLayout variant="dashboard">
-          <div className="flex min-h-screen items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
-              <p className="mt-2 text-gray-600">Lade Seite...</p>
-            </div>
-          </div>
-        </PageLayout>
+        <div className="flex items-center justify-center p-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+        </div>
       }
     >
       <Step3PageContent />

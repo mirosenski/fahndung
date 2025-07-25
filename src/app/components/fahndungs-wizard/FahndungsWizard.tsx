@@ -166,7 +166,11 @@ export default function FahndungsWizard({
         data = step3Form.getValues();
         break;
       case 4:
-        isValid = true;
+        // Validierung für Bilder-Upload
+        isValid = uploadedImages.length > 0;
+        if (!isValid) {
+          toast.error("Bitte laden Sie mindestens ein Bild hoch.");
+        }
         break;
     }
 

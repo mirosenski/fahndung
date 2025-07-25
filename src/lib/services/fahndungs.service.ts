@@ -1,5 +1,29 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+// Article content block types
+export interface ArticleBlock {
+  type: "paragraph" | "heading" | "image" | "quote" | "list" | "code";
+  content?: string;
+  level?: number;
+  src?: string;
+  alt?: string;
+  caption?: string;
+  author?: string;
+  ordered?: boolean;
+  items?: string[];
+  language?: string;
+}
+
+// Article metadata structure
+export interface ArticleMeta {
+  seo_title?: string;
+  seo_description?: string;
+  og_image?: string;
+  keywords?: string[];
+  author?: string;
+  reading_time?: number;
+}
+
 export interface InvestigationData {
   id: string;
   title: string;
@@ -29,6 +53,16 @@ export interface InvestigationData {
     name: string;
     email: string;
   };
+
+  // Article publishing features
+  published_as_article?: boolean;
+  article_slug?: string;
+  article_content?: {
+    blocks: ArticleBlock[];
+  };
+  article_meta?: ArticleMeta;
+  article_published_at?: string;
+  article_views?: number;
 }
 
 export interface InvestigationImage {
@@ -310,5 +344,217 @@ export class FahndungsService {
 
     if (error) throw error;
     return stats!;
+  }
+
+  // ============================================
+  // ARTICLE PUBLISHING METHODS
+  // ============================================
+
+  // Publish investigation as article
+  async publishAsArticle(
+    investigationId: string,
+    articleData: {
+      content?: { blocks: ArticleBlock[] };
+      meta?: ArticleMeta;
+    },
+  ): Promise<InvestigationData> {
+    const { data, error } = (await this.supabase
+      .from("investigations")
+      .update({
+        published_as_article: true,
+        article_content: articleData.content,
+        article_meta: articleData.meta,
+        article_published_at: new Date().toISOString(),
+      })
+      .eq("id", investigationId)
+      .select()
+      .single()) as { data: InvestigationData | null; error: Error | null };
+
+    if (error) throw error;
+    return data!;
+  }
+
+  // Unpublish article
+  async unpublishArticle(investigationId: string): Promise<InvestigationData> {
+    const { data, error } = (await this.supabase
+      .from("investigations")
+      .update({
+        published_as_article: false,
+        article_slug: null,
+        article_published_at: null,
+      })
+      .eq("id", investigationId)
+      .select()
+      .single()) as { data: InvestigationData | null; error: Error | null };
+
+    if (error) throw error;
+    return data!;
+  }
+
+  // Get published articles
+  async getPublishedArticles(filters?: {
+    limit?: number;
+    offset?: number;
+    category?: string;
+    search?: string;
+  }): Promise<InvestigationData[]> {
+    let query = this.supabase
+      .from("investigations")
+      .select(
+        `
+        *,
+        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
+        images:investigation_images(*)
+      `,
+      )
+      .eq("published_as_article", true)
+      .eq("status", "published")
+      .not("article_slug", "is", null)
+      .order("article_published_at", { ascending: false });
+
+    if (filters?.category) {
+      query = query.eq("category", filters.category);
+    }
+
+    if (filters?.search) {
+      query = query.or(
+        `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,short_description.ilike.%${filters.search}%`,
+      );
+    }
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    if (filters?.offset) {
+      query = query.range(
+        filters.offset,
+        filters.offset + (filters.limit ?? 10) - 1,
+      );
+    }
+
+    const { data, error } = (await query) as {
+      data: InvestigationData[] | null;
+      error: Error | null;
+    };
+
+    if (error) throw error;
+    return data!;
+  }
+
+  // Get article by slug
+  async getArticleBySlug(slug: string): Promise<InvestigationData | null> {
+    const { data, error } = (await this.supabase
+      .from("investigations")
+      .select(
+        `
+        *,
+        created_by_user:user_profiles!investigations_created_by_fkey(name, email),
+        images:investigation_images(*)
+      `,
+      )
+      .eq("article_slug", slug)
+      .eq("published_as_article", true)
+      .eq("status", "published")
+      .single()) as { data: InvestigationData | null; error: Error | null };
+
+    if (error) {
+      if (error.message.includes("No rows found")) {
+        return null;
+      }
+      throw error;
+    }
+
+    return data;
+  }
+
+  // Increment article views
+  async incrementArticleViews(articleId: string): Promise<void> {
+    const { error } = await this.supabase.rpc("increment_article_views", {
+      article_id: articleId,
+    });
+
+    if (error) throw error;
+  }
+
+  // Update article content
+  async updateArticleContent(
+    investigationId: string,
+    content: { blocks: ArticleBlock[] },
+    meta?: ArticleMeta,
+  ): Promise<InvestigationData> {
+    const updateData: Partial<InvestigationData> = {
+      article_content: content,
+    };
+
+    if (meta) {
+      updateData.article_meta = meta;
+    }
+
+    const { data, error } = (await this.supabase
+      .from("investigations")
+      .update(updateData)
+      .eq("id", investigationId)
+      .eq("published_as_article", true)
+      .select()
+      .single()) as { data: InvestigationData | null; error: Error | null };
+
+    if (error) throw error;
+    return data!;
+  }
+
+  // Get article statistics
+  async getArticleStatistics(): Promise<{
+    total_published: number;
+    total_views: number;
+    most_viewed: Partial<InvestigationData>[];
+    recent_articles: Partial<InvestigationData>[];
+  }> {
+    // Get total published articles
+    const { count: totalPublished } = await this.supabase
+      .from("investigations")
+      .select("*", { count: "exact", head: true })
+      .eq("published_as_article", true)
+      .eq("status", "published");
+
+    // Get total views
+    const { data: viewsData } = await this.supabase
+      .from("investigations")
+      .select("article_views")
+      .eq("published_as_article", true)
+      .eq("status", "published");
+
+    const totalViews =
+      viewsData?.reduce(
+        (sum: number, item: { article_views: number | null }) =>
+          sum + (item.article_views ?? 0),
+        0,
+      ) ?? 0;
+
+    // Get most viewed articles
+    const { data: mostViewed } = await this.supabase
+      .from("investigations")
+      .select("id, title, article_slug, article_views, article_published_at")
+      .eq("published_as_article", true)
+      .eq("status", "published")
+      .not("article_views", "is", null)
+      .order("article_views", { ascending: false })
+      .limit(5);
+
+    // Get recent articles
+    const { data: recentArticles } = await this.supabase
+      .from("investigations")
+      .select("id, title, article_slug, article_published_at")
+      .eq("published_as_article", true)
+      .eq("status", "published")
+      .order("article_published_at", { ascending: false })
+      .limit(5);
+
+    return {
+      total_published: totalPublished ?? 0,
+      total_views: totalViews,
+      most_viewed: mostViewed ?? [],
+      recent_articles: recentArticles ?? [],
+    };
   }
 }

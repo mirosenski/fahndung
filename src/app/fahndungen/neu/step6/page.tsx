@@ -59,10 +59,19 @@ function Step6PageContent() {
 
     if (step1Param && step2Param && step3Param && step4Param && step5Param) {
       try {
+        const step3Data = JSON.parse(
+          decodeURIComponent(step3Param),
+        ) as Step3Data;
+
+        // Ensure imagePreviews is initialized
+        if (!step3Data.imagePreviews) {
+          step3Data.imagePreviews = [];
+        }
+
         setAllData({
           step1: JSON.parse(decodeURIComponent(step1Param)) as Step1Data,
           step2: JSON.parse(decodeURIComponent(step2Param)) as Step2Data,
-          step3: JSON.parse(decodeURIComponent(step3Param)) as Step3Data,
+          step3: step3Data,
           step4: JSON.parse(decodeURIComponent(step4Param)) as Step4Data,
           step5: JSON.parse(decodeURIComponent(step5Param)) as Step5Data,
         });
@@ -234,7 +243,85 @@ function Step6PageContent() {
         });
       }
 
-      // 5. Erfolg und Weiterleitung
+      // 5. Artikel-Publishing (NEU)
+      if (allData.step5.articlePublishing.publishAsArticle) {
+        try {
+          // Artikel-Metadaten vorbereiten
+          const articleMeta = {
+            seo_title:
+              allData.step5.articlePublishing.seoTitle || allData.step1.title,
+            seo_description:
+              allData.step5.articlePublishing.seoDescription ||
+              allData.step2.shortDescription,
+            keywords: allData.step5.articlePublishing.keywords || [],
+            author: allData.step5.articlePublishing.author || user.email,
+            reading_time:
+              allData.step5.articlePublishing.readingTime ||
+              Math.ceil(
+                (allData.step2.description.length +
+                  allData.step2.shortDescription.length) /
+                  200,
+              ),
+          };
+
+          // Artikel-Content aus Fahndungsdaten generieren
+          const articleContent = {
+            blocks: [
+              {
+                type: "heading" as const,
+                level: 1,
+                content: allData.step1.title,
+              },
+              {
+                type: "paragraph" as const,
+                content: allData.step2.shortDescription,
+              },
+              {
+                type: "heading" as const,
+                level: 2,
+                content: "Ausführliche Beschreibung",
+              },
+              {
+                type: "paragraph" as const,
+                content: allData.step2.description,
+              },
+              {
+                type: "heading" as const,
+                level: 2,
+                content: "Kontaktdaten",
+              },
+              {
+                type: "paragraph" as const,
+                content: `Ansprechpartner: ${allData.step5.contactPerson}\nTelefon: ${allData.step5.contactPhone}\nE-Mail: ${allData.step5.contactEmail}\nAbteilung: ${allData.step5.department}`,
+              },
+            ],
+          };
+
+          // Artikel als veröffentlicht markieren
+          await supabase
+            .from("investigations")
+            .update({
+              published_as_article: true,
+              article_content: articleContent,
+              article_meta: articleMeta,
+              article_published_at: new Date().toISOString(),
+            })
+            .eq("id", investigationData.id);
+
+          console.log(
+            "Artikel erfolgreich veröffentlicht:",
+            investigationData.id,
+          );
+        } catch (articleError) {
+          console.error("Fehler beim Artikel-Publishing:", articleError);
+          // Artikel-Fehler soll die Hauptfunktion nicht stoppen
+          toast.warning(
+            "Fahndung erstellt, aber Artikel-Publishing fehlgeschlagen",
+          );
+        }
+      }
+
+      // 6. Erfolg und Weiterleitung
       toast.success("Fahndung erfolgreich erstellt!");
 
       if (allData.step5.publishStatus === "immediate") {

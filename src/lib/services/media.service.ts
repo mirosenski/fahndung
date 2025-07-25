@@ -134,7 +134,9 @@ export class MediaService {
       const file = files[i];
       if (!file) continue;
 
-      const fileName = `${directory}/${Date.now()}_${crypto.randomUUID()}_${file.name}`;
+      // Sanitize filename to prevent illegal path errors
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${directory}/${Date.now()}_${crypto.randomUUID()}_${sanitizedFileName}`;
 
       try {
         // Upload to Storage
@@ -150,6 +152,7 @@ export class MediaService {
 
           // Handle specific storage errors
           if (uploadResult.error.message.includes("illegal path")) {
+            console.error("❌ Illegal path error - Bucket nicht konfiguriert");
             throw new Error(
               "Storage Bucket nicht korrekt konfiguriert. Bitte führen Sie das Setup-Script aus.",
             );

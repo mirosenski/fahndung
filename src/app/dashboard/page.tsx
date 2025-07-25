@@ -17,6 +17,7 @@ import Header from "~/components/layout/Header";
 import Footer from "~/components/layout/Footer";
 import { useAuth } from "~/hooks/useAuth";
 import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
+import StorageDebug from "~/components/debug/StorageDebug";
 
 // Lazy Loading für bessere HMR-Kompatibilität
 const OverviewTab = dynamic(
@@ -48,6 +49,13 @@ const SettingsTab = dynamic(
   () => import("~/components/dashboard/SettingsTab"),
   {
     loading: () => <LoadingSpinner message="Lade Einstellungen..." />,
+    ssr: false,
+  },
+);
+const ArticleManagerTab = dynamic(
+  () => import("~/components/admin/ArticleManager"),
+  {
+    loading: () => <LoadingSpinner message="Lade Artikel-Manager..." />,
     ssr: false,
   },
 );
@@ -99,7 +107,7 @@ export default function Dashboard() {
     name: "",
     role: "user" as "admin" | "editor" | "user",
     department: "",
-    password: "",
+    position: "",
   });
 
   // Optimierte tRPC Queries mit reduziertem Limit und besseren Optionen
@@ -264,6 +272,16 @@ export default function Dashboard() {
       label: "Fahndungen",
       icon: FileText,
     },
+    // NEW: Articles Tab - nur für Admin und Editor sichtbar
+    ...(isAdmin(session?.profile) || isEditor(session?.profile)
+      ? [
+          {
+            id: "articles",
+            label: "Artikel",
+            icon: FileText,
+          },
+        ]
+      : []),
     {
       id: "users",
       label: "Benutzer",
@@ -275,8 +293,8 @@ export default function Dashboard() {
       icon: ImageIcon,
     },
     // {
-    //   id: "upload-test",
-    //   label: "Upload Test",
+    //   id: "upload",
+    //   label: "Upload",
     //   icon: Upload,
     // },
     {
@@ -311,6 +329,8 @@ export default function Dashboard() {
             onCreate={handleCreateInvestigation}
           />
         );
+      case "articles":
+        return <ArticleManagerTab />;
       case "users":
         return (
           <UsersTab
@@ -354,6 +374,13 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+        {/* Storage Debug - Temporär für Problembehebung */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mb-6">
+            <StorageDebug />
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="mb-8">
           <div className="border-b border-gray-200 dark:border-gray-700">

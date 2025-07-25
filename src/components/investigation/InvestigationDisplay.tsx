@@ -41,6 +41,11 @@ interface Step3Data {
   mainImage: File | null;
   additionalImages: File[];
   documents: File[];
+  imagePreviews?: Array<{
+    id: string;
+    preview: string; // Base64 URL
+    name: string;
+  }>;
 }
 
 interface MapLocation {
@@ -179,16 +184,42 @@ const FlipCard: React.FC<{
         >
           {/* Image Section */}
           <div className="relative h-[60%] w-full bg-gray-200 dark:bg-gray-700">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <ImageIcon className="h-24 w-24 text-gray-400" />
-            </div>
+            {data.step3.imagePreviews && data.step3.imagePreviews.length > 0 ? (
+              <>
+                {/* Main Image */}
+                {data.step3.mainImage &&
+                  data.step3.imagePreviews &&
+                  (() => {
+                    const mainPreview = data.step3.imagePreviews.find(
+                      (preview) => preview.name === data.step3.mainImage!.name,
+                    );
+                    return mainPreview ? (
+                      <img
+                        src={mainPreview.preview}
+                        alt="Hauptbild"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : null;
+                  })()}
+                {/* Overlay for multiple images indicator */}
+                {data.step3.imagePreviews.length > 1 && (
+                  <div className="absolute bottom-2 right-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
+                    +{data.step3.imagePreviews.length - 1} weitere
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ImageIcon className="h-24 w-24 text-gray-400" />
+              </div>
+            )}
             {data.step2.priority === "urgent" && (
-              <div className="absolute top-2 right-2 animate-pulse rounded bg-red-500 px-2 py-1 text-xs text-white">
+              <div className="absolute right-2 top-2 animate-pulse rounded bg-red-500 px-2 py-1 text-xs text-white">
                 DRINGEND
               </div>
             )}
             <span
-              className={`absolute top-2 left-2 rounded px-2 py-1 text-xs ${getCategoryStyles(data.step1.category)}`}
+              className={`absolute left-2 top-2 rounded px-2 py-1 text-xs ${getCategoryStyles(data.step1.category)}`}
             >
               {getCategoryLabel(data.step1.category)}
             </span>
@@ -211,7 +242,7 @@ const FlipCard: React.FC<{
 
             <button
               onClick={() => setIsFlipped(true)}
-              className="absolute right-4 bottom-4 rounded-full bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600"
+              className="absolute bottom-4 right-4 rounded-full bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600"
               aria-label="Details anzeigen"
             >
               <Info className="h-4 w-4" />
@@ -448,34 +479,63 @@ export default function InvestigationDisplay({
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
-          <div className="flex items-center space-x-3">
-            <ImageIcon className="h-5 w-5 text-gray-400" />
-            <div>
-              <p className="font-medium">Hauptbild</p>
-              <p className="text-gray-600 dark:text-gray-400">
-                {data.step3.mainImage ? "✓ Hochgeladen" : "✗ Fehlt"}
-              </p>
+        <div className="space-y-4">
+          {/* Image Preview */}
+          {data.step3.imagePreviews && data.step3.imagePreviews.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+              {data.step3.imagePreviews.slice(0, 4).map((image, index) => (
+                <div key={image.id} className="relative">
+                  <img
+                    src={image.preview}
+                    alt={image.name}
+                    className="h-20 w-full rounded object-cover"
+                  />
+                  {data.step3.mainImage &&
+                    image.name === data.step3.mainImage.name && (
+                      <span className="absolute left-1 top-1 rounded bg-blue-600 px-1 py-0.5 text-xs text-white">
+                        Haupt
+                      </span>
+                    )}
+                  {index === 3 && data.step3.imagePreviews!.length > 4 && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded bg-black/50 text-xs text-white">
+                      +{data.step3.imagePreviews!.length - 4}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          </div>
+          )}
 
-          <div className="flex items-center space-x-3">
-            <ImageIcon className="h-5 w-5 text-gray-400" />
-            <div>
-              <p className="font-medium">Weitere Bilder</p>
-              <p className="text-gray-600 dark:text-gray-400">
-                {data.step3.additionalImages.length} Dateien
-              </p>
+          {/* Media Stats */}
+          <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+            <div className="flex items-center space-x-3">
+              <ImageIcon className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="font-medium">Hauptbild</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {data.step3.mainImage ? "✓ Hochgeladen" : "✗ Fehlt"}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center space-x-3">
-            <FileText className="h-5 w-5 text-gray-400" />
-            <div>
-              <p className="font-medium">Dokumente</p>
-              <p className="text-gray-600 dark:text-gray-400">
-                {data.step3.documents.length} PDFs
-              </p>
+            <div className="flex items-center space-x-3">
+              <ImageIcon className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="font-medium">Weitere Bilder</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {data.step3.additionalImages.length} Dateien
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <FileText className="h-5 w-5 text-gray-400" />
+              <div>
+                <p className="font-medium">Dokumente</p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {data.step3.documents.length} PDFs
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -613,7 +673,7 @@ export default function InvestigationDisplay({
           <ImageIcon className="h-32 w-32 text-gray-600" />
         </div>
 
-        <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-6 md:p-8">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 md:p-8">
           <div className="mb-4 flex flex-wrap gap-2">
             <span
               className={`rounded px-3 py-1 text-sm ${getCategoryStyles(data.step1.category)}`}
@@ -652,7 +712,7 @@ export default function InvestigationDisplay({
       </header>
 
       {/* Content Section */}
-      <div className="space-y-8 rounded-b-xl bg-white p-6 md:p-8 dark:bg-gray-800">
+      <div className="space-y-8 rounded-b-xl bg-white p-6 dark:bg-gray-800 md:p-8">
         {/* Description */}
         <section>
           <h2 className="mb-4 text-2xl font-bold">Beschreibung</h2>
@@ -670,17 +730,25 @@ export default function InvestigationDisplay({
           </div>
         </section>
 
-        {/* Image Gallery Placeholder */}
-        {imageCount > 0 && (
+        {/* Image Gallery */}
+        {data.step3.imagePreviews && data.step3.imagePreviews.length > 0 && (
           <section>
             <h2 className="mb-4 text-2xl font-bold">Bildmaterial</h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              {Array.from({ length: Math.min(imageCount, 6) }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex aspect-square items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700"
-                >
-                  <ImageIcon className="h-12 w-12 text-gray-400" />
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {data.step3.imagePreviews.map((image, index) => (
+                <div key={image.id} className="group relative">
+                  <img
+                    src={image.preview}
+                    alt={image.name}
+                    className="aspect-square w-full rounded-lg object-cover shadow-md transition-transform hover:scale-105"
+                  />
+                  {data.step3.mainImage &&
+                    image.name === data.step3.mainImage.name && (
+                      <span className="absolute left-2 top-2 rounded bg-blue-600 px-2 py-1 text-xs text-white">
+                        Hauptbild
+                      </span>
+                    )}
+                  <div className="absolute inset-0 rounded-lg bg-black/0 transition-colors group-hover:bg-black/20" />
                 </div>
               ))}
             </div>
@@ -691,7 +759,7 @@ export default function InvestigationDisplay({
         {locationCount > 0 && (
           <section>
             <h2 className="mb-4 text-2xl font-bold">Relevante Orte</h2>
-            <div className="flex h-64 items-center justify-center rounded-lg bg-gray-200 md:h-96 dark:bg-gray-700">
+            <div className="flex h-64 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 md:h-96">
               <div className="text-center">
                 <MapPin className="mx-auto mb-2 h-16 w-16 text-gray-400" />
                 <p className="text-gray-500">{locationCount} Orte markiert</p>

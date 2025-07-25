@@ -25,6 +25,12 @@ export interface Step3Data {
   mainImage: File | null; // Titelbild
   additionalImages: File[]; // Weitere Bilder
   documents: File[]; // Dokumente (PDF, etc.)
+  // NEU: Für die Vorschau in Step6
+  imagePreviews?: Array<{
+    id: string;
+    preview: string; // Base64 URL
+    name: string;
+  }>;
 }
 
 // SCHRITT 4: Ort & Karte
@@ -96,6 +102,18 @@ export interface Step5Data {
   urgencyLevel: "low" | "medium" | "high" | "critical";
   requiresApproval: boolean;
   approvalNotes?: string;
+
+  // Artikel-Publishing (NEU)
+  articlePublishing: {
+    publishAsArticle: boolean;
+    generateSeoUrl: boolean;
+    customSlug?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    keywords?: string[];
+    author?: string;
+    readingTime?: number;
+  };
 }
 
 // Wizard State Management
