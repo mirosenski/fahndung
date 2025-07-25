@@ -11,8 +11,17 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { createClient } from "@supabase/supabase-js";
 
-import { db } from "~/server/db";
 import { type Session, type UserProfile } from "~/lib/auth";
+
+// Supabase Client für Server-Side
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables");
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
  * 1. CONTEXT
@@ -27,7 +36,7 @@ import { type Session, type UserProfile } from "~/lib/auth";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  console.log("🔍 Creating tRPC context...");
+  console.log("🔧 Creating tRPC context with Supabase...");
 
   // Session aus Headers extrahieren
   let session: Session | null = null;
@@ -42,7 +51,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       if (token) {
         console.log("🔍 Token extracted, length:", token.length);
 
-        const supabase = createClient(
+        const supabaseAuth = createClient(
           process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
           process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
           {
@@ -54,7 +63,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
         try {
           // Timeout für Token-Validierung hinzufügen
-          const userPromise = supabase.auth.getUser(token);
+          const userPromise = supabaseAuth.auth.getUser(token);
           const timeoutPromise = new Promise<{
             data: { user: null };
             error: { message: string };
@@ -82,7 +91,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
             console.log("✅ User authentifiziert:", supabaseUser.email);
 
             // Benutzer-Profil abrufen
-            const profileResult = await supabase
+            const profileResult = await supabaseAuth
               .from("user_profiles")
               .select("*")
               .eq("user_id", supabaseUser.id)
@@ -137,7 +146,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   );
 
   return {
-    db,
+    db: supabase, // ✅ Supabase Client wird als 'db' bereitgestellt
     session,
     user,
   };

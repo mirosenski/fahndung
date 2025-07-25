@@ -80,7 +80,7 @@ const mockInvestigations: Investigation[] = [
     features: "Mehrere Laptops, elektronische Geräte",
     date: "2024-03-14T22:30:00Z",
     created_at: "2024-03-15T09:00:00Z",
-    updated_at: "2024-03-15T09:00Z",
+    updated_at: "2024-03-15T09:00:Z",
     created_by: "admin-1",
     assigned_to: "officer-2",
     tags: ["STOLEN_GOODS", "BURGLARY"],
@@ -127,11 +127,11 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  // Optimierte Fahndungen-Abfrage mit besseren Limits und Caching
+  // ✅ KORRIGIERTE Version - getInvestigations
   getInvestigations: publicProcedure
     .input(
       z.object({
-        limit: z.number().min(1).max(50).default(20), // Reduziertes Maximum
+        limit: z.number().min(1).max(50).default(20),
         offset: z.number().min(0).default(0),
         status: z.string().optional(),
         priority: z.string().optional(),
@@ -159,24 +159,20 @@ export const postRouter = createTRPCRouter({
 
         console.log("📊 Verwende Supabase-Datenbank...");
 
-        // Optimierte Supabase-Abfrage mit selektiven Feldern
+        // ✅ KORRIGIERT: Verwende ctx.db direkt (ist der Supabase Client)
         let query = ctx.db
-          .investigations()
-          .select(
-            "id, title, case_number, status, priority, category, location, created_at, updated_at",
-          ) // Nur benötigte Felder
+          .from("investigations")
+          .select("*")
           .order("created_at", { ascending: false })
           .range(input.offset, input.offset + input.limit - 1);
 
-        // Effiziente Filterung
+        // Filter anwenden
         if (input.status) {
           query = query.eq("status", input.status);
         }
-
         if (input.priority) {
           query = query.eq("priority", input.priority);
         }
-
         if (input.category) {
           query = query.eq("category", input.category);
         }
@@ -226,7 +222,7 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  // Neue Fahndung erstellen
+  // ✅ KORRIGIERTE Version - createInvestigation
   createInvestigation: publicProcedure
     .input(
       z.object({
@@ -240,52 +236,86 @@ export const postRouter = createTRPCRouter({
         contact_info: z.record(z.any()).optional(),
       }),
     )
-    .mutation(async ({ input }): Promise<Investigation> => {
+    .mutation(async ({ ctx, input }): Promise<Investigation> => {
       console.log("🚀 createInvestigation aufgerufen mit:", input);
+      console.log("🔧 Context verfügbar:", !!ctx.db);
 
       try {
-        // Temporär: Verwende immer Mock-Daten bis RLS-Policies korrigiert sind
-        console.log(
-          "📝 Verwende Mock-Erstellung (RLS-Policies müssen korrigiert werden)",
-        );
+        // Prüfe ob Supabase verfügbar ist
+        if (!ctx.db) {
+          console.warn("Database nicht verfügbar, verwende Mock-Daten");
 
-        // Mock-Erstellung mit UUID
-        const newInvestigation: Investigation = {
-          id: generateUUID(),
-          case_number: `F-${Date.now()}`,
-          short_description: input.title,
-          category: input.category ?? "WANTED_PERSON",
-          station: "Allgemein",
-          features: "",
-          date: new Date().toISOString(),
-          created_by: generateUUID(),
-          assigned_to: generateUUID(),
-          metadata: {},
-          title: input.title,
-          description: input.description ?? "",
-          status: input.status,
-          priority: input.priority,
-          tags: input.tags,
-          location: input.location ?? "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+          // Mock-Erstellung mit UUID
+          const newInvestigation: Investigation = {
+            id: generateUUID(),
+            case_number: `F-${Date.now()}`,
+            short_description: input.title,
+            category: input.category ?? "WANTED_PERSON",
+            station: "Allgemein",
+            features: "",
+            date: new Date().toISOString(),
+            created_by: generateUUID(),
+            assigned_to: generateUUID(),
+            metadata: {},
+            title: input.title,
+            description: input.description ?? "",
+            status: input.status,
+            priority: input.priority,
+            tags: input.tags,
+            location: input.location ?? "",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
 
-        // Füge neue Fahndung zur Mock-Liste hinzu
-        mockInvestigations.unshift(newInvestigation);
-        console.log(
-          "✅ Neue Mock-Fahndung hinzugefügt:",
-          newInvestigation.title,
-        );
+          // Füge neue Fahndung zur Mock-Liste hinzu
+          mockInvestigations.unshift(newInvestigation);
+          console.log(
+            "✅ Neue Mock-Fahndung hinzugefügt:",
+            newInvestigation.title,
+          );
+          return newInvestigation;
+        }
 
-        return newInvestigation;
+        console.log("📊 Verwende Supabase-Datenbank...");
+
+        // ✅ KORRIGIERT: Verwende ctx.db direkt (ist der Supabase Client)
+        const { data, error } = await ctx.db
+          .from("investigations")
+          .insert({
+            title: input.title,
+            description: input.description ?? "",
+            status: input.status,
+            priority: input.priority,
+            category: input.category ?? "MISSING_PERSON",
+            tags: input.tags,
+            location: input.location ?? "",
+            short_description: input.title, // Verwende title als short_description
+            station: "Allgemein",
+            features: "",
+            date: new Date().toISOString(),
+            case_number: `F-${Date.now()}`, // Automatische Aktenzeichen-Generierung
+            contact_info: input.contact_info ?? {},
+            metadata: {},
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("❌ Supabase-Fehler:", error);
+          throw new Error(
+            `Fehler beim Erstellen der Fahndung: ${error.message}`,
+          );
+        }
+
+        console.log("✅ Fahndung erfolgreich erstellt:", data.title);
+        return data as Investigation;
       } catch (error) {
-        console.error("❌ Fehler bei Mock-Erstellung:", error);
+        console.error("❌ Fehler beim Erstellen der Fahndung:", error);
         throw new Error(`Fehler beim Erstellen der Fahndung: ${String(error)}`);
       }
     }),
 
-  // Fahndung aktualisieren
+  // ✅ KORRIGIERTE Version - updateInvestigation
   updateInvestigation: publicProcedure
     .input(
       z.object({
@@ -319,8 +349,8 @@ export const postRouter = createTRPCRouter({
 
         const { id, ...updateData } = input;
 
-        const result = await ctx.db
-          .investigations()
+        const { data, error } = await ctx.db
+          .from("investigations")
           .update({
             ...updateData,
             updated_at: new Date().toISOString(),
@@ -329,13 +359,13 @@ export const postRouter = createTRPCRouter({
           .select()
           .single();
 
-        if (result.error) {
+        if (error) {
           throw new Error(
-            `Fehler beim Aktualisieren der Fahndung: ${result.error.message}`,
+            `Fehler beim Aktualisieren der Fahndung: ${error.message}`,
           );
         }
 
-        return result.data as Investigation;
+        return data as Investigation;
       } catch (error) {
         console.warn("Supabase nicht verfügbar, Mock-Update:", error);
         // Mock-Update
@@ -349,7 +379,7 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  // Fahndung löschen
+  // ✅ KORRIGIERTE Version - deleteInvestigation
   deleteInvestigation: publicProcedure
     .input(
       z.object({
@@ -371,15 +401,13 @@ export const postRouter = createTRPCRouter({
           return false;
         }
 
-        const result = await ctx.db
-          .investigations()
+        const { error } = await ctx.db
+          .from("investigations")
           .delete()
           .eq("id", input.id);
 
-        if (result.error) {
-          throw new Error(
-            `Fehler beim Löschen der Fahndung: ${result.error.message}`,
-          );
+        if (error) {
+          throw new Error(`Fehler beim Löschen der Fahndung: ${error.message}`);
         }
 
         return true;
@@ -417,7 +445,7 @@ export const postRouter = createTRPCRouter({
 
         // Optimierte Abfrage mit Limit und selektiven Feldern
         const { data, error } = await ctx.db
-          .investigationImages()
+          .from("investigation_images")
           .select(
             "id, file_name, original_name, file_path, file_size, mime_type, uploaded_at, is_primary",
           )
@@ -471,8 +499,8 @@ export const postRouter = createTRPCRouter({
           return newImage;
         }
 
-        const result = await ctx.db
-          .investigationImages()
+        const { data, error } = await ctx.db
+          .from("investigation_images")
           .insert({
             investigation_id: input.investigation_id,
             file_name: input.file_name,
@@ -490,13 +518,13 @@ export const postRouter = createTRPCRouter({
           .select()
           .single();
 
-        if (result.error) {
+        if (error) {
           throw new Error(
-            `Fehler beim Hinzufügen des Bildes: ${result.error.message}`,
+            `Fehler beim Hinzufügen des Bildes: ${error.message}`,
           );
         }
 
-        return result.data as InvestigationImage;
+        return data as InvestigationImage;
       } catch (error) {
         console.warn("Supabase nicht verfügbar, Mock-Bild-Add:", error);
         // Mock-Bild-Add
@@ -547,7 +575,7 @@ export const postRouter = createTRPCRouter({
 
       // Optimierte Statistiken-Abfrage
       const { data, error } = await ctx.db
-        .investigations()
+        .from("investigations")
         .select("status, priority, category")
         .limit(1000); // Limit für Performance
 
