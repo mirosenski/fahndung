@@ -1,4 +1,5 @@
 import { BarChart3, Eye, FileText, AlertTriangle } from "lucide-react";
+import UniversalBadge from "@/components/ui/UniversalBadge";
 
 interface Investigation {
   id: string;
@@ -144,26 +145,30 @@ function RecentInvestigationsList({
                 </p>
               </div>
               <div className="flex items-center space-x-2">
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${
+                <UniversalBadge
+                  content={investigation.priority}
+                  variant="priority"
+                  className={`${
                     investigation.priority === "urgent"
                       ? "bg-red-500/20 text-red-600 dark:text-red-400"
-                      : investigation.priority === "high"
-                        ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
-                        : "bg-green-500/20 text-green-600 dark:text-green-400"
+                      : investigation.priority === "new"
+                        ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                        : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
                   }`}
-                >
-                  {investigation.priority}
-                </span>
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${
+                />
+                <UniversalBadge
+                  content={investigation.status}
+                  variant="status"
+                  className={`${
                     investigation.status === "published"
                       ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                      : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                      : investigation.status === "active"
+                        ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                        : investigation.status === "draft"
+                          ? "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                          : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
                   }`}
-                >
-                  {investigation.status}
-                </span>
+                />
               </div>
             </div>
           ))}

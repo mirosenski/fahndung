@@ -109,7 +109,8 @@ export default function InvestigationActions({
 
   const publishMutation = api.post.publishInvestigation.useMutation({
     onSuccess: (data) => {
-      const action = data.status === "published" ? "veröffentlicht" : "unveröffentlicht";
+      const action =
+        data.status === "published" ? "VERÖFFENTLICHT" : "UNVERÖFFENTLICHT";
       toast.success(`Fahndung erfolgreich ${action}`);
       onAction?.();
     },
@@ -239,7 +240,7 @@ export default function InvestigationActions({
             {userRole === "admin" && (
               <>
                 <DropdownMenuSeparator />
-                
+
                 {/* Archivieren/Entarchivieren */}
                 <DropdownMenuItem>
                   <Archive className="mr-2 h-4 w-4" />
@@ -263,7 +264,10 @@ export default function InvestigationActions({
       </div>
 
       {/* Lösch-Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -271,12 +275,15 @@ export default function InvestigationActions({
               Fahndung löschen
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Sind Sie sicher, dass Sie die Fahndung &quot;{investigation.title}&quot; löschen möchten?
-              Diese Aktion kann nicht rückgängig gemacht werden.
+              Sind Sie sicher, dass Sie die Fahndung &quot;{investigation.title}
+              &quot; löschen möchten? Diese Aktion kann nicht rückgängig gemacht
+              werden.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>
+              Abbrechen
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isLoading}
@@ -289,4 +296,4 @@ export default function InvestigationActions({
       </AlertDialog>
     </>
   );
-} 
+}

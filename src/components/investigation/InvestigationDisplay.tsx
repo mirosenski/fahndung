@@ -15,7 +15,6 @@ import {
   Info,
   Clock,
   Building,
-  Tag,
   User,
 } from "lucide-react";
 
@@ -118,30 +117,11 @@ export interface InvestigationDisplayProps {
   className?: string;
 }
 
-// Helper Functions
-const getCategoryLabel = (category: string): string => {
-  const labels: Record<string, string> = {
-    WANTED_PERSON: "Straftäter",
-    MISSING_PERSON: "Vermisste Person",
-    UNKNOWN_DEAD: "Unbekannte Tote",
-    STOLEN_GOODS: "Sachen",
-  };
-  return labels[category] ?? category;
-};
+import { getCategoryLabel, getCategoryStyles } from "@/types/categories";
+import CategoryBadge from "@/components/ui/CategoryBadge";
+import UniversalBadge from "@/components/ui/UniversalBadge";
 
-const getCategoryStyles = (category: string): string => {
-  const styles: Record<string, string> = {
-    WANTED_PERSON:
-      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-    MISSING_PERSON:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-    UNKNOWN_DEAD:
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",
-    STOLEN_GOODS:
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  };
-  return styles[category] ?? "bg-gray-100 text-gray-800";
-};
+// Helper Functions
 
 const getPriorityStyles = (priority: string): string => {
   const styles: Record<string, string> = {
@@ -220,11 +200,10 @@ const FlipCard: React.FC<{
                 DRINGEND
               </div>
             )}
-            <span
-              className={`absolute left-2 top-2 rounded px-2 py-1 text-xs ${getCategoryStyles(data.step1.category)}`}
-            >
-              {getCategoryLabel(data.step1.category)}
-            </span>
+            <CategoryBadge
+              category={data.step1.category}
+              className="absolute left-2 top-2"
+            />
           </div>
 
           {/* Content Section */}
@@ -448,13 +427,11 @@ export default function InvestigationDisplay({
               </p>
               <div className="flex flex-wrap gap-2">
                 {data.step2.tags.map((tag, index) => (
-                  <span
+                  <UniversalBadge
                     key={index}
-                    className="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                  >
-                    <Tag className="mr-1 h-3 w-3" />
-                    {tag}
-                  </span>
+                    content={tag}
+                    className="inline-flex items-center"
+                  />
                 ))}
               </div>
             </div>
@@ -841,13 +818,11 @@ export default function InvestigationDisplay({
             <h2 className="mb-4 text-2xl font-bold">Schlagwörter</h2>
             <div className="flex flex-wrap gap-2">
               {data.step2.tags.map((tag, index) => (
-                <span
+                <UniversalBadge
                   key={index}
-                  className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                >
-                  <Tag className="mr-1 h-4 w-4" />
-                  {tag}
-                </span>
+                  content={tag}
+                  className="inline-flex items-center"
+                />
               ))}
             </div>
           </section>

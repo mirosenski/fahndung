@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Save, Loader2, AlertCircle } from "lucide-react";
 import { getErrorMessage } from "@/types/errors";
 import { api } from "@/trpc/react";
+import { getCategoryOptions } from "@/types/categories";
 
 const editSchema = z.object({
   title: z.string().min(5, "Titel muss mindestens 5 Zeichen haben"),
@@ -208,10 +209,11 @@ export default function FahndungBearbeitenPage() {
                   {...form.register("category")}
                   className="select-dark-mode"
                 >
-                  <option value="WANTED_PERSON">Straftäter</option>
-                  <option value="MISSING_PERSON">Vermisste Person</option>
-                  <option value="UNKNOWN_DEAD">Unbekannte Tote</option>
-                  <option value="STOLEN_GOODS">Sachen</option>
+                  {getCategoryOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

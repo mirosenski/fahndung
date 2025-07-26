@@ -2,6 +2,7 @@
 
 import { Search, AlertTriangle, User, MapPin, Eye } from "lucide-react";
 import { api } from "~/trpc/react";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 // Typen für Fahndungen
 interface Investigation {
@@ -118,26 +119,28 @@ export default function HomeContent() {
                         </p>
                       </div>
                       <div className="flex flex-col items-end space-y-1">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${
-                            inv.priority === "high"
+                        <StatusBadge
+                          content={inv.priority}
+                          className={`${
+                            inv.priority === "urgent"
                               ? "bg-red-500/20 text-red-600 dark:text-red-400"
-                              : inv.priority === "medium"
-                                ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
-                                : "bg-green-500/20 text-green-600 dark:text-green-400"
+                              : inv.priority === "new"
+                                ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                                : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
                           }`}
-                        >
-                          {inv.priority}
-                        </span>
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${
-                            inv.status === "active"
+                        />
+                        <StatusBadge
+                          content={inv.status}
+                          className={`${
+                            inv.status === "published"
                               ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                              : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                              : inv.status === "active"
+                                ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                                : inv.status === "draft"
+                                  ? "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                                  : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
                           }`}
-                        >
-                          {inv.status}
-                        </span>
+                        />
                       </div>
                     </div>
 
@@ -153,12 +156,11 @@ export default function HomeContent() {
                     {inv.tags && inv.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {inv.tags.slice(0, 3).map((tag, index) => (
-                          <span
+                          <StatusBadge
                             key={index}
-                            className="rounded-full bg-blue-500/20 px-2 py-1 text-xs text-blue-600 dark:text-blue-400"
-                          >
-                            {tag}
-                          </span>
+                            content={tag}
+                            className="bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                          />
                         ))}
                         {inv.tags.length > 3 && (
                           <span className="rounded-full bg-gray-500/20 px-2 py-1 text-xs text-gray-600 dark:text-gray-400">

@@ -1,5 +1,3 @@
-
-
 export type DisplayMode = "summary" | "detail" | "card" | "preview";
 
 export interface InvestigationDisplayProps {
@@ -17,12 +15,9 @@ export interface FlipCardProps {
 }
 
 // Helper Types für Kategorien und Prioritäten
-export const categoryLabels = {
-  WANTED_PERSON: "Straftäter",
-  MISSING_PERSON: "Vermisste Person",
-  UNKNOWN_DEAD: "Unbekannte Tote",
-  STOLEN_GOODS: "Sachen",
-} as const;
+import { INVESTIGATION_CATEGORIES } from "./categories";
+
+export const categoryLabels = INVESTIGATION_CATEGORIES;
 
 export const priorityLabels = {
   normal: "Normal",
@@ -38,14 +33,18 @@ export const urgencyLabels = {
 } as const;
 
 // Style Helper Functions
-export const getCategoryStyles = (category: keyof typeof categoryLabels) => {
-  const styles = {
-    WANTED_PERSON: "bg-red-100 text-red-800",
-    MISSING_PERSON: "bg-blue-100 text-blue-800",
-    UNKNOWN_DEAD: "bg-gray-100 text-gray-800",
-    STOLEN_GOODS: "bg-yellow-100 text-yellow-800",
+export const getCategoryStyles = (category: string): string => {
+  const styles: Record<string, string> = {
+    WANTED_PERSON:
+      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    MISSING_PERSON:
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    UNKNOWN_DEAD:
+      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",
+    STOLEN_GOODS:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
   };
-  return styles[category];
+  return styles[category] ?? "bg-gray-100 text-gray-800";
 };
 
 export const getPriorityStyles = (priority: keyof typeof priorityLabels) => {

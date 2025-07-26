@@ -18,6 +18,7 @@ import PageLayout from "~/components/layout/PageLayout";
 import InvestigationActions from "~/components/fahndungen/InvestigationActions";
 import { getRolePermissions } from "~/lib/auth";
 import { useAuth } from "~/hooks/useAuth";
+import { getCategoryLabel as translateCategory } from "@/types/translations";
 
 // Interface für tRPC Investigation (aus post.ts)
 interface Investigation {
@@ -148,15 +149,7 @@ export default function FahndungenPage() {
     }
   };
 
-  const getCategoryLabel = (category: string) => {
-    const labels: Record<string, string> = {
-      MISSING_PERSON: "Vermisste Person",
-      WANTED_PERSON: "Gesuchte Person",
-      UNKNOWN_DEAD: "Unbekannter Toter",
-      STOLEN_GOODS: "Gestohlene Gegenstände",
-    };
-    return labels[category] ?? category;
-  };
+  const getCategoryLabel = translateCategory;
 
   // Loading State
   if (authLoading || isLoading) {
@@ -381,9 +374,9 @@ export default function FahndungenPage() {
                           investigation.priority,
                         )}`}
                       >
-                        {investigation.priority === "urgent" && "Dringend"}
-                        {investigation.priority === "new" && "Neu"}
-                        {investigation.priority === "normal" && "Normal"}
+                        {investigation.priority === "urgent" && "DRINGEND"}
+                        {investigation.priority === "new" && "NEU"}
+                        {investigation.priority === "normal" && "NORMAL"}
                       </span>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(

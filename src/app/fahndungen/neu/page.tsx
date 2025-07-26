@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, X, Eye, AlertCircle, Check } from "lucide-react";
 import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
+import { getCategoryOptions } from "@/types/categories";
 
 interface NewFahndungForm {
   title: string;
@@ -133,10 +134,11 @@ export default function NeueFahndungPage() {
             onChange={(e) => handleInputChange("category", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
-            <option value="MISSING_PERSON">Vermisste Person</option>
-            <option value="WANTED_PERSON">Gesuchte Person</option>
-            <option value="UNKNOWN_DEAD">Unbekannter Toter</option>
-            <option value="STOLEN_GOODS">Gestohlene Gegenstände</option>
+            {getCategoryOptions().map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
 
