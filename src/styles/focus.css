@@ -1,18 +1,18 @@
-/* Verbesserte Fokus-Indikatoren */
+/* Verbesserte Fokus-Indikatoren für Tailwind 4.1 */
 
 /* Standard Fokus-Ring für alle fokussierbaren Elemente */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 /* Dickerer Fokus-Ring für wichtige Elemente */
 .focus-ring-thick {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 /* Fokus-Ring für Buttons - MODERNER UND DICKER */
 .btn-focus {
-  @apply focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-90 focus:ring-offset-2;
+  @apply focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 /* PUNKTIERTER Fokus-Ring für Trigger-Buttons - MODERN UND ELEGANT */
@@ -34,27 +34,27 @@
 
 /* Fokus-Ring für Dropdown-Items */
 .dropdown-item-focus {
-  @apply focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:bg-blue-900/20;
+  @apply focus:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:bg-blue-900/20;
 }
 
 /* Fokus-Ring für Input-Felder */
 .input-focus {
-  @apply focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1;
+  @apply focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 /* Fokus-Ring für Links */
 .link-focus {
-  @apply focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1;
+  @apply focus:underline focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 /* High-Contrast Fokus-Ring für Barrierefreiheit */
 .focus-ring-high-contrast {
-  @apply focus:shadow-focus-thick focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-100 focus:ring-offset-2;
+  @apply focus:shadow-focus-thick focus:outline-none focus:ring-2 focus:ring-blue-600;
 }
 
 /* Animierter Fokus-Ring */
 .focus-ring-animated {
-  @apply transition-all duration-200 ease-in-out focus:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply transition-all duration-200 ease-in-out focus:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 /* Fokus-Ring für Dark Mode */

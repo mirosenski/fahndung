@@ -84,7 +84,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  // Plugins entfernt - nicht mehr benötigt in Tailwind 4.1
 };
 
 export default config;
