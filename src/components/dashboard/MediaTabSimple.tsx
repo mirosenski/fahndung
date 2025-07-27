@@ -189,7 +189,7 @@ export default function MediaTabSimple() {
             placeholder="Medien durchsuchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

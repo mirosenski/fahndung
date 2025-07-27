@@ -42,7 +42,7 @@ export default function HomeContent() {
 
         {/* Statistics */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <AlertTriangle className="h-6 w-6 text-red-500" />
               <div>
@@ -57,7 +57,7 @@ export default function HomeContent() {
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <User className="h-6 w-6 text-blue-500" />
               <div>
@@ -72,7 +72,7 @@ export default function HomeContent() {
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <MapPin className="h-6 w-6 text-green-500" />
               <div>
@@ -107,7 +107,7 @@ export default function HomeContent() {
                 return (
                   <div
                     key={inv.id}
-                    className="cursor-pointer rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-colors hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                    className="cursor-pointer rounded-lg border border-gray-200 bg-white p-6 shadow-xs transition-colors hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
                   >
                     <div className="mb-4 flex items-start justify-between">
                       <div className="flex-1">
@@ -174,7 +174,7 @@ export default function HomeContent() {
               })}
             </div>
           ) : (
-            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
               <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
                 Keine Fahndungen gefunden

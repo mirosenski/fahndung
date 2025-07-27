@@ -145,7 +145,7 @@ export default function FahndungBearbeitenPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="border-b bg-white shadow-sm">
+      <div className="border-b bg-white shadow-xs">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
@@ -165,7 +165,7 @@ export default function FahndungBearbeitenPage() {
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 rounded-lg bg-white p-6 shadow-sm"
+          className="space-y-6 rounded-lg bg-white p-6 shadow-xs"
         >
           {/* Basic Info */}
           <div>

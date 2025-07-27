@@ -279,8 +279,8 @@ function MediaItemComponent({
 
         {/* Overlay Actions */}
         <div
-          className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity ${
-            isHovered ? "opacity-100" : ""
+          className={`absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity ${
+  isHovered ? "opacity-100" : ""
           }`}
         >
           <div className="flex space-x-2">

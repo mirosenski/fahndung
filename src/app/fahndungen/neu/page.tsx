@@ -119,7 +119,7 @@ export default function NeueFahndungPage() {
             type="text"
             value={formData.title}
             onChange={(e) => handleInputChange("title", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="z.B. Vermisste Person - Maria Schmidt"
             required
           />
@@ -132,7 +132,7 @@ export default function NeueFahndungPage() {
           <select
             value={formData.category}
             onChange={(e) => handleInputChange("category", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
             {getCategoryOptions().map((option) => (
               <option key={option.value} value={option.value}>
@@ -149,7 +149,7 @@ export default function NeueFahndungPage() {
           <select
             value={formData.priority}
             onChange={(e) => handleInputChange("priority", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
             <option value="normal">Normal</option>
             <option value="urgent">Dringend</option>
@@ -165,7 +165,7 @@ export default function NeueFahndungPage() {
             type="text"
             value={formData.case_number}
             onChange={(e) => handleInputChange("case_number", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="Wird automatisch generiert"
           />
         </div>
@@ -178,7 +178,7 @@ export default function NeueFahndungPage() {
             type="text"
             value={formData.location}
             onChange={(e) => handleInputChange("location", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="z.B. Berlin, Alexanderplatz"
           />
         </div>
@@ -201,7 +201,7 @@ export default function NeueFahndungPage() {
           value={formData.description}
           onChange={(e) => handleInputChange("description", e.target.value)}
           rows={6}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           placeholder="Ausführliche Beschreibung der Fahndung..."
           required
         />
@@ -215,7 +215,7 @@ export default function NeueFahndungPage() {
           value={formData.features}
           onChange={(e) => handleInputChange("features", e.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           placeholder="z.B. Narben, Tattoos, besondere Kleidung..."
         />
       </div>
@@ -231,7 +231,7 @@ export default function NeueFahndungPage() {
             onChange={(e) =>
               handleInputChange("contact_person", e.target.value)
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="Name der Kontaktperson"
           />
         </div>
@@ -244,7 +244,7 @@ export default function NeueFahndungPage() {
             type="tel"
             value={formData.contact_phone}
             onChange={(e) => handleInputChange("contact_phone", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="+49 123 456789"
           />
         </div>
@@ -257,7 +257,7 @@ export default function NeueFahndungPage() {
             type="email"
             value={formData.contact_email}
             onChange={(e) => handleInputChange("contact_email", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="kontakt@polizei.de"
           />
         </div>
@@ -325,7 +325,7 @@ export default function NeueFahndungPage() {
             <select
               value={formData.status}
               onChange={(e) => handleInputChange("status", e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               <option value="draft">Entwurf (nicht öffentlich)</option>
               <option value="active">Aktiv (interne Nutzung)</option>

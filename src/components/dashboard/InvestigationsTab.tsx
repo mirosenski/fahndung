@@ -55,7 +55,7 @@ export default function InvestigationsTab({
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -127,7 +127,7 @@ export default function InvestigationsTab({
       </div>
 
       {/* Investigations List */}
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -149,7 +149,7 @@ export default function InvestigationsTab({
               {filteredInvestigations.map((investigation) => (
                 <div
                   key={investigation.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
                 >
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900 dark:text-white">

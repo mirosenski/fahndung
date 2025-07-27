@@ -226,7 +226,7 @@ export default function UsersTab({
 
   if (!isAdmin) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
         <div className="text-center">
           <Shield className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <h3 className="mb-2 text-lg font-medium text-gray-600 dark:text-gray-400">
@@ -283,7 +283,7 @@ export default function UsersTab({
       </div>
 
       {/* Admin Tabs */}
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {[
@@ -398,7 +398,7 @@ function StatCard({ icon: Icon, title, value, color }: StatCardProps) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center space-x-3">
         <Icon className={`h-8 w-8 ${colorClasses[color]}`} />
         <div>
@@ -522,7 +522,7 @@ function AdminUserList({
           filteredUsers.map((user) => (
             <div
               key={user.id}
-              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
             >
               <div className="flex-1">
                 <div className="flex items-center space-x-3">
@@ -573,7 +573,7 @@ function AdminUserList({
                       e.target.value as "admin" | "editor" | "user",
                     )
                   }
-                  className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 >
                   <option value="user">Benutzer</option>
                   <option value="editor">Editor</option>
@@ -680,7 +680,7 @@ function PendingRegistrations({
           pendingRegistrations.map((registration) => (
             <div
               key={registration.id}
-              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              className="rounded-lg border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
             >
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -777,7 +777,7 @@ function UserActivityList({
         {userActivity.map((activity) => (
           <div
             key={activity.id}
-            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
           >
             <div>
               <p className="text-gray-900 dark:text-white">
@@ -810,7 +810,7 @@ function AdminActionsList({ adminActions }: AdminActionsListProps) {
       {adminActions.map((action) => (
         <div
           key={action.id}
-          className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
         >
           <div>
             <p className="text-gray-900 dark:text-white">

@@ -103,7 +103,7 @@ function StatCard({ icon: Icon, title, value, loading, color }: StatCardProps) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center space-x-3">
         <Icon className={`h-8 w-8 ${colorClasses[color]}`} />
         <div>
@@ -129,7 +129,7 @@ function RecentInvestigationsList({
       <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
         Neueste Fahndungen
       </h2>
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
         <div className="p-6">
           {investigations.map((investigation) => (
             <div

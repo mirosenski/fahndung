@@ -268,7 +268,7 @@ export default function InteractiveMap({
             <input
               type="text"
               placeholder="Adresse suchen..."
-              className="rounded border px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="rounded border px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
                   const query = (e.target as HTMLInputElement).value;
