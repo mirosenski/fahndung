@@ -4,8 +4,22 @@
 import { useState, useMemo } from "react";
 import { AlertTriangle, User, MapPin, Eye } from "lucide-react";
 import { api } from "~/trpc/react";
-import StatusBadge from "@/components/ui/StatusBadge";
+
 import FahndungFilter, { type FilterState } from "./FahndungFilter";
+import dynamic from "next/dynamic";
+
+// Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
+const FahndungskarteGrid = dynamic(
+  () => import("~/components/fahndungskarte/FahndungskarteGrid"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+      </div>
+    ),
+  },
+);
 
 // Typen für Fahndungen
 interface Investigation {
@@ -197,78 +211,7 @@ export default function HomeContent() {
           </div>
 
           {filteredInvestigations && filteredInvestigations.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredInvestigations.map((investigation) => {
-                const inv = investigation as Investigation;
-                return (
-                  <div
-                    key={inv.id}
-                    className="cursor-pointer rounded-lg border border-gray-200 bg-white p-6 shadow-xs transition-colors hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <div className="mb-4 flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                          {inv.title}
-                        </h3>
-                        <p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
-                          {inv.description}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end space-y-1">
-                        <StatusBadge
-                          content={inv.priority}
-                          className={`${
-                            inv.priority === "urgent"
-                              ? "bg-red-500/20 text-red-600 dark:text-red-400"
-                              : inv.priority === "new"
-                                ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                                : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
-                          }`}
-                        />
-                        <StatusBadge
-                          content={inv.status}
-                          className={`${
-                            inv.status === "published"
-                              ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                              : inv.status === "active"
-                                ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                                : inv.status === "draft"
-                                  ? "bg-gray-500/20 text-gray-600 dark:text-gray-400"
-                                  : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
-                          }`}
-                        />
-                      </div>
-                    </div>
-
-                    {inv.location && (
-                      <div className="mb-3 flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {inv.location}
-                        </span>
-                      </div>
-                    )}
-
-                    {inv.tags && inv.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {inv.tags.slice(0, 3).map((tag, index) => (
-                          <StatusBadge
-                            key={index}
-                            content={tag}
-                            className="bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                          />
-                        ))}
-                        {inv.tags.length > 3 && (
-                          <span className="rounded-full bg-gray-500/20 px-2 py-1 text-xs text-gray-600 dark:text-gray-400">
-                            +{inv.tags.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <FahndungskarteGrid investigations={filteredInvestigations} />
           ) : (
             <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
               <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-gray-400" />

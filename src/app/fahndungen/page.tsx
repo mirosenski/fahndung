@@ -15,10 +15,23 @@ import {
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
-import InvestigationActions from "~/components/fahndungen/InvestigationActions";
+
+import dynamic from "next/dynamic";
+
+// Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
+const FahndungskarteGrid = dynamic(
+  () => import("~/components/fahndungskarte/FahndungskarteGrid"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+      </div>
+    ),
+  },
+);
 import { getRolePermissions } from "~/lib/auth";
 import { useAuth } from "~/hooks/useAuth";
-import { getCategoryLabel as translateCategory } from "@/types/translations";
 
 // Interface für tRPC Investigation (aus post.ts)
 interface Investigation {
@@ -124,32 +137,6 @@ export default function FahndungenPage() {
       await refetch();
     }
   };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-300";
-      case "new":
-        return "text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300";
-      default:
-        return "text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-        return "text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-300";
-      case "active":
-        return "text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300";
-      case "draft":
-        return "text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300";
-      default:
-        return "text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300";
-    }
-  };
-
-  const getCategoryLabel = translateCategory;
 
   // Loading State
   if (authLoading || isLoading) {
@@ -335,7 +322,7 @@ export default function FahndungenPage() {
           </div>
         </div>
 
-        {/* Fahndungen Liste */}
+        {/* Moderne Fahndungskarten */}
         {filteredInvestigations.length === 0 ? (
           <div className="rounded-lg bg-white p-12 text-center shadow dark:bg-gray-800">
             <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
@@ -357,77 +344,12 @@ export default function FahndungenPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredInvestigations.map((investigation: Investigation) => (
-              <div
-                key={investigation.id}
-                className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="mb-2 flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {investigation.title}
-                      </h3>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getPriorityColor(
-                          investigation.priority,
-                        )}`}
-                      >
-                        {investigation.priority === "urgent" && "DRINGEND"}
-                        {investigation.priority === "new" && "NEU"}
-                        {investigation.priority === "normal" && "NORMAL"}
-                      </span>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(
-                          investigation.status,
-                        )}`}
-                      >
-                        {investigation.status === "published" &&
-                          "Veröffentlicht"}
-                        {investigation.status === "active" && "Aktiv"}
-                        {investigation.status === "draft" && "Entwurf"}
-                      </span>
-                    </div>
-
-                    <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                      <span>Aktenzeichen: {investigation.case_number}</span>
-                      <span>•</span>
-                      <span>{getCategoryLabel(investigation.category)}</span>
-                      {investigation.location && (
-                        <>
-                          <span>•</span>
-                          <span>{investigation.location}</span>
-                        </>
-                      )}
-                      <span>•</span>
-                      <span>
-                        {new Date(investigation.created_at).toLocaleDateString(
-                          "de-DE",
-                        )}
-                      </span>
-                    </div>
-
-                    {investigation.description && (
-                      <p className="mt-2 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
-                        {investigation.description}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="ml-6">
-                    <InvestigationActions
-                      investigation={investigation}
-                      userRole={userProfile?.role ?? undefined}
-                      userPermissions={userPermissions ?? undefined}
-                      onAction={handleRefresh}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <FahndungskarteGrid
+            investigations={filteredInvestigations}
+            onAction={handleRefresh}
+            userRole={userProfile?.role}
+            userPermissions={userPermissions ?? undefined}
+          />
         )}
       </div>
     </PageLayout>
