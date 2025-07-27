@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 "use client";
 
-import { Search, AlertTriangle, User, MapPin, Eye } from "lucide-react";
+import { useState, useMemo } from "react";
+import { AlertTriangle, User, MapPin, Eye } from "lucide-react";
 import { api } from "~/trpc/react";
 import StatusBadge from "@/components/ui/StatusBadge";
+import FahndungFilter, { type FilterState } from "./FahndungFilter";
 
 // Typen für Fahndungen
 interface Investigation {
@@ -18,41 +21,126 @@ interface Investigation {
 }
 
 export default function HomeContent() {
+  const [activeFilters, setActiveFilters] = useState<FilterState>({
+    status: [],
+    priority: [],
+    category: [],
+    timeRange: "all",
+    searchTerm: "",
+  });
+
   // tRPC Queries und Mutations
   const { data: investigations } = api.post.getInvestigations.useQuery({
-    limit: 10,
+    limit: 50,
     offset: 0,
   });
+
+  // Gefilterte Fahndungen
+  const filteredInvestigations = useMemo(() => {
+    if (!investigations) return [];
+
+    return investigations.filter((investigation) => {
+      const inv = investigation as Investigation;
+
+      // Suchbegriff Filter
+      if (activeFilters.searchTerm) {
+        const searchLower = activeFilters.searchTerm.toLowerCase();
+        const matchesSearch =
+          inv.title.toLowerCase().includes(searchLower) ||
+          inv.description?.toLowerCase().includes(searchLower) ||
+          inv.location?.toLowerCase().includes(searchLower) ||
+          inv.tags?.some((tag) => tag.toLowerCase().includes(searchLower));
+        if (!matchesSearch) return false;
+      }
+
+      // Status Filter
+      if (
+        activeFilters.status.length > 0 &&
+        !activeFilters.status.includes(inv.status)
+      ) {
+        return false;
+      }
+
+      // Prioritäts Filter
+      if (
+        activeFilters.priority.length > 0 &&
+        !activeFilters.priority.includes(inv.priority)
+      ) {
+        return false;
+      }
+
+      // Kategorie Filter (über Tags)
+      if (activeFilters.category.length > 0) {
+        const hasMatchingCategory = activeFilters.category.some((category) => {
+          const categoryLower = category.toLowerCase();
+          return inv.tags?.some((tag) =>
+            tag.toLowerCase().includes(categoryLower),
+          );
+        });
+        if (!hasMatchingCategory) return false;
+      }
+
+      // Zeit Filter
+      if (activeFilters.timeRange !== "all") {
+        const now = new Date();
+        const timeRanges = {
+          "24h": 24 * 60 * 60 * 1000,
+          "7d": 7 * 24 * 60 * 60 * 1000,
+          "30d": 30 * 24 * 60 * 60 * 1000,
+        };
+        const cutoff = new Date(
+          now.getTime() - timeRanges[activeFilters.timeRange],
+        );
+        const investigationDate = new Date(inv.created_at);
+        if (investigationDate < cutoff) return false;
+      }
+
+      return true;
+    });
+  }, [investigations, activeFilters]);
+
+  // Filter-Handler
+  const handleFilterChange = (filters: FilterState) => {
+    setActiveFilters(filters);
+  };
 
   return (
     <>
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        {/* Search Bar */}
+        {/* Filter und Suche */}
         <div className="mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Fahndungen durchsuchen..."
-              className="input-dark-mode px-10 py-3"
-            />
-          </div>
+          <FahndungFilter onFilterChange={handleFilterChange} />
         </div>
 
         {/* Statistics */}
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
             <div className="flex items-center space-x-3">
               <AlertTriangle className="h-6 w-6 text-red-500" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Aktive Fahndungen
+                  Gefilterte Fahndungen
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {investigations?.filter(
-                    (i) => (i as Investigation).status === "active",
-                  ).length ?? 0}
+                  {filteredInvestigations.length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+            <div className="flex items-center space-x-3">
+              <AlertTriangle className="h-6 w-6 text-orange-500" />
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Dringende Fälle
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {
+                    filteredInvestigations.filter(
+                      (i) => (i as Investigation).priority === "urgent",
+                    ).length
+                  }
                 </p>
               </div>
             </div>
@@ -65,9 +153,11 @@ export default function HomeContent() {
                   Vermisste Personen
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {investigations?.filter((i) =>
-                    (i as Investigation).tags?.includes("vermisst"),
-                  ).length ?? 0}
+                  {
+                    filteredInvestigations.filter((i) =>
+                      (i as Investigation).tags?.includes("vermisst"),
+                    ).length
+                  }
                 </p>
               </div>
             </div>
@@ -77,11 +167,14 @@ export default function HomeContent() {
               <MapPin className="h-6 w-6 text-green-500" />
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Standorte
+                  Mit Standort
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {investigations?.filter((i) => (i as Investigation).location)
-                    .length ?? 0}
+                  {
+                    filteredInvestigations.filter(
+                      (i) => (i as Investigation).location,
+                    ).length
+                  }
                 </p>
               </div>
             </div>
@@ -96,13 +189,16 @@ export default function HomeContent() {
             </h2>
             <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Eye className="h-4 w-4" />
-              <span>{investigations?.length ?? 0} Fahndungen</span>
+              <span>
+                {filteredInvestigations.length} von{" "}
+                {investigations?.length ?? 0} Fahndungen
+              </span>
             </div>
           </div>
 
-          {investigations && investigations.length > 0 ? (
+          {filteredInvestigations && filteredInvestigations.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {investigations.map((investigation) => {
+              {filteredInvestigations.map((investigation) => {
                 const inv = investigation as Investigation;
                 return (
                   <div
@@ -177,10 +273,14 @@ export default function HomeContent() {
             <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
               <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-                Keine Fahndungen gefunden
+                {investigations && investigations.length > 0
+                  ? "Keine Fahndungen mit den aktuellen Filtern gefunden"
+                  : "Keine Fahndungen gefunden"}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Es sind noch keine Fahndungen in der Datenbank vorhanden.
+                {investigations && investigations.length > 0
+                  ? "Versuchen Sie andere Filter-Einstellungen oder löschen Sie die Filter."
+                  : "Es sind noch keine Fahndungen in der Datenbank vorhanden."}
               </p>
             </div>
           )}
