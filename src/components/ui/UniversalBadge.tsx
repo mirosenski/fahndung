@@ -1,33 +1,83 @@
-import { translateLabel } from "@/types/translations";
+import { cn } from "~/lib/utils";
+import { colors, componentClasses } from "~/lib/design-tokens";
 
 interface UniversalBadgeProps {
   content: string;
   className?: string;
-  variant?: "default" | "category" | "priority" | "status";
+  variant?: "default" | "category" | "priority" | "status" | "success" | "warning" | "error" | "info";
+  size?: "sm" | "md" | "lg";
 }
+
+// Übersetzungsfunktion für Labels
+const translateLabel = (content: string): string => {
+  const translations: Record<string, string> = {
+    // Kategorien
+    "WANTED_PERSON": "Gesuchte Person",
+    "MISSING_PERSON": "Vermisste Person", 
+    "UNKNOWN_DEAD": "Unbekannter Toter",
+    "STOLEN_GOODS": "Gestohlene Gegenstände",
+    
+    // Prioritäten
+    "normal": "Normal",
+    "urgent": "Dringend",
+    "new": "Neu",
+    
+    // Status
+    "draft": "Entwurf",
+    "active": "Aktiv",
+    "published": "Veröffentlicht",
+    "archived": "Archiviert",
+    
+    // Fallback
+    "default": content,
+  };
+  
+  return translations[content] ?? content;
+};
 
 export default function UniversalBadge({
   content,
   className = "",
   variant = "default",
+  size = "md",
 }: UniversalBadgeProps) {
-  // Standard-Farben basierend auf Variant
-  const getDefaultStyles = () => {
+  // Größen-Klassen
+  const sizeClasses = {
+    sm: "px-1.5 py-0.5 text-xs",
+    md: "px-2 py-1 text-xs", 
+    lg: "px-3 py-1.5 text-sm",
+  };
+
+  // Variant-spezifische Styles mit Design-Tokens
+  const getVariantStyles = () => {
     switch (variant) {
       case "category":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+        return colors.status.info;
       case "priority":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+        return colors.status.warning;
       case "status":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+        return colors.status.success;
+      case "success":
+        return colors.status.success;
+      case "warning":
+        return colors.status.warning;
+      case "error":
+        return colors.status.error;
+      case "info":
+        return colors.status.info;
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+        return componentClasses.badge.default;
     }
   };
 
   return (
     <span
-      className={`rounded-full px-2 py-1 text-xs font-medium ${getDefaultStyles()} ${className}`}
+      className={cn(
+        componentClasses.badge.base,
+        sizeClasses[size],
+        getVariantStyles(),
+        className
+      )}
     >
       {translateLabel(content)}
     </span>

@@ -154,7 +154,7 @@ export default function FahndungenPage() {
   // Loading State
   if (authLoading || isLoading) {
     return (
-      <PageLayout>
+      <PageLayout session={session}>
         <div className="flex min-h-screen items-center justify-center">
           <div className="text-center">
             <Loader2 className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500" />
@@ -168,7 +168,7 @@ export default function FahndungenPage() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout session={session}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex flex-col items-start justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
@@ -291,15 +291,15 @@ export default function FahndungenPage() {
         </div>
 
         {/* Filter und Suche */}
-        <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
+        <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Fahndungen durchsuchen..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              className="w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
             />
           </div>
 
@@ -307,7 +307,7 @@ export default function FahndungenPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
               <option value="all">Alle Status</option>
               <option value="draft">Entwurf</option>
@@ -318,7 +318,7 @@ export default function FahndungenPage() {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             >
               <option value="all">Alle Prioritäten</option>
               <option value="normal">Normal</option>

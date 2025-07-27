@@ -13,6 +13,7 @@ import {
 // Import components
 import InvestigationDisplay from "@/components/investigation/InvestigationDisplay";
 import PageLayout from "@/components/layout/PageLayout";
+import { getCurrentSession } from "~/lib/auth";
 
 // Types
 interface Investigation {
@@ -122,6 +123,9 @@ interface PageProps {
 export default async function FahndungDetailPage({ params }: PageProps) {
   const { id } = await params;
 
+  // Session abrufen
+  const session = await getCurrentSession();
+
   // Simulate data loading - in a real app, this would be a database call
   const investigation: Investigation = {
     id,
@@ -207,7 +211,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
   };
 
   return (
-    <PageLayout>
+    <PageLayout session={session}>
       {/* Header Bar */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -234,7 +238,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
             {/* Right side */}
             <div className="flex items-center space-x-2">
               {/* View counter */}
-              <div className="hidden items-center space-x-1 rounded-lg bg-gray-100 px-3 py-1 dark:bg-gray-700 sm:flex">
+              <div className="hidden items-center space-x-1 rounded-lg bg-gray-100 px-3 py-1 sm:flex dark:bg-gray-700">
                 <Eye className="h-4 w-4 text-gray-500" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {investigation.metadata.views.toLocaleString()}
@@ -242,7 +246,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
               </div>
 
               {/* Status badge */}
-              <div className="hidden items-center space-x-1 rounded-lg bg-green-100 px-3 py-1 text-green-700 dark:bg-green-900/30 dark:text-green-300 sm:flex">
+              <div className="hidden items-center space-x-1 rounded-lg bg-green-100 px-3 py-1 text-green-700 sm:flex dark:bg-green-900/30 dark:text-green-300">
                 <Shield className="h-4 w-4" />
                 <span className="text-sm font-medium">Aktiv</span>
               </div>
@@ -280,7 +284,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
       {/* Main Content */}
       <main className="mx-auto max-w-7xl">
         {/* Last updated info */}
-        <div className="border-b border-gray-200 px-4 py-4 dark:border-gray-700 sm:px-6 lg:px-8">
+        <div className="border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8 dark:border-gray-700">
           <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <Clock className="h-4 w-4" />

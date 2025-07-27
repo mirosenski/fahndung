@@ -6,6 +6,7 @@ import { ArrowLeft, Save, X, Eye, AlertCircle, Check } from "lucide-react";
 import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
 import { getCategoryOptions } from "@/types/categories";
+import { useAuth } from "~/hooks/useAuth";
 
 interface NewFahndungForm {
   title: string;
@@ -28,6 +29,7 @@ interface NewFahndungForm {
 
 export default function NeueFahndungPage() {
   const router = useRouter();
+  const { session } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<NewFahndungForm>({
     title: "",
@@ -399,7 +401,7 @@ export default function NeueFahndungPage() {
   );
 
   return (
-    <PageLayout>
+    <PageLayout session={session}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">

@@ -1,38 +1,17 @@
 "use client";
 
-import type { ReactNode } from "react";
+import React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
+import { type Session } from "~/lib/auth";
 import { Breadcrumb } from "~/components/ui/Breadcrumb";
-
-interface Session {
-  user: {
-    id: string;
-    email: string;
-  };
-  profile: {
-    id: string;
-    user_id: string;
-    email: string;
-    name?: string;
-    role: "admin" | "editor" | "user";
-    department?: string;
-    phone?: string;
-    last_login?: string;
-    login_count?: number;
-    is_active?: boolean;
-    created_by?: string;
-    notes?: string;
-    avatar_url?: string;
-    created_at: string;
-    updated_at: string;
-  } | null;
-}
+import { layout, colors } from "~/lib/design-tokens";
+import { cn } from "~/lib/utils";
 
 interface PageLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
   variant?: "home" | "dashboard" | "login" | "register" | "admin";
-  session?: Session | null;
+  session: Session | null | undefined;
   onLogout?: () => void;
   onCreateInvestigation?: () => void;
   showHeader?: boolean;
@@ -55,7 +34,7 @@ export default function PageLayout({
   className = "",
 }: PageLayoutProps) {
   return (
-    <div className={`min-h-screen bg-white dark:bg-gray-900 ${className}`}>
+    <div className={cn("min-h-screen", colors.background.primary, className)}>
       {/* Header */}
       {showHeader && (
         <Header
@@ -72,8 +51,8 @@ export default function PageLayout({
       {/* Hero Section (für zukünftige Verwendung) */}
       {showHero && (
         <div className="bg-gradient-to-br from-blue-600 to-purple-700 dark:from-blue-800 dark:to-purple-900">
-          <div className="container mx-auto px-4 py-12">
-            <div className="text-center text-white">
+          <div className={layout.container}>
+            <div className="py-12 text-center text-white">
               <h1 className="mb-4 text-4xl font-bold">Hero Section</h1>
               <p className="text-xl opacity-90">Zukünftige Hero-Komponente</p>
             </div>

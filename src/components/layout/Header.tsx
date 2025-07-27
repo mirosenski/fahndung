@@ -11,30 +11,7 @@ import {
 } from "lucide-react";
 import { Logo } from "~/components/ui/Logo";
 import { Breadcrumb } from "~/components/ui/Breadcrumb";
-
-interface Session {
-  user: {
-    id: string;
-    email: string;
-  };
-  profile: {
-    id: string;
-    user_id: string;
-    email: string;
-    name?: string;
-    role: "admin" | "editor" | "user";
-    department?: string;
-    phone?: string;
-    last_login?: string;
-    login_count?: number;
-    is_active?: boolean;
-    created_by?: string;
-    notes?: string;
-    avatar_url?: string;
-    created_at: string;
-    updated_at: string;
-  } | null;
-}
+import { type Session } from "~/lib/auth";
 
 interface HeaderProps {
   variant?: "home" | "dashboard" | "login" | "register" | "admin";
@@ -109,14 +86,6 @@ export default function Header({
             <span>Alle Fahndungen</span>
           </button>
         )}
-
-
-
-
-
-
-
-
 
         {session?.profile?.role === "editor" && (
           <button

@@ -15,7 +15,10 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "setup:remote": "bash scripts/setup-remote-supabase.sh setup",
-    "test:remote": "bash scripts/setup-remote-supabase.sh test"
+    "test:remote": "bash scripts/setup-remote-supabase.sh test",
+    "design:tokens:test": "node scripts/test-design-tokens.js",
+    "design:tokens:migrate": "node scripts/migrate-to-design-tokens.js",
+    "design:tokens:migrate:dry": "node scripts/migrate-to-design-tokens.js --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -66,6 +69,10 @@
     "tailwindcss": "^4.1.11",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.27.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
   },
   "ct3aMetadata": {
     "initVersion": "7.39.3"
