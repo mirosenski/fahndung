@@ -6,6 +6,7 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import { mediaRouter } from "./media";
+import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
 
 // TypeScript-Typen für Supabase-Responses
 interface Investigation {
@@ -235,7 +236,12 @@ export const postRouter = createTRPCRouter({
             station: "Allgemein",
             features: input.features ?? "",
             date: new Date().toISOString(),
-            case_number: input.case_number ?? `F-${Date.now()}`,
+            case_number:
+              input.case_number ??
+              generateNewCaseNumber(
+                input.category ?? "MISSING_PERSON",
+                input.status,
+              ),
             contact_info: input.contact_info ?? {},
             metadata: {},
             created_by: "305f1ebf-01ed-4007-8cd7-951f6105b8c1", // ptlsweb@gmail.com (wichtigster User)

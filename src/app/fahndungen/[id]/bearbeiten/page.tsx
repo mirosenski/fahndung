@@ -10,10 +10,13 @@ import { ArrowLeft, Save, Loader2, AlertCircle } from "lucide-react";
 import { getErrorMessage } from "@/types/errors";
 import { api } from "@/trpc/react";
 import { getCategoryOptions } from "@/types/categories";
+import { getCaseNumberInfo } from "~/lib/utils/caseNumberGenerator";
 
 const editSchema = z.object({
   title: z.string().min(5, "Titel muss mindestens 5 Zeichen haben"),
-  case_number: z.string().min(3, "Aktenzeichen ist erforderlich"),
+  case_number: z.string()
+    .min(3, "Aktenzeichen ist erforderlich")
+    .regex(/^[A-Z]{3}-\d{4}-[A-Z]{2}-\d{6}-[AGÜ]$/, "Aktenzeichen muss dem Format POL-2024-K-001234-A entsprechen"),
   category: z.enum([
     "WANTED_PERSON",
     "MISSING_PERSON",
@@ -190,15 +193,38 @@ export default function FahndungBearbeitenPage() {
                 <label className="mb-2 block text-sm font-medium">
                   Aktenzeichen *
                 </label>
-                <input
-                  {...form.register("case_number")}
-                  className="input-dark-mode"
-                />
-                {form.formState.errors.case_number && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {form.formState.errors.case_number.message}
-                  </p>
-                )}
+                <div className="space-y-2">
+                  <input
+                    {...form.register("case_number")}
+                    className="input-dark-mode font-mono"
+                    placeholder="POL-2024-K-001234-A"
+                  />
+                  {form.watch("case_number") && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {(() => {
+                        const caseNumber = form.watch("case_number");
+                        if (!caseNumber) return null;
+                        
+                        const info = getCaseNumberInfo(caseNumber);
+                        return info ? (
+                          <span>
+                            {info.authority} • {info.year} • {info.subjectLabel}{" "}
+                            • #{info.sequence} • {info.statusLabel}
+                          </span>
+                        ) : (
+                          <span className="text-orange-500">
+                            Ungültiges Format
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  )}
+                  {form.formState.errors.case_number && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {form.formState.errors.case_number.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div>

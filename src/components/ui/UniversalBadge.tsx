@@ -4,7 +4,15 @@ import { colors, componentClasses } from "~/lib/design-tokens";
 interface UniversalBadgeProps {
   content: string;
   className?: string;
-  variant?: "default" | "category" | "priority" | "status" | "success" | "warning" | "error" | "info";
+  variant?:
+    | "default"
+    | "category"
+    | "priority"
+    | "status"
+    | "success"
+    | "warning"
+    | "error"
+    | "info";
   size?: "sm" | "md" | "lg";
 }
 
@@ -12,26 +20,26 @@ interface UniversalBadgeProps {
 const translateLabel = (content: string): string => {
   const translations: Record<string, string> = {
     // Kategorien
-    "WANTED_PERSON": "Gesuchte Person",
-    "MISSING_PERSON": "Vermisste Person", 
-    "UNKNOWN_DEAD": "Unbekannter Toter",
-    "STOLEN_GOODS": "Gestohlene Gegenstände",
-    
+    WANTED_PERSON: "Straftäter",
+    MISSING_PERSON: "Vermisste",
+    UNKNOWN_DEAD: "unbekannte Tote",
+    STOLEN_GOODS: "Sachen",
+
     // Prioritäten
-    "normal": "Normal",
-    "urgent": "Dringend",
-    "new": "Neu",
-    
+    normal: "Normal",
+    urgent: "Dringend",
+    new: "Neu",
+
     // Status
-    "draft": "Entwurf",
-    "active": "Aktiv",
-    "published": "Veröffentlicht",
-    "archived": "Archiviert",
-    
+    draft: "Entwurf",
+    active: "Aktiv",
+    published: "Veröffentlicht",
+    archived: "Archiviert",
+
     // Fallback
-    "default": content,
+    default: content,
   };
-  
+
   return translations[content] ?? content;
 };
 
@@ -44,7 +52,7 @@ export default function UniversalBadge({
   // Größen-Klassen
   const sizeClasses = {
     sm: "px-1.5 py-0.5 text-xs",
-    md: "px-2 py-1 text-xs", 
+    md: "px-2 py-1 text-xs",
     lg: "px-3 py-1.5 text-sm",
   };
 
@@ -76,7 +84,7 @@ export default function UniversalBadge({
         componentClasses.badge.base,
         sizeClasses[size],
         getVariantStyles(),
-        className
+        className,
       )}
     >
       {translateLabel(content)}

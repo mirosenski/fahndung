@@ -14,6 +14,7 @@ import {
 import InvestigationDisplay from "@/components/investigation/InvestigationDisplay";
 import PageLayout from "@/components/layout/PageLayout";
 import { getCurrentSession } from "~/lib/auth";
+import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
 
 // Types
 interface Investigation {
@@ -130,9 +131,9 @@ export default async function FahndungDetailPage({ params }: PageProps) {
   const investigation: Investigation = {
     id,
     step1: {
-      title: "Vermisste Person - Max Mustermann",
+      title: "Vermisste - Max Mustermann",
       category: "MISSING_PERSON",
-      caseNumber: "VM-2024-01-001",
+      caseNumber: "POL-2024-K-001234-A",
     },
     step2: {
       shortDescription:
@@ -229,9 +230,7 @@ export default async function FahndungDetailPage({ params }: PageProps) {
                 <h1 className="line-clamp-1 text-lg font-semibold">
                   {investigation.step1.title}
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {investigation.step1.caseNumber}
-                </p>
+                <CaseNumberDetailed caseNumber={investigation.step1.caseNumber} />
               </div>
             </div>
 

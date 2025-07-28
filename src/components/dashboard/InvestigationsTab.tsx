@@ -3,6 +3,7 @@
 import { Search, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { getCategoryOptions } from "@/types/categories";
 import UniversalBadge from "@/components/ui/UniversalBadge";
+import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
 
 interface Investigation {
   id: string;
@@ -155,9 +156,7 @@ export default function InvestigationsTab({
                     <h3 className="font-medium text-gray-900 dark:text-white">
                       {investigation.title}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {investigation.case_number}
-                    </p>
+                    <CaseNumberDetailed caseNumber={investigation.case_number} />
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {investigation.location}
                     </p>

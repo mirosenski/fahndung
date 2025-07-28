@@ -1,5 +1,6 @@
 import { BarChart3, Eye, FileText, AlertTriangle } from "lucide-react";
 import UniversalBadge from "@/components/ui/UniversalBadge";
+import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
 
 interface Investigation {
   id: string;
@@ -140,9 +141,7 @@ function RecentInvestigationsList({
                 <h3 className="font-medium text-gray-900 dark:text-white">
                   {investigation.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {investigation.case_number}
-                </p>
+                                  <CaseNumberDetailed caseNumber={investigation.case_number} />
               </div>
               <div className="flex items-center space-x-2">
                 <UniversalBadge

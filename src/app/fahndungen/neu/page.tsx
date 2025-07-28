@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, X, Eye, AlertCircle, Check } from "lucide-react";
 import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
 import { getCategoryOptions } from "@/types/categories";
 import { useAuth } from "~/hooks/useAuth";
+import {
+  generateNewCaseNumber,
+  getCaseNumberInfo,
+} from "~/lib/utils/caseNumberGenerator";
 
 interface NewFahndungForm {
   title: string;
@@ -42,8 +46,16 @@ export default function NeueFahndungPage() {
     contact_email: "",
     status: "draft", // Standard: Entwurf
     features: "",
-    case_number: "", // Wird automatisch generiert
+    case_number: "", // Wird später gesetzt
   });
+
+  // Aktennummer nach dem Mount setzen
+  React.useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      case_number: generateNewCaseNumber("MISSING_PERSON", "draft"),
+    }));
+  }, []);
 
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
@@ -64,10 +76,22 @@ export default function NeueFahndungPage() {
   });
 
   const handleInputChange = (field: keyof NewFahndungForm, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Automatisch Aktennummer aktualisieren bei Kategorie- oder Status-Änderung
+      if (field === "category" || field === "status") {
+        newData.case_number = generateNewCaseNumber(
+          field === "category" ? value : newData.category,
+          field === "status" ? value : newData.status,
+        );
+      }
+
+      return newData;
+    });
   };
 
   const handleNext = () => {
@@ -122,7 +146,7 @@ export default function NeueFahndungPage() {
             value={formData.title}
             onChange={(e) => handleInputChange("title", e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="z.B. Vermisste Person - Maria Schmidt"
+            placeholder="z.B. Vermisste - Maria Schmidt"
             required
           />
         </div>
@@ -161,15 +185,48 @@ export default function NeueFahndungPage() {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Status *
+          </label>
+          <select
+            value={formData.status}
+            onChange={(e) => handleInputChange("status", e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="draft">Entwurf</option>
+            <option value="active">Aktiv</option>
+            <option value="published">Veröffentlicht</option>
+            <option value="closed">Geschlossen</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Aktenzeichen
           </label>
-          <input
-            type="text"
-            value={formData.case_number}
-            onChange={(e) => handleInputChange("case_number", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="Wird automatisch generiert"
-          />
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={formData.case_number}
+              onChange={(e) => handleInputChange("case_number", e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              placeholder="POL-2024-K-001234-A"
+            />
+            {formData.case_number && (
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {(() => {
+                  const info = getCaseNumberInfo(formData.case_number);
+                  return info ? (
+                    <span>
+                      {info.authority} • {info.year} • {info.subjectLabel} • #
+                      {info.sequence} • {info.statusLabel}
+                    </span>
+                  ) : (
+                    <span className="text-orange-500">Ungültiges Format</span>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
         </div>
 
         <div>

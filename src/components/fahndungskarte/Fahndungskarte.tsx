@@ -26,6 +26,8 @@ import {
 import InteractiveMap, {
   type MapLocation,
 } from "@/components/shared/InteractiveMap";
+import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
+import { getCaseNumberInfo } from "~/lib/utils/caseNumberGenerator";
 
 // Typ-Definitionen für moderne Fahndungskarte
 
@@ -71,7 +73,7 @@ const mockData: FahndungsData = {
   step1: {
     title: "Torben Seiler",
     category: "MISSING_PERSON",
-    caseNumber: "MP-2025-001",
+    caseNumber: "POL-2024-K-001234-A",
   },
   step2: {
     shortDescription:
@@ -112,25 +114,25 @@ const CATEGORY_CONFIG: Record<
   }
 > = {
   WANTED_PERSON: {
-    label: "GESUCHTE PERSON",
+    label: "STRAFTÄTER",
     icon: Shield,
     gradient: "from-red-500 to-red-600",
     bg: "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800",
   },
   MISSING_PERSON: {
-    label: "VERMISSTE PERSON",
+    label: "VERMISSTE",
     icon: Search,
     gradient: "from-blue-500 to-blue-600",
     bg: "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800",
   },
   UNKNOWN_DEAD: {
-    label: "UNBEKANNTE PERSON",
+    label: "UNBEKANNTE TOTE",
     icon: FileText,
     gradient: "from-gray-500 to-gray-600",
     bg: "bg-gray-50 border-gray-200 dark:bg-gray-950 dark:border-gray-800",
   },
   STOLEN_GOODS: {
-    label: "GESTOHLENE GEGENSTÄNDE",
+    label: "SACHEN",
     icon: Camera,
     gradient: "from-orange-500 to-orange-600",
     bg: "bg-orange-50 border-orange-200 dark:bg-orange-950 dark:border-orange-800",
@@ -155,7 +157,6 @@ const TAB_CONFIG = [
   { id: "description", label: "Details", icon: FileText },
   { id: "media", label: "Medien", icon: Images },
   { id: "location", label: "Ort", icon: Map },
-  { id: "contact", label: "Kontakt", icon: MessageSquare },
 ];
 
 // Moderne Fahndungskarte Komponente
@@ -276,7 +277,6 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       description: "Details anzeigen",
       media: "Medien anzeigen",
       location: "Standort anzeigen",
-      contact: "Kontaktinformationen anzeigen",
     };
     return labels[tabId];
   };
@@ -363,11 +363,6 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           <div className="space-y-4">
             <div className={`rounded-xl border p-4 ${category.bg}`}>
               <div className="flex items-center gap-3">
-                <div
-                  className={`rounded-lg bg-gradient-to-r ${category.gradient} p-2`}
-                >
-                  <category.icon className="h-5 w-5 text-white" />
-                </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {category.label}
@@ -405,6 +400,61 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Kontakt-Informationen */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
+                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      {data.step5.contactPerson}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {data.step5.department}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                  <a
+                    href={`tel:${data.step5.contactPhone}`}
+                    className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                    aria-label={`Anrufen: ${data.step5.contactPhone}`}
+                  >
+                    {data.step5.contactPhone}
+                  </a>
+                </div>
+
+                {data.step5.contactEmail && (
+                  <div className="flex items-center gap-3">
+                    <MessageSquare className="h-4 w-4 text-gray-500" />
+                    <a
+                      href={`mailto:${data.step5.contactEmail}`}
+                      className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                      aria-label={`E-Mail senden an: ${data.step5.contactEmail}`}
+                    >
+                      {data.step5.contactEmail}
+                    </a>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-4 w-4 text-gray-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      Erreichbarkeit
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {data.step5.availableHours}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -505,65 +555,6 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           </div>
         );
 
-      case "contact":
-        return (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
-                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      {data.step5.contactPerson}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {data.step5.department}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-gray-500" />
-                  <a
-                    href={`tel:${data.step5.contactPhone}`}
-                    className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                    aria-label={`Anrufen: ${data.step5.contactPhone}`}
-                  >
-                    {data.step5.contactPhone}
-                  </a>
-                </div>
-
-                {data.step5.contactEmail && (
-                  <div className="flex items-center gap-3">
-                    <MessageSquare className="h-4 w-4 text-gray-500" />
-                    <a
-                      href={`mailto:${data.step5.contactEmail}`}
-                      className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                      aria-label={`E-Mail senden an: ${data.step5.contactEmail}`}
-                    >
-                      {data.step5.contactEmail}
-                    </a>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Erreichbarkeit
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {data.step5.availableHours}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
       default:
         return null;
     }
@@ -572,7 +563,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`relative mx-auto h-[600px] w-full max-w-sm ${className}`}
+      className={`relative mx-auto h-[513px] w-full max-w-sm ${className}`}
       style={{ perspective: "1000px" }}
       role="region"
       aria-label={`Fahndungskarte: ${data.step1.title}`}
@@ -600,7 +591,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             }
           }}
         >
-          {/* Image Section - 60% */}
+          {/* Image Section - 60% (5% kürzer) */}
           <div className="relative h-[60%] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
             {/* Priority Badge - nur auf Vorderseite */}
             {data.step2.priority !== "normal" && !isFlipped && (
@@ -621,19 +612,26 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               onError={handleImageError}
             />
 
-            {/* Case Number */}
-            <div className="absolute right-4 bottom-4 rounded-lg bg-black/80 px-3 py-1 font-mono text-xs text-white backdrop-blur-sm">
-              #{data.step1.caseNumber}
-            </div>
-
             {/* Category Badge */}
             <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg bg-white/90 px-3 py-1 text-xs font-medium backdrop-blur-sm dark:bg-gray-900/90">
-              <category.icon className="h-3 w-3" />
               <span>{category.label}</span>
+            </div>
+
+            {/* Case Number Info */}
+            <div className="absolute top-4 right-4 flex flex-col items-end">
+              <CaseNumberBadge caseNumber={data.step1.caseNumber} />
+              <div className="mt-1 text-xs text-white/80 backdrop-blur-sm">
+                {(() => {
+                  const info = getCaseNumberInfo(data.step1.caseNumber);
+                  return info
+                    ? `${info.subjectLabel} • ${info.statusLabel}`
+                    : "";
+                })()}
+              </div>
             </div>
           </div>
 
-          {/* Info Section - 40% */}
+          {/* Info Section - 40% (5% mehr für den kürzeren Bildbereich) */}
           <div className="flex h-[40%] flex-col justify-between p-6">
             <div className="space-y-3">
               <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -645,7 +643,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               </p>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
+            <div className="mt-auto flex items-center justify-between">
               <button
                 ref={detailsButtonRef}
                 className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"

@@ -17,6 +17,7 @@ import {
   Building,
   User,
 } from "lucide-react";
+import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
 
 // TypeScript Interfaces
 interface Step1Data {
@@ -340,8 +341,8 @@ export default function InvestigationDisplay({
             <dt className="font-medium text-gray-600 dark:text-gray-400">
               Aktenzeichen:
             </dt>
-            <dd className="mt-1 font-mono text-gray-900 dark:text-gray-100">
-              {data.step1.caseNumber}
+            <dd className="mt-1">
+              <CaseNumberDetailed caseNumber={data.step1.caseNumber} />
             </dd>
           </div>
           <div>
@@ -674,7 +675,7 @@ export default function InvestigationDisplay({
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-300">
             <span className="flex items-center">
               <FileText className="mr-1 h-4 w-4" />
-              {data.step1.caseNumber}
+              <CaseNumberDetailed caseNumber={data.step1.caseNumber} />
             </span>
             <span className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />

@@ -28,10 +28,10 @@ const filterOptions = {
     { value: "new", label: "Neu" },
   ],
   category: [
-    { value: "WANTED_PERSON", label: "Gesuchte Person" },
-    { value: "MISSING_PERSON", label: "Vermisste Person" },
-    { value: "UNKNOWN_DEAD", label: "Unbekannter Toter" },
-    { value: "STOLEN_GOODS", label: "Gestohlene Gegenstände" },
+    { value: "WANTED_PERSON", label: "Straftäter" },
+    { value: "MISSING_PERSON", label: "Vermisste" },
+    { value: "UNKNOWN_DEAD", label: "unbekannte Tote" },
+    { value: "STOLEN_GOODS", label: "Sachen" },
   ],
   timeRange: [
     { value: "all", label: "Alle" },
