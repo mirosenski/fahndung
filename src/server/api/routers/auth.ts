@@ -59,7 +59,11 @@ export const authRouter = createTRPCRouter({
   // Alle Benutzer abrufen (nur für Admins)
   getAllUsers: protectedProcedure.query(async ({ ctx: _ctx }) => {
     const session = await getCurrentSession();
-    if (!session?.profile || session.profile.role !== "admin") {
+    if (
+      !session?.profile ||
+      (session.profile.role !== "admin" &&
+        session.profile.role !== "super_admin")
+    ) {
       throw new Error("Admin-Rechte erforderlich");
     }
 
@@ -85,12 +89,16 @@ export const authRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string().uuid(),
-        role: z.enum(["admin", "editor", "user"]),
+        role: z.enum(["admin", "editor", "user", "super_admin"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const session = await getCurrentSession();
-      if (!session?.profile || session.profile.role !== "admin") {
+      if (
+        !session?.profile ||
+        (session.profile.role !== "admin" &&
+          session.profile.role !== "super_admin")
+      ) {
         throw new Error("Admin-Rechte erforderlich");
       }
 
@@ -124,7 +132,11 @@ export const authRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const session = await getCurrentSession();
-      if (!session?.profile || session.profile.role !== "admin") {
+      if (
+        !session?.profile ||
+        (session.profile.role !== "admin" &&
+          session.profile.role !== "super_admin")
+      ) {
         throw new Error("Admin-Rechte erforderlich");
       }
 

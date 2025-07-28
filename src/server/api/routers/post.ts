@@ -499,8 +499,11 @@ export const postRouter = createTRPCRouter({
 
   // Admin: Alle Benutzer verwalten
   getUsers: protectedProcedure.query(async ({ ctx }) => {
-    const user = ctx.user as { permissions?: { canManageUsers?: boolean } };
-    if (!user?.permissions?.canManageUsers) {
+    const user = ctx.user as {
+      permissions?: { canManageUsers?: boolean };
+      role?: string;
+    };
+    if (!user?.permissions?.canManageUsers && user?.role !== "super_admin") {
       throw new Error("Keine Berechtigung zur Benutzerverwaltung");
     }
 
@@ -529,8 +532,11 @@ export const postRouter = createTRPCRouter({
   approveUser: protectedProcedure
     .input(z.object({ userId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const user = ctx.user as { permissions?: { canManageUsers?: boolean } };
-      if (!user?.permissions?.canManageUsers) {
+      const user = ctx.user as {
+        permissions?: { canManageUsers?: boolean };
+        role?: string;
+      };
+      if (!user?.permissions?.canManageUsers && user?.role !== "super_admin") {
         throw new Error("Keine Berechtigung zur Benutzerverwaltung");
       }
 

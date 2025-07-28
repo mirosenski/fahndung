@@ -3,13 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import {
-  BarChart3,
-  FileText,
-  Image as ImageIcon,
-  Users,
-  Settings,
-} from "lucide-react";
+import { FileText, Image as ImageIcon, Users } from "lucide-react";
 import { api } from "~/trpc/react";
 import { isAdmin, isEditor, getAllUsers, getAdminActions } from "~/lib/auth";
 import type { UserProfile, UserActivity, AdminAction } from "~/lib/auth";
@@ -19,13 +13,6 @@ import { useAuth } from "~/hooks/useAuth";
 import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
 
 // Lazy Loading für bessere HMR-Kompatibilität
-const OverviewTab = dynamic(
-  () => import("~/components/dashboard/OverviewTab"),
-  {
-    loading: () => <LoadingSpinner message="Lade Übersicht..." />,
-    ssr: false,
-  },
-);
 const InvestigationsTab = dynamic(
   () => import("~/components/dashboard/InvestigationsTab"),
   {
@@ -41,13 +28,6 @@ const MediaTab = dynamic(
   () => import("~/components/dashboard/MediaTabSimple"),
   {
     loading: () => <LoadingSpinner message="Lade Medien..." />,
-    ssr: false,
-  },
-);
-const SettingsTab = dynamic(
-  () => import("~/components/dashboard/SettingsTab"),
-  {
-    loading: () => <LoadingSpinner message="Lade Einstellungen..." />,
     ssr: false,
   },
 );
@@ -79,7 +59,7 @@ export default function Dashboard() {
     useAuth();
 
   // Alle useState Hooks am Anfang
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("investigations");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -97,27 +77,26 @@ export default function Dashboard() {
   const [newUserData, setNewUserData] = useState({
     email: "",
     name: "",
-    role: "user" as "admin" | "editor" | "user",
+    role: "user" as "admin" | "editor" | "user" | "super_admin",
     department: "",
     password: "",
   });
 
   // Optimierte tRPC Queries mit reduziertem Limit und besseren Optionen
-  const { data: investigationsData, isLoading: investigationsLoading } =
-    api.post.getInvestigations.useQuery(
-      {
-        limit: 50, // Erhöht für bessere Filterung
-        offset: 0,
-        status: selectedStatus === "all" ? undefined : selectedStatus,
-        priority: selectedPriority === "all" ? undefined : selectedPriority,
-        category: selectedCategory === "all" ? undefined : selectedCategory,
-      },
-      {
-        staleTime: 5 * 60 * 1000, // 5 Minuten Cache
-        refetchOnWindowFocus: false, // Verhindert unnötige Refetches
-        refetchOnMount: false, // Verhindert Refetch beim Tab-Wechsel
-      },
-    );
+  const { data: investigationsData } = api.post.getInvestigations.useQuery(
+    {
+      limit: 50, // Erhöht für bessere Filterung
+      offset: 0,
+      status: selectedStatus === "all" ? undefined : selectedStatus,
+      priority: selectedPriority === "all" ? undefined : selectedPriority,
+      category: selectedCategory === "all" ? undefined : selectedCategory,
+    },
+    {
+      staleTime: 5 * 60 * 1000, // 5 Minuten Cache
+      refetchOnWindowFocus: false, // Verhindert unnötige Refetches
+      refetchOnMount: false, // Verhindert Refetch beim Tab-Wechsel
+    },
+  );
 
   // Alle useCallback Hooks
   const handleLogout = useCallback(async () => {
@@ -244,47 +223,24 @@ export default function Dashboard() {
   // Tab configuration
   const tabs = [
     {
-      id: "overview",
-      label: "Übersicht",
-      icon: BarChart3,
-    },
-    {
       id: "investigations",
       label: "Fahndungen",
       icon: FileText,
-    },
-
-    {
-      id: "users",
-      label: "Benutzer",
-      icon: Users,
     },
     {
       id: "media",
       label: "Medien",
       icon: ImageIcon,
     },
-    // {
-    //   id: "upload",
-    //   label: "Upload",
-    //   icon: Upload,
-    // },
     {
-      id: "settings",
-      label: "Einstellungen",
-      icon: Settings,
+      id: "users",
+      label: "Benutzer",
+      icon: Users,
     },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "overview":
-        return (
-          <OverviewTab
-            investigations={investigations}
-            investigationsLoading={investigationsLoading}
-          />
-        );
       case "investigations":
         return (
           <InvestigationsTab
@@ -327,8 +283,6 @@ export default function Dashboard() {
         );
       case "media":
         return <MediaTab />;
-      case "settings":
-        return <SettingsTab />;
       default:
         return null;
     }
@@ -374,7 +328,7 @@ export default function Dashboard() {
         {renderTabContent()}
       </div>
 
-      <Footer variant="dashboard" session={session} />
+      <Footer variant="dashboard" />
     </div>
   );
 }

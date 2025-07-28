@@ -64,7 +64,7 @@ export default function PageLayout({
       <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      {showFooter && <Footer variant={variant} session={session} />}
+      {showFooter && <Footer variant={variant} />}
     </div>
   );
 }

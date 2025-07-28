@@ -60,14 +60,14 @@ interface UsersTabProps {
   newUserData: {
     email: string;
     name: string;
-    role: "admin" | "editor" | "user";
+    role: "admin" | "editor" | "user" | "super_admin";
     department: string;
     password: string;
   };
   setNewUserData: (data: {
     email: string;
     name: string;
-    role: "admin" | "editor" | "user";
+    role: "admin" | "editor" | "user" | "super_admin";
     department: string;
     password: string;
   }) => void;
@@ -134,7 +134,10 @@ export default function UsersTab({
   );
 
   const handleRoleChange = useCallback(
-    async (userId: string, newRole: "admin" | "editor" | "user") => {
+    async (
+      userId: string,
+      newRole: "admin" | "editor" | "user" | "super_admin",
+    ) => {
       try {
         const success = await changeUserRole(
           userId,
@@ -219,6 +222,7 @@ export default function UsersTab({
     total: users.length,
     active: users.filter((u) => getIsActiveFromStatus(u.status)).length,
     blocked: users.filter((u) => !getIsActiveFromStatus(u.status)).length,
+    superAdmins: users.filter((u) => u.role === "super_admin").length,
     admins: users.filter((u) => u.role === "admin").length,
     editors: users.filter((u) => u.role === "editor").length,
     users: users.filter((u) => u.role === "user").length,
@@ -243,7 +247,7 @@ export default function UsersTab({
   return (
     <div className="space-y-6">
       {/* Admin Statistics */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-7">
         <StatCard
           icon={Users}
           title="Gesamt Benutzer"
@@ -261,6 +265,12 @@ export default function UsersTab({
           title="Gesperrt"
           value={userStats.blocked}
           color="red"
+        />
+        <StatCard
+          icon={Shield}
+          title="Super Admins"
+          value={userStats.superAdmins}
+          color="purple"
         />
         <StatCard
           icon={Crown}
@@ -385,7 +395,7 @@ interface StatCardProps {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
   value: number;
-  color: "blue" | "green" | "yellow" | "red" | "gray";
+  color: "blue" | "green" | "yellow" | "red" | "gray" | "purple";
 }
 
 function StatCard({ icon: Icon, title, value, color }: StatCardProps) {
@@ -395,6 +405,7 @@ function StatCard({ icon: Icon, title, value, color }: StatCardProps) {
     yellow: "text-yellow-500",
     red: "text-red-500",
     gray: "text-gray-500",
+    purple: "text-purple-500",
   };
 
   return (
@@ -429,7 +440,7 @@ interface AdminUserListProps {
   ) => Promise<void>;
   onRoleChange: (
     userId: string,
-    newRole: "admin" | "editor" | "user",
+    newRole: "admin" | "editor" | "user" | "super_admin",
   ) => Promise<void>;
   onLoadUserDetails: (user: UserProfile) => Promise<void>;
 }
@@ -457,13 +468,13 @@ function AdminUserList({
             Suche
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={userSearchTerm}
               onChange={(e) => setUserSearchTerm(e.target.value)}
               placeholder="Benutzer durchsuchen..."
-              className="input-dark-mode py-2 pl-10 pr-4"
+              className="input-dark-mode py-2 pr-4 pl-10"
             />
           </div>
         </div>
@@ -478,6 +489,7 @@ function AdminUserList({
             className="select-dark-mode"
           >
             <option value="all">Alle Rollen</option>
+            <option value="super_admin">Super Admin</option>
             <option value="admin">Admin</option>
             <option value="editor">Editor</option>
             <option value="user">Benutzer</option>
@@ -536,11 +548,13 @@ function AdminUserList({
                   </div>
                   <span
                     className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      user.role === "admin"
-                        ? "bg-red-500/20 text-red-600 dark:text-red-400"
-                        : user.role === "editor"
-                          ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                          : "bg-green-500/20 text-green-600 dark:text-green-400"
+                      user.role === "super_admin"
+                        ? "bg-purple-500/20 text-purple-600 dark:text-purple-400"
+                        : user.role === "admin"
+                          ? "bg-red-500/20 text-red-600 dark:text-red-400"
+                          : user.role === "editor"
+                            ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                            : "bg-green-500/20 text-green-600 dark:text-green-400"
                     }`}
                   >
                     {user.role}
@@ -570,7 +584,11 @@ function AdminUserList({
                   onChange={(e) =>
                     void onRoleChange(
                       user.user_id,
-                      e.target.value as "admin" | "editor" | "user",
+                      e.target.value as
+                        | "admin"
+                        | "editor"
+                        | "user"
+                        | "super_admin",
                     )
                   }
                   className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-blue-500 focus:outline-hidden dark:border-gray-600 dark:bg-gray-700 dark:text-white"
@@ -578,6 +596,7 @@ function AdminUserList({
                   <option value="user">Benutzer</option>
                   <option value="editor">Editor</option>
                   <option value="admin">Admin</option>
+                  <option value="super_admin">Super Admin</option>
                 </select>
 
                 {getIsActiveFromStatus(user.status) ? (
@@ -836,14 +855,14 @@ interface CreateUserFormProps {
   newUserData: {
     email: string;
     name: string;
-    role: "admin" | "editor" | "user";
+    role: "admin" | "editor" | "user" | "super_admin";
     department: string;
     password: string;
   };
   setNewUserData: (data: {
     email: string;
     name: string;
-    role: "admin" | "editor" | "user";
+    role: "admin" | "editor" | "user" | "super_admin";
     department: string;
     password: string;
   }) => void;

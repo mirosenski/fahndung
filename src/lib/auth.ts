@@ -5,7 +5,7 @@ export interface UserProfile {
   user_id: string;
   email: string;
   name?: string;
-  role: "admin" | "editor" | "user";
+  role: "admin" | "editor" | "user" | "super_admin";
   department?: string;
   phone?: string;
   last_login?: string;
@@ -140,11 +140,15 @@ export const getRolePermissions = (role: string): AuthPermissions => {
 
 // Hilfsfunktionen für Rollenprüfung
 export const isAdmin = (profile: UserProfile | null): boolean => {
-  return profile?.role === "admin";
+  return profile?.role === "admin" || profile?.role === "super_admin";
 };
 
 export const isEditor = (profile: UserProfile | null): boolean => {
-  return profile?.role === "editor" || profile?.role === "admin";
+  return (
+    profile?.role === "editor" ||
+    profile?.role === "admin" ||
+    profile?.role === "super_admin"
+  );
 };
 
 // Aktuelle Session abrufen mit optimierten Timeouts
@@ -1186,7 +1190,7 @@ export const unblockUser = async (
 
 export const changeUserRole = async (
   userId: string,
-  newRole: "admin" | "editor" | "user",
+  newRole: "admin" | "editor" | "user" | "super_admin",
   reason?: string,
 ): Promise<boolean> => {
   if (!supabase) return false;
