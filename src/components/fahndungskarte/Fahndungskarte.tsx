@@ -27,7 +27,6 @@ import InteractiveMap, {
   type MapLocation,
 } from "@/components/shared/InteractiveMap";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
-import { getCaseNumberInfo } from "~/lib/utils/caseNumberGenerator";
 
 // Typ-Definitionen für moderne Fahndungskarte
 
@@ -281,34 +280,47 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     return labels[tabId];
   };
 
-  // Keyboard Navigation
+  // Verbesserte Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isFlipped) return;
+      // Nur reagieren wenn diese Karte fokussiert ist
+      if (!cardRef.current?.contains(document.activeElement)) return;
 
-      if (e.key === "Escape") {
-        e.preventDefault();
-        flipCard(false);
+      const activeElement = document.activeElement;
+
+      // Navigation in geschlossener Karte
+      if (!isFlipped) {
+        // Enter/Space auf Details-Button öffnet Karte
+        if (e.key === "Enter" || e.key === " ") {
+          if (activeElement === detailsButtonRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            flipCard(true);
+            return;
+          }
+        }
+
+        // Tab-Navigation: Karte → Details-Button → nächste Karte
+        if (e.key === "Tab") {
+          if (activeElement === frontRef.current && !e.shiftKey) {
+            // Von Karte zu Details-Button
+            e.preventDefault();
+            detailsButtonRef.current?.focus();
+          } else if (activeElement === detailsButtonRef.current && e.shiftKey) {
+            // Von Details-Button zurück zur Karte
+            e.preventDefault();
+            frontRef.current?.focus();
+          }
+        }
       }
 
-      if (e.key === "Tab") {
-        const focusableElements = backRef.current?.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        );
-
-        if (focusableElements && focusableElements.length > 0) {
-          const firstElement = focusableElements[0] as HTMLElement;
-          const lastElement = focusableElements[
-            focusableElements.length - 1
-          ] as HTMLElement;
-
-          if (e.shiftKey && document.activeElement === firstElement) {
-            lastElement.focus();
-            e.preventDefault();
-          } else if (!e.shiftKey && document.activeElement === lastElement) {
-            firstElement.focus();
-            e.preventDefault();
-          }
+      // Navigation in geöffneter Karte
+      if (isFlipped) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          flipCard(false);
+          // Fokus zurück zur Karte
+          setTimeout(() => frontRef.current?.focus(), 100);
         }
       }
     };
@@ -316,6 +328,23 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isFlipped, flipCard]);
+
+  // Tab-Index für Rückseite-Elemente dynamisch setzen
+  useEffect(() => {
+    if (backRef.current) {
+      const focusableElements = backRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+
+      focusableElements.forEach((element) => {
+        if (isFlipped) {
+          element.setAttribute("tabindex", "0");
+        } else {
+          element.setAttribute("tabindex", "-1");
+        }
+      });
+    }
+  }, [isFlipped]);
 
   // Click Outside Handler
   useEffect(() => {
@@ -422,8 +451,9 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                   <Phone className="h-4 w-4 text-gray-500" />
                   <a
                     href={`tel:${data.step5.contactPhone}`}
-                    className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                    className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
                     aria-label={`Anrufen: ${data.step5.contactPhone}`}
+                    tabIndex={-1}
                   >
                     {data.step5.contactPhone}
                   </a>
@@ -434,8 +464,9 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     <MessageSquare className="h-4 w-4 text-gray-500" />
                     <a
                       href={`mailto:${data.step5.contactEmail}`}
-                      className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                      className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
                       aria-label={`E-Mail senden an: ${data.step5.contactEmail}`}
+                      tabIndex={-1}
                     >
                       {data.step5.contactEmail}
                     </a>
@@ -578,12 +609,12 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         {/* FRONT SIDE */}
         <div
           ref={frontRef}
-          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-900"
+          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden" }}
           onClick={() => router.push(`/fahndungen/${data.step1.caseNumber}`)}
-          role="link"
-          aria-label={`Detailansicht für ${data.step1.title}`}
-          tabIndex={0}
+          role="button"
+          aria-label={`Zur Detailseite von ${data.step1.title} navigieren`}
+          tabIndex={isFlipped ? -1 : 0}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -596,7 +627,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             {/* Priority Badge - nur auf Vorderseite */}
             {data.step2.priority !== "normal" && !isFlipped && (
               <div
-                className={`absolute top-4 left-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
+                className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
                 style={{ zIndex: 1 }}
               >
                 {priority.label}
@@ -617,17 +648,9 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <span>{category.label}</span>
             </div>
 
-            {/* Case Number Info */}
-            <div className="absolute top-4 right-4 flex flex-col items-end">
+            {/* Case Number Badge - horizontal alignment */}
+            <div className="absolute right-4 bottom-4">
               <CaseNumberBadge caseNumber={data.step1.caseNumber} />
-              <div className="mt-1 text-xs text-white/80 backdrop-blur-sm">
-                {(() => {
-                  const info = getCaseNumberInfo(data.step1.caseNumber);
-                  return info
-                    ? `${info.subjectLabel} • ${info.statusLabel}`
-                    : "";
-                })()}
-              </div>
             </div>
           </div>
 
@@ -646,12 +669,20 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             <div className="mt-auto flex items-center justify-between">
               <button
                 ref={detailsButtonRef}
-                className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   flipCard(true);
                 }}
-                aria-label="Details anzeigen"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    flipCard(true);
+                  }
+                }}
+                aria-label="Karte öffnen und Details anzeigen"
+                tabIndex={isFlipped ? -1 : 0}
               >
                 <span>Details</span>
                 <ChevronRight className="h-4 w-4" />
@@ -679,7 +710,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           }}
           role="dialog"
           aria-modal="true"
-          tabIndex={0}
+          aria-label={`Details von ${data.step1.title}`}
+          tabIndex={-1}
         >
           {/* Header mit verbesserten Buttons */}
           <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
@@ -695,16 +727,18 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleShare}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-gray-400 dark:hover:bg-gray-800"
                 aria-label="Fahndung teilen"
+                tabIndex={-1}
               >
                 <Share2 className="h-4 w-4" />
               </button>
 
               <button
                 onClick={() => flipCard(false)}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-gray-400 dark:hover:bg-gray-800"
                 aria-label="Schließen"
+                tabIndex={-1}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -718,13 +752,14 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 px-3 py-3 text-xs font-medium whitespace-nowrap transition-colors ${
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 px-3 py-3 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                     activeTab === tab.id
                       ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
                       : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   }`}
                   aria-label={getAriaLabel(tab.id)}
                   aria-pressed={activeTab === tab.id}
+                  tabIndex={-1}
                 >
                   <tab.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
@@ -745,8 +780,9 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     `/fahndungen/${investigationId ?? data.step1.caseNumber}`,
                   )
                 }
-                className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 aria-label={`Zur Detailseite von ${data.step1.title}`}
+                tabIndex={-1}
               >
                 Zur Detailseite
               </button>
@@ -757,8 +793,9 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     router.push(`/fahndungen/${investigationId}/edit`);
                     onAction?.();
                   }}
-                  className="rounded-xl bg-blue-100 px-3 py-3 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                  className="rounded-xl bg-blue-100 px-3 py-3 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
                   aria-label="Fahndung bearbeiten"
+                  tabIndex={-1}
                 >
                   Bearbeiten
                 </button>
