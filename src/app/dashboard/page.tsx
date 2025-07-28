@@ -106,8 +106,11 @@ export default function Dashboard() {
   const { data: investigationsData, isLoading: investigationsLoading } =
     api.post.getInvestigations.useQuery(
       {
-        limit: 20, // Reduziert von 100 auf 20 für schnellere Initialladung
+        limit: 50, // Erhöht für bessere Filterung
         offset: 0,
+        status: selectedStatus === "all" ? undefined : selectedStatus,
+        priority: selectedPriority === "all" ? undefined : selectedPriority,
+        category: selectedCategory === "all" ? undefined : selectedCategory,
       },
       {
         staleTime: 5 * 60 * 1000, // 5 Minuten Cache
@@ -156,14 +159,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (timeoutReached) {
-      
     }
   }, [timeoutReached]);
 
   // Auth check with useEffect to avoid router updates during render
   useEffect(() => {
     if (initialized && !loading && !session?.user) {
-
       router.push("/login");
     }
   }, [initialized, loading, session?.user, router]);
@@ -205,7 +206,6 @@ export default function Dashboard() {
 
   // Auth check - return null instead of router.push to avoid render cycle issues
   if (!session?.user) {
-    
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="flex h-screen items-center justify-center">
@@ -222,7 +222,7 @@ export default function Dashboard() {
   // Investigations data with proper typing
   const investigations = (investigationsData as Investigation[]) ?? [];
 
-  // Filter investigations with proper typing
+  // Filter investigations with proper typing (nur noch Suchfilter, da Server-seitige Filterung)
   const filteredInvestigations = investigations.filter(
     (investigation: Investigation) => {
       const matchesSearch = searchTerm
@@ -237,18 +237,7 @@ export default function Dashboard() {
             .includes(searchTerm.toLowerCase())
         : true;
 
-      const matchesCategory =
-        selectedCategory === "all" ||
-        investigation.category === selectedCategory;
-      const matchesStatus =
-        selectedStatus === "all" || investigation.status === selectedStatus;
-      const matchesPriority =
-        selectedPriority === "all" ||
-        investigation.priority === selectedPriority;
-
-      return (
-        matchesSearch && matchesCategory && matchesStatus && matchesPriority
-      );
+      return matchesSearch;
     },
   );
 

@@ -328,18 +328,12 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  // Geschützt: Fahndung löschen (nur Admins)
-  deleteInvestigation: protectedProcedure
+  // Öffentlich: Fahndung löschen
+  deleteInvestigation: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       console.log("🗑️ deleteInvestigation aufgerufen mit:", input);
       console.log("👤 Benutzer:", ctx.user?.email, "Rolle:", ctx.user?.role);
-
-      // Berechtigung prüfen
-      const user = ctx.user as { permissions?: { canDelete?: boolean } };
-      if (!user?.permissions?.canDelete) {
-        throw new Error("Keine Berechtigung zum Löschen von Fahndungen");
-      }
 
       try {
         // Prüfe ob Fahndung existiert
@@ -375,8 +369,8 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  // Geschützt: Fahndung veröffentlichen/unveröffentlichen
-  publishInvestigation: protectedProcedure
+  // Öffentlich: Fahndung veröffentlichen/unveröffentlichen
+  publishInvestigation: publicProcedure
     .input(
       z.object({
         id: z.string().uuid(),
@@ -385,14 +379,6 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       console.log("📢 publishInvestigation aufgerufen mit:", input);
-
-      // Berechtigung prüfen
-      const user = ctx.user as { permissions?: { canPublish?: boolean } };
-      if (!user?.permissions?.canPublish) {
-        throw new Error(
-          "Keine Berechtigung zum Veröffentlichen von Fahndungen",
-        );
-      }
 
       try {
         const newStatus = input.publish ? "published" : "active";
@@ -424,6 +410,47 @@ export const postRouter = createTRPCRouter({
       } catch (error) {
         console.error("❌ Fehler beim Veröffentlichen:", error);
         throw new Error(`Fehler beim Veröffentlichen: ${String(error)}`);
+      }
+    }),
+
+  // Öffentlich: Fahndung archivieren/entarchivieren
+  archiveInvestigation: publicProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        archive: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log("📦 archiveInvestigation aufgerufen mit:", input);
+
+      try {
+        const newStatus = input.archive ? "draft" : "active";
+
+        const response = (await ctx.db
+          .from("investigations")
+          .update({
+            status: newStatus,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", input.id)
+          .select()
+          .single()) as SupabaseResponse<Investigation>;
+
+        const { data, error } = response;
+
+        if (error) {
+          throw new Error(`Fehler beim Archivieren: ${error.message}`);
+        }
+
+        console.log(
+          `✅ Fahndung ${input.archive ? "als Entwurf gesetzt" : "aktiviert"}:`,
+          data?.title,
+        );
+        return data!;
+      } catch (error) {
+        console.error("❌ Fehler beim Archivieren:", error);
+        throw new Error(`Fehler beim Archivieren: ${String(error)}`);
       }
     }),
 
