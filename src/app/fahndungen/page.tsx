@@ -197,15 +197,24 @@ export default function FahndungenPage() {
               </div>
             )}
 
-            {/* Neue Fahndung Button */}
+            {/* Neue Fahndung Buttons */}
             {userPermissions?.canCreate && (
-              <button
-                onClick={() => router.push("/fahndungen/neu")}
-                className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                <Plus className="h-5 w-5" />
-                <span>Neue Fahndung</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => router.push("/fahndungen/neu")}
+                  className="flex items-center space-x-2 rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Klassischer Wizard</span>
+                </button>
+                <button
+                  onClick={() => router.push("/fahndungen/neu/enhanced")}
+                  className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Enhanced Wizard</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

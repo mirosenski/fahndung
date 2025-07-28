@@ -52,7 +52,7 @@ type EditFormData = z.infer<typeof editSchema>;
 
 export default function FahndungBearbeitenPage() {
   const params = useParams();
-  const id = params?.["id"] as string;
+  const id = params?.["id"];
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
@@ -61,15 +61,17 @@ export default function FahndungBearbeitenPage() {
     resolver: zodResolver(editSchema),
   });
 
+  const idString =
+    typeof id === "string" ? id : Array.isArray(id) ? (id[0] ?? "") : "";
   // Direct tRPC query
   const {
     data: investigation,
     isLoading: loading,
     error,
   } = api.post.getInvestigation.useQuery(
-    { id },
+    { id: idString },
     {
-      enabled: !!id,
+      enabled: !!idString,
     },
   );
 
@@ -80,17 +82,30 @@ export default function FahndungBearbeitenPage() {
       form.reset({
         title: investigation.title ?? "",
         case_number: investigation.case_number ?? "",
-        category: (investigation.category || "MISSING_PERSON") as
-          | "WANTED_PERSON"
-          | "MISSING_PERSON"
-          | "UNKNOWN_DEAD"
-          | "STOLEN_GOODS",
-        priority: investigation.priority ?? "normal",
-        status: (investigation.status || "active") as
-          | "draft"
-          | "active"
-          | "published"
-          | "closed",
+        category: [
+          "WANTED_PERSON",
+          "MISSING_PERSON",
+          "UNKNOWN_DEAD",
+          "STOLEN_GOODS",
+        ].includes(investigation.category)
+          ? (investigation.category as
+              | "WANTED_PERSON"
+              | "MISSING_PERSON"
+              | "UNKNOWN_DEAD"
+              | "STOLEN_GOODS")
+          : undefined,
+        priority: ["normal", "urgent", "new"].includes(investigation.priority)
+          ? investigation.priority
+          : "normal",
+        status: ["draft", "active", "published", "closed"].includes(
+          investigation.status,
+        )
+          ? (investigation.status as
+              | "draft"
+              | "active"
+              | "published"
+              | "closed")
+          : undefined,
         date: investigation.date?.split("T")[0] ?? "",
         short_description: investigation.short_description ?? "",
         description: investigation.description ?? "",
@@ -108,7 +123,7 @@ export default function FahndungBearbeitenPage() {
   const updateInvestigationMutation = api.post.updateInvestigation.useMutation({
     onSuccess: () => {
       toast.success("Fahndung erfolgreich aktualisiert");
-      router.push(`/fahndungen/${id}`);
+      router.push(`/fahndungen/${idString}`);
     },
     onError: (error) => {
       toast.error("Fehler beim Aktualisieren: " + getErrorMessage(error));
@@ -119,7 +134,7 @@ export default function FahndungBearbeitenPage() {
     setIsSubmitting(true);
     try {
       await updateInvestigationMutation.mutateAsync({
-        id,
+        id: idString,
         ...data,
       });
     } catch (error: unknown) {
