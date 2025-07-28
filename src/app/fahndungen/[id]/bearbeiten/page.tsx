@@ -14,9 +14,13 @@ import { getCaseNumberInfo } from "~/lib/utils/caseNumberGenerator";
 
 const editSchema = z.object({
   title: z.string().min(5, "Titel muss mindestens 5 Zeichen haben"),
-  case_number: z.string()
+  case_number: z
+    .string()
     .min(3, "Aktenzeichen ist erforderlich")
-    .regex(/^[A-Z]{3}-\d{4}-[A-Z]{2}-\d{6}-[AGÜ]$/, "Aktenzeichen muss dem Format POL-2024-K-001234-A entsprechen"),
+    .regex(
+      /^[A-Z]{3}-\d{4}-[A-Z]-\d{6}-[AGÜ]$/,
+      "Aktenzeichen muss dem Format POL-2024-K-001234-A entsprechen",
+    ),
   category: z.enum([
     "WANTED_PERSON",
     "MISSING_PERSON",
@@ -204,7 +208,7 @@ export default function FahndungBearbeitenPage() {
                       {(() => {
                         const caseNumber = form.watch("case_number");
                         if (!caseNumber) return null;
-                        
+
                         const info = getCaseNumberInfo(caseNumber);
                         return info ? (
                           <span>

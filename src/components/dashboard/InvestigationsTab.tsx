@@ -11,7 +11,6 @@ import {
   Share2,
   Copy,
   EyeOff,
-  CheckCircle,
   AlertTriangle,
   CheckSquare,
   Square,
@@ -176,6 +175,25 @@ export default function InvestigationsTab({
     } catch (error) {
       console.error("Fehler beim Bulk-Archivieren:", error);
       toast.error("Fehler beim Archivieren der Fahndungen");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBulkPublish = async () => {
+    setIsLoading(true);
+    try {
+      const promises = Array.from(selectedInvestigations).map((id) =>
+        publishMutation.mutateAsync({ id, publish: true }),
+      );
+      await Promise.all(promises);
+      toast.success(
+        `${selectedInvestigations.size} Fahndungen erfolgreich veröffentlicht`,
+      );
+      setSelectedInvestigations(new Set());
+    } catch (error) {
+      console.error("Fehler beim Bulk-Veröffentlichen:", error);
+      toast.error("Fehler beim Veröffentlichen der Fahndungen");
     } finally {
       setIsLoading(false);
     }
@@ -362,6 +380,16 @@ export default function InvestigationsTab({
                 Als Entwurf setzen
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkPublish}
+                disabled={isLoading}
+                className="border-green-200 text-green-700 hover:bg-green-100 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-800"
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Veröffentlichen
+              </Button>
+              <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => setBulkDeleteDialogOpen(true)}
@@ -460,34 +488,19 @@ export default function InvestigationsTab({
                       }`}
                     />
 
-                    {/* Veröffentlichungs-Button */}
-                    {isEditor && (
+                    {/* Veröffentlichungs-Button - nur für aktive Fahndungen */}
+                    {isEditor && investigation.status === "active" && (
                       <Button
-                        variant={
-                          investigation.status === "published"
-                            ? "default"
-                            : "outline"
-                        }
+                        variant="outline"
                         size="sm"
                         onClick={() => handlePublish(investigation)}
                         disabled={isLoading}
                         className="flex items-center gap-2"
                       >
-                        {investigation.status === "published" ? (
-                          <>
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="hidden sm:inline">
-                              Veröffentlicht
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="h-4 w-4" />
-                            <span className="hidden sm:inline">
-                              Unveröffentlicht
-                            </span>
-                          </>
-                        )}
+                        <EyeOff className="h-4 w-4" />
+                        <span className="hidden sm:inline">
+                          Veröffentlichen
+                        </span>
                       </Button>
                     )}
 
@@ -534,15 +547,51 @@ export default function InvestigationsTab({
 
                         <DropdownMenuSeparator />
 
-                        {/* Archivieren */}
-                                                    <DropdownMenuItem
+                        {/* Status-spezifische Aktionen */}
+                        {investigation.status === "draft" && (
+                          <DropdownMenuItem
+                            onClick={() => handleArchive(investigation)}
+                          >
+                            <Archive className="mr-2 h-4 w-4" />
+                            Aktivieren
+                          </DropdownMenuItem>
+                        )}
+
+                        {investigation.status === "active" && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handlePublish(investigation)}
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              Veröffentlichen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               onClick={() => handleArchive(investigation)}
                             >
                               <Archive className="mr-2 h-4 w-4" />
-                              {investigation.status === "draft" ? "Aktivieren" : "Als Entwurf setzen"}
+                              Als Entwurf setzen
                             </DropdownMenuItem>
+                          </>
+                        )}
 
-                        {/* Löschen */}
+                        {investigation.status === "published" && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handlePublish(investigation)}
+                            >
+                              <EyeOff className="mr-2 h-4 w-4" />
+                              Unveröffentlichen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleArchive(investigation)}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              Als Entwurf setzen
+                            </DropdownMenuItem>
+                          </>
+                        )}
+
+                        {/* Löschen - für alle Status */}
                         <DropdownMenuItem
                           onClick={() => setDeleteDialogOpen(investigation.id)}
                           className="text-red-600 focus:text-red-600"

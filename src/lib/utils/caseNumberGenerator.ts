@@ -46,8 +46,8 @@ export function generateCaseNumber(config: CaseNumberConfig): string {
     throw new Error("Jahr muss zwischen 2000 und 2100 liegen");
   }
 
-  if (subject.length !== 2) {
-    throw new Error("Sachgebiet muss genau 2 Zeichen haben");
+  if (subject.length !== 1) {
+    throw new Error("Sachgebiet muss genau 1 Zeichen haben");
   }
 
   if (sequence < 1 || sequence > 999999) {
@@ -65,7 +65,7 @@ export function generateCaseNumber(config: CaseNumberConfig): string {
  * Parst eine bestehende Aktennummer
  */
 export function parseCaseNumber(caseNumber: string): CaseNumberConfig | null {
-  const regex = /^([A-Z]{3})-(\d{4})-([A-Z]{2})-(\d{6})-([AGÜ])$/;
+  const regex = /^([A-Z]{3})-(\d{4})-([A-Z])-(\d{6})-([AGÜ])$/;
   const match = regex.exec(caseNumber);
 
   if (!match) {
