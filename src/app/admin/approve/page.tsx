@@ -23,8 +23,8 @@ function AdminApprovalContent() {
   const [success, setSuccess] = useState("");
   const [userData, setUserData] = useState<UserProfile | null>(null);
 
-  const email = searchParams.get("email");
-  const action = searchParams.get("action");
+  const email = searchParams?.get("email");
+  const action = searchParams?.get("action");
 
   useEffect(() => {
     const handleApproval = async () => {

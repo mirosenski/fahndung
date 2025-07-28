@@ -2,6 +2,7 @@ import { createTRPCRouter, createCallerFactory } from "~/server/api/trpc";
 import { postRouter } from "~/server/api/routers/post";
 import { authRouter } from "~/server/api/routers/auth";
 import { mediaRouter } from "~/server/api/routers/media";
+import { localMediaRouter } from "~/server/api/routers/local-media";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   post: postRouter,
   auth: authRouter,
   media: mediaRouter,
+  localMedia: localMediaRouter,
 });
 
 // export type definition of API

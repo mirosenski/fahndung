@@ -66,7 +66,7 @@ export default function Header({
       {/* Action Buttons */}
       <div className="flex items-center space-x-2">
         {/* Dashboard Button anzeigen, wenn wir auf einer Fahndungen-Seite sind */}
-        {pathname.startsWith("/fahndungen") && (
+        {pathname?.startsWith("/fahndungen") && (
           <button
             onClick={() => router.push("/dashboard")}
             className="flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
@@ -77,7 +77,7 @@ export default function Header({
         )}
 
         {/* "Alle Fahndungen" Button nur anzeigen, wenn wir nicht bereits auf einer Fahndungen-Seite sind */}
-        {!pathname.startsWith("/fahndungen") && (
+        {!pathname?.startsWith("/fahndungen") && (
           <button
             onClick={() => router.push("/fahndungen")}
             className="flex cursor-pointer items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"

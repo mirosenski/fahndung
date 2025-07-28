@@ -1,0 +1,38 @@
+[
+  {
+    "id": "45499d71-c73e-4a14-8bf2-9b5ac4fed66c",
+    "originalName": "test-image.txt",
+    "fileName": "1753705413024_e2738b85.txt",
+    "filePath": "uploads/1753705413024_e2738b85.txt",
+    "fileSize": 15,
+    "mimeType": "text/plain",
+    "uploadedAt": "2025-07-28T12:23:33.026Z",
+    "tags": [
+      "test"
+    ],
+    "description": "Test-Bild für LocalStorageService",
+    "isPublic": true
+  },
+  {
+    "id": "b01385df-dbc1-4a7d-bd5f-990a9007a8d7",
+    "originalName": "test.txt",
+    "fileName": "1753705643311_cbaea52f.txt",
+    "filePath": "uploads/1753705643311_cbaea52f.txt",
+    "fileSize": 4,
+    "mimeType": "text/plain",
+    "uploadedAt": "2025-07-28T12:27:23.312Z",
+    "tags": [],
+    "isPublic": true
+  },
+  {
+    "id": "b3ba72a7-7e6e-4c17-b96a-da67f6496767",
+    "originalName": "gestohlenes_renndrad.webp",
+    "fileName": "1753705736595_fe26f9a1.webp",
+    "filePath": "uploads/1753705736595_fe26f9a1.webp",
+    "fileSize": 51270,
+    "mimeType": "image/webp",
+    "uploadedAt": "2025-07-28T12:28:56.596Z",
+    "tags": [],
+    "isPublic": true
+  }
+]

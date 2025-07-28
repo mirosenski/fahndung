@@ -92,6 +92,7 @@ export function Breadcrumb({
   // Memoized Breadcrumb-Items-Berechnung
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
     // Pfad-Segmente aus der URL extrahieren
+    if (!pathname) return [];
     const segments = pathname.split("/").filter((segment) => segment !== "");
 
     // Start-Array für Breadcrumb-Items
@@ -178,7 +179,7 @@ export function Breadcrumb({
   ];
 
   // Prüfen, ob die aktuelle Seite ausgeschlossen ist
-  if (excludedPaths.includes(pathname)) {
+  if (!pathname || excludedPaths.includes(pathname)) {
     return null;
   }
 

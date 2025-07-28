@@ -4,6 +4,7 @@ import "~/styles/globals.css";
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionManager } from "~/components/SessionManager";
+import { Theme } from "@radix-ui/themes";
 // Der Import von GlobalErrorHandler wurde entfernt, da das Modul nicht gefunden werden kann.
 
 const geist = Geist({
@@ -33,15 +34,17 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <TRPCReactProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SessionManager />
-            {children}
-          </ThemeProvider>
+          <Theme>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <SessionManager />
+              {children}
+            </ThemeProvider>
+          </Theme>
         </TRPCReactProvider>
       </body>
     </html>

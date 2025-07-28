@@ -53,3 +53,9 @@ supabase.backup.*/
 
 # backup files
 .env.local.backup
+
+# Lokale Bildverwaltung
+public/images/uploads/*
+public/images/thumbnails/*
+!public/images/uploads/.gitkeep
+!public/images/thumbnails/.gitkeep

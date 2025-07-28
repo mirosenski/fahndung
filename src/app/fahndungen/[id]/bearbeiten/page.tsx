@@ -51,7 +51,8 @@ const editSchema = z.object({
 type EditFormData = z.infer<typeof editSchema>;
 
 export default function FahndungBearbeitenPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.["id"] as string;
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
@@ -66,7 +67,7 @@ export default function FahndungBearbeitenPage() {
     isLoading: loading,
     error,
   } = api.post.getInvestigation.useQuery(
-    { id: id as string },
+    { id },
     {
       enabled: !!id,
     },
@@ -79,19 +80,17 @@ export default function FahndungBearbeitenPage() {
       form.reset({
         title: investigation.title ?? "",
         case_number: investigation.case_number ?? "",
-        category:
-          (investigation.category as
-            | "MISSING_PERSON"
-            | "WANTED_PERSON"
-            | "UNKNOWN_DEAD"
-            | "STOLEN_GOODS") ?? "MISSING_PERSON",
+        category: (investigation.category || "MISSING_PERSON") as
+          | "WANTED_PERSON"
+          | "MISSING_PERSON"
+          | "UNKNOWN_DEAD"
+          | "STOLEN_GOODS",
         priority: investigation.priority ?? "normal",
-        status:
-          (investigation.status as
-            | "draft"
-            | "active"
-            | "published"
-            | "closed") ?? "active",
+        status: (investigation.status || "active") as
+          | "draft"
+          | "active"
+          | "published"
+          | "closed",
         date: investigation.date?.split("T")[0] ?? "",
         short_description: investigation.short_description ?? "",
         description: investigation.description ?? "",
@@ -109,7 +108,7 @@ export default function FahndungBearbeitenPage() {
   const updateInvestigationMutation = api.post.updateInvestigation.useMutation({
     onSuccess: () => {
       toast.success("Fahndung erfolgreich aktualisiert");
-      router.push(`/fahndungen/${id as string}`);
+      router.push(`/fahndungen/${id}`);
     },
     onError: (error) => {
       toast.error("Fehler beim Aktualisieren: " + getErrorMessage(error));
@@ -120,7 +119,7 @@ export default function FahndungBearbeitenPage() {
     setIsSubmitting(true);
     try {
       await updateInvestigationMutation.mutateAsync({
-        id: id as string,
+        id,
         ...data,
       });
     } catch (error: unknown) {
