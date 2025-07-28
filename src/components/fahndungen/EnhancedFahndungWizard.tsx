@@ -8,7 +8,6 @@ import {
   Eye,
   X,
   Check,
-  AlertCircle,
   MapPin,
   User,
   FileText,
@@ -17,16 +16,32 @@ import {
   Shield,
   Search,
   Camera,
-  ChevronRight,
+  BarChart3,
+  CreditCard,
 } from "lucide-react";
+import { useResponsive } from "~/hooks/useResponsive";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+
 import { api } from "~/trpc/react";
 import { getCategoryOptions } from "@/types/categories";
 import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
 import Step3ImagesDocuments from "./Step3-ImagesDocuments";
 import Step4LocationMap from "./Step4-LocationMap";
 import Step5ContactPublication from "./Step5-ContactPublication";
+import { ModernFahndungskarte } from "~/components/fahndungskarte/Fahndungskarte";
+
+// Preview Mode Types
+interface PreviewMode {
+  id: "card" | "detail" | "stats";
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const PREVIEW_MODES: PreviewMode[] = [
+  { id: "card", label: "Karte", icon: CreditCard },
+  { id: "detail", label: "Detail", icon: Eye },
+  { id: "stats", label: "Stats", icon: BarChart3 },
+];
 
 // Enhanced Types basierend auf Ihrer Struktur
 interface Step1Data {
@@ -162,90 +177,67 @@ const PRIORITY_CONFIG = {
   normal: { label: "STANDARD", color: "bg-gray-500", pulse: false },
 };
 
-// Live-Vorschau Komponente (ModernFahndungskarte Miniatur)
+// Live-Vorschau Komponente mit ModernFahndungskarte Integration
 const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
-  const category = data.step1?.category
-    ? CATEGORY_CONFIG[data.step1.category]
-    : CATEGORY_CONFIG.MISSING_PERSON;
-  const priority = data.step2?.priority
-    ? PRIORITY_CONFIG[data.step2.priority]
-    : PRIORITY_CONFIG.normal;
-  const [mainImagePreview, setMainImagePreview] = useState<string>(
-    "/images/placeholders/fotos/platzhalterbild.svg",
-  );
+  // Konvertiere WizardData zu FahndungsData Format
+  const fahndungsData = {
+    step1: {
+      title: data.step1?.title ?? "Titel der Fahndung",
+      category: data.step1?.category ?? "MISSING_PERSON",
+      caseNumber: data.step1?.caseNumber ?? "",
+    },
+    step2: {
+      shortDescription:
+        data.step2?.shortDescription ??
+        "Kurzbeschreibung wird hier angezeigt...",
+      description: data.step2?.description ?? "",
+      priority: data.step2?.priority ?? "normal",
+      tags: data.step2?.tags ?? [],
+      features: data.step2?.features ?? "",
+    },
+    step3: {
+      mainImage: data.step3?.mainImage
+        ? data.step3.mainImage instanceof File
+          ? URL.createObjectURL(data.step3.mainImage)
+          : data.step3.mainImage
+        : "/images/placeholders/fotos/platzhalterbild.svg",
+      additionalImages:
+        data.step3?.additionalImages?.map((img) =>
+          img instanceof File ? URL.createObjectURL(img) : img,
+        ) ?? [],
+    },
+    step4: {
+      mainLocation: data.step4?.mainLocation
+        ? { address: data.step4.mainLocation.address }
+        : undefined,
+    },
+    step5: {
+      contactPerson: data.step5?.contactPerson ?? "",
+      contactPhone: data.step5?.contactPhone ?? "",
+      contactEmail: data.step5?.contactEmail ?? "",
+      department: data.step5?.department ?? "",
+      availableHours: data.step5?.availableHours ?? "",
+    },
+  };
 
+  // Cleanup für File URLs
   useEffect(() => {
-    if (data.step3?.mainImage) {
-      const reader = new FileReader();
-      reader.onload = (e) => setMainImagePreview(e.target?.result as string);
-      reader.readAsDataURL(data.step3.mainImage);
-    }
-  }, [data.step3?.mainImage]);
+    return () => {
+      if (data.step3?.mainImage instanceof File) {
+        const url = URL.createObjectURL(data.step3.mainImage);
+        URL.revokeObjectURL(url);
+      }
+      data.step3?.additionalImages?.forEach((img) => {
+        if (img instanceof File) {
+          URL.revokeObjectURL(URL.createObjectURL(img));
+        }
+      });
+    };
+  }, [data.step3]);
 
   return (
-    <div className="mx-auto w-full max-w-sm">
-      <div className="relative h-[400px] w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
-        {/* Image Section - 60% */}
-        <div className="relative h-[60%] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
-          {/* Priority Badge */}
-          {data.step2?.priority !== "normal" && (
-            <div
-              className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
-            >
-              {priority.label}
-            </div>
-          )}
-
-          <Image
-            src={mainImagePreview}
-            alt={data.step1?.title ?? "Fahndungsbild"}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
-
-          {/* Category Badge */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg bg-white/90 px-3 py-1 text-xs font-medium backdrop-blur-sm dark:bg-gray-900/90">
-            <span>{category.label}</span>
-          </div>
-
-          {/* Case Number Badge */}
-          {data.step1?.caseNumber && (
-            <div className="absolute right-4 bottom-4 rounded-lg bg-black/80 px-2 py-1 font-mono text-xs text-white">
-              #{data.step1.caseNumber}
-            </div>
-          )}
-        </div>
-
-        {/* Info Section - 40% */}
-        <div className="flex h-[40%] flex-col justify-between p-4">
-          <div className="space-y-2">
-            <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
-              {data.step1?.title ?? "Titel der Fahndung"}
-            </h3>
-            <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-              {data.step2?.shortDescription ??
-                "Kurzbeschreibung wird hier angezeigt..."}
-            </p>
-          </div>
-
-          <div className="mt-auto flex items-center justify-between">
-            <button className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white dark:bg-gray-100 dark:text-gray-900">
-              <span>Details</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
-
-            {data.step4?.mainLocation && (
-              <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                <MapPin className="h-3 w-3" />
-                <span className="max-w-24 truncate">
-                  {data.step4.mainLocation.address.split(",")[0]}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="flex w-full justify-center">
+      <ModernFahndungskarte data={fahndungsData} className="scale-90" />
     </div>
   );
 };
@@ -516,8 +508,13 @@ const EnhancedFahndungWizard = ({
   mode?: "create" | "edit";
 }) => {
   const router = useRouter();
+  const { isMobile, isDesktop } = useResponsive();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"card" | "detail" | "stats">(
+    "card",
+  );
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [wizardData, setWizardData] = useState<Partial<WizardData>>({
@@ -595,6 +592,216 @@ const EnhancedFahndungWizard = ({
     { id: 5, label: "Kontakt", icon: User },
     { id: 6, label: "Zusammenfassung", icon: Check },
   ];
+
+  // Layout Components
+  const DesktopLayout = ({ children }: { children: React.ReactNode }) => (
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">{children}</div>
+  );
+
+  const MobileLayout = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex min-h-screen flex-col">{children}</div>
+  );
+
+  const PreviewTabs = () => (
+    <div className="flex justify-around border-b border-gray-200 dark:border-gray-700">
+      {PREVIEW_MODES.map((mode) => (
+        <button
+          key={mode.id}
+          onClick={() => setPreviewMode(mode.id)}
+          className={`flex flex-1 items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
+            previewMode === mode.id
+              ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+          }`}
+        >
+          <mode.icon className="h-4 w-4" />
+          <span className={isMobile ? "hidden" : ""}>{mode.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  const BottomNavigation = () => (
+    <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-center justify-between p-4">
+        <button
+          onClick={handlePrevious}
+          disabled={currentStep === 1}
+          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
+            currentStep === 1
+              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300"
+          }`}
+        >
+          <ArrowLeft className="h-5 w-5" />
+          {!isMobile && <span className="ml-2">Zurück</span>}
+        </button>
+
+        <div className="mx-4 flex-1">
+          <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div
+              className="h-full bg-blue-500 transition-all duration-300"
+              style={{ width: `${(currentStep / 6) * 100}%` }}
+            />
+          </div>
+          <p className="mt-1 text-center text-xs text-gray-600 dark:text-gray-400">
+            Schritt {currentStep} von 6
+          </p>
+        </div>
+
+        <button
+          onClick={handleNext}
+          disabled={!canProceedToNextStep()}
+          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
+            canProceedToNextStep()
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "cursor-not-allowed bg-gray-300 text-gray-500"
+          }`}
+        >
+          {!isMobile && <span className="mr-2">Weiter</span>}
+          <ArrowRight className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // Stats Overview Component
+  const StatsOverview = ({ data }: { data: Partial<WizardData> }) => {
+    const getValidationStatus = (field: unknown) => (field ? "✓" : "✗");
+    const getValidationColor = (field: unknown) =>
+      field ? "text-green-600" : "text-red-600";
+
+    return (
+      <div className="space-y-4">
+        {/* Fortschritt */}
+        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+          <h4 className="mb-3 font-medium">Fortschritt</h4>
+          <div className="space-y-2">
+            {[
+              {
+                label: "Grundinfo",
+                valid: !!(data.step1?.title && data.step1?.category),
+              },
+              { label: "Beschreibung", valid: !!data.step2?.description },
+              { label: "Hauptbild", valid: !!data.step3?.mainImage },
+              { label: "Standort", valid: !!data.step4?.mainLocation },
+              { label: "Kontakt", valid: !!data.step5?.contactPerson },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between">
+                <span className="text-sm">{item.label}</span>
+                <span
+                  className={`font-medium ${getValidationColor(item.valid)}`}
+                >
+                  {getValidationStatus(item.valid)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Medien-Übersicht */}
+        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+          <h4 className="mb-3 font-medium">Medien</h4>
+          <div className="space-y-1 text-sm">
+            <div>Hauptbild: {data.step3?.mainImage ? "1" : "0"}</div>
+            <div>
+              Weitere Bilder: {data.step3?.additionalImages?.length ?? 0}
+            </div>
+            <div>Dokumente: {data.step3?.documents?.length ?? 0}</div>
+          </div>
+        </div>
+
+        {/* Meta-Informationen */}
+        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+          <h4 className="mb-3 font-medium">Meta-Daten</h4>
+          <div className="space-y-1 text-sm">
+            <div>Kategorie: {data.step1?.category ?? "-"}</div>
+            <div>Priorität: {data.step2?.priority ?? "-"}</div>
+            <div>Status: {data.step5?.publishStatus ?? "draft"}</div>
+            <div>Tags: {data.step2?.tags?.length ?? 0}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Detail Page Preview Component
+  const DetailPagePreview = ({ data }: { data: Partial<WizardData> }) => {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="border-b pb-4 dark:border-gray-700">
+          <h1 className="text-2xl font-bold">{data.step1?.title ?? "Titel"}</h1>
+          <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <span>Fall #{data.step1?.caseNumber}</span>
+            <span>•</span>
+            <span>{data.step1?.category}</span>
+          </div>
+        </div>
+
+        {/* Content Preview */}
+        <div className="space-y-4">
+          <section>
+            <h2 className="mb-2 text-lg font-semibold">Beschreibung</h2>
+            <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
+              {data.step2?.description ?? "Keine Beschreibung"}
+            </p>
+          </section>
+
+          {data.step2?.features && (
+            <section>
+              <h2 className="mb-2 text-lg font-semibold">Besondere Merkmale</h2>
+              <p className="text-gray-700 dark:text-gray-300">
+                {data.step2.features}
+              </p>
+            </section>
+          )}
+
+          <section>
+            <h2 className="mb-2 text-lg font-semibold">Kontakt</h2>
+            <div className="space-y-1 text-sm">
+              <div>{data.step5?.contactPerson}</div>
+              <div>{data.step5?.contactPhone}</div>
+              <div>{data.step5?.department}</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPreviewContent = () => {
+    switch (previewMode) {
+      case "card":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-center text-lg font-semibold text-gray-900 dark:text-white">
+              Live-Vorschau Ihrer Fahndungskarte
+            </h3>
+            <LivePreviewCard data={wizardData} />
+          </div>
+        );
+
+      case "detail":
+        return (
+          <div className="space-y-4 p-4">
+            <h3 className="text-lg font-semibold">Detailseite Vorschau</h3>
+            <DetailPagePreview data={wizardData} />
+          </div>
+        );
+
+      case "stats":
+        return (
+          <div className="space-y-4 p-4">
+            <h3 className="text-lg font-semibold">Validierung & Statistiken</h3>
+            <StatsOverview data={wizardData} />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   const updateStepData = useCallback(
     (step: keyof WizardData, data: WizardData[keyof WizardData]) => {
@@ -919,184 +1126,160 @@ const EnhancedFahndungWizard = ({
           </p>
         </div>
 
-        {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Fortschritt: {currentStep} von {steps.length} Schritten
-            </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {Math.round((currentStep / steps.length) * 100)}% abgeschlossen
-            </span>
-          </div>
+        {/* Progress Indicator - nur auf Desktop */}
+        {!isMobile && (
+          <div className="mb-8">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Fortschritt: {currentStep} von {steps.length} Schritten
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {Math.round((currentStep / steps.length) * 100)}% abgeschlossen
+              </span>
+            </div>
 
-          <div className="flex items-center space-x-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
-                    currentStep >= step.id
-                      ? "border-blue-500 bg-blue-500 text-white"
-                      : "border-gray-300 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800"
-                  }`}
-                >
-                  {currentStep > step.id ? (
-                    <Check className="h-5 w-5" />
-                  ) : (
-                    <step.icon className="h-5 w-5" />
+            <div className="flex items-center space-x-4">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
+                      currentStep >= step.id
+                        ? "border-blue-500 bg-blue-500 text-white"
+                        : "border-gray-300 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800"
+                    }`}
+                  >
+                    {currentStep > step.id ? (
+                      <Check className="h-5 w-5" />
+                    ) : (
+                      <step.icon className="h-5 w-5" />
+                    )}
+                  </div>
+                  <span
+                    className={`ml-2 text-sm font-medium ${
+                      currentStep >= step.id
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`mx-4 h-1 w-16 ${
+                        currentStep > step.id
+                          ? "bg-blue-500"
+                          : "bg-gray-300 dark:bg-gray-600"
+                      }`}
+                    />
                   )}
                 </div>
-                <span
-                  className={`ml-2 text-sm font-medium ${
-                    currentStep >= step.id
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {step.label}
-                </span>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`mx-4 h-1 w-16 ${
-                      currentStep > step.id
-                        ? "bg-blue-500"
-                        : "bg-gray-300 dark:bg-gray-600"
-                    }`}
-                  />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Layout */}
+        {isDesktop && (
+          <DesktopLayout>
+            {/* Main Content */}
+            <div className="xl:col-span-2">
+              <div className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
+                {renderCurrentStep()}
+
+                {/* Desktop Navigation */}
+                {currentStep < 6 && (
+                  <div className="mt-8 flex justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
+                    <button
+                      onClick={handlePrevious}
+                      disabled={currentStep === 1}
+                      className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
+                        currentStep === 1
+                          ? "cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-700"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                      }`}
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Zurück
+                    </button>
+
+                    <button
+                      onClick={handleNext}
+                      disabled={!canProceedToNextStep()}
+                      className={`flex items-center gap-2 rounded-lg px-6 py-2 ${
+                        canProceedToNextStep()
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-600"
+                      }`}
+                    >
+                      Weiter
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-          {/* Main Content */}
-          <div className="xl:col-span-2">
-            <div className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
-              {renderCurrentStep()}
+            {/* Preview Sidebar */}
+            <div className="xl:col-span-1">
+              <div className="sticky top-8">
+                <div className="rounded-lg bg-white shadow-lg dark:bg-gray-800">
+                  <PreviewTabs />
+                  <div className="p-6">{renderPreviewContent()}</div>
+                </div>
+              </div>
+            </div>
+          </DesktopLayout>
+        )}
 
-              {/* Navigation Buttons */}
-              {currentStep < 6 && (
-                <div className="mt-8 flex justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentStep === 1}
-                    className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
-                      currentStep === 1
-                        ? "cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-700"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                    }`}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Zurück
-                  </button>
+        {/* Mobile/Tablet Layout */}
+        {!isDesktop && (
+          <MobileLayout>
+            {/* Sticky Header für Mobile */}
+            <div className="sticky top-0 z-40 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+              <div className="flex items-center justify-between p-4">
+                <button
+                  onClick={() => router.push("/fahndungen")}
+                  className="flex items-center gap-2 text-gray-600 dark:text-gray-400"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                  <span>Zurück</span>
+                </button>
+                <h2 className="text-lg font-semibold">
+                  Schritt {currentStep} von 6
+                </h2>
+              </div>
+            </div>
 
-                  <button
-                    onClick={handleNext}
-                    disabled={!canProceedToNextStep()}
-                    className={`flex items-center gap-2 rounded-lg px-6 py-2 ${
-                      canProceedToNextStep()
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-600"
-                    }`}
-                  >
-                    Weiter
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+            {/* Main Content */}
+            <div className="flex-1 p-4 pb-32">
+              <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+                {renderCurrentStep()}
+              </div>
+
+              {/* Mobile Preview Toggle */}
+              <button
+                onClick={() => setShowMobilePreview(!showMobilePreview)}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-gray-100 py-3 dark:bg-gray-700"
+              >
+                <Eye className="h-4 w-4" />
+                <span>
+                  Vorschau {showMobilePreview ? "ausblenden" : "anzeigen"}
+                </span>
+              </button>
+
+              {/* Mobile Preview */}
+              {showMobilePreview && (
+                <div className="mt-4 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+                  <PreviewTabs />
+                  <div className="p-4">{renderPreviewContent()}</div>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Live Preview Sidebar */}
-          <div className="xl:col-span-1">
-            <div className="sticky top-8">
-              <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Live-Vorschau
-                  </h3>
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    {showPreview ? (
-                      <X className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-
-                {showPreview && (
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      So wird Ihre Fahndungskarte aussehen:
-                    </p>
-                    <LivePreviewCard data={wizardData} />
-
-                    {/* Zusätzliche Informationen */}
-                    <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
-                      <div className="flex justify-between">
-                        <span>Kategorie:</span>
-                        <span>
-                          {wizardData.step1?.category
-                            ? CATEGORY_CONFIG[wizardData.step1.category].label
-                            : "-"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Priorität:</span>
-                        <span>
-                          {wizardData.step2?.priority
-                            ? PRIORITY_CONFIG[wizardData.step2.priority].label
-                            : "-"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Tags:</span>
-                        <span>{wizardData.step2?.tags?.length ?? 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Bilder:</span>
-                        <span>
-                          {(wizardData.step3?.mainImage ? 1 : 0) +
-                            (wizardData.step3?.additionalImages?.length ?? 0)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Hilfe & Tipps */}
-              <div className="mt-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="mt-0.5 h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <div>
-                    <h4 className="mb-1 text-sm font-medium text-blue-800 dark:text-blue-200">
-                      Schritt {currentStep} Hilfe
-                    </h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      {currentStep === 1 &&
-                        "Geben Sie einen aussagekräftigen Titel ein. Das Aktenzeichen wird automatisch generiert."}
-                      {currentStep === 2 &&
-                        "Die Kurzbeschreibung erscheint auf der Fahndungskarte. Die detaillierte Beschreibung wird auf der Detailseite angezeigt."}
-                      {currentStep === 3 &&
-                        "Laden Sie ein Hauptbild hoch - dies ist erforderlich. Zusätzliche Bilder und Dokumente sind optional."}
-                      {currentStep === 4 &&
-                        "Markieren Sie mindestens einen Hauptort. Weitere Orte können für eine bessere Übersicht hinzugefügt werden."}
-                      {currentStep === 5 &&
-                        "Geben Sie Kontaktdaten an und wählen Sie, wie die Fahndung veröffentlicht werden soll."}
-                      {currentStep === 6 &&
-                        "Überprüfen Sie alle Daten vor der finalen Speicherung. Die Live-Vorschau zeigt, wie die Karte aussehen wird."}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            {/* Bottom Navigation */}
+            <BottomNavigation />
+          </MobileLayout>
+        )}
       </div>
     </div>
   );

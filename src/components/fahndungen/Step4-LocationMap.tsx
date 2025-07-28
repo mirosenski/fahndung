@@ -1,7 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { MapPin, Search, Navigation, AlertCircle, Trash2 } from "lucide-react";
+import dynamic from "next/dynamic";
+import { NominatimService } from "~/services/geocoding";
+
+// Dynamic import für Leaflet (SSR-safe)
+const InteractiveMap = dynamic(
+  () => import("~/components/shared/InteractiveMapClient"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[400px] animate-pulse items-center justify-center rounded-lg bg-gray-100">
+        <MapPin className="h-8 w-8 text-gray-400" />
+      </div>
+    ),
+  },
+);
 
 interface MapLocation {
   id: string;
@@ -53,34 +68,63 @@ const Step4LocationMap: React.FC<Step4Props> = ({ data, onChange }) => {
   const generateId = () =>
     `location-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-  const searchLocation = async (query: string) => {
+  // Echtes Geocoding mit Nominatim
+  const searchLocation = useCallback(async (query: string) => {
     if (!query.trim()) return;
 
     setIsSearching(true);
     try {
-      // Simulierte Geocoding-API (in der echten Implementierung würde hier eine echte API stehen)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const results = await NominatimService.search(query, {
+        limit: 5,
+        countrycodes: "de",
+        viewbox: [5.8, 47.2, 15.0, 55.1], // Deutschland Bounding Box
+        bounded: true,
+      });
 
-      const mockResults = [
-        {
-          address: `${query}, Deutschland`,
-          lat: 48.7758 + (Math.random() - 0.5) * 0.1,
-          lng: 9.1829 + (Math.random() - 0.5) * 0.1,
-        },
-        {
-          address: `${query} 1, Deutschland`,
-          lat: 48.7758 + (Math.random() - 0.5) * 0.1,
-          lng: 9.1829 + (Math.random() - 0.5) * 0.1,
-        },
-      ];
-
-      setSearchResults(mockResults);
+      setSearchResults(
+        results.map((result) => ({
+          address: result.display_name,
+          lat: parseFloat(result.lat),
+          lng: parseFloat(result.lon),
+        })),
+      );
     } catch (error) {
       console.error("Fehler bei der Standortsuche:", error);
+      // Fallback auf lokale Suche oder Fehlermeldung
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
-  };
+  }, []);
+
+  // Map Click Handler
+  const handleMapClick = useCallback(
+    async (lat: number, lng: number) => {
+      try {
+        const result = await NominatimService.reverse(lat, lng);
+        const newLocation: MapLocation = {
+          id: generateId(),
+          address: result.display_name,
+          lat,
+          lng,
+          type: data.mainLocation ? "sichtung" : "main",
+          timestamp: new Date(),
+        };
+
+        if (!data.mainLocation) {
+          onChange({ ...data, mainLocation: newLocation });
+        } else {
+          onChange({
+            ...data,
+            additionalLocations: [...data.additionalLocations, newLocation],
+          });
+        }
+      } catch (error) {
+        console.error("Fehler beim Reverse Geocoding:", error);
+      }
+    },
+    [data, onChange],
+  );
 
   const addLocation = (
     address: string,
@@ -375,20 +419,41 @@ const Step4LocationMap: React.FC<Step4Props> = ({ data, onChange }) => {
         </div>
       </div>
 
-      {/* Kartenvorschau */}
+      {/* Interaktive Karte */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Kartenvorschau
+          Interaktive Karte
         </h3>
-        <div className="rounded-lg border border-gray-200 bg-gray-100 p-8 text-center dark:border-gray-600 dark:bg-gray-800">
-          <MapPin className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Kartenintegration wird hier angezeigt
-          </p>
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
-            {data.mainLocation
-              ? `${data.additionalLocations.length + 1} Orte markiert`
-              : "Keine Orte markiert"}
+
+        <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+          <InteractiveMap
+            locations={[
+              ...(data.mainLocation ? [data.mainLocation] : []),
+              ...data.additionalLocations,
+            ]}
+            center={
+              data.mainLocation
+                ? [data.mainLocation.lat, data.mainLocation.lng]
+                : [48.7758, 9.1829]
+            }
+            zoom={13}
+            height="400px"
+            searchRadius={data.searchRadius}
+            showRadius={true}
+            editable={true}
+            onLocationClick={(location) => {
+              // Optional: Show location details
+              console.log("Location clicked:", location);
+            }}
+            onMapClick={handleMapClick}
+            onLocationRemove={removeLocation}
+          />
+        </div>
+
+        {/* Map Instructions */}
+        <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            💡 Klicken Sie auf die Karte, um einen neuen Ort hinzuzufügen
           </p>
         </div>
       </div>
