@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  Save,
-  X,
   Check,
   Eye,
   FileText,
@@ -14,483 +12,28 @@ import {
 } from "lucide-react";
 import { useResponsive } from "~/hooks/useResponsive";
 import { useRouter } from "next/navigation";
-
 import { api } from "~/trpc/react";
-import { getCategoryOptions } from "@/types/categories";
 import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
-import Step3ImagesDocuments from "./Step3-ImagesDocuments";
-import Step4LocationMap from "./Step4-LocationMap";
-import Step5ContactPublication from "./Step5-ContactPublication";
-import { ModernFahndungskarte } from "~/components/fahndungskarte/Fahndungskarte";
 
-// Preview Mode Types
-interface PreviewMode {
-  id: "card" | "detail" | "stats";
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+// Import separate Komponenten
+import Step1Component from "./steps/Step1Component";
+import Step2Component from "./steps/Step2Component";
+import Step3Component from "./steps/Step3Component";
+import Step4Component from "./steps/Step4Component";
+import Step5Component from "./steps/Step5Component";
+import Step6Summary from "./steps/Step6Summary";
+import LivePreviewCard from "./preview/LivePreviewCard";
+import StatsOverview from "./preview/StatsOverview";
+import DetailPagePreview from "./preview/DetailPagePreview";
+
+// Import Types
+import type { WizardData, PreviewMode } from "./types/WizardTypes";
 
 const PREVIEW_MODES: PreviewMode[] = [
   { id: "card", label: "Karte", icon: CreditCard },
   { id: "detail", label: "Detail", icon: Eye },
   { id: "stats", label: "Stats", icon: BarChart3 },
 ];
-
-// Enhanced Types basierend auf Ihrer Struktur
-interface Step1Data {
-  title: string;
-  category:
-    | "WANTED_PERSON"
-    | "MISSING_PERSON"
-    | "UNKNOWN_DEAD"
-    | "STOLEN_GOODS";
-  caseNumber: string;
-}
-
-interface Step2Data {
-  shortDescription: string;
-  description: string;
-  priority: "normal" | "urgent" | "new";
-  tags: string[];
-  features: string;
-}
-
-interface Step3Data {
-  mainImage: File | null;
-  additionalImages: File[];
-  documents: File[];
-}
-
-interface Step4Data {
-  mainLocation: {
-    id: string;
-    address: string;
-    lat: number;
-    lng: number;
-    type:
-      | "main"
-      | "tatort"
-      | "wohnort"
-      | "arbeitsplatz"
-      | "sichtung"
-      | "sonstiges";
-    description?: string;
-    timestamp?: Date;
-  } | null;
-  additionalLocations: Array<{
-    id: string;
-    lat: number;
-    lng: number;
-    address: string;
-    type:
-      | "main"
-      | "tatort"
-      | "wohnort"
-      | "arbeitsplatz"
-      | "sichtung"
-      | "sonstiges";
-    description?: string;
-    timestamp?: Date;
-  }>;
-  searchRadius: number;
-}
-
-interface Step5Data {
-  contactPerson: string;
-  contactPhone: string;
-  contactEmail: string;
-  department: string;
-  availableHours: string;
-  publishStatus: "draft" | "review" | "scheduled" | "immediate";
-  urgencyLevel: "low" | "medium" | "high" | "critical";
-  requiresApproval: boolean;
-  visibility: {
-    internal: boolean;
-    regional: boolean;
-    national: boolean;
-    international: boolean;
-  };
-  notifications: {
-    emailAlerts: boolean;
-    smsAlerts: boolean;
-    appNotifications: boolean;
-    pressRelease: boolean;
-  };
-  articlePublishing: {
-    publishAsArticle: boolean;
-    generateSeoUrl: boolean;
-    customSlug?: string;
-    seoTitle?: string;
-    seoDescription?: string;
-    keywords: string[];
-    author?: string;
-    readingTime?: number;
-  };
-}
-
-interface WizardData {
-  step1: Step1Data;
-  step2: Step2Data;
-  step3: Step3Data;
-  step4: Step4Data;
-  step5: Step5Data;
-}
-
-// Kategorie-Konfiguration
-const CATEGORY_CONFIG = {
-  WANTED_PERSON: {
-    label: "STRAFTÄTER",
-    icon: "Shield",
-    gradient: "from-red-500 to-red-600",
-    bg: "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800",
-  },
-  MISSING_PERSON: {
-    label: "VERMISSTE",
-    icon: "Search",
-    gradient: "from-blue-500 to-blue-600",
-    bg: "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800",
-  },
-  UNKNOWN_DEAD: {
-    label: "UNBEKANNTE TOTE",
-    icon: "FileText",
-    gradient: "from-gray-500 to-gray-600",
-    bg: "bg-gray-50 border-gray-200 dark:bg-gray-950 dark:border-gray-800",
-  },
-  STOLEN_GOODS: {
-    label: "SACHEN",
-    icon: "Camera",
-    gradient: "from-orange-500 to-orange-600",
-    bg: "bg-orange-50 border-orange-200 dark:bg-orange-950 dark:border-orange-800",
-  },
-};
-
-const PRIORITY_CONFIG = {
-  urgent: { label: "DRINGEND", color: "bg-red-600", pulse: true },
-  new: { label: "NEU", color: "bg-blue-600", pulse: false },
-  normal: { label: "STANDARD", color: "bg-gray-500", pulse: false },
-};
-
-// Live-Vorschau Komponente mit ModernFahndungskarte Integration
-const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
-  // Konvertiere WizardData zu FahndungsData Format
-  const fahndungsData = {
-    step1: {
-      title: data.step1?.title ?? "Titel der Fahndung",
-      category: data.step1?.category ?? "MISSING_PERSON",
-      caseNumber: data.step1?.caseNumber ?? "",
-    },
-    step2: {
-      shortDescription:
-        data.step2?.shortDescription ??
-        "Kurzbeschreibung wird hier angezeigt...",
-      description: data.step2?.description ?? "",
-      priority: data.step2?.priority ?? "normal",
-      tags: data.step2?.tags ?? [],
-      features: data.step2?.features ?? "",
-    },
-    step3: {
-      mainImage: data.step3?.mainImage
-        ? data.step3.mainImage instanceof File
-          ? URL.createObjectURL(data.step3.mainImage)
-          : data.step3.mainImage
-        : "/images/placeholders/fotos/platzhalterbild.svg",
-      additionalImages:
-        data.step3?.additionalImages?.map((img) =>
-          img instanceof File ? URL.createObjectURL(img) : img,
-        ) ?? [],
-    },
-    step4: {
-      mainLocation: data.step4?.mainLocation
-        ? { address: data.step4.mainLocation.address }
-        : undefined,
-    },
-    step5: {
-      contactPerson: data.step5?.contactPerson ?? "",
-      contactPhone: data.step5?.contactPhone ?? "",
-      contactEmail: data.step5?.contactEmail ?? "",
-      department: data.step5?.department ?? "",
-      availableHours: data.step5?.availableHours ?? "",
-    },
-  };
-
-  // Cleanup für File URLs
-  useEffect(() => {
-    return () => {
-      if (data.step3?.mainImage instanceof File) {
-        const url = URL.createObjectURL(data.step3.mainImage);
-        URL.revokeObjectURL(url);
-      }
-      data.step3?.additionalImages?.forEach((img) => {
-        if (img instanceof File) {
-          URL.revokeObjectURL(URL.createObjectURL(img));
-        }
-      });
-    };
-  }, [data.step3]);
-
-  return (
-    <div className="flex w-full justify-center">
-      <ModernFahndungskarte data={fahndungsData} className="scale-90" />
-    </div>
-  );
-};
-
-// Schritt 1: Grundinformationen
-const Step1Component = ({
-  data,
-  onChange,
-}: {
-  data: Step1Data;
-  onChange: (data: Step1Data) => void;
-}) => {
-  const generateCaseNumber = (category: string): string => {
-    return generateNewCaseNumber(category as Step1Data["category"], "draft");
-  };
-
-  const handleCategoryChange = (category: string) => {
-    onChange({
-      ...data,
-      category: category as Step1Data["category"],
-      caseNumber: generateCaseNumber(category),
-    });
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-          Schritt 1: Grundinformationen
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Legen Sie die grundlegenden Informationen für die Fahndung fest
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Titel der Fahndung *
-          </label>
-          <input
-            type="text"
-            value={data.title}
-            onChange={(e) => onChange({ ...data, title: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="z.B. Vermisste - Maria Schmidt"
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Kategorie *
-            </label>
-            <select
-              value={data.category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            >
-              {getCategoryOptions().map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Aktenzeichen
-            </label>
-            <input
-              type="text"
-              value={data.caseNumber}
-              onChange={(e) =>
-                onChange({ ...data, caseNumber: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              placeholder="POL-2024-K-001234-A"
-            />
-          </div>
-        </div>
-
-        {/* Aktenzeichen Info */}
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
-          <div className="mb-2 flex items-center space-x-2">
-            <FileText className="h-4 w-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Aktenzeichen Format:
-            </span>
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Format: [Präfix]-[Jahr]-[Monat]-[Nummer] | Wird automatisch bei
-            Kategorieänderung generiert
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Schritt 2: Beschreibung & Details
-const Step2Component = ({
-  data,
-  onChange,
-}: {
-  data: Step2Data;
-  onChange: (data: Step2Data) => void;
-}) => {
-  const [tagInput, setTagInput] = useState("");
-
-  const addTag = () => {
-    if (tagInput.trim() && !data.tags.includes(tagInput.trim())) {
-      onChange({
-        ...data,
-        tags: [...data.tags, tagInput.trim()],
-      });
-      setTagInput("");
-    }
-  };
-
-  const removeTag = (index: number) => {
-    onChange({
-      ...data,
-      tags: data.tags.filter((_, i) => i !== index),
-    });
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-          Schritt 2: Beschreibung & Details
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Fügen Sie detaillierte Informationen zur Fahndung hinzu
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Kurzbeschreibung *
-          </label>
-          <textarea
-            value={data.shortDescription}
-            onChange={(e) =>
-              onChange({ ...data, shortDescription: e.target.value })
-            }
-            rows={2}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="Kurze Zusammenfassung für die Kartenansicht..."
-            required
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Detaillierte Beschreibung *
-          </label>
-          <textarea
-            value={data.description}
-            onChange={(e) => onChange({ ...data, description: e.target.value })}
-            rows={6}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="Ausführliche Beschreibung der Fahndung..."
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Priorität *
-            </label>
-            <select
-              value={data.priority}
-              onChange={(e) =>
-                onChange({
-                  ...data,
-                  priority: e.target.value as Step2Data["priority"],
-                })
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="normal">Normal</option>
-              <option value="urgent">Dringend</option>
-              <option value="new">Neu</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tags hinzufügen
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addTag())
-                }
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                placeholder="Tag eingeben..."
-              />
-              <button
-                type="button"
-                onClick={addTag}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Tags anzeigen */}
-        {data.tags.length > 0 && (
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Aktuelle Tags
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {data.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(index)}
-                    className="ml-1 hover:text-blue-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Besondere Merkmale
-          </label>
-          <textarea
-            value={data.features}
-            onChange={(e) => onChange({ ...data, features: e.target.value })}
-            rows={4}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Hauptkomponente: Enhanced Fahndung Wizard
 const EnhancedFahndungWizard = ({
@@ -509,12 +52,13 @@ const EnhancedFahndungWizard = ({
   );
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [wizardData, setWizardData] = useState<Partial<WizardData>>({
     step1: initialData?.step1 ?? {
       title: "",
       category: "MISSING_PERSON",
-      caseNumber: generateNewCaseNumber("MISSING_PERSON", "draft"),
+      caseNumber: "", // Zunächst leer lassen!
     },
     step2: initialData?.step2 ?? {
       shortDescription: "",
@@ -556,11 +100,30 @@ const EnhancedFahndungWizard = ({
       },
       articlePublishing: {
         publishAsArticle: false,
-        generateSeoUrl: true,
+        generateSeoUrl: false,
+        seoTitle: "",
+        seoDescription: "",
         keywords: [],
       },
     },
   });
+
+  // Setze caseNumber nur auf dem Client, wenn noch nicht gesetzt
+  React.useEffect(() => {
+    if (!isInitialized && !wizardData.step1?.caseNumber) {
+      setWizardData((prev) => ({
+        ...prev,
+        step1: {
+          ...prev.step1!,
+          caseNumber: generateNewCaseNumber(
+            prev.step1?.category ?? "MISSING_PERSON",
+            "draft",
+          ),
+        },
+      }));
+      setIsInitialized(true);
+    }
+  }, [isInitialized, wizardData.step1?.caseNumber]);
 
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
@@ -657,112 +220,6 @@ const EnhancedFahndungWizard = ({
       </div>
     </div>
   );
-
-  // Stats Overview Component
-  const StatsOverview = ({ data }: { data: Partial<WizardData> }) => {
-    const getValidationStatus = (field: unknown) => (field ? "✓" : "✗");
-    const getValidationColor = (field: unknown) =>
-      field ? "text-green-600" : "text-red-600";
-
-    return (
-      <div className="space-y-4">
-        {/* Fortschritt */}
-        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-          <h4 className="mb-3 font-medium">Fortschritt</h4>
-          <div className="space-y-2">
-            {[
-              {
-                label: "Grundinfo",
-                valid: !!(data.step1?.title && data.step1?.category),
-              },
-              { label: "Beschreibung", valid: !!data.step2?.description },
-              { label: "Hauptbild", valid: !!data.step3?.mainImage },
-              { label: "Standort", valid: !!data.step4?.mainLocation },
-              { label: "Kontakt", valid: !!data.step5?.contactPerson },
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <span className="text-sm">{item.label}</span>
-                <span
-                  className={`font-medium ${getValidationColor(item.valid)}`}
-                >
-                  {getValidationStatus(item.valid)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Medien-Übersicht */}
-        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-          <h4 className="mb-3 font-medium">Medien</h4>
-          <div className="space-y-1 text-sm">
-            <div>Hauptbild: {data.step3?.mainImage ? "1" : "0"}</div>
-            <div>
-              Weitere Bilder: {data.step3?.additionalImages?.length ?? 0}
-            </div>
-            <div>Dokumente: {data.step3?.documents?.length ?? 0}</div>
-          </div>
-        </div>
-
-        {/* Meta-Informationen */}
-        <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-          <h4 className="mb-3 font-medium">Meta-Daten</h4>
-          <div className="space-y-1 text-sm">
-            <div>Kategorie: {data.step1?.category ?? "-"}</div>
-            <div>Priorität: {data.step2?.priority ?? "-"}</div>
-            <div>Status: {data.step5?.publishStatus ?? "draft"}</div>
-            <div>Tags: {data.step2?.tags?.length ?? 0}</div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Detail Page Preview Component
-  const DetailPagePreview = ({ data }: { data: Partial<WizardData> }) => {
-    return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="border-b pb-4 dark:border-gray-700">
-          <h1 className="text-2xl font-bold">{data.step1?.title ?? "Titel"}</h1>
-          <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <span>Fall #{data.step1?.caseNumber}</span>
-            <span>•</span>
-            <span>{data.step1?.category}</span>
-          </div>
-        </div>
-
-        {/* Content Preview */}
-        <div className="space-y-4">
-          <section>
-            <h2 className="text-lg font-semibold">Beschreibung</h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              {data.step2?.description ?? "Keine Beschreibung verfügbar"}
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold">Kontakt</h2>
-            <div className="space-y-2">
-              <p>
-                <strong>Ansprechpartner:</strong>{" "}
-                {data.step5?.contactPerson ?? "-"}
-              </p>
-              <p>
-                <strong>Telefon:</strong> {data.step5?.contactPhone ?? "-"}
-              </p>
-              <p>
-                <strong>E-Mail:</strong> {data.step5?.contactEmail ?? "-"}
-              </p>
-              <p>
-                <strong>Abteilung:</strong> {data.step5?.department ?? "-"}
-              </p>
-            </div>
-          </section>
-        </div>
-      </div>
-    );
-  };
 
   const renderPreviewContent = () => {
     switch (previewMode) {
@@ -895,7 +352,7 @@ const EnhancedFahndungWizard = ({
       case 3:
         return (
           wizardData.step3 && (
-            <Step3ImagesDocuments
+            <Step3Component
               data={wizardData.step3}
               onChange={(data) => updateStepData("step3", data)}
             />
@@ -904,7 +361,7 @@ const EnhancedFahndungWizard = ({
       case 4:
         return (
           wizardData.step4 && (
-            <Step4LocationMap
+            <Step4Component
               data={wizardData.step4}
               onChange={(data) => updateStepData("step4", data)}
             />
@@ -913,7 +370,7 @@ const EnhancedFahndungWizard = ({
       case 5:
         return (
           wizardData.step5 && (
-            <Step5ContactPublication
+            <Step5Component
               data={wizardData.step5}
               onChange={(data) => updateStepData("step5", data)}
             />
@@ -921,172 +378,14 @@ const EnhancedFahndungWizard = ({
         );
       case 6:
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                Schritt 6: Zusammenfassung & Abschluss
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Überprüfen Sie alle Daten vor der finalen Speicherung
-              </p>
-            </div>
-
-            {/* Zusammenfassung */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-4">
-                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                  <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                    Grundinformationen
-                  </h3>
-                  <dl className="space-y-1 text-sm">
-                    <div>
-                      <dt className="inline font-medium">Titel:</dt>{" "}
-                      <dd className="ml-2 inline">{wizardData.step1?.title}</dd>
-                    </div>
-                    <div>
-                      <dt className="inline font-medium">Kategorie:</dt>{" "}
-                      <dd className="ml-2 inline">
-                        {
-                          CATEGORY_CONFIG[
-                            wizardData.step1?.category ?? "MISSING_PERSON"
-                          ].label
-                        }
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="inline font-medium">Aktenzeichen:</dt>{" "}
-                      <dd className="ml-2 inline">
-                        {wizardData.step1?.caseNumber}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-
-                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                  <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                    Beschreibung
-                  </h3>
-                  <p className="line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
-                    {wizardData.step2?.description}
-                  </p>
-                  <div className="mt-2">
-                    <span
-                      className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${PRIORITY_CONFIG[wizardData.step2?.priority ?? "normal"].color} text-white`}
-                    >
-                      {
-                        PRIORITY_CONFIG[wizardData.step2?.priority ?? "normal"]
-                          .label
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                  <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                    Medien
-                  </h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <div>
-                      Hauptbild:{" "}
-                      {wizardData.step3?.mainImage
-                        ? "✓ Vorhanden"
-                        : "✗ Nicht vorhanden"}
-                    </div>
-                    <div>
-                      Weitere Bilder:{" "}
-                      {wizardData.step3?.additionalImages?.length ?? 0}
-                    </div>
-                    <div>
-                      Dokumente: {wizardData.step3?.documents?.length ?? 0}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                  <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                    Standort
-                  </h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <div>
-                      Hauptort:{" "}
-                      {wizardData.step4?.mainLocation?.address ??
-                        "Nicht festgelegt"}
-                    </div>
-                    <div>
-                      Weitere Orte:{" "}
-                      {wizardData.step4?.additionalLocations?.length ?? 0}
-                    </div>
-                    <div>
-                      Suchradius: {wizardData.step4?.searchRadius ?? 5} km
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                  <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                    Kontakt & Veröffentlichung
-                  </h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    <div>
-                      Kontakt:{" "}
-                      {wizardData.step5?.contactPerson ?? "Nicht angegeben"}
-                    </div>
-                    <div>
-                      Abteilung:{" "}
-                      {wizardData.step5?.department ?? "Nicht angegeben"}
-                    </div>
-                    <div>
-                      Status:{" "}
-                      {wizardData.step5?.publishStatus === "draft"
-                        ? "Entwurf"
-                        : wizardData.step5?.publishStatus === "immediate"
-                          ? "Sofort veröffentlichen"
-                          : (wizardData.step5?.publishStatus ?? "Entwurf")}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Aktion Buttons */}
-            <div className="flex justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
-              <button
-                onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
-                <Eye className="h-4 w-4" />
-                {showPreview
-                  ? "Vorschau ausblenden"
-                  : "Kartenvorschau anzeigen"}
-              </button>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 rounded-lg bg-gray-600 px-6 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
-                >
-                  <Save className="h-4 w-4" />
-                  {isSubmitting ? "Speichert..." : "Als Entwurf speichern"}
-                </button>
-
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Eye className="h-4 w-4" />
-                  {isSubmitting
-                    ? "Veröffentlicht..."
-                    : mode === "create"
-                      ? "Sofort veröffentlichen"
-                      : "Änderungen speichern"}
-                </button>
-              </div>
-            </div>
-          </div>
+          <Step6Summary
+            data={wizardData}
+            showPreview={showPreview}
+            onTogglePreview={() => setShowPreview(!showPreview)}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            mode={mode}
+          />
         );
       default:
         return null;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "~/styles/globals.css";
+import "leaflet/dist/leaflet.css";
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionManager } from "~/components/SessionManager";
