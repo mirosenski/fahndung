@@ -13,7 +13,6 @@ interface PageLayoutProps {
   variant?: "home" | "dashboard" | "login" | "register" | "admin";
   session: Session | null | undefined;
   onLogout?: () => void;
-  onCreateInvestigation?: () => void;
   showHeader?: boolean;
   showBreadcrumb?: boolean;
   showHero?: boolean;
@@ -26,7 +25,6 @@ export default function PageLayout({
   variant = "home",
   session,
   onLogout,
-  onCreateInvestigation,
   showHeader = true,
   showBreadcrumb = false,
   showHero = false,
@@ -41,7 +39,6 @@ export default function PageLayout({
           variant={variant}
           session={session}
           onLogout={onLogout}
-          onCreateInvestigation={onCreateInvestigation}
         />
       )}
 

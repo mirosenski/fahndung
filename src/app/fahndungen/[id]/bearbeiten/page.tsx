@@ -152,9 +152,6 @@ export default function FahndungBearbeitenPage() {
         <Header
           variant="dashboard"
           session={session}
-          onCreateInvestigation={() => {
-            // Leere Funktion für Header
-          }}
         />
 
         <div className="flex min-h-screen items-center justify-center">
@@ -173,9 +170,6 @@ export default function FahndungBearbeitenPage() {
         <Header
           variant="dashboard"
           session={session}
-          onCreateInvestigation={() => {
-            // Leere Funktion für Header
-          }}
         />
 
         <div className="flex min-h-screen items-center justify-center">
@@ -200,9 +194,6 @@ export default function FahndungBearbeitenPage() {
         <Header
           variant="dashboard"
           session={session}
-          onCreateInvestigation={() => {
-            // Leere Funktion für Header
-          }}
         />
 
         <div className="flex min-h-screen items-center justify-center">
@@ -220,9 +211,6 @@ export default function FahndungBearbeitenPage() {
       <Header
         variant="dashboard"
         session={session}
-        onCreateInvestigation={() => {
-          // Leere Funktion für Header
-        }}
       />
 
       <Breadcrumb

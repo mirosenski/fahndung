@@ -2,7 +2,6 @@
 
 import {
   Search,
-  Plus,
   Eye,
   Edit,
   Trash2,
@@ -73,7 +72,6 @@ interface InvestigationsTabProps {
   setSelectedPriority: (priority: string) => void;
   filteredInvestigations: Investigation[];
   isEditor: boolean;
-  onCreate: () => void;
 }
 
 export default function InvestigationsTab({
@@ -87,7 +85,6 @@ export default function InvestigationsTab({
   setSelectedPriority,
   filteredInvestigations,
   isEditor,
-  onCreate,
 }: InvestigationsTabProps) {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
@@ -278,27 +275,23 @@ export default function InvestigationsTab({
     selectedInvestigations.size === filteredInvestigations.length &&
     filteredInvestigations.length > 0;
 
-  const handleCreateSimpleWizard = () => {
-    router.push("/fahndungen/neu/simple");
-  };
-
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+      <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Suche
             </label>
             <div className="relative">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Fahndungen durchsuchen..."
-                className="input-dark-mode py-2 pr-4 pl-10"
+                className="input-dark-mode py-2 pl-10 pr-4"
               />
             </div>
           </div>
@@ -408,7 +401,7 @@ export default function InvestigationsTab({
       )}
 
       {/* Investigations List */}
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-800">
+      <div className="shadow-xs overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -426,24 +419,6 @@ export default function InvestigationsTab({
                 )}
                 <span>Alle auswählen</span>
               </button>
-              {isEditor && (
-                <>
-                  <button
-                    onClick={onCreate}
-                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Neue Fahndung</span>
-                  </button>
-                  <button
-                    onClick={handleCreateSimpleWizard}
-                    className="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Einfacher Wizard</span>
-                  </button>
-                </>
-              )}
             </div>
           </div>
 
@@ -452,7 +427,7 @@ export default function InvestigationsTab({
               {filteredInvestigations.map((investigation) => (
                 <div
                   key={investigation.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-gray-800"
+                  className="shadow-xs flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
                 >
                   <div className="flex items-center space-x-3">
                     <input

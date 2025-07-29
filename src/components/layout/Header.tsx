@@ -2,12 +2,13 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import {
-  AlertTriangle,
   User,
   LogIn,
   Crown,
   Shield,
   FileText,
+  Plus,
+  LogOut,
 } from "lucide-react";
 import { Logo } from "~/components/ui/Logo";
 import { Breadcrumb } from "~/components/ui/Breadcrumb";
@@ -17,20 +18,32 @@ interface HeaderProps {
   variant?: "home" | "dashboard" | "login" | "register" | "admin";
   session?: Session | null;
   onLogout?: () => void;
-  onCreateInvestigation?: () => void;
 }
 
 export default function Header({
   variant = "home",
   session,
   onLogout,
-  onCreateInvestigation,
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const renderHomeButtons = () => (
     <div className="flex items-center space-x-4">
+      {/* +Fahndung Button - nur anzeigen wenn nicht auf Wizard-Seiten und User ist Admin/Super_Admin */}
+      {(session?.profile?.role === "admin" ||
+        session?.profile?.role === "super_admin") &&
+        !pathname?.startsWith("/fahndungen/neu") && (
+          <button
+            onClick={() => router.push("/fahndungen/neu/enhanced")}
+            className="flex cursor-pointer items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-white transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+            aria-label="Neue Fahndung erstellen"
+            title="Neue Fahndung erstellen"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+        )}
+
       <button
         onClick={() => router.push("/dashboard")}
         className="flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
@@ -65,6 +78,20 @@ export default function Header({
 
       {/* Action Buttons */}
       <div className="flex items-center space-x-2">
+        {/* +Fahndung Button - nur anzeigen wenn nicht auf Wizard-Seiten und User ist Admin/Super_Admin */}
+        {(session?.profile?.role === "admin" ||
+          session?.profile?.role === "super_admin") &&
+          !pathname?.startsWith("/fahndungen/neu") && (
+            <button
+              onClick={() => router.push("/fahndungen/neu/enhanced")}
+              className="flex cursor-pointer items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-white transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+              aria-label="Neue Fahndung erstellen"
+              title="Neue Fahndung erstellen"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+          )}
+
         {/* Dashboard Button anzeigen, wenn wir auf einer Fahndungen-Seite sind */}
         {pathname?.startsWith("/fahndungen") && (
           <button
@@ -80,29 +107,20 @@ export default function Header({
         {!pathname?.startsWith("/fahndungen") && (
           <button
             onClick={() => router.push("/fahndungen")}
-            className="flex cursor-pointer items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+            className="flex cursor-pointer items-center space-x-2 rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <FileText className="h-4 w-4" />
-            <span>Alle Fahndungen</span>
-          </button>
-        )}
-
-        {session?.profile?.role === "editor" && (
-          <button
-            onClick={onCreateInvestigation}
-            className="flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
-            <AlertTriangle className="h-4 w-4" />
-            <span>Neue Fahndung</span>
+            <span>Alle</span>
           </button>
         )}
 
         <button
           onClick={onLogout}
-          className="flex cursor-pointer items-center space-x-2 rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+          className="flex cursor-pointer items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+          aria-label="Abmelden"
+          title="Abmelden"
         >
-          <User className="h-4 w-4" />
-          <span>Abmelden</span>
+          <LogOut className="h-5 w-5" />
         </button>
       </div>
     </div>
@@ -141,6 +159,17 @@ export default function Header({
 
       {/* Action Buttons */}
       <div className="flex items-center space-x-2">
+        {/* +Fahndung Button - nur anzeigen wenn nicht auf Wizard-Seiten */}
+        {!pathname?.startsWith("/fahndungen/neu") && (
+          <button
+            onClick={() => router.push("/fahndungen/neu/enhanced")}
+            className="flex cursor-pointer items-center space-x-2 rounded-lg bg-green-600 px-3 py-2 text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+          >
+            <Plus className="h-4 w-4" />
+            <span>+Fahndung</span>
+          </button>
+        )}
+
         <button
           onClick={() => router.push("/dashboard")}
           className="flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
@@ -151,10 +180,11 @@ export default function Header({
 
         <button
           onClick={onLogout}
-          className="flex cursor-pointer items-center space-x-2 rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+          className="flex cursor-pointer items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+          aria-label="Abmelden"
+          title="Abmelden"
         >
-          <User className="h-4 w-4" />
-          <span>Abmelden</span>
+          <LogOut className="h-5 w-5" />
         </button>
       </div>
     </div>

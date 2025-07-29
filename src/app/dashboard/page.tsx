@@ -103,9 +103,7 @@ export default function Dashboard() {
     await logout();
   }, [logout]);
 
-  const handleCreateInvestigation = useCallback(() => {
-    router.push("/fahndungen/neu");
-  }, [router]);
+
 
   const loadAdminData = useCallback(async () => {
     if (!isAdmin(session?.profile ?? null)) return;
@@ -254,7 +252,6 @@ export default function Dashboard() {
             setSelectedPriority={setSelectedPriority}
             filteredInvestigations={filteredInvestigations}
             isEditor={isEditor(session?.profile)}
-            onCreate={handleCreateInvestigation}
           />
         );
 
@@ -294,7 +291,6 @@ export default function Dashboard() {
         variant="dashboard"
         session={session}
         onLogout={handleLogout}
-        onCreateInvestigation={handleCreateInvestigation}
       />
 
       {/* Main Content */}
