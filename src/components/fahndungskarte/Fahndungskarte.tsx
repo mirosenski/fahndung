@@ -870,11 +870,8 @@ export default function Fahndungskarte({
   searchRadius = 5,
   showRadius = true,
   editable = false,
-  showSearch = true,
   showFilters = true,
   showLegend = true,
-  onLocationAdd,
-  onLocationUpdate,
   onLocationRemove,
   onInvestigationClick,
   className = "",
@@ -1151,9 +1148,6 @@ export default function Fahndungskarte({
         searchRadius={searchRadius}
         showRadius={showRadius}
         editable={editable}
-        showSearch={showSearch}
-        onLocationAdd={onLocationAdd}
-        onLocationUpdate={onLocationUpdate}
         onLocationRemove={onLocationRemove}
       />
 

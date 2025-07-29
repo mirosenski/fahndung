@@ -5,17 +5,10 @@ import {
   ArrowLeft,
   ArrowRight,
   Save,
-  Eye,
   X,
   Check,
-  MapPin,
-  User,
+  Eye,
   FileText,
-  Image as ImageIcon,
-  MessageSquare,
-  Shield,
-  Search,
-  Camera,
   BarChart3,
   CreditCard,
 } from "lucide-react";
@@ -147,25 +140,25 @@ interface WizardData {
 const CATEGORY_CONFIG = {
   WANTED_PERSON: {
     label: "STRAFTÄTER",
-    icon: Shield,
+    icon: "Shield",
     gradient: "from-red-500 to-red-600",
     bg: "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800",
   },
   MISSING_PERSON: {
     label: "VERMISSTE",
-    icon: Search,
+    icon: "Search",
     gradient: "from-blue-500 to-blue-600",
     bg: "bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800",
   },
   UNKNOWN_DEAD: {
     label: "UNBEKANNTE TOTE",
-    icon: FileText,
+    icon: "FileText",
     gradient: "from-gray-500 to-gray-600",
     bg: "bg-gray-50 border-gray-200 dark:bg-gray-950 dark:border-gray-800",
   },
   STOLEN_GOODS: {
     label: "SACHEN",
-    icon: Camera,
+    icon: "Camera",
     gradient: "from-orange-500 to-orange-600",
     bg: "bg-orange-50 border-orange-200 dark:bg-orange-950 dark:border-orange-800",
   },
@@ -182,18 +175,18 @@ const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
   // Konvertiere WizardData zu FahndungsData Format
   const fahndungsData = {
     step1: {
-      title: data.step1?.title || "Titel der Fahndung",
-      category: data.step1?.category || "MISSING_PERSON",
-      caseNumber: data.step1?.caseNumber || "",
+      title: data.step1?.title ?? "Titel der Fahndung",
+      category: data.step1?.category ?? "MISSING_PERSON",
+      caseNumber: data.step1?.caseNumber ?? "",
     },
     step2: {
       shortDescription:
-        data.step2?.shortDescription ||
+        data.step2?.shortDescription ??
         "Kurzbeschreibung wird hier angezeigt...",
-      description: data.step2?.description || "",
-      priority: data.step2?.priority || "normal",
-      tags: data.step2?.tags || [],
-      features: data.step2?.features || "",
+      description: data.step2?.description ?? "",
+      priority: data.step2?.priority ?? "normal",
+      tags: data.step2?.tags ?? [],
+      features: data.step2?.features ?? "",
     },
     step3: {
       mainImage: data.step3?.mainImage
@@ -204,7 +197,7 @@ const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
       additionalImages:
         data.step3?.additionalImages?.map((img) =>
           img instanceof File ? URL.createObjectURL(img) : img,
-        ) || [],
+        ) ?? [],
     },
     step4: {
       mainLocation: data.step4?.mainLocation
@@ -212,11 +205,11 @@ const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
         : undefined,
     },
     step5: {
-      contactPerson: data.step5?.contactPerson || "",
-      contactPhone: data.step5?.contactPhone || "",
-      contactEmail: data.step5?.contactEmail || "",
-      department: data.step5?.department || "",
-      availableHours: data.step5?.availableHours || "",
+      contactPerson: data.step5?.contactPerson ?? "",
+      contactPhone: data.step5?.contactPhone ?? "",
+      contactEmail: data.step5?.contactEmail ?? "",
+      department: data.step5?.department ?? "",
+      availableHours: data.step5?.availableHours ?? "",
     },
   };
 
@@ -586,10 +579,10 @@ const EnhancedFahndungWizard = ({
 
   const steps = [
     { id: 1, label: "Grundinfo", icon: FileText },
-    { id: 2, label: "Beschreibung", icon: MessageSquare },
-    { id: 3, label: "Medien", icon: ImageIcon },
-    { id: 4, label: "Ort", icon: MapPin },
-    { id: 5, label: "Kontakt", icon: User },
+    { id: 2, label: "Beschreibung", icon: Eye },
+    { id: 3, label: "Medien", icon: FileText },
+    { id: 4, label: "Ort", icon: Eye },
+    { id: 5, label: "Kontakt", icon: Eye },
     { id: 6, label: "Zusammenfassung", icon: Check },
   ];
 
@@ -667,8 +660,8 @@ const EnhancedFahndungWizard = ({
 
   // Stats Overview Component
   const StatsOverview = ({ data }: { data: Partial<WizardData> }) => {
-    const getValidationStatus = (field: any) => (field ? "✓" : "✗");
-    const getValidationColor = (field: any) =>
+    const getValidationStatus = (field: unknown) => (field ? "✓" : "✗");
+    const getValidationColor = (field: unknown) =>
       field ? "text-green-600" : "text-red-600";
 
     return (
@@ -705,9 +698,9 @@ const EnhancedFahndungWizard = ({
           <div className="space-y-1 text-sm">
             <div>Hauptbild: {data.step3?.mainImage ? "1" : "0"}</div>
             <div>
-              Weitere Bilder: {data.step3?.additionalImages?.length || 0}
+              Weitere Bilder: {data.step3?.additionalImages?.length ?? 0}
             </div>
-            <div>Dokumente: {data.step3?.documents?.length || 0}</div>
+            <div>Dokumente: {data.step3?.documents?.length ?? 0}</div>
           </div>
         </div>
 
@@ -715,10 +708,10 @@ const EnhancedFahndungWizard = ({
         <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
           <h4 className="mb-3 font-medium">Meta-Daten</h4>
           <div className="space-y-1 text-sm">
-            <div>Kategorie: {data.step1?.category || "-"}</div>
-            <div>Priorität: {data.step2?.priority || "-"}</div>
-            <div>Status: {data.step5?.publishStatus || "draft"}</div>
-            <div>Tags: {data.step2?.tags?.length || 0}</div>
+            <div>Kategorie: {data.step1?.category ?? "-"}</div>
+            <div>Priorität: {data.step2?.priority ?? "-"}</div>
+            <div>Status: {data.step5?.publishStatus ?? "draft"}</div>
+            <div>Tags: {data.step2?.tags?.length ?? 0}</div>
           </div>
         </div>
       </div>
@@ -731,7 +724,7 @@ const EnhancedFahndungWizard = ({
       <div className="space-y-6">
         {/* Header */}
         <div className="border-b pb-4 dark:border-gray-700">
-          <h1 className="text-2xl font-bold">{data.step1?.title || "Titel"}</h1>
+          <h1 className="text-2xl font-bold">{data.step1?.title ?? "Titel"}</h1>
           <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <span>Fall #{data.step1?.caseNumber}</span>
             <span>•</span>
@@ -742,27 +735,28 @@ const EnhancedFahndungWizard = ({
         {/* Content Preview */}
         <div className="space-y-4">
           <section>
-            <h2 className="mb-2 text-lg font-semibold">Beschreibung</h2>
-            <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
-              {data.step2?.description || "Keine Beschreibung"}
+            <h2 className="text-lg font-semibold">Beschreibung</h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              {data.step2?.description ?? "Keine Beschreibung verfügbar"}
             </p>
           </section>
 
-          {data.step2?.features && (
-            <section>
-              <h2 className="mb-2 text-lg font-semibold">Besondere Merkmale</h2>
-              <p className="text-gray-700 dark:text-gray-300">
-                {data.step2.features}
-              </p>
-            </section>
-          )}
-
           <section>
-            <h2 className="mb-2 text-lg font-semibold">Kontakt</h2>
-            <div className="space-y-1 text-sm">
-              <div>{data.step5?.contactPerson}</div>
-              <div>{data.step5?.contactPhone}</div>
-              <div>{data.step5?.department}</div>
+            <h2 className="text-lg font-semibold">Kontakt</h2>
+            <div className="space-y-2">
+              <p>
+                <strong>Ansprechpartner:</strong>{" "}
+                {data.step5?.contactPerson ?? "-"}
+              </p>
+              <p>
+                <strong>Telefon:</strong> {data.step5?.contactPhone ?? "-"}
+              </p>
+              <p>
+                <strong>E-Mail:</strong> {data.step5?.contactEmail ?? "-"}
+              </p>
+              <p>
+                <strong>Abteilung:</strong> {data.step5?.department ?? "-"}
+              </p>
             </div>
           </section>
         </div>
