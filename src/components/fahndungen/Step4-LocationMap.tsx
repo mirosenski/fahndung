@@ -7,7 +7,7 @@ import { NominatimService } from "~/services/geocoding";
 
 // Dynamic import für Leaflet (SSR-safe)
 const InteractiveMap = dynamic(
-  () => import("~/components/shared/InteractiveMapClient"),
+  () => import("~/components/shared/InteractiveMap"),
   {
     ssr: false,
     loading: () => (

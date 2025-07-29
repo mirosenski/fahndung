@@ -182,18 +182,18 @@ const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
   // Konvertiere WizardData zu FahndungsData Format
   const fahndungsData = {
     step1: {
-      title: data.step1?.title ?? "Titel der Fahndung",
-      category: data.step1?.category ?? "MISSING_PERSON",
-      caseNumber: data.step1?.caseNumber ?? "",
+      title: data.step1?.title || "Titel der Fahndung",
+      category: data.step1?.category || "MISSING_PERSON",
+      caseNumber: data.step1?.caseNumber || "",
     },
     step2: {
       shortDescription:
-        data.step2?.shortDescription ??
+        data.step2?.shortDescription ||
         "Kurzbeschreibung wird hier angezeigt...",
-      description: data.step2?.description ?? "",
-      priority: data.step2?.priority ?? "normal",
-      tags: data.step2?.tags ?? [],
-      features: data.step2?.features ?? "",
+      description: data.step2?.description || "",
+      priority: data.step2?.priority || "normal",
+      tags: data.step2?.tags || [],
+      features: data.step2?.features || "",
     },
     step3: {
       mainImage: data.step3?.mainImage
@@ -204,7 +204,7 @@ const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
       additionalImages:
         data.step3?.additionalImages?.map((img) =>
           img instanceof File ? URL.createObjectURL(img) : img,
-        ) ?? [],
+        ) || [],
     },
     step4: {
       mainLocation: data.step4?.mainLocation
@@ -212,11 +212,11 @@ const LivePreviewCard = ({ data }: { data: Partial<WizardData> }) => {
         : undefined,
     },
     step5: {
-      contactPerson: data.step5?.contactPerson ?? "",
-      contactPhone: data.step5?.contactPhone ?? "",
-      contactEmail: data.step5?.contactEmail ?? "",
-      department: data.step5?.department ?? "",
-      availableHours: data.step5?.availableHours ?? "",
+      contactPerson: data.step5?.contactPerson || "",
+      contactPhone: data.step5?.contactPhone || "",
+      contactEmail: data.step5?.contactEmail || "",
+      department: data.step5?.department || "",
+      availableHours: data.step5?.availableHours || "",
     },
   };
 
@@ -667,8 +667,8 @@ const EnhancedFahndungWizard = ({
 
   // Stats Overview Component
   const StatsOverview = ({ data }: { data: Partial<WizardData> }) => {
-    const getValidationStatus = (field: unknown) => (field ? "✓" : "✗");
-    const getValidationColor = (field: unknown) =>
+    const getValidationStatus = (field: any) => (field ? "✓" : "✗");
+    const getValidationColor = (field: any) =>
       field ? "text-green-600" : "text-red-600";
 
     return (
@@ -705,9 +705,9 @@ const EnhancedFahndungWizard = ({
           <div className="space-y-1 text-sm">
             <div>Hauptbild: {data.step3?.mainImage ? "1" : "0"}</div>
             <div>
-              Weitere Bilder: {data.step3?.additionalImages?.length ?? 0}
+              Weitere Bilder: {data.step3?.additionalImages?.length || 0}
             </div>
-            <div>Dokumente: {data.step3?.documents?.length ?? 0}</div>
+            <div>Dokumente: {data.step3?.documents?.length || 0}</div>
           </div>
         </div>
 
@@ -715,10 +715,10 @@ const EnhancedFahndungWizard = ({
         <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
           <h4 className="mb-3 font-medium">Meta-Daten</h4>
           <div className="space-y-1 text-sm">
-            <div>Kategorie: {data.step1?.category ?? "-"}</div>
-            <div>Priorität: {data.step2?.priority ?? "-"}</div>
-            <div>Status: {data.step5?.publishStatus ?? "draft"}</div>
-            <div>Tags: {data.step2?.tags?.length ?? 0}</div>
+            <div>Kategorie: {data.step1?.category || "-"}</div>
+            <div>Priorität: {data.step2?.priority || "-"}</div>
+            <div>Status: {data.step5?.publishStatus || "draft"}</div>
+            <div>Tags: {data.step2?.tags?.length || 0}</div>
           </div>
         </div>
       </div>
@@ -731,7 +731,7 @@ const EnhancedFahndungWizard = ({
       <div className="space-y-6">
         {/* Header */}
         <div className="border-b pb-4 dark:border-gray-700">
-          <h1 className="text-2xl font-bold">{data.step1?.title ?? "Titel"}</h1>
+          <h1 className="text-2xl font-bold">{data.step1?.title || "Titel"}</h1>
           <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <span>Fall #{data.step1?.caseNumber}</span>
             <span>•</span>
@@ -744,7 +744,7 @@ const EnhancedFahndungWizard = ({
           <section>
             <h2 className="mb-2 text-lg font-semibold">Beschreibung</h2>
             <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
-              {data.step2?.description ?? "Keine Beschreibung"}
+              {data.step2?.description || "Keine Beschreibung"}
             </p>
           </section>
 

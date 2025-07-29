@@ -23,13 +23,9 @@ import {
   Map,
   MessageSquare,
 } from "lucide-react";
-import dynamic from "next/dynamic";
-import type { MapLocation } from "@/components/shared/InteractiveMapClient";
-
-const InteractiveMap = dynamic(
-  () => import("@/components/shared/InteractiveMapClient"),
-  { ssr: false },
-);
+import InteractiveMap, {
+  type MapLocation,
+} from "@/components/shared/InteractiveMap";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
 
 // Typ-Definitionen für moderne Fahndungskarte

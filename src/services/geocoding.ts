@@ -37,8 +37,8 @@ export class NominatimService {
     const params = new URLSearchParams({
       format: "json",
       q: query,
-      limit: options?.limit?.toString() ?? "5",
-      countrycodes: options?.countrycodes ?? "de",
+      limit: options?.limit?.toString() || "5",
+      countrycodes: options?.countrycodes || "de",
       addressdetails: "1",
       extratags: "1",
       namedetails: "1",
@@ -59,7 +59,7 @@ export class NominatimService {
       throw new Error(`Geocoding failed: ${response.statusText}`);
     }
 
-    return response.json() as Promise<GeocodingResult[]>;
+    return response.json();
   }
 
   static async reverse(lat: number, lng: number): Promise<GeocodingResult> {
@@ -82,6 +82,6 @@ export class NominatimService {
       throw new Error(`Reverse geocoding failed: ${response.statusText}`);
     }
 
-    return response.json() as Promise<GeocodingResult>;
+    return response.json();
   }
 }
