@@ -20,30 +20,7 @@ import {
 import { Logo } from "~/components/ui/Logo";
 import { useTheme } from "next-themes";
 import { Button } from "~/components/ui/button";
-
-interface Session {
-  user: {
-    id: string;
-    email: string;
-  };
-  profile: {
-    id: string;
-    user_id: string;
-    email: string;
-    name?: string;
-    role: "admin" | "editor" | "user";
-    department?: string;
-    phone?: string;
-    last_login?: string;
-    login_count?: number;
-    is_active?: boolean;
-    created_by?: string;
-    notes?: string;
-    avatar_url?: string;
-    created_at: string;
-    updated_at: string;
-  } | null;
-}
+import type { Session } from "~/lib/auth";
 
 interface FooterProps {
   variant?: "home" | "dashboard" | "login" | "register" | "admin";
@@ -61,7 +38,6 @@ export default function Footer({ variant = "home" }: FooterProps) {
         return [
           { href: "/dashboard", label: "Dashboard", icon: User },
           { href: "/fahndungen", label: "Alle Fahndungen", icon: FileText },
-
         ];
 
       case "login":
@@ -157,7 +133,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
           {/* Navigation - Rechts */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 sm:gap-6">
             <div>
-              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
+              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
                 Navigation
               </h2>
               <ul className="font-medium text-gray-500 dark:text-gray-400">
@@ -184,7 +160,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
 
             {/* Rechtliche Links */}
             <div>
-              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
+              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
                 Rechtliches
               </h2>
               <ul className="font-medium text-gray-500 dark:text-gray-400">
@@ -201,11 +177,11 @@ export default function Footer({ variant = "home" }: FooterProps) {
         </div>
 
         {/* Trennlinie */}
-        <hr className="my-6 border-gray-200 dark:border-gray-700 sm:mx-auto lg:my-8" />
+        <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8 dark:border-gray-700" />
 
         {/* Copyright, Theme Toggle und Social Media */}
         <div className="sm:flex sm:items-center sm:justify-between">
-          <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
+          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
             © {currentYear}{" "}
             <Link href="/" className="hover:underline">
               Landeskriminalamt Baden-Württemberg

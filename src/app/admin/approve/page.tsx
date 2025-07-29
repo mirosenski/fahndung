@@ -41,7 +41,7 @@ function AdminApprovalContent() {
         const { data: userProfile, error: fetchError } = await supabase
           .from("user_profiles")
           .select("*")
-          .eq("email", email)
+          .eq("email", email ?? "")
           .single();
 
         if (fetchError) {
@@ -84,7 +84,7 @@ function AdminApprovalContent() {
             status: newStatus,
             updated_at: new Date().toISOString(),
           })
-          .eq("email", email);
+          .eq("email", email ?? "");
 
         if (updateError) {
           console.error(

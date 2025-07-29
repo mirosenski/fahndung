@@ -40,7 +40,7 @@ export function LatestPost() {
           e.preventDefault();
           createInvestigation.mutate({ 
             title,
-            description: description || undefined,
+            description: description ?? undefined,
           });
         }}
         className="flex flex-col gap-3"
@@ -62,7 +62,7 @@ export function LatestPost() {
         <button
           type="submit"
           className="rounded-lg bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/20 disabled:opacity-50"
-          disabled={createInvestigation.isPending || !title.trim()}
+          disabled={createInvestigation.isPending ?? !title.trim()}
         >
           {createInvestigation.isPending ? "Erstelle..." : "Fahndung erstellen"}
         </button>

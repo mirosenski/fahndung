@@ -311,7 +311,7 @@ export class MediaService {
       }
 
       const directories = [
-        ...new Set(data?.map((item) => item.directory) || []),
+        ...new Set(data?.map((item) => item.directory) ?? []),
       ];
       return directories.sort() as string[];
     } catch (error) {

@@ -53,7 +53,9 @@ interface FahndungsData {
   };
   step3: {
     mainImage: string;
+    mainImageUrl?: string; // URL des hochgeladenen Hauptbildes
     additionalImages: string[];
+    additionalImageUrls?: string[]; // URLs der hochgeladenen zusätzlichen Bilder
   };
   step4: {
     mainLocation?: { address: string };
@@ -496,7 +498,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
                 Detaillierte Beschreibung
               </h4>
-              <p className="text-sm leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300">
+              <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                 {data.step2.description}
               </p>
             </div>
@@ -506,7 +508,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
                   Besondere Merkmale
                 </h4>
-                <p className="text-sm leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300">
                   {data.step2.features}
                 </p>
               </div>
@@ -524,7 +526,11 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-200">
                 <Image
                   src={
-                    imageError ? getPlaceholderImage() : data.step3.mainImage
+                    imageError
+                      ? getPlaceholderImage()
+                      : (data.step3.mainImageUrl ??
+                        data.step3.mainImage ??
+                        getPlaceholderImage())
                   }
                   alt={`Hauptfoto von ${data.step1.title}`}
                   fill
@@ -536,13 +542,20 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               </div>
             </div>
 
-            {data.step3.additionalImages?.length > 0 && (
+            {((data.step3.additionalImageUrls &&
+              data.step3.additionalImageUrls.length > 0) ??
+              data.step3.additionalImages?.length > 0) && (
               <div>
                 <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
                   Weitere Bilder
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
-                  {data.step3.additionalImages.map((img, index) => (
+                  {/* Verwende zuerst die hochgeladenen URLs, dann die alten Bilder */}
+                  {(
+                    data.step3.additionalImageUrls ??
+                    data.step3.additionalImages ??
+                    []
+                  ).map((img, index) => (
                     <div
                       key={index}
                       className="relative aspect-square overflow-hidden rounded-lg bg-gray-200"
@@ -627,14 +640,20 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             {/* Priority Badge - nur auf Vorderseite */}
             {data.step2.priority !== "normal" && !isFlipped && (
               <div
-                className={`absolute top-4 right-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
+                className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
                 style={{ zIndex: 1 }}
               >
                 {priority.label}
               </div>
             )}
             <Image
-              src={imageError ? getPlaceholderImage() : data.step3.mainImage}
+              src={
+                imageError
+                  ? getPlaceholderImage()
+                  : (data.step3.mainImageUrl ??
+                    data.step3.mainImage ??
+                    getPlaceholderImage())
+              }
               alt={`Hauptfoto von ${data.step1.title}`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -649,7 +668,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             </div>
 
             {/* Case Number Badge - horizontal alignment */}
-            <div className="absolute right-4 bottom-4">
+            <div className="absolute bottom-4 right-4">
               <CaseNumberBadge caseNumber={data.step1.caseNumber} />
             </div>
           </div>
@@ -752,7 +771,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 px-3 py-3 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap px-3 py-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
                     activeTab === tab.id
                       ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
                       : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -989,7 +1008,7 @@ export default function Fahndungskarte({
     <div className={`fahndungskarte relative ${className}`}>
       {/* Filter Panel */}
       {showFilters && (
-        <div className="absolute top-2 left-2 z-[1000]">
+        <div className="absolute left-2 top-2 z-[1000]">
           <button
             onClick={() => setShowFilterPanel(!showFilterPanel)}
             className="flex items-center space-x-2 rounded-lg bg-white p-3 shadow-lg hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -1002,7 +1021,7 @@ export default function Fahndungskarte({
           </button>
 
           {showFilterPanel && (
-            <div className="absolute top-full left-0 mt-2 w-80 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800">
+            <div className="absolute left-0 top-full mt-2 w-80 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Filter</h3>
                 <button
@@ -1114,7 +1133,7 @@ export default function Fahndungskarte({
       )}
 
       {/* Kartenansicht-Selector */}
-      <div className="absolute top-2 right-2 z-[1000]">
+      <div className="absolute right-2 top-2 z-[1000]">
         <div className="flex space-x-1 rounded-lg bg-white p-1 shadow-lg dark:bg-gray-800">
           <button
             onClick={() => changeMapView("standard")}
@@ -1168,7 +1187,7 @@ export default function Fahndungskarte({
 
       {/* Location Details Panel */}
       {selectedLocation && (
-        <div className="absolute right-2 bottom-2 z-[1000] w-80 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800">
+        <div className="absolute bottom-2 right-2 z-[1000] w-80 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800">
           <div className="mb-3 flex items-start justify-between">
             <h3 className="text-lg font-semibold">Details</h3>
             <button
@@ -1265,7 +1284,7 @@ export default function Fahndungskarte({
       )}
 
       {/* Statistiken */}
-      <div className="absolute top-2 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-white px-4 py-2 shadow-lg dark:bg-gray-800">
+      <div className="absolute left-1/2 top-2 z-[1000] -translate-x-1/2 rounded-lg bg-white px-4 py-2 shadow-lg dark:bg-gray-800">
         <div className="flex items-center space-x-4 text-sm">
           <div className="flex items-center space-x-1">
             <MapPin className="h-4 w-4 text-blue-500" />

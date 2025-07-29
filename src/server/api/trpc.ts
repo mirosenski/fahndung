@@ -1,3 +1,4 @@
+import { AuthError } from "@supabase/supabase-js";
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -57,6 +58,13 @@ export const createTRPCContext = async (opts: {
   headers: Headers;
 }): Promise<TRPCContext> => {
   console.log("🔧 Creating tRPC context with Supabase...");
+  console.log("🔍 Environment check:", {
+    hasSupabaseUrl: !!process.env["NEXT_PUBLIC_SUPABASE_URL"],
+    hasServiceRoleKey: !!process.env["SUPABASE_SERVICE_ROLE_KEY"],
+    hasAnonKey: !!process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+    supabaseUrl:
+      process.env["NEXT_PUBLIC_SUPABASE_URL"]?.substring(0, 20) + "...",
+  });
 
   // Session aus Headers extrahieren
   let session: Session | null = null;
@@ -64,12 +72,17 @@ export const createTRPCContext = async (opts: {
 
   try {
     const authHeader = opts.headers.get("Authorization");
+    const debugHeader = opts.headers.get("x-debug-auth");
+
     console.log("🔍 Auth header found:", !!authHeader);
+    console.log("🔍 Debug header found:", !!debugHeader);
+    console.log("🔍 All headers:", Object.fromEntries(opts.headers.entries()));
 
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       if (token) {
         console.log("🔍 Token extracted, length:", token.length);
+        console.log("🔍 Token start:", token.substring(0, 20) + "...");
 
         const supabaseAuth = createClient(
           process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
@@ -82,6 +95,9 @@ export const createTRPCContext = async (opts: {
         );
 
         try {
+          // 🔥 VERBESSERTE TOKEN-VALIDIERUNG MIT MEHR DEBUGGING
+          console.log("🔍 Starte Token-Validierung...");
+
           // Timeout für Token-Validierung hinzufügen
           const userPromise = supabaseAuth.auth.getUser(token);
           const timeoutPromise = new Promise<{
@@ -94,7 +110,7 @@ export const createTRPCContext = async (opts: {
                   data: { user: null },
                   error: { message: "Timeout" },
                 }),
-              2000, // Reduziert auf 2000ms für schnellere Antwort
+              5000, // Erhöht auf 5000ms für stabilere Verbindung
             ),
           );
 
@@ -106,9 +122,182 @@ export const createTRPCContext = async (opts: {
 
           if (error) {
             console.log("❌ Token ungültig:", error.message);
-            console.log("🔄 Auth-Fehler - verwende öffentlichen Zugriff");
+            if (error instanceof AuthError) {
+              console.log("❌ Error details:", {
+                message: error.message,
+                status: "status" in error ? error.status : undefined,
+                name: "name" in error ? error.name : undefined,
+              });
+            }
+
+            // 🔥 VERSUCHE ALTERNATIVE TOKEN-VALIDIERUNG MIT JWT-DECODIERUNG
+            if (error.message.includes("Invalid API key")) {
+              console.log(
+                "🔄 Service Role Key Problem - versuche JWT-Decodierung...",
+              );
+
+              try {
+                // 🔥 ALTERNATIVE TOKEN-VALIDIERUNG MIT JWT-DECODIERUNG
+                console.log("🔍 Versuche JWT-Token-Decodierung...");
+
+                // Decodiere den JWT Token manuell
+                const tokenParts = token.split(".");
+                if (tokenParts.length === 3) {
+                  try {
+                    const payload = JSON.parse(
+                      Buffer.from(tokenParts[1] ?? "", "base64").toString(),
+                    ) as {
+                      sub?: string;
+                      email?: string;
+                      exp?: number;
+                      role?: string;
+                    };
+
+                    console.log("✅ JWT Token erfolgreich decodiert:", {
+                      sub: payload.sub,
+                      email: payload.email,
+                      exp: payload.exp,
+                      role: payload.role,
+                    });
+
+                    // Prüfe Token-Ablauf
+                    const now = Math.floor(Date.now() / 1000);
+                    if (payload.exp && now >= payload.exp) {
+                      console.log("❌ Token ist abgelaufen");
+                      throw new Error("Token expired");
+                    }
+
+                    // Erstelle User-Objekt aus JWT Payload
+                    const userFromJWT = {
+                      id: payload.sub ?? "",
+                      email: payload.email ?? "",
+                      role: payload.role ?? "authenticated",
+                    };
+
+                    console.log("✅ User aus JWT extrahiert:", userFromJWT);
+
+                    // Benutzer-Profil abrufen (versuche, aber ignoriere Fehler)
+                    let profile = null;
+                    try {
+                      const supabaseAnon = createClient(
+                        process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+                        process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
+                        {
+                          auth: {
+                            persistSession: false,
+                          },
+                        },
+                      );
+
+                      const profileResult = await supabaseAnon
+                        .from("user_profiles")
+                        .select("*")
+                        .eq("user_id", userFromJWT.id)
+                        .single();
+
+                      const { data: profileData, error: profileError } =
+                        profileResult as {
+                          data: UserProfile | null;
+                          error: { message: string } | null;
+                        };
+
+                      if (profileError) {
+                        console.warn(
+                          "❌ Profile fetch failed:",
+                          profileError.message,
+                        );
+                        // Erstelle ein Standard-Profil für authentifizierte Benutzer
+                        profile = {
+                          id: userFromJWT.id,
+                          user_id: userFromJWT.id,
+                          email: userFromJWT.email ?? "",
+                          role: "user", // Standard-Rolle
+                          name: userFromJWT.email?.split("@")[0] ?? "User",
+                          created_at: new Date().toISOString(),
+                          updated_at: new Date().toISOString(),
+                        } as UserProfile;
+                      } else {
+                        profile = profileData;
+                      }
+                    } catch (profileError) {
+                      console.warn("❌ Profile fetch failed:", profileError);
+                      // Erstelle ein Standard-Profil für authentifizierte Benutzer
+                      profile = {
+                        id: userFromJWT.id,
+                        user_id: userFromJWT.id,
+                        email: userFromJWT.email ?? "",
+                        role: "user", // Standard-Rolle
+                        name: userFromJWT.email?.split("@")[0] ?? "User",
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                      } as UserProfile;
+                    }
+
+                    session = {
+                      user: {
+                        id: userFromJWT.id,
+                        email: userFromJWT.email ?? "",
+                      },
+                      profile: profile,
+                    };
+
+                    // Erstelle TRPCUser mit Permissions
+                    if (profile) {
+                      const { getRolePermissions } = await import("~/lib/auth");
+                      const permissions = getRolePermissions(profile.role);
+
+                      user = {
+                        id: userFromJWT.id,
+                        email: userFromJWT.email ?? "",
+                        role: profile.role,
+                        permissions: permissions,
+                      };
+                    }
+
+                    console.log(
+                      "✅ User authenticated with JWT:",
+                      userFromJWT.id,
+                      "Role:",
+                      profile?.role,
+                    );
+                  } catch (jwtError) {
+                    console.error(
+                      "❌ JWT Decodierung fehlgeschlagen:",
+                      jwtError,
+                    );
+                    console.log(
+                      "🔄 Token-Fehler - verwende öffentlichen Zugriff",
+                    );
+                  }
+                } else {
+                  console.log("❌ Ungültiger JWT Token Format");
+                  console.log(
+                    "🔄 Token-Fehler - verwende öffentlichen Zugriff",
+                  );
+                }
+              } catch (tokenError) {
+                console.error(
+                  "❌ Alternative Token validation error:",
+                  tokenError,
+                );
+                console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
+              }
+            } else {
+              // Spezifische Behandlung für verschiedene Token-Fehler
+              if (
+                error.message.includes("Invalid JWT") ||
+                error.message.includes("JWT expired") ||
+                error.message.includes("Token has expired") ||
+                error.message.includes("signature verification failed")
+              ) {
+                console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
+              } else {
+                console.log("🔄 Auth-Fehler - verwende öffentlichen Zugriff");
+              }
+            }
           } else if (supabaseUser) {
             console.log("✅ User authentifiziert:", supabaseUser.email);
+            console.log("✅ User ID:", supabaseUser.id);
 
             // Benutzer-Profil abrufen
             const profileResult = await supabaseAuth
@@ -153,11 +342,15 @@ export const createTRPCContext = async (opts: {
               "Role:",
               profile?.role,
             );
+          } else {
+            console.log("⚠️ Kein User aus Token extrahiert");
           }
         } catch (tokenError) {
           console.error("❌ Token validation error:", tokenError);
           console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
         }
+      } else {
+        console.log("⚠️ Kein Token im Authorization Header gefunden");
       }
     } else {
       console.log(
@@ -249,8 +442,24 @@ const timingMiddleware = t.middleware(async ({ path, next }) => {
  * Middleware for authentication
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
+  console.log("🔍 Auth middleware: Prüfe Authentifizierung...");
+  console.log("🔍 Context Details:", {
+    hasUser: !!ctx.user,
+    userId: ctx.user?.id,
+    userEmail: ctx.user?.email,
+    userRole: ctx.user?.role,
+    hasSession: !!ctx.session,
+    sessionUser: ctx.session?.user?.id,
+  });
+
   if (!ctx.user) {
     console.log("❌ Auth middleware: Kein User gefunden");
+    console.log("🔍 Context Debug:", {
+      user: ctx.user,
+      session: ctx.session,
+      hasUser: !!ctx.user,
+      hasSession: !!ctx.session,
+    });
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",

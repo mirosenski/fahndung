@@ -23,7 +23,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Validiere URL-Format
 try {
-  new URL(supabaseUrl);
+  new URL(supabaseUrl ?? "");
 } catch {
   throw new Error(`Invalid Supabase URL: ${supabaseUrl}`);
 }
@@ -32,7 +32,7 @@ try {
 let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
 const getSupabaseInstance = () => {
-  supabaseInstance ??= createClient(supabaseUrl, supabaseAnonKey, {
+  supabaseInstance ??= createClient(supabaseUrl ?? "", supabaseAnonKey ?? "", {
     auth: {
       autoRefreshToken: true,
       persistSession: true,

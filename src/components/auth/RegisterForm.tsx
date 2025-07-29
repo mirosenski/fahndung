@@ -107,7 +107,7 @@ export default function RegisterForm() {
         options: {
           data: {
             name: formData.name,
-            department: formData.department || "Allgemein",
+            department: formData.department ?? "Allgemein",
             phone: formData.phone,
           },
         },
@@ -145,7 +145,7 @@ export default function RegisterForm() {
               user_id: data.user.id,
               name: formData.name,
               email: formData.email,
-              department: formData.department || "Allgemein",
+              department: formData.department ?? "Allgemein",
               phone: formData.phone,
               role: "user", // Standard-Rolle
               status: "pending", // Wartet auf Admin-Genehmigung
@@ -166,7 +166,7 @@ export default function RegisterForm() {
           await sendRegistrationNotification({
             userEmail: formData.email,
             userName: formData.name,
-            department: formData.department || "Allgemein",
+            department: formData.department ?? "Allgemein",
             phone: formData.phone,
             registrationDate: new Date().toLocaleString("de-DE"),
           });

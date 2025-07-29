@@ -111,19 +111,21 @@ const EnhancedFahndungWizard = ({
   // Setze caseNumber nur auf dem Client, wenn noch nicht gesetzt
   React.useEffect(() => {
     if (!isInitialized && !wizardData.step1?.caseNumber) {
+      // Verwende Timestamp für bessere Eindeutigkeit
+      const uniqueCaseNumber = generateNewCaseNumber(
+        wizardData.step1?.category ?? "MISSING_PERSON",
+        "draft",
+      );
       setWizardData((prev) => ({
         ...prev,
         step1: {
           ...prev.step1!,
-          caseNumber: generateNewCaseNumber(
-            prev.step1?.category ?? "MISSING_PERSON",
-            "draft",
-          ),
+          caseNumber: uniqueCaseNumber,
         },
       }));
       setIsInitialized(true);
     }
-  }, [isInitialized, wizardData.step1?.caseNumber]);
+  }, [isInitialized, wizardData.step1?.caseNumber, wizardData.step1?.category]);
 
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
@@ -178,7 +180,7 @@ const EnhancedFahndungWizard = ({
   );
 
   const BottomNavigation = () => (
-    <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center justify-between p-4">
         <button
           onClick={handlePrevious}
@@ -320,6 +322,9 @@ const EnhancedFahndungWizard = ({
           wizardData.step2?.priority ?? "",
           ...(wizardData.step2?.tags ?? []),
         ],
+        // Bild-URLs hinzufügen
+        mainImageUrl: wizardData.step3?.mainImageUrl ?? undefined,
+        additionalImageUrls: wizardData.step3?.additionalImageUrls ?? undefined,
       });
     } catch (error) {
       console.error("Error submitting:", error);

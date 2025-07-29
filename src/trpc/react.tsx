@@ -45,15 +45,18 @@ async function getAuthToken(): Promise<string | null> {
   if (typeof window === "undefined") return null;
 
   try {
+    console.log("🔑 tRPC: Versuche Token zu extrahieren...");
+
     // Direkte Supabase Session-Abfrage mit kürzerem Timeout
     const sessionPromise = supabase.auth.getSession();
     const timeoutPromise = new Promise<null>(
-      (resolve) => setTimeout(() => resolve(null), 1000), // Reduziert von 2000ms auf 1000ms
+      (resolve) => setTimeout(() => resolve(null), 5000), // Erhöht auf 5000ms für stabilere Verbindung
     );
 
     const result = await Promise.race([sessionPromise, timeoutPromise]);
 
     if (!result) {
+      console.log("⚠️ tRPC: Timeout bei Token-Extraktion");
       return null;
     }
 
@@ -63,16 +66,44 @@ async function getAuthToken(): Promise<string | null> {
     } = result;
 
     if (error) {
+      console.error("❌ tRPC: Session-Fehler bei Token-Extraktion:", error);
+
+      // Bei spezifischen Auth-Fehlern Session bereinigen
+      if (
+        error.message.includes("Invalid Refresh Token") ||
+        error.message.includes("Refresh Token Not Found") ||
+        error.message.includes("JWT expired") ||
+        error.message.includes("Token has expired")
+      ) {
+        console.log("🔄 tRPC: Auth-Fehler erkannt - bereinige Session...");
+        await supabase.auth.signOut();
+        return null;
+      }
+
       return null;
     }
 
     if (!session?.access_token) {
+      console.log("⚠️ tRPC: Kein Access-Token in Session");
       return null;
     }
 
-    console.log("🔑 Token gefunden:", {
+    // Prüfe Token-Ablauf
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = session.expires_at;
+
+    if (expiresAt && now >= expiresAt) {
+      console.log("🔄 tRPC: Token ist abgelaufen - bereinige Session...");
+      await supabase.auth.signOut();
+      return null;
+    }
+
+    console.log("✅ tRPC: Token erfolgreich extrahiert:", {
       tokenLength: session.access_token.length,
       tokenStart: session.access_token.substring(0, 20) + "...",
+      userEmail: session.user?.email,
+      expiresAt: new Date(expiresAt! * 1000).toISOString(),
+      tokenValid: expiresAt ? now < expiresAt : true,
     });
 
     return session.access_token;
@@ -119,6 +150,9 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
                 error,
               );
             }
+
+            // 🔥 ZUSÄTZLICHE DEBUGGING-HEADER
+            headers.set("x-debug-auth", "true");
 
             return headers;
           },

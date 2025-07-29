@@ -131,11 +131,43 @@ export const postRouter = createTRPCRouter({
           );
         }
 
-        console.log("✅ Fahndungen erfolgreich geladen:", data?.length ?? 0);
+        // Bilder sind bereits als JSON in der investigations Tabelle gespeichert
+        if (data && data.length > 0) {
+          console.log("📸 Fahndungen mit Bildern geladen:", data.length);
+
+          data.forEach((investigation: unknown) => {
+            const typedInvestigation = investigation as {
+              images?: Array<{
+                id: string;
+                url: string;
+                alt_text?: string;
+                caption?: string;
+              }>;
+            };
+
+            // Bilder sind bereits als JSON verfügbar, keine weitere Verarbeitung nötig
+            if (
+              typedInvestigation.images &&
+              typedInvestigation.images.length > 0
+            ) {
+              console.log(
+                `   ${typedInvestigation.images.length} Bilder in Fahndung gefunden`,
+              );
+            }
+          });
+        }
+
+        console.log(
+          "✅ Fahndungen erfolgreich geladen:",
+          data?.length ?? 0,
+          "mit Bildern",
+        );
         return data ?? [];
       } catch (error) {
         console.error("❌ Fehler beim Abrufen der Fahndungen:", error);
-        throw new Error(`Fehler beim Abrufen der Fahndungen: ${String(error)}`);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new Error(`Fehler beim Abrufen der Fahndungen: ${errorMessage}`);
       }
     }),
 
@@ -144,15 +176,10 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       try {
-        // First get the investigation with basic data and images
+        // Get the investigation with basic data and images from JSON field
         const response = (await ctx.db
           .from("investigations")
-          .select(
-            `
-            *,
-            images:investigation_images(*)
-          `,
-          )
+          .select("*")
           .eq("id", input.id)
           .single()) as SupabaseResponse<Investigation>;
 
@@ -160,6 +187,11 @@ export const postRouter = createTRPCRouter({
 
         if (error) {
           throw new Error(`Fahndung nicht gefunden: ${error.message}`);
+        }
+
+        // Bilder sind bereits als JSON in der investigations Tabelle gespeichert
+        if (data?.images && data.images.length > 0) {
+          console.log("📸 Bilder aus JSON-Feld geladen:", data.images.length);
         }
 
         // Then get user data separately if needed
@@ -193,12 +225,20 @@ export const postRouter = createTRPCRouter({
           }
         }
 
-        console.log("✅ Fahndung erfolgreich geladen:", data?.title);
+        console.log(
+          "✅ Fahndung erfolgreich geladen:",
+          data?.title,
+          "mit",
+          data?.images?.length ?? 0,
+          "Bildern",
+        );
 
         return data!;
       } catch (error) {
         console.error("❌ Fehler beim Laden der Fahndung:", error);
-        throw new Error(`Fehler beim Laden der Fahndung: ${String(error)}`);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new Error(`Fehler beim Laden der Fahndung: ${errorMessage}`);
       }
     }),
 
@@ -216,12 +256,85 @@ export const postRouter = createTRPCRouter({
         contact_info: z.record(z.any()).optional(),
         case_number: z.string().optional(),
         features: z.string().optional(),
+        mainImageUrl: z.string().optional(), // URL des Hauptbildes
+        additionalImageUrls: z.array(z.string()).optional(), // URLs der zusätzlichen Bilder
       }),
     )
     .mutation(async ({ ctx, input }) => {
       console.log("🚀 createInvestigation aufgerufen mit:", input);
+      console.log("👤 Benutzer:", ctx.user?.email, "Rolle:", ctx.user?.role);
 
       try {
+        // Verwende die aktuelle Session oder Fallback auf Standard-User
+        const createdBy =
+          ctx.user?.id ?? "305f1ebf-01ed-4007-8cd7-951f6105b8c1";
+
+        // Generiere eine eindeutige Aktennummer
+        let caseNumber = input.case_number;
+        if (!caseNumber) {
+          let attempts = 0;
+          const maxAttempts = 10;
+
+          do {
+            caseNumber = generateNewCaseNumber(
+              input.category ?? "MISSING_PERSON",
+              input.status,
+            );
+
+            // Prüfe ob die Aktennummer bereits existiert
+            const { data: existing } = await ctx.db
+              .from("investigations")
+              .select("id")
+              .eq("case_number", caseNumber)
+              .single();
+
+            if (!existing) {
+              break; // Aktennummer ist eindeutig
+            }
+
+            attempts++;
+            console.log(
+              `⚠️ Aktennummer ${caseNumber} existiert bereits, versuche erneut... (${attempts}/${maxAttempts})`,
+            );
+          } while (attempts < maxAttempts);
+
+          if (attempts >= maxAttempts) {
+            throw new Error(
+              "Konnte keine eindeutige Aktennummer generieren nach 10 Versuchen",
+            );
+          }
+        }
+
+        // Erstelle das images Array aus den URLs
+        const images: Array<{
+          id: string;
+          url: string;
+          alt_text?: string;
+          caption?: string;
+        }> = [];
+
+        // Hauptbild hinzufügen
+        if (input.mainImageUrl) {
+          images.push({
+            id: `main-${Date.now()}`,
+            url: input.mainImageUrl,
+            alt_text: "Hauptbild der Fahndung",
+            caption: "Hauptbild",
+          });
+        }
+
+        // Zusätzliche Bilder hinzufügen
+        if (input.additionalImageUrls && input.additionalImageUrls.length > 0) {
+          input.additionalImageUrls.forEach((url, index) => {
+            images.push({
+              id: `additional-${Date.now()}-${index}`,
+              url: url,
+              alt_text: `Zusätzliches Bild ${index + 1}`,
+              caption: `Bild ${index + 1}`,
+            });
+          });
+        }
+
         const response = (await ctx.db
           .from("investigations")
           .insert({
@@ -236,15 +349,11 @@ export const postRouter = createTRPCRouter({
             station: "Allgemein",
             features: input.features ?? "",
             date: new Date().toISOString(),
-            case_number:
-              input.case_number ??
-              generateNewCaseNumber(
-                input.category ?? "MISSING_PERSON",
-                input.status,
-              ),
+            case_number: caseNumber,
             contact_info: input.contact_info ?? {},
             metadata: {},
-            created_by: "305f1ebf-01ed-4007-8cd7-951f6105b8c1", // ptlsweb@gmail.com (wichtigster User)
+            created_by: createdBy,
+            images: images.length > 0 ? images : undefined, // Bilder als JSON speichern
           })
           .select()
           .single()) as SupabaseResponse<Investigation>;
@@ -259,6 +368,9 @@ export const postRouter = createTRPCRouter({
         }
 
         console.log("✅ Fahndung erfolgreich erstellt:", data?.title);
+        if (images.length > 0) {
+          console.log("📸 Bilder hinzugefügt:", images.length);
+        }
         return data!;
       } catch (error) {
         console.error("❌ Fehler beim Erstellen der Fahndung:", error);
@@ -325,6 +437,117 @@ export const postRouter = createTRPCRouter({
         throw new Error(
           `Fehler beim Aktualisieren der Fahndung: ${String(error)}`,
         );
+      }
+    }),
+
+  // Geschützt: Bild zu Fahndung hochladen
+  uploadInvestigationImage: publicProcedure
+    .input(
+      z.object({
+        investigationId: z.string().uuid(),
+        fileName: z.string(),
+        originalName: z.string(),
+        filePath: z.string(),
+        fileSize: z.number(),
+        mimeType: z.string(),
+        isPrimary: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log("📸 uploadInvestigationImage aufgerufen mit:", input);
+      console.log("👤 Benutzer:", ctx.user?.email, "Rolle:", ctx.user?.role);
+      console.log("🔍 Context Details:", {
+        hasUser: !!ctx.user,
+        userId: ctx.user?.id,
+        userEmail: ctx.user?.email,
+        userRole: ctx.user?.role,
+        hasSession: !!ctx.session,
+        sessionUser: ctx.session?.user?.id,
+      });
+
+      // 🔥 MANUELLE AUTHENTIFIZIERUNGSPRÜFUNG
+      if (!ctx.user?.id) {
+        console.error("❌ Keine Benutzer-ID im Context");
+        console.error("🔍 Context Debug:", {
+          user: ctx.user,
+          session: ctx.session,
+          hasUser: !!ctx.user,
+          hasSession: !!ctx.session,
+        });
+        throw new Error("Nicht authentifiziert - Bitte melden Sie sich an");
+      }
+
+      console.log("✅ Benutzer authentifiziert:", ctx.user.id);
+
+      try {
+        // Prüfe ob Fahndung existiert
+        const existingResponse = (await ctx.db
+          .from("investigations")
+          .select("id")
+          .eq("id", input.investigationId)
+          .single()) as SupabaseResponse<{ id: string }>;
+
+        const { error: fetchError } = existingResponse;
+
+        if (fetchError) {
+          console.error("❌ Fahndung nicht gefunden:", fetchError);
+          throw new Error("Fahndung nicht gefunden");
+        }
+
+        // Füge Bild-Metadaten zur Datenbank hinzu
+        const response = (await ctx.db
+          .from("investigation_images")
+          .insert({
+            investigation_id: input.investigationId,
+            file_name: input.fileName,
+            original_name: input.originalName,
+            file_path: input.filePath,
+            file_size: input.fileSize,
+            mime_type: input.mimeType,
+            uploaded_by: ctx.user.id, // Verwende die echte User ID
+            is_primary: input.isPrimary,
+            is_public: true,
+          })
+          .select()
+          .single()) as SupabaseResponse<{
+          id: string;
+          investigation_id: string;
+          file_name: string;
+          file_path: string;
+          url?: string;
+        }>;
+
+        const { data, error } = response;
+
+        if (error) {
+          console.error("❌ Database-Fehler beim Bild-Upload:", error);
+          throw new Error(
+            `Fehler beim Speichern der Bild-Metadaten: ${error.message}`,
+          );
+        }
+
+        // Generiere öffentliche URL
+        // Extrahiere Bucket-Namen aus dem Pfad (z.B. "media-gallery/investigations/...")
+        const pathParts = input.filePath.split("/");
+        const bucketName = pathParts[0] ?? "media-gallery"; // Fallback auf media-gallery
+
+        console.log("📦 Verwende Bucket für URL-Generierung:", bucketName);
+
+        const { data: urlData } = ctx.db.storage
+          .from(bucketName)
+          .getPublicUrl(input.filePath.replace(`${bucketName}/`, "")); // Entferne Bucket-Namen aus Pfad
+
+        console.log(
+          "✅ Bild-Metadaten erfolgreich gespeichert:",
+          data?.file_name,
+        );
+        return {
+          ...data,
+          url: urlData.publicUrl,
+        };
+      } catch (error) {
+        console.error("❌ Fehler beim Bild-Upload:", error);
+        throw new Error(`Fehler beim Bild-Upload: ${String(error)}`);
       }
     }),
 

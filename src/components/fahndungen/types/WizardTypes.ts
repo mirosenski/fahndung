@@ -19,7 +19,9 @@ export interface Step2Data {
 
 export interface Step3Data {
   mainImage: File | null;
+  mainImageUrl?: string | null; // URL des hochgeladenen Hauptbildes
   additionalImages: File[];
+  additionalImageUrls?: string[]; // URLs der hochgeladenen zusätzlichen Bilder
   documents: File[];
 }
 

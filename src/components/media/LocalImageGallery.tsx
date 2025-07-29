@@ -39,7 +39,7 @@ export default function LocalImageGallery() {
     api.localMedia.getAllLocalImages.useQuery({
       limit: 50,
       offset: 0,
-      search: searchTerm || undefined,
+      search: searchTerm ?? undefined,
     });
 
   const deleteImage = api.localMedia.deleteLocalImage.useMutation();

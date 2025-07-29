@@ -139,7 +139,7 @@ export default function FahndungenPage() {
   };
 
   // Loading State
-  if (authLoading || isLoading) {
+  if (authLoading ?? isLoading) {
     return (
       <PageLayout session={session}>
         <div className="flex min-h-screen items-center justify-center">

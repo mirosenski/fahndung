@@ -160,12 +160,14 @@ export function getErrorDetails(error: unknown): string | undefined {
 
 // Error code helper
 export function getErrorCode(error: unknown): string | undefined {
-  if (isDatabaseError(error) || isAuthError(error) || isStorageError(error)) {
-    return error.code;
+  if (isDatabaseError(error) ?? isAuthError(error) ?? isStorageError(error)) {
+    const typedError = error as { code?: string };
+    return typedError?.code;
   }
 
   if (isApiError(error)) {
-    return error.code;
+    const typedError = error as { code?: string };
+    return typedError?.code;
   }
 
   return undefined;

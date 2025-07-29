@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { FahndungsService } from "@/lib/services/fahndungs.service";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "~/lib/supabase";
 import type { InvestigationData } from "@/lib/services/fahndungs.service";
 import { getErrorMessage } from "@/types/errors";
 
@@ -19,7 +19,6 @@ export function useFahndungen(filters?: {
   const loadInvestigations = useCallback(async () => {
     try {
       setLoading(true);
-      const supabase = createClientComponentClient();
       const service = new FahndungsService(supabase);
       const data = await service.getInvestigations(filters);
       setInvestigations(data);

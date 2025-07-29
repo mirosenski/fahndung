@@ -19,7 +19,7 @@ export function SessionManager() {
         `🔐 SessionManager: Auth-Fehler erkannt (${errorCount.current}/${maxErrorCount}):`,
         error,
       );
-      
+
       lastError.current = error;
 
       // Nur bei mehreren aufeinanderfolgenden Fehlern abmelden

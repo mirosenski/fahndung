@@ -165,7 +165,7 @@ export const useAuth = () => {
       const reason = event.reason as unknown;
       if (reason && typeof reason === "object" && "message" in reason) {
         const message = String((reason as { message: unknown }).message);
-        if (message.includes("403") || message.includes("Forbidden")) {
+        if (message.includes("403") ?? message.includes("Forbidden")) {
           // Behandle 403-Fehler automatisch
           void handle403Error(reason);
           return true;
@@ -189,7 +189,7 @@ export const useAuth = () => {
 
   return {
     session,
-    loading: loading || !initialized,
+    loading: loading ?? !initialized,
     error,
     logout,
     checkSession,

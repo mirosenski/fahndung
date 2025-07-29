@@ -63,11 +63,14 @@ export default function HomeContent() {
       },
     );
 
+  // Explizite Typisierung für investigations
+  const typedInvestigations = investigations;
+
   // Gefilterte Fahndungen
   const filteredInvestigations = useMemo(() => {
-    if (!investigations) return [];
+    if (!typedInvestigations || !Array.isArray(typedInvestigations)) return [];
 
-    return investigations.filter((investigation) => {
+    return typedInvestigations.filter((investigation) => {
       const inv = investigation as Investigation;
 
       // Suchbegriff Filter
@@ -125,7 +128,7 @@ export default function HomeContent() {
 
       return true;
     });
-  }, [investigations, activeFilters]);
+  }, [typedInvestigations, activeFilters]);
 
   // Filter-Handler
   const handleFilterChange = (filters: FilterState) => {
@@ -133,7 +136,7 @@ export default function HomeContent() {
   };
 
   // Loading state oder nicht gemounted
-  if (isLoading || !mounted) {
+  if (isLoading ?? !mounted) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -172,26 +175,33 @@ export default function HomeContent() {
             <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Eye className="h-4 w-4" />
               <span>
-                {investigations ? filteredInvestigations.length : 0} von{" "}
-                {investigations?.length ?? 0} Fahndungen
+                {typedInvestigations ? filteredInvestigations.length : 0} von{" "}
+                {typedInvestigations && Array.isArray(typedInvestigations)
+                  ? typedInvestigations.length
+                  : 0}{" "}
+                Fahndungen
               </span>
             </div>
           </div>
 
-          {investigations &&
+          {typedInvestigations &&
           filteredInvestigations &&
           filteredInvestigations.length > 0 ? (
             <FahndungskarteGrid investigations={filteredInvestigations} />
           ) : (
-            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-xs dark:border-gray-700 dark:bg-gray-800">
+            <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800">
               <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-                {investigations && investigations.length > 0
+                {typedInvestigations &&
+                Array.isArray(typedInvestigations) &&
+                typedInvestigations.length > 0
                   ? "Keine Fahndungen mit den aktuellen Filtern gefunden"
                   : "Keine Fahndungen gefunden"}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {investigations && investigations.length > 0
+                {typedInvestigations &&
+                Array.isArray(typedInvestigations) &&
+                typedInvestigations.length > 0
                   ? "Versuchen Sie andere Filter-Einstellungen oder löschen Sie die Filter."
                   : "Es sind noch keine Fahndungen in der Datenbank vorhanden."}
               </p>

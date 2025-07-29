@@ -85,6 +85,7 @@ export function parseCaseNumber(caseNumber: string): CaseNumberConfig | null {
 
 /**
  * Generiert eine neue Aktennummer basierend auf Kategorie und Status
+ * VERALTET: Verwende generateNewCaseNumberWithSequence für Produktionsumgebung
  */
 export function generateNewCaseNumber(
   category: string,
@@ -96,9 +97,9 @@ export function generateNewCaseNumber(
   const subject = CATEGORY_TO_SUBJECT[category] ?? "K";
   const statusCode = STATUS_TO_CODE[status] ?? "A";
 
-  // Für die Demo verwenden wir eine zufällige Sequenz
-  // In der Produktion würde hier eine Datenbankabfrage stehen
-  const sequence = Math.floor(Math.random() * 999999) + 1;
+  // Verwende Timestamp-basierte Sequenz für bessere Eindeutigkeit
+  const timestamp = Date.now();
+  const sequence = (timestamp % 999999) + 1;
 
   return generateCaseNumber({
     authority,
@@ -130,8 +131,71 @@ export async function generateNewCaseNumberWithSequence(
     // Verwende die bereitgestellte Funktion für die Sequenz
     sequence = await getNextSequence(year, subject);
   } else {
-    // Fallback: Zufällige Sequenz für Demo
-    sequence = Math.floor(Math.random() * 999999) + 1;
+    // Fallback: Timestamp-basierte Sequenz für bessere Eindeutigkeit
+    const timestamp = Date.now();
+    sequence = (timestamp % 999999) + 1;
+  }
+
+  return generateCaseNumber({
+    authority,
+    year,
+    subject,
+    sequence,
+    status: statusCode,
+  });
+}
+
+/**
+ * Generiert eine neue Aktennummer mit Datenbank-Sequenz
+ * Diese Funktion verwendet die Datenbankfunktion für die Sequenznummer
+ */
+export async function generateNewCaseNumberWithDatabase(
+  category: string,
+  status: string,
+  authority = "POL",
+  currentYear?: number,
+  db?: {
+    rpc: (
+      functionName: string,
+      params: Record<string, unknown>,
+    ) => Promise<{ data: number | null; error: unknown }>;
+  },
+): Promise<string> {
+  const year = currentYear ?? new Date().getFullYear();
+  const subject = CATEGORY_TO_SUBJECT[category] ?? "K";
+  const statusCode = STATUS_TO_CODE[status] ?? "A";
+
+  let sequence: number;
+
+  if (db) {
+    try {
+      // Verwende die Datenbankfunktion für die Sequenznummer
+      const { data, error } = await db.rpc("get_next_case_number_sequence", {
+        p_year: year,
+        p_subject: subject,
+      });
+
+      if (error) {
+        console.warn(
+          "⚠️ Fehler beim Abrufen der Sequenznummer aus der Datenbank:",
+          error,
+        );
+        // Fallback auf Timestamp-basierte Sequenz
+        const timestamp = Date.now();
+        sequence = (timestamp % 999999) + 1;
+      } else {
+        sequence = data ?? 1;
+      }
+    } catch (error) {
+      console.warn("⚠️ Fehler beim Abrufen der Sequenznummer:", error);
+      // Fallback auf Timestamp-basierte Sequenz
+      const timestamp = Date.now();
+      sequence = (timestamp % 999999) + 1;
+    }
+  } else {
+    // Fallback auf Timestamp-basierte Sequenz
+    const timestamp = Date.now();
+    sequence = (timestamp % 999999) + 1;
   }
 
   return generateCaseNumber({

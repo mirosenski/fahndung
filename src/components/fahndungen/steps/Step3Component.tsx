@@ -13,9 +13,18 @@ import {
   FileImage,
   FileVideo,
   FileAudio,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
+import { createClient } from "@supabase/supabase-js";
 import type { Step3Data } from "../types/WizardTypes";
+
+// Supabase Client initialisieren
+const supabase = createClient(
+  process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "",
+  process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"] ?? "",
+);
 
 interface Step3ComponentProps {
   data: Step3Data;
@@ -28,6 +37,8 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
   >(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -43,6 +54,65 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
       setImagePreview(null);
     }
   }, [data.mainImage]);
+
+  // Hilfsfunktion zum Hochladen von Bildern
+  const uploadImageToSupabase = async (file: File): Promise<string> => {
+    try {
+      console.log("🚀 Starte Bild-Upload für:", file.name);
+
+      // Session prüfen
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error("❌ Session-Fehler:", sessionError);
+        throw new Error("Authentifizierungsfehler - Bitte melden Sie sich an");
+      }
+
+      if (!session?.user) {
+        console.error("❌ Keine aktive Session");
+        throw new Error("Nicht authentifiziert - Bitte melden Sie sich an");
+      }
+
+      console.log("✅ Authentifiziert für User:", session.user.email);
+
+      // Eindeutigen Dateinamen generieren
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 8);
+      const fileExtension = file.name.split(".").pop();
+      const fileName = `fahndungen/${timestamp}_${randomString}.${fileExtension}`;
+
+      // Upload zu Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("media-gallery")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("❌ Upload-Fehler:", uploadError);
+        throw new Error(`Upload-Fehler: ${uploadError.message}`);
+      }
+
+      if (!uploadData?.path) {
+        throw new Error("Keine Pfad-Information vom Upload erhalten");
+      }
+
+      // Öffentliche URL generieren
+      const { data: urlData } = supabase.storage
+        .from("media-gallery")
+        .getPublicUrl(uploadData.path);
+
+      console.log("✅ Bild erfolgreich hochgeladen:", urlData.publicUrl);
+      return urlData.publicUrl;
+    } catch (error: unknown) {
+      console.error("❌ Bild-Upload fehlgeschlagen:", error);
+      throw error;
+    }
+  };
 
   const handleDrag = (
     e: React.DragEvent,
@@ -67,11 +137,11 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
 
     if (e.dataTransfer.files?.[0]) {
       const files = Array.from(e.dataTransfer.files);
-      handleFilesUpload(files, zone);
+      void handleFilesUpload(files, zone);
     }
   };
 
-  const handleFilesUpload = (
+  const handleFilesUpload = async (
     files: File[],
     zone: "main" | "additional" | "documents",
   ) => {
@@ -100,10 +170,13 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
 
     // Dateien verarbeiten
     if (zone === "main") {
-      onChange({
-        ...data,
-        mainImage: files[0] ?? null,
-      });
+      const file = files[0];
+      if (file) {
+        onChange({
+          ...data,
+          mainImage: file,
+        });
+      }
     } else if (zone === "additional") {
       onChange({
         ...data,
@@ -117,48 +190,146 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
     }
   };
 
-  const handleImageUpload = (files: File[]) => {
+  const handleImageUpload = async (files: File[]) => {
     if (files.length > 0) {
-      onChange({
-        ...data,
-        mainImage: files[0] ?? null,
-      });
+      const file = files[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        // Simuliere Progress
+        const progressInterval = setInterval(() => {
+          setUploadProgress((prev) => Math.min(prev + 10, 90));
+        }, 200);
+
+        // Bild hochladen
+        const imageUrl = await uploadImageToSupabase(file);
+
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+
+        // Aktualisiere Daten mit URL statt File
+        onChange({
+          ...data,
+          mainImage: file,
+          mainImageUrl: imageUrl, // Neue Eigenschaft für URL
+        });
+
+        console.log("✅ Hauptbild erfolgreich hochgeladen:", imageUrl);
+      } catch (error: unknown) {
+        console.error("❌ Fehler beim Hochladen des Hauptbildes:", error);
+        setErrors([
+          `Fehler beim Hochladen: ${error instanceof Error ? error.message : "Unbekannter Fehler"}`,
+        ]);
+        setTimeout(() => setErrors([]), 5000);
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
     }
   };
 
-  const handleAdditionalImagesUpload = (files: File[]) => {
-    onChange({
-      ...data,
-      additionalImages: [...data.additionalImages, ...files],
-    });
+  const handleAdditionalImagesUpload = async (files: File[]) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file) continue;
+
+        // Progress für jedes Bild
+        setUploadProgress((i / files.length) * 100);
+
+        try {
+          const imageUrl = await uploadImageToSupabase(file);
+          uploadedUrls.push(imageUrl);
+        } catch (error: unknown) {
+          console.error(`❌ Fehler beim Hochladen von ${file.name}:`, error);
+          setErrors([
+            `Fehler beim Hochladen von ${file.name}: ${error instanceof Error ? error.message : "Unbekannter Fehler"}`,
+          ]);
+        }
+      }
+
+      // Aktualisiere Daten mit URLs
+      const currentAdditionalImageUrls = data.additionalImageUrls ?? [];
+      const updatedData: Step3Data = {
+        ...data,
+        additionalImages: [...data.additionalImages, ...files],
+        additionalImageUrls: [...currentAdditionalImageUrls, ...uploadedUrls],
+      };
+      onChange(updatedData);
+
+      console.log(
+        "✅ Zusätzliche Bilder erfolgreich hochgeladen:",
+        uploadedUrls,
+      );
+    } catch (error: unknown) {
+      console.error("❌ Fehler beim Hochladen der zusätzlichen Bilder:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unbekannter Fehler";
+      setErrors([`Fehler beim Hochladen: ${errorMessage}`]);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   const handleDocumentUpload = (files: File[]) => {
-    onChange({
+    const updatedData: Step3Data = {
       ...data,
       documents: [...data.documents, ...files],
-    });
+    };
+    onChange(updatedData);
   };
 
   const removeMainImage = () => {
-    onChange({
+    const updatedData: Step3Data = {
       ...data,
       mainImage: null,
-    });
+      mainImageUrl: null,
+    };
+    onChange(updatedData);
   };
 
   const removeAdditionalImage = (index: number) => {
-    onChange({
+    if (!Array.isArray(data.additionalImages)) {
+      console.error("additionalImages ist kein Array");
+      return;
+    }
+
+    const newAdditionalImages = data.additionalImages.filter(
+      (_, i) => i !== index,
+    );
+    const currentAdditionalImageUrls = data.additionalImageUrls ?? [];
+    const newAdditionalImageUrls = currentAdditionalImageUrls.filter(
+      (_, i) => i !== index,
+    );
+
+    const updatedData: Step3Data = {
       ...data,
-      additionalImages: data.additionalImages.filter((_, i) => i !== index),
-    });
+      additionalImages: newAdditionalImages,
+      additionalImageUrls: newAdditionalImageUrls,
+    };
+    onChange(updatedData);
   };
 
   const removeDocument = (index: number) => {
-    onChange({
+    if (!Array.isArray(data.documents)) {
+      console.error("documents ist kein Array");
+      return;
+    }
+
+    const updatedData: Step3Data = {
       ...data,
       documents: data.documents.filter((_, i) => i !== index),
-    });
+    };
+    onChange(updatedData);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -193,6 +364,24 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
           Fügen Sie Bilder und Dokumente zur Fahndung hinzu
         </p>
       </div>
+
+      {/* Upload Progress */}
+      {isUploading && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <span className="text-sm text-blue-800 dark:text-blue-200">
+              Bilder werden hochgeladen... {uploadProgress.toFixed(0)}%
+            </span>
+          </div>
+          <div className="mt-2 h-2 w-full rounded-full bg-blue-200">
+            <div
+              className="h-2 rounded-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Fehlermeldungen */}
       {errors.length > 0 && (
@@ -247,7 +436,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                   ) : null}
                   <button
                     onClick={removeMainImage}
-                    className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                    className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -255,6 +444,9 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   <p className="font-medium">{data.mainImage.name}</p>
                   <p>{formatFileSize(data.mainImage.size)}</p>
+                  {data.mainImageUrl && (
+                    <p className="text-xs text-green-600">✅ Hochgeladen</p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -272,9 +464,20 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                 </div>
                 <button
                   onClick={() => imageInputRef.current?.click()}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+                  disabled={isUploading}
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                 >
-                  Bild auswählen
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 inline-block h-4 w-4 animate-spin" />
+                      Wird hochgeladen...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 inline-block h-4 w-4" />
+                      Bild auswählen
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -286,6 +489,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                 e.target.files && handleImageUpload(Array.from(e.target.files))
               }
               className="hidden"
+              disabled={isUploading}
             />
           </div>
         </div>
@@ -325,9 +529,20 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-lg bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700"
+                disabled={isUploading}
+                className="rounded-lg bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-400"
               >
-                Bilder auswählen
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 inline-block h-4 w-4 animate-spin" />
+                    Wird hochgeladen...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 inline-block h-4 w-4" />
+                    Bilder auswählen
+                  </>
+                )}
               </button>
             </div>
             <input
@@ -340,44 +555,55 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                 handleAdditionalImagesUpload(Array.from(e.target.files))
               }
               className="hidden"
+              disabled={isUploading}
             />
           </div>
 
           {/* Anzeige der weiteren Bilder */}
-          {data.additionalImages.length > 0 && (
-            <div className="mt-4">
-              <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Hochgeladene Bilder ({data.additionalImages.length})
-              </h4>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                {data.additionalImages.map((file, index) => {
-                  const Icon = getFileIcon(file);
-                  return (
-                    <div
-                      key={index}
-                      className="group relative rounded-lg border border-gray-200 p-3 dark:border-gray-600"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-gray-500" />
-                        <span className="flex-1 truncate text-xs">
-                          {file.name}
-                        </span>
-                        <button
-                          onClick={() => removeAdditionalImage(index)}
-                          className="opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          <X className="h-3 w-3 text-red-500" />
-                        </button>
+          {Array.isArray(data.additionalImages) &&
+            data.additionalImages.length > 0 && (
+              <div className="mt-4">
+                <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Hochgeladene Bilder ({data.additionalImages.length})
+                </h4>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {data.additionalImages.map((file, index) => {
+                    const Icon = getFileIcon(file);
+                    const currentAdditionalImageUrls =
+                      data.additionalImageUrls ?? [];
+                    const isUploaded = currentAdditionalImageUrls[index];
+
+                    return (
+                      <div
+                        key={index}
+                        className="group relative rounded-lg border border-gray-200 p-3 dark:border-gray-600"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-gray-500" />
+                          <span className="flex-1 truncate text-xs">
+                            {file.name}
+                          </span>
+                          <button
+                            onClick={() => removeAdditionalImage(index)}
+                            className="opacity-0 transition-opacity group-hover:opacity-100"
+                          >
+                            <X className="h-3 w-3 text-red-500" />
+                          </button>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {formatFileSize(file.size)}
+                        </p>
+                        {isUploaded && (
+                          <p className="text-xs text-green-600">
+                            ✅ Hochgeladen
+                          </p>
+                        )}
                       </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {formatFileSize(file.size)}
-                      </p>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Dokumente */}
@@ -492,6 +718,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
               <li>• Weitere Bilder: Verschiedene Perspektiven und Details</li>
               <li>• Dokumente: Nur relevante und aktuelle Informationen</li>
               <li>• Maximale Dateigröße: 20MB pro Datei</li>
+              <li>• Bilder werden automatisch zu Supabase hochgeladen</li>
             </ul>
           </div>
         </div>

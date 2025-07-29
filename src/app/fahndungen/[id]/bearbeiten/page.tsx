@@ -2,68 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { ArrowLeft, Save, Loader2, AlertCircle } from "lucide-react";
-import { getErrorMessage } from "@/types/errors";
+import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { api } from "@/trpc/react";
-import { getCategoryOptions } from "@/types/categories";
-import { getCaseNumberInfo } from "~/lib/utils/caseNumberGenerator";
-
-const editSchema = z.object({
-  title: z.string().min(5, "Titel muss mindestens 5 Zeichen haben"),
-  case_number: z
-    .string()
-    .min(3, "Aktenzeichen ist erforderlich")
-    .regex(
-      /^[A-Z]{3}-\d{4}-[A-Z]-\d{6}-[AGÜ]$/,
-      "Aktenzeichen muss dem Format POL-2024-K-001234-A entsprechen",
-    ),
-  category: z.enum([
-    "WANTED_PERSON",
-    "MISSING_PERSON",
-    "UNKNOWN_DEAD",
-    "STOLEN_GOODS",
-  ]),
-  priority: z.enum(["normal", "urgent", "new"]),
-  status: z.enum(["draft", "active", "published", "closed"]),
-  date: z.string().min(1, "Datum ist erforderlich"),
-  short_description: z
-    .string()
-    .min(20, "Kurzbeschreibung muss mindestens 20 Zeichen haben")
-    .max(500),
-  description: z
-    .string()
-    .min(50, "Beschreibung muss mindestens 50 Zeichen haben"),
-  features: z.string().optional(),
-  location: z.string().min(3, "Ort ist erforderlich"),
-  station: z.string().min(3, "Dienststelle ist erforderlich"),
-  contact_info: z.object({
-    name: z.string().optional(),
-    phone: z.string().optional(),
-    email: z.string().email().optional().or(z.literal("")),
-  }),
-  tags: z.array(z.string()).optional(),
-});
-
-type EditFormData = z.infer<typeof editSchema>;
+import Header from "~/components/layout/Header";
+import Footer from "~/components/layout/Footer";
+import { Breadcrumb } from "~/components/ui/Breadcrumb";
+import { useAuth } from "~/hooks/useAuth";
+import EnhancedFahndungWizard from "~/components/fahndungen/EnhancedFahndungWizard";
+import type { WizardData } from "~/components/fahndungen/types/WizardTypes";
+import { predefinedStations } from "~/lib/data/predefined-stations";
 
 export default function FahndungBearbeitenPage() {
   const params = useParams();
   const id = params?.["id"];
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tagInput, setTagInput] = useState("");
-
-  const form = useForm<EditFormData>({
-    resolver: zodResolver(editSchema),
-  });
+  const { session } = useAuth();
+  const [wizardData, setWizardData] = useState<Partial<WizardData> | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
   const idString =
     typeof id === "string" ? id : Array.isArray(id) ? (id[0] ?? "") : "";
-  // Direct tRPC query
+
+  // Lade Fahndungsdaten
   const {
     data: investigation,
     isLoading: loading,
@@ -75,399 +37,227 @@ export default function FahndungBearbeitenPage() {
     },
   );
 
-  // Effect to handle investigation data
+  // Konvertiere Fahndungsdaten zu Wizard-Format
   useEffect(() => {
     if (investigation) {
-      console.log("🔍 Investigation loaded:", investigation);
-      form.reset({
-        title: investigation.title ?? "",
-        case_number: investigation.case_number ?? "",
-        category: [
+      console.log("🔍 Investigation loaded for editing:", investigation);
+
+      // Hilfsfunktion für sichere Kategorie-Konvertierung
+      const getValidCategory = (
+        category: string | null | undefined,
+      ):
+        | "WANTED_PERSON"
+        | "MISSING_PERSON"
+        | "UNKNOWN_DEAD"
+        | "STOLEN_GOODS" => {
+        const validCategories = [
           "WANTED_PERSON",
           "MISSING_PERSON",
           "UNKNOWN_DEAD",
           "STOLEN_GOODS",
-        ].includes(investigation.category)
-          ? (investigation.category as
+        ] as const;
+        return validCategories.includes(
+          category as (typeof validCategories)[number],
+        )
+          ? (category as
               | "WANTED_PERSON"
               | "MISSING_PERSON"
               | "UNKNOWN_DEAD"
               | "STOLEN_GOODS")
-          : undefined,
-        priority: ["normal", "urgent", "new"].includes(investigation.priority)
-          ? investigation.priority
-          : "normal",
-        status: ["draft", "active", "published", "closed"].includes(
-          investigation.status,
-        )
-          ? (investigation.status as
-              | "draft"
-              | "active"
-              | "published"
-              | "closed")
-          : undefined,
-        date: investigation.date?.split("T")[0] ?? "",
-        short_description: investigation.short_description ?? "",
-        description: investigation.description ?? "",
-        features: investigation.features ?? "",
-        location: investigation.location ?? "",
-        station: investigation.station ?? "",
-        contact_info: investigation.contact_info ?? {},
-        tags: investigation.tags ?? [],
-      });
-      setTagInput(investigation.tags?.join(", ") ?? "");
+          : "MISSING_PERSON";
+      };
+
+      const convertedData: Partial<WizardData> = {
+        step1: {
+          title: investigation.title ?? "",
+          category: getValidCategory(investigation.category),
+          caseNumber: investigation.case_number ?? "",
+        },
+        step2: {
+          shortDescription: investigation.short_description ?? "",
+          description: investigation.description ?? "",
+          priority: investigation.priority ?? "normal",
+          tags: investigation.tags ?? [],
+          features: investigation.features ?? "",
+        },
+        step3: {
+          mainImage: null, // Bilder werden separat geladen
+          additionalImages: [],
+          documents: [],
+        },
+        step4: {
+          mainLocation: investigation.location
+            ? {
+                id: investigation.id ?? "main-location",
+                address: investigation.location,
+                lat: 0,
+                lng: 0,
+                type: "main",
+                description: "",
+              }
+            : null,
+          additionalLocations: predefinedStations
+            .slice(0, 3)
+            .map((station, index) => ({
+              id: `station-${index}`,
+              address: `${station.address}, ${station.city}`,
+              lat: station.coordinates[0],
+              lng: station.coordinates[1],
+              type: "tatort" as const,
+              description: station.name,
+              timestamp: undefined,
+            })),
+          searchRadius: 5,
+        },
+        step5: {
+          contactPerson:
+            (investigation.contact_info?.["person"] as string) ?? "",
+          contactPhone: (investigation.contact_info?.["phone"] as string) ?? "",
+          contactEmail: (investigation.contact_info?.["email"] as string) ?? "",
+          department: investigation.station ?? "",
+          availableHours: "Mo-Fr 8:00-16:00 Uhr",
+          publishStatus:
+            investigation.status === "published" ? "immediate" : "draft",
+          urgencyLevel: "medium",
+          requiresApproval: false,
+          visibility: {
+            internal: true,
+            regional: false,
+            national: false,
+            international: false,
+          },
+          notifications: {
+            emailAlerts: true,
+            smsAlerts: false,
+            appNotifications: true,
+            pressRelease: false,
+          },
+          articlePublishing: {
+            publishAsArticle: false,
+            generateSeoUrl: false,
+            keywords: [],
+          },
+        },
+      };
+
+      setWizardData(convertedData);
+      setIsLoading(false);
     }
-  }, [investigation, form]);
+  }, [investigation]);
 
-  // Update mutation
-  const updateInvestigationMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: () => {
-      toast.success("Fahndung erfolgreich aktualisiert");
-      router.push(`/fahndungen/${idString}`);
-    },
-    onError: (error) => {
-      toast.error("Fehler beim Aktualisieren: " + getErrorMessage(error));
-    },
-  });
-
-  const onSubmit = async (data: EditFormData) => {
-    setIsSubmitting(true);
-    try {
-      await updateInvestigationMutation.mutateAsync({
-        id: idString,
-        ...data,
-      });
-    } catch (error: unknown) {
-      console.error("Update error:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (loading) {
+  // Loading state
+  if (loading || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <div className="bg-background min-h-screen">
+        <Header
+          variant="dashboard"
+          session={session}
+          onCreateInvestigation={() => {
+            // Leere Funktion für Header
+          }}
+        />
+
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-gray-400" />
+            <p className="text-gray-600">Lade Fahndung...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !investigation) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-          <p className="text-gray-600">Fahndung nicht gefunden</p>
+      <div className="bg-background min-h-screen">
+        <Header
+          variant="dashboard"
+          session={session}
+          onCreateInvestigation={() => {
+            // Leere Funktion für Header
+          }}
+        />
+
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+            <p className="text-gray-600">Fahndung nicht gefunden</p>
+            <button
+              onClick={() => router.push("/fahndungen")}
+              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Zurück zur Übersicht
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!wizardData) {
+    return (
+      <div className="bg-background min-h-screen">
+        <Header
+          variant="dashboard"
+          session={session}
+          onCreateInvestigation={() => {
+            // Leere Funktion für Header
+          }}
+        />
+
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-gray-400" />
+            <p className="text-gray-600">Bereite Bearbeitung vor...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="border-b bg-white shadow-xs">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.back()}
-                className="mr-4 rounded-lg p-2 transition-colors hover:bg-gray-100"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <h1 className="text-xl font-semibold">Fahndung bearbeiten</h1>
-            </div>
+    <div className="bg-background min-h-screen">
+      <Header
+        variant="dashboard"
+        session={session}
+        onCreateInvestigation={() => {
+          // Leere Funktion für Header
+        }}
+      />
+
+      <Breadcrumb
+        values={{
+          fahndungen: "Fahndungen",
+          [idString]: investigation.title,
+          bearbeiten: "Bearbeiten",
+        }}
+      />
+
+      <div className="container mx-auto py-8">
+        <div className="mb-8">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push(`/fahndungen/${idString}`)}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Zurück zur Fahndung</span>
+            </button>
           </div>
+          <h1 className="text-3xl font-bold">Fahndung bearbeiten</h1>
+          <p className="text-muted-foreground mt-2">
+            Bearbeite alle Bereiche der Fahndung &quot;{investigation.title}
+            &quot;
+          </p>
+        </div>
+
+        {/* EnhancedFahndungWizard mit geladenen Daten */}
+        <div className="mx-auto max-w-2xl">
+          <EnhancedFahndungWizard initialData={wizardData} mode="edit" />
         </div>
       </div>
 
-      {/* Form */}
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 rounded-lg bg-white p-6 shadow-xs"
-        >
-          {/* Basic Info */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">Grundinformationen</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Titel *
-                </label>
-                <input
-                  {...form.register("title")}
-                  className="input-dark-mode"
-                />
-                {form.formState.errors.title && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {form.formState.errors.title.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Aktenzeichen *
-                </label>
-                <div className="space-y-2">
-                  <input
-                    {...form.register("case_number")}
-                    className="input-dark-mode font-mono"
-                    placeholder="POL-2024-K-001234-A"
-                  />
-                  {form.watch("case_number") && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {(() => {
-                        const caseNumber = form.watch("case_number");
-                        if (!caseNumber) return null;
-
-                        const info = getCaseNumberInfo(caseNumber);
-                        return info ? (
-                          <span>
-                            {info.authority} • {info.year} • {info.subjectLabel}{" "}
-                            • #{info.sequence} • {info.statusLabel}
-                          </span>
-                        ) : (
-                          <span className="text-orange-500">
-                            Ungültiges Format
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  )}
-                  {form.formState.errors.case_number && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {form.formState.errors.case_number.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Kategorie *
-                </label>
-                <select
-                  {...form.register("category")}
-                  className="select-dark-mode"
-                >
-                  {getCategoryOptions().map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Priorität *
-                </label>
-                <select
-                  {...form.register("priority")}
-                  className="select-dark-mode"
-                >
-                  <option value="normal">Normal</option>
-                  <option value="urgent">Dringend</option>
-                  <option value="new">Neu</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Status *
-                </label>
-                <select
-                  {...form.register("status")}
-                  className="select-dark-mode"
-                >
-                  <option value="draft">Entwurf</option>
-                  <option value="active">Aktiv</option>
-                  <option value="published">Veröffentlicht</option>
-                  <option value="closed">Geschlossen</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Datum *
-                </label>
-                <input
-                  type="date"
-                  {...form.register("date")}
-                  className="input-dark-mode"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">Beschreibung</h2>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium">
-                Kurzbeschreibung *
-              </label>
-              <textarea
-                {...form.register("short_description")}
-                rows={3}
-                className="textarea-dark-mode"
-              />
-              {form.formState.errors.short_description && (
-                <p className="mt-1 text-sm text-red-500">
-                  {form.formState.errors.short_description.message}
-                </p>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium">
-                Ausführliche Beschreibung *
-              </label>
-              <textarea
-                {...form.register("description")}
-                rows={6}
-                className="textarea-dark-mode"
-              />
-              {form.formState.errors.description && (
-                <p className="mt-1 text-sm text-red-500">
-                  {form.formState.errors.description.message}
-                </p>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-medium">
-                Besondere Merkmale
-              </label>
-              <textarea
-                {...form.register("features")}
-                rows={3}
-                className="textarea-dark-mode"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Tags (mit Komma trennen)
-              </label>
-              <input
-                value={tagInput}
-                onChange={(e) => {
-                  setTagInput(e.target.value);
-                  const tags = e.target.value
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter((tag) => tag);
-                  form.setValue("tags", tags);
-                }}
-                className="input-dark-mode"
-                placeholder="z.B. Betrug, Gewalt, Vermisst"
-              />
-            </div>
-          </div>
-
-          {/* Location & Contact */}
-          <div>
-            <h2 className="mb-4 text-lg font-semibold">Ort & Kontakt</h2>
-
-            <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium">Ort *</label>
-                <input
-                  {...form.register("location")}
-                  className="input-dark-mode"
-                />
-                {form.formState.errors.location && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {form.formState.errors.location.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Dienststelle *
-                </label>
-                <input
-                  {...form.register("station")}
-                  className="input-dark-mode"
-                />
-                {form.formState.errors.station && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {form.formState.errors.station.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <h3 className="mb-3 font-medium">Ansprechpartner</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Name</label>
-                  <input
-                    {...form.register("contact_info.name")}
-                    className="input-dark-mode"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    Telefon
-                  </label>
-                  <input
-                    {...form.register("contact_info.phone")}
-                    className="input-dark-mode"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    E-Mail
-                  </label>
-                  <input
-                    {...form.register("contact_info.email")}
-                    type="email"
-                    className="input-dark-mode"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-4 border-t pt-4">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="rounded-lg px-4 py-2 text-gray-600 transition-colors hover:bg-gray-100"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center rounded-lg bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wird gespeichert...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Speichern
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </main>
+      <Footer variant="dashboard" session={session} />
     </div>
   );
 }

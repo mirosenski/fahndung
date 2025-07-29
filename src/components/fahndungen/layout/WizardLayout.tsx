@@ -24,7 +24,7 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
   isMobile = false,
 }) => {
   const { isMobile: responsiveIsMobile } = useResponsive();
-  const isMobileView = isMobile || responsiveIsMobile;
+  const isMobileView = isMobile ?? responsiveIsMobile;
 
   const BottomNavigation = () => (
     <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">

@@ -255,7 +255,7 @@ export const themeUtils = {
   // Theme-Wiederherstellung
   restoreTheme: (): Theme => {
     if (typeof localStorage === "undefined") return "system";
-    return (localStorage.getItem("theme") as Theme) || "system";
+    return (localStorage.getItem("theme") as Theme) ?? "system";
   },
 };
 

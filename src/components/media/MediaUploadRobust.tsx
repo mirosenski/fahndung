@@ -295,7 +295,7 @@ export default function MediaUploadRobust({
           <input
             type="file"
             onChange={handleFileSelect}
-            disabled={isUploading || !session}
+            disabled={isUploading ?? !session}
             accept="image/*,video/*,.pdf,.doc,.docx"
             className="hidden"
           />

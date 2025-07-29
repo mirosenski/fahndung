@@ -170,7 +170,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
       setTimeout(
         () =>
           resolve({ data: { session: null }, error: { message: "Timeout" } }),
-        2000, // Erhöht auf 2000ms für stabilere Verbindung
+        3000, // Erhöht auf 3000ms für stabilere Verbindung
       ),
     );
 
@@ -180,22 +180,72 @@ export const getCurrentSession = async (): Promise<Session | null> => {
     if (sessionError) {
       console.error("❌ Session-Fehler:", sessionError);
 
-      // Spezielle Behandlung für Refresh Token Fehler
+      // 🔥 VERBESSERTE FEHLERBEHANDLUNG FÜR LEERE FEHLERMELDUNGEN
+      const errorMessage = sessionError.message ?? "";
+      const isEmptyError =
+        !errorMessage || errorMessage === "{}" || errorMessage.trim() === "";
+
+      // Spezielle Behandlung für Refresh Token Fehler und leere Fehlermeldungen
       if (
-        sessionError.message.includes("Invalid Refresh Token") ||
-        sessionError.message.includes("Refresh Token Not Found") ||
-        sessionError.message.includes("JWT expired") ||
-        sessionError.message.includes("Token has expired") ||
-        sessionError.message.includes("Auth session missing") ||
-        sessionError.message.includes("Forbidden") ||
-        sessionError.message.includes("403")
+        errorMessage.includes("Invalid Refresh Token") ||
+        errorMessage.includes("Refresh Token Not Found") ||
+        errorMessage.includes("JWT expired") ||
+        errorMessage.includes("Token has expired") ||
+        errorMessage.includes("Auth session missing") ||
+        errorMessage.includes("Forbidden") ||
+        errorMessage.includes("403") ||
+        isEmptyError // Leere oder ungültige Fehlermeldung
       ) {
         console.log("🔄 Auth Session Fehler - bereinige Session...");
         await clearAuthSession();
         return null;
       }
 
-      return null;
+      // 🔥 VERBESSERTE FEHLERBEHANDLUNG
+      console.log("🔄 Session-Fehler Details:", {
+        message: sessionError.message,
+        name: "name" in sessionError ? sessionError.name : undefined,
+        stack: "stack" in sessionError ? sessionError.stack : undefined,
+        isEmpty: isEmptyError,
+      });
+
+      // Versuche Session-Refresh nur bei spezifischen Fehlern
+      if (!isEmptyError && !errorMessage.includes("Timeout")) {
+        try {
+          console.log("🔄 Versuche Session-Refresh...");
+          const { data: refreshData, error: refreshError } =
+            await supabase.auth.refreshSession();
+
+          if (!refreshError && refreshData.session) {
+            console.log("✅ Session-Refresh erfolgreich");
+            return {
+              user: {
+                id: refreshData.session.user.id,
+                email: refreshData.session.user.email ?? "",
+              },
+              profile: null, // Profile wird später geladen
+            };
+          } else {
+            console.log(
+              "❌ Session-Refresh fehlgeschlagen:",
+              refreshError?.message,
+            );
+            await clearAuthSession();
+            return null;
+          }
+        } catch (refreshError) {
+          console.error("❌ Session-Refresh Exception:", refreshError);
+          await clearAuthSession();
+          return null;
+        }
+      } else {
+        // Bei leeren Fehlermeldungen oder Timeout direkt Session bereinigen
+        console.log(
+          "🔄 Leere Fehlermeldung oder Timeout - bereinige Session...",
+        );
+        await clearAuthSession();
+        return null;
+      }
     }
 
     if (!sessionData.session) {
@@ -273,8 +323,11 @@ export const getCurrentSession = async (): Promise<Session | null> => {
               profile: null,
             };
           }
-        } catch (createError) {
-          console.error("❌ Fehler beim Erstellen des Profils:", createError);
+        } catch (createProfileError) {
+          console.error(
+            "❌ Fehler beim Erstellen des Profils:",
+            createProfileError,
+          );
           // Fallback: Session ohne Profil zurückgeben
           return {
             user: {
@@ -285,10 +338,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
           };
         }
       } else {
-        console.error("❌ Fehler beim Abrufen des Benutzer-Profils:", {
-          code: profileError.code,
-          message: profileError.message,
-        });
+        console.error("❌ Fehler beim Laden des Profils:", profileError);
         // Fallback: Session ohne Profil zurückgeben
         return {
           user: {
@@ -298,30 +348,35 @@ export const getCurrentSession = async (): Promise<Session | null> => {
           profile: null,
         };
       }
-    } else if (profile) {
-      console.log("✅ Benutzer-Profil gefunden:", {
-        id: profile.id,
-        role: profile.role,
-        name: profile.name,
-      });
     }
+
+    if (!profile) {
+      console.log("⚠️ Kein Profil gefunden, verwende Session ohne Profil");
+      return {
+        user: {
+          id: user.id,
+          email: user.email ?? "",
+        },
+        profile: null,
+      };
+    }
+
+    console.log("✅ Profil erfolgreich geladen:", {
+      id: profile.id,
+      name: profile.name,
+      role: profile.role,
+    });
 
     return {
       user: {
         id: user.id,
         email: user.email ?? "",
       },
-      profile: profile,
+      profile,
     };
   } catch (error) {
-    console.error("❌ Fehler beim Abrufen der Session:", error);
-
-    // Bei Timeout-Fehlern Session bereinigen
-    if (error instanceof Error && error.message.includes("Timeout")) {
-      console.log("🔄 Timeout-Fehler - bereinige Session...");
-      await clearAuthSession();
-    }
-
+    console.error("❌ Unerwarteter Fehler in getCurrentSession:", error);
+    await clearAuthSession();
     return null;
   }
 };

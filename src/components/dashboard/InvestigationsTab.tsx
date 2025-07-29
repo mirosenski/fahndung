@@ -278,6 +278,10 @@ export default function InvestigationsTab({
     selectedInvestigations.size === filteredInvestigations.length &&
     filteredInvestigations.length > 0;
 
+  const handleCreateSimpleWizard = () => {
+    router.push("/fahndungen/neu/simple");
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -423,13 +427,22 @@ export default function InvestigationsTab({
                 <span>Alle auswählen</span>
               </button>
               {isEditor && (
-                <button
-                  onClick={onCreate}
-                  className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Neue Fahndung</span>
-                </button>
+                <>
+                  <button
+                    onClick={onCreate}
+                    className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Neue Fahndung</span>
+                  </button>
+                  <button
+                    onClick={handleCreateSimpleWizard}
+                    className="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Einfacher Wizard</span>
+                  </button>
+                </>
               )}
             </div>
           </div>

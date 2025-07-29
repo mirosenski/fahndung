@@ -26,15 +26,22 @@ const LivePreviewCard: React.FC<LivePreviewCardProps> = ({ data }) => {
       features: data.step2?.features ?? "",
     },
     step3: {
-      mainImage: data.step3?.mainImage
-        ? data.step3.mainImage instanceof File
-          ? URL.createObjectURL(data.step3.mainImage)
-          : data.step3.mainImage
-        : "/images/placeholders/fotos/platzhalterbild.svg",
+      mainImage:
+        data.step3?.mainImageUrl ??
+        (data.step3?.mainImage
+          ? data.step3.mainImage instanceof File
+            ? URL.createObjectURL(data.step3.mainImage)
+            : data.step3.mainImage
+          : "/images/placeholders/fotos/platzhalterbild.svg"),
+      mainImageUrl: data.step3?.mainImageUrl ?? undefined,
       additionalImages:
-        data.step3?.additionalImages?.map((img) =>
-          img instanceof File ? URL.createObjectURL(img) : img,
-        ) ?? [],
+        data.step3?.additionalImageUrls &&
+        data.step3.additionalImageUrls.length > 0
+          ? data.step3.additionalImageUrls
+          : (data.step3?.additionalImages?.map((img) =>
+              img instanceof File ? URL.createObjectURL(img) : img,
+            ) ?? []),
+      additionalImageUrls: data.step3?.additionalImageUrls,
     },
     step4: {
       mainLocation: data.step4?.mainLocation
