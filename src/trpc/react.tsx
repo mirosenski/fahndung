@@ -59,16 +59,16 @@ async function getAuthToken(): Promise<string | null> {
 
     const {
       data: { session },
-      error: _error,
+      error,
     } = result;
 
-    if (_error) {
+    if (error) {
       // Bei spezifischen Auth-Fehlern Session bereinigen
       if (
-        _error.message.includes("Invalid Refresh Token") ||
-        _error.message.includes("Refresh Token Not Found") ||
-        _error.message.includes("JWT expired") ||
-        _error.message.includes("Token has expired")
+        error.message.includes("Invalid Refresh Token") ||
+        error.message.includes("Refresh Token Not Found") ||
+        error.message.includes("JWT expired") ||
+        error.message.includes("Token has expired")
       ) {
         await supabase.auth.signOut();
         return null;
@@ -121,7 +121,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
               if (authToken) {
                 headers.set("Authorization", `Bearer ${authToken}`);
               }
-            } catch (_error) {
+            } catch (error) {
               // Silent error handling
             }
 

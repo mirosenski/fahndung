@@ -334,7 +334,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       cardElement.addEventListener("keydown", handleKeyDown);
       return () => cardElement.removeEventListener("keydown", handleKeyDown);
     }
-    
+
     // Return undefined wenn kein cardElement existiert
     return undefined;
   }, [isFlipped, flipCard]);
@@ -632,14 +632,20 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           ref={frontRef}
           className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden" }}
-          onClick={() => router.push(`/fahndungen/${data.step1.caseNumber}`)}
+          onClick={() =>
+            router.push(
+              `/fahndungen/${investigationId ?? data.step1.caseNumber}`,
+            )
+          }
           role="button"
           aria-label={`Zur Detailseite von ${data.step1.title} navigieren`}
           tabIndex={isFlipped ? -1 : 0}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              router.push(`/fahndungen/${data.step1.caseNumber}`);
+              router.push(
+                `/fahndungen/${investigationId ?? data.step1.caseNumber}`,
+              );
             }
           }}
         >

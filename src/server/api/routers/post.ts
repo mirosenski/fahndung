@@ -138,17 +138,27 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
-  // Öffentlich: Einzelne Fahndung lesen
+  // Öffentlich: Einzelne Fahndung lesen (mit UUID oder Fallnummer)
   getInvestigation: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       try {
-        // Get the investigation with basic data and images from JSON field
-        const response = (await ctx.db
-          .from("investigations")
-          .select("*")
-          .eq("id", input.id)
-          .single()) as SupabaseResponse<Investigation>;
+        let query = ctx.db.from("investigations").select("*");
+
+        // Prüfe ob es eine UUID ist oder eine Fallnummer
+        const isUUID =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            input.id,
+          );
+
+        if (isUUID) {
+          query = query.eq("id", input.id);
+        } else {
+          query = query.eq("case_number", input.id);
+        }
+
+        const response =
+          (await query.single()) as SupabaseResponse<Investigation>;
 
         const { data, error } = response;
 
