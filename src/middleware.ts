@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
+
+  // SEO-Redirects für Fahndungsdetailseiten (optional, kann später aktiviert werden)
+  // if (pathname.match(/^\/fahndungen\/[^/]+$/)) {
+  //   const slug = pathname.split('/').pop();
+  //   if (slug) {
+  //     // Hier könnte ein API-Call gemacht werden, um die Fahndung zu laden
+  //     // const investigation = await fetchInvestigation(slug);
+  //     // const newPath = `/fahndungen/${generateSeoSlug(investigation.title, investigation.case_number)}`;
+  //     // return NextResponse.redirect(new URL(newPath, request.url), 301);
+  //   }
+  // }
   // CORS-Headers für alle API-Routen
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const response = NextResponse.next();

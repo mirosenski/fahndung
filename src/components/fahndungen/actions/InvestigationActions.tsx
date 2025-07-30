@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { getFahndungUrl, getFahndungEditUrl } from "~/lib/seo";
 
 // Interface für tRPC Investigation
 interface Investigation {
@@ -141,16 +142,29 @@ export default function InvestigationActions({
   };
 
   const handleEdit = () => {
-    router.push(`/fahndungen/${investigation.id}/edit`);
+    router.push(
+      getFahndungEditUrl(
+        investigation.title,
+        investigation.case_number,
+      ),
+    );
   };
 
   const handleView = () => {
-    router.push(`/fahndungen/${investigation.id}`);
+    router.push(
+      getFahndungUrl(
+        investigation.title,
+        investigation.case_number,
+      ),
+    );
   };
 
   const handleCopyLink = async () => {
     try {
-      const url = `${window.location.origin}/fahndungen/${investigation.id}`;
+      const url = `${window.location.origin}${getFahndungUrl(
+        investigation.title,
+        investigation.case_number,
+      )}`;
       await navigator.clipboard.writeText(url);
       toast.success("Link in Zwischenablage kopiert");
     } catch {
@@ -160,7 +174,10 @@ export default function InvestigationActions({
 
   const handleShare = async () => {
     try {
-      const url = `${window.location.origin}/fahndungen/${investigation.id}`;
+      const url = `${window.location.origin}${getFahndungUrl(
+        investigation.title,
+        investigation.case_number,
+      )}`;
       if (navigator.share) {
         await navigator.share({
           title: investigation.title,

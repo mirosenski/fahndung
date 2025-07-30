@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getFahndungUrl, getFahndungEditUrl } from "~/lib/seo";
 
 interface Investigation {
   id: string;
@@ -225,21 +226,37 @@ export default function InvestigationsTab({
   };
 
   const handleView = (investigation: Investigation) => {
-    router.push(`/fahndungen/${investigation.id}`);
+    router.push(
+      getFahndungUrl(
+        investigation.title,
+        investigation.case_number,
+      ),
+    );
   };
 
   const handleEdit = (investigation: Investigation) => {
-    router.push(`/fahndungen/${investigation.id}/bearbeiten`);
+    router.push(
+      getFahndungEditUrl(
+        investigation.title,
+        investigation.case_number,
+      ),
+    );
   };
 
   const handleCopyLink = async (investigation: Investigation) => {
-    const url = `${window.location.origin}/fahndungen/${investigation.id}`;
+    const url = `${window.location.origin}${getFahndungUrl(
+      investigation.title,
+      investigation.case_number,
+    )}`;
     await navigator.clipboard.writeText(url);
     toast.success("Link kopiert");
   };
 
   const handleShare = async (investigation: Investigation) => {
-    const url = `${window.location.origin}/fahndungen/${investigation.id}`;
+    const url = `${window.location.origin}${getFahndungUrl(
+      investigation.title,
+      investigation.case_number,
+    )}`;
     if (navigator.share) {
       await navigator.share({
         title: investigation.title,

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -28,10 +26,11 @@ import WizardTabNavigation, {
   type WizardTab,
 } from "@/components/investigation/WizardTabNavigation";
 import PageLayout from "@/components/layout/PageLayout";
-import { getCurrentSession } from "~/lib/auth";
+import { getCurrentSession, type Session } from "~/lib/auth";
 import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
 import { api } from "~/trpc/react";
-import { useParams } from "next/navigation";
+
+import { getFahndungEditUrl } from "~/lib/seo";
 
 // Types für echte Datenbankdaten
 interface DatabaseInvestigation {
@@ -100,91 +99,36 @@ const convertDatabaseToUIFormat = (dbData: DatabaseInvestigation) => {
       caseNumber: dbData.case_number,
     },
     step2: {
-      shortDescription:
-        dbData.short_description ??
-        dbData.description?.substring(0, 100) + "..." ??
-        "",
-      description: dbData.description ?? "",
+      shortDescription: dbData.short_description ?? "",
+      description: dbData.description,
       priority: dbData.priority,
       tags: dbData.tags ?? [],
-      features: dbData.features ?? "",
+      features: dbData.features,
     },
     step3: {
-      mainImage: null, // Wird über URL behandelt
-      additionalImages: [],
-      documents: [],
+      mainImage:
+        dbData.images?.[0]?.url ??
+        "/images/placeholders/fotos/platzhalterbild.svg",
+      additionalImages: dbData.images?.slice(1).map((img) => img.url) ?? [],
     },
     step4: {
-      mainLocation: dbData.location
-        ? {
-            id: "main-location",
-            address: dbData.location,
-            lat: 0, // Könnte aus metadata extrahiert werden
-            lng: 0,
-            type: "main" as const,
-            description: "Hauptort der Fahndung",
-          }
-        : undefined,
-      additionalLocations: [],
-      searchRadius: 5,
+      mainLocation: dbData.location ? { address: dbData.location } : undefined,
     },
     step5: {
-      contactPerson: (dbData.contact_info?.["person"] as string) ?? "Polizei",
+      contactPerson:
+        (dbData.contact_info?.["person"] as string | undefined) ?? "Polizei",
       contactPhone:
-        (dbData.contact_info?.["phone"] as string) ?? "+49 711 8990-0",
-      contactEmail: (dbData.contact_info?.["email"] as string) ?? "",
+        (dbData.contact_info?.["phone"] as string | undefined) ??
+        "+49 711 8990-0",
+      contactEmail:
+        (dbData.contact_info?.["email"] as string | undefined) ?? "",
       department: dbData.station ?? "Polizeipräsidium",
       availableHours: "Mo-Fr 08:00-18:00, Sa-So Bereitschaftsdienst",
-      publishStatus: "immediate" as const,
-      urgencyLevel:
-        dbData.priority === "urgent"
-          ? "high"
-          : dbData.priority === "new"
-            ? "medium"
-            : ("low" as const),
-      requiresApproval: false,
-      visibility: {
-        internal: true,
-        regional: true,
-        national: false,
-        international: false,
-      },
-      notifications: {
-        emailAlerts: true,
-        smsAlerts: false,
-        appNotifications: true,
-        pressRelease: false,
-      },
-      articlePublishing: {
-        publishAsArticle: dbData.published_as_article ?? false,
-        generateSeoUrl: !!dbData.article_slug,
-        customSlug: dbData.article_slug ?? undefined,
-        seoTitle: dbData.article_meta?.seo_title ?? undefined,
-        seoDescription: dbData.article_meta?.seo_description ?? undefined,
-        keywords: dbData.article_meta?.keywords ?? [],
-        author: dbData.article_meta?.author ?? undefined,
-        readingTime: dbData.article_meta?.reading_time ?? undefined,
-      },
     },
-    metadata: {
-      createdAt: dbData.created_at,
-      updatedAt: dbData.updated_at,
-      createdBy: dbData.created_by_user?.email ?? dbData.created_by,
-      views: (dbData.metadata?.["views"] as number) ?? 0,
-      status: dbData.status,
-    },
-    published_as_article: dbData.published_as_article,
-    article_slug: dbData.article_slug,
-    article_meta: dbData.article_meta,
-    // Zusätzliche Daten für UI
     images: dbData.images ?? [],
     contact_info: dbData.contact_info ?? {},
   };
 };
-
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
 
 // Wizard Navigation Tabs
 const wizardTabs: WizardTab[] = [
@@ -225,11 +169,15 @@ const wizardTabs: WizardTab[] = [
   },
 ];
 
-export default function FahndungDetailPage({ params: _params }: PageProps) {
+interface FahndungDetailContentProps {
+  investigationId: string;
+}
+
+export default function FahndungDetailContent({
+  investigationId,
+}: FahndungDetailContentProps) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [session, setSession] = React.useState<any>(null);
-  const params = useParams();
-  const id = params?.["id"] as string;
+  const [session, setSession] = React.useState<Session | null>(null);
 
   React.useEffect(() => {
     void getCurrentSession().then(setSession);
@@ -241,9 +189,9 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
     isLoading,
     error,
   } = api.post.getInvestigation.useQuery(
-    { id },
+    { id: investigationId },
     {
-      enabled: !!id,
+      enabled: !!investigationId,
     },
   );
 
@@ -278,16 +226,14 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Fahndung nicht gefunden
             </h2>
-            <p className="max-w-md text-gray-600 dark:text-gray-400">
-              Die angeforderte Fahndung konnte nicht gefunden werden oder ist
-              nicht verfügbar.
+            <p className="text-gray-600 dark:text-gray-400">
+              Die angeforderte Fahndung konnte nicht geladen werden.
             </p>
             <Link
               href="/fahndungen"
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Zurück zu allen Fahndungen
+              Zurück zur Übersicht
             </Link>
           </div>
         </div>
@@ -295,25 +241,23 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
     );
   }
 
-  // Keine Daten
   if (!investigation) {
     return (
       <PageLayout session={session}>
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-center">
-            <AlertCircle className="h-12 w-12 text-yellow-500" />
+            <AlertCircle className="h-12 w-12 text-red-500" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Keine Daten verfügbar
+              Fahndung nicht gefunden
             </h2>
-            <p className="max-w-md text-gray-600 dark:text-gray-400">
-              Für diese Fahndung sind keine Daten verfügbar.
+            <p className="text-gray-600 dark:text-gray-400">
+              Die angeforderte Fahndung existiert nicht.
             </p>
             <Link
               href="/fahndungen"
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Zurück zu allen Fahndungen
+              Zurück zur Übersicht
             </Link>
           </div>
         </div>
@@ -366,13 +310,10 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
                 <div className="mt-4 flex items-center gap-4 text-sm text-blue-100">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(
-                      investigation.metadata.createdAt,
-                    ).toLocaleDateString("de-DE")}
+                    {new Date().toLocaleDateString("de-DE")}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Eye className="h-4 w-4" />
-                    {investigation.metadata.views} Aufrufe
+                    <Eye className="h-4 w-4" />0 Aufrufe
                   </span>
                 </div>
               </div>
@@ -642,7 +583,10 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
 
             <div className="flex items-center gap-2">
               <Link
-                href={`/fahndungen/${id}/bearbeiten`}
+                href={getFahndungEditUrl(
+                  investigation.step1.title,
+                  investigation.step1.caseNumber,
+                )}
                 className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               >
                 <Edit3 className="h-4 w-4" />

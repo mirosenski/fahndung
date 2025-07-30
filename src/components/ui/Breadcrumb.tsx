@@ -178,7 +178,7 @@ export function Breadcrumb({
     "/register", // Registrierungs-Seite
   ];
 
-  // Prüfen, ob die aktuelle Seite ausgeschlossen ist
+  // Hydration-Problem vermeiden und ausgeschlossene Pfade prüfen
   if (!pathname || excludedPaths.includes(pathname)) {
     return null;
   }
@@ -223,6 +223,8 @@ export function Breadcrumb({
                       <Link
                         href={(item as BreadcrumbItem).href}
                         className={getItemClasses(false)}
+                        prefetch={false}
+                        suppressHydrationWarning
                       >
                         {(item as BreadcrumbItem).label}
                       </Link>

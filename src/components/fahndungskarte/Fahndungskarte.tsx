@@ -27,6 +27,7 @@ import InteractiveMap, {
   type MapLocation,
 } from "@/components/shared/InteractiveMap";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
+import { getFahndungUrl, getFahndungEditUrl } from "~/lib/seo";
 
 // Typ-Definitionen für moderne Fahndungskarte
 
@@ -177,7 +178,7 @@ interface ModernFahndungskarteProps {
 const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   data: propData,
   className = "",
-  investigationId,
+  investigationId: _investigationId,
   onAction,
   userRole: _userRole,
   userPermissions,
@@ -254,7 +255,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const handleShare = async () => {
     if (typeof window === "undefined") return;
 
-    const detailUrl = `${window.location.origin}/fahndungen/${data.step1.caseNumber}`;
+    const detailUrl = `${window.location.origin}${getFahndungUrl(data.step1.title, data.step1.caseNumber)}`;
 
     try {
       if (navigator.share) {
@@ -634,7 +635,10 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           style={{ backfaceVisibility: "hidden" }}
           onClick={() =>
             router.push(
-              `/fahndungen/${investigationId ?? data.step1.caseNumber}`,
+              getFahndungUrl(
+                data.step1.title,
+                data.step1.caseNumber,
+              ),
             )
           }
           role="button"
@@ -644,7 +648,10 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               router.push(
-                `/fahndungen/${investigationId ?? data.step1.caseNumber}`,
+                getFahndungUrl(
+                  data.step1.title,
+                  data.step1.caseNumber,
+                ),
               );
             }
           }}
@@ -810,7 +817,10 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <button
                 onClick={() =>
                   router.push(
-                    `/fahndungen/${investigationId ?? data.step1.caseNumber}`,
+                    getFahndungUrl(
+                      data.step1.title,
+                      data.step1.caseNumber,
+                    ),
                   )
                 }
                 className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -823,7 +833,12 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               {userPermissions?.canEdit && (
                 <button
                   onClick={() => {
-                    router.push(`/fahndungen/${investigationId}/edit`);
+                    router.push(
+                      getFahndungEditUrl(
+                        data.step1.title,
+                        data.step1.caseNumber,
+                      ),
+                    );
                     onAction?.();
                   }}
                   className="rounded-xl bg-blue-100 px-3 py-3 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
