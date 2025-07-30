@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -108,24 +108,34 @@ const EnhancedFahndungWizard = ({
     },
   });
 
+  // DEBUG: Render Counter
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  console.log(`🔴 WIZARD RENDER #${renderCount.current}`);
+
+  // DEBUG: State Changes
+  useEffect(() => {
+    console.log("🟡 wizardData changed:", wizardData);
+  }, [wizardData]);
+
   // Setze caseNumber nur auf dem Client, wenn noch nicht gesetzt
   React.useEffect(() => {
-    if (!isInitialized && !wizardData.step1?.caseNumber) {
+    if (!isInitialized) {
       // Verwende Timestamp für bessere Eindeutigkeit
       const uniqueCaseNumber = generateNewCaseNumber(
-        wizardData.step1?.category ?? "MISSING_PERSON",
+        "MISSING_PERSON", // Verwende festen Wert statt wizardData.step1?.category
         "draft",
       );
       setWizardData((prev) => ({
         ...prev,
         step1: {
           ...prev.step1!,
-          caseNumber: uniqueCaseNumber,
+          caseNumber: prev.step1?.caseNumber ?? uniqueCaseNumber,
         },
       }));
       setIsInitialized(true);
     }
-  }, [isInitialized, wizardData.step1?.caseNumber, wizardData.step1?.category]);
+  }, [isInitialized]); // NUR isInitialized als Dependency!
 
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
@@ -258,10 +268,20 @@ const EnhancedFahndungWizard = ({
 
   const updateStepData = useCallback(
     (step: keyof WizardData, data: WizardData[keyof WizardData]) => {
-      setWizardData((prev) => ({
-        ...prev,
-        [step]: data,
-      }));
+      console.log(`🔵 UPDATE CALLED: ${step}`, data);
+
+      // WICHTIG: Prüfe ob sich wirklich was geändert hat
+      setWizardData((prev) => {
+        if (JSON.stringify(prev[step]) === JSON.stringify(data)) {
+          console.log("⚪ NO CHANGE - skipping update");
+          return prev; // Keine Änderung!
+        }
+        console.log("🟢 UPDATING STATE");
+        return {
+          ...prev,
+          [step]: data,
+        };
+      });
     },
     [],
   );

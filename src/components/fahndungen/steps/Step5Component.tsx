@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Phone, Mail, Building, Clock, AlertCircle } from "lucide-react";
 import type { Step5Data } from "../types/WizardTypes";
 
@@ -11,6 +11,44 @@ interface Step5ComponentProps {
 
 const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
   const [keywordInput, setKeywordInput] = useState("");
+
+  // Lokale States für alle Kontaktfelder
+  const [localContactPerson, setLocalContactPerson] = useState(
+    data.contactPerson,
+  );
+  const [localContactPhone, setLocalContactPhone] = useState(data.contactPhone);
+  const [localContactEmail, setLocalContactEmail] = useState(data.contactEmail);
+  const [localDepartment, setLocalDepartment] = useState(data.department);
+  const [localAvailableHours, setLocalAvailableHours] = useState(
+    data.availableHours,
+  );
+
+  // Synchronisiere mit externen Änderungen
+  useEffect(() => {
+    setLocalContactPerson(data.contactPerson);
+    setLocalContactPhone(data.contactPhone);
+    setLocalContactEmail(data.contactEmail);
+    setLocalDepartment(data.department);
+    setLocalAvailableHours(data.availableHours);
+  }, [
+    data.contactPerson,
+    data.contactPhone,
+    data.contactEmail,
+    data.department,
+    data.availableHours,
+  ]);
+
+  // Commit-Funktion
+  const commitChanges = () => {
+    onChange({
+      ...data,
+      contactPerson: localContactPerson,
+      contactPhone: localContactPhone,
+      contactEmail: localContactEmail,
+      department: localDepartment,
+      availableHours: localAvailableHours,
+    });
+  };
 
   const addKeyword = () => {
     if (
@@ -87,14 +125,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                 Ansprechpartner *
               </label>
               <div className="relative">
-                <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  value={data.contactPerson}
-                  onChange={(e) =>
-                    onChange({ ...data, contactPerson: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={localContactPerson}
+                  onChange={(e) => setLocalContactPerson(e.target.value)}
+                  onBlur={commitChanges}
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="z.B. Kriminalhauptkommissar Müller"
                   required
                 />
@@ -106,14 +143,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                 Telefonnummer *
               </label>
               <div className="relative">
-                <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="tel"
-                  value={data.contactPhone}
-                  onChange={(e) =>
-                    onChange({ ...data, contactPhone: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={localContactPhone}
+                  onChange={(e) => setLocalContactPhone(e.target.value)}
+                  onBlur={commitChanges}
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="+49 123 456789"
                   required
                 />
@@ -125,14 +161,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                 E-Mail-Adresse
               </label>
               <div className="relative">
-                <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
-                  value={data.contactEmail}
-                  onChange={(e) =>
-                    onChange({ ...data, contactEmail: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={localContactEmail}
+                  onChange={(e) => setLocalContactEmail(e.target.value)}
+                  onBlur={commitChanges}
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="kontakt@polizei.de"
                 />
               </div>
@@ -143,14 +178,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                 Abteilung
               </label>
               <div className="relative">
-                <Building className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Building className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  value={data.department}
-                  onChange={(e) =>
-                    onChange({ ...data, department: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={localDepartment}
+                  onChange={(e) => setLocalDepartment(e.target.value)}
+                  onBlur={commitChanges}
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="z.B. Kriminalpolizei"
                 />
               </div>
@@ -161,14 +195,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                 Verfügbare Zeiten
               </label>
               <div className="relative">
-                <Clock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  value={data.availableHours}
-                  onChange={(e) =>
-                    onChange({ ...data, availableHours: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  value={localAvailableHours}
+                  onChange={(e) => setLocalAvailableHours(e.target.value)}
+                  onBlur={commitChanges}
+                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   placeholder="Mo-Fr 8:00-16:00 Uhr"
                 />
               </div>
@@ -194,7 +227,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                     publishStatus: e.target.value as Step5Data["publishStatus"],
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               >
                 <option value="draft">Entwurf</option>
                 <option value="review">Zur Überprüfung</option>
@@ -215,7 +248,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                     urgencyLevel: e.target.value as Step5Data["urgencyLevel"],
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               >
                 <option value="low">Niedrig</option>
                 <option value="medium">Mittel</option>
@@ -337,7 +370,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                           },
                         })
                       }
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder="SEO-optimierter Titel"
                     />
                   </div>
@@ -358,7 +391,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                         })
                       }
                       rows={2}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder="SEO-Beschreibung für Suchmaschinen"
                     />
                   </div>
@@ -376,13 +409,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                       onKeyPress={(e) =>
                         e.key === "Enter" && (e.preventDefault(), addKeyword())
                       }
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                       placeholder="Keyword eingeben..."
                     />
                     <button
                       type="button"
                       onClick={addKeyword}
-                      className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       +
                     </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { Step2Data } from "../types/WizardTypes";
 
@@ -11,6 +11,36 @@ interface Step2ComponentProps {
 
 const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
   const [tagInput, setTagInput] = useState("");
+
+  // Lokale States für alle Textfelder
+  const [localShortDescription, setLocalShortDescription] = useState(
+    data.shortDescription,
+  );
+  const [localDescription, setLocalDescription] = useState(data.description);
+  const [localFeatures, setLocalFeatures] = useState(data.features);
+
+  // Synchronisiere mit externen Änderungen
+  useEffect(() => {
+    setLocalShortDescription(data.shortDescription);
+  }, [data.shortDescription]);
+
+  useEffect(() => {
+    setLocalDescription(data.description);
+  }, [data.description]);
+
+  useEffect(() => {
+    setLocalFeatures(data.features);
+  }, [data.features]);
+
+  // Commit-Funktionen
+  const commitChanges = () => {
+    onChange({
+      ...data,
+      shortDescription: localShortDescription,
+      description: localDescription,
+      features: localFeatures,
+    });
+  };
 
   const addTag = () => {
     if (tagInput.trim() && !data.tags.includes(tagInput.trim())) {
@@ -46,12 +76,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
             Kurzbeschreibung *
           </label>
           <textarea
-            value={data.shortDescription}
-            onChange={(e) =>
-              onChange({ ...data, shortDescription: e.target.value })
-            }
+            value={localShortDescription}
+            onChange={(e) => setLocalShortDescription(e.target.value)}
+            onBlur={commitChanges}
             rows={2}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="Kurze Zusammenfassung für die Kartenansicht..."
             required
           />
@@ -62,10 +91,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
             Detaillierte Beschreibung *
           </label>
           <textarea
-            value={data.description}
-            onChange={(e) => onChange({ ...data, description: e.target.value })}
+            value={localDescription}
+            onChange={(e) => setLocalDescription(e.target.value)}
+            onBlur={commitChanges}
             rows={6}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="Ausführliche Beschreibung der Fahndung..."
             required
           />
@@ -84,7 +114,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
                   priority: e.target.value as Step2Data["priority"],
                 })
               }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               <option value="normal">Normal</option>
               <option value="urgent">Dringend</option>
@@ -104,13 +134,13 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
                 onKeyPress={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addTag())
                 }
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                 placeholder="Tag eingeben..."
               />
               <button
                 type="button"
                 onClick={addTag}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 +
               </button>
@@ -149,10 +179,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
             Besondere Merkmale
           </label>
           <textarea
-            value={data.features}
-            onChange={(e) => onChange({ ...data, features: e.target.value })}
+            value={localFeatures}
+            onChange={(e) => setLocalFeatures(e.target.value)}
+            onBlur={commitChanges}
             rows={4}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
           />
         </div>

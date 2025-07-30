@@ -327,8 +327,16 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    // Nur Event-Handler hinzufügen wenn die Karte existiert und fokussiert ist
+    const cardElement = cardRef.current;
+    if (cardElement) {
+      // Event-Handler direkt auf das Karten-Element statt auf document
+      cardElement.addEventListener("keydown", handleKeyDown);
+      return () => cardElement.removeEventListener("keydown", handleKeyDown);
+    }
+    
+    // Return undefined wenn kein cardElement existiert
+    return undefined;
   }, [isFlipped, flipCard]);
 
   // Tab-Index für Rückseite-Elemente dynamisch setzen

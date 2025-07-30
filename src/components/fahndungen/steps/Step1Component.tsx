@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FileText } from "lucide-react";
 import { getCategoryOptions } from "@/types/categories";
 import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
@@ -12,6 +12,14 @@ interface Step1ComponentProps {
 }
 
 const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
+  // Lokaler State für den Titel
+  const [localTitle, setLocalTitle] = useState(data.title);
+
+  // Synchronisiere lokalen State mit data.title wenn sich data ändert
+  useEffect(() => {
+    setLocalTitle(data.title);
+  }, [data.title]);
+
   const generateCaseNumber = (category: string): string => {
     return generateNewCaseNumber(category as Step1Data["category"], "draft");
   };
@@ -42,9 +50,10 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
           </label>
           <input
             type="text"
-            value={data.title}
-            onChange={(e) => onChange({ ...data, title: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            value={localTitle}
+            onChange={(e) => setLocalTitle(e.target.value)}
+            onBlur={() => onChange({ ...data, title: localTitle })}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             placeholder="z.B. Vermisste - Maria Schmidt"
             required
           />
@@ -58,7 +67,7 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
             <select
               value={data.category}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               {getCategoryOptions().map((option) => (
                 <option key={option.value} value={option.value}>
@@ -78,7 +87,7 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
               onChange={(e) =>
                 onChange({ ...data, caseNumber: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               placeholder="POL-2024-K-001234-A"
             />
           </div>
