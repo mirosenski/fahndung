@@ -1,4 +1,3 @@
-import { AuthError } from "@supabase/supabase-js";
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -14,8 +13,8 @@ import { createClient } from "@supabase/supabase-js";
 
 import {
   type Session,
-  type UserProfile,
   type AuthPermissions,
+  getRolePermissions,
 } from "~/lib/auth";
 
 // Supabase Client für Server-Side
@@ -57,32 +56,26 @@ interface TRPCContext {
 export const createTRPCContext = async (opts: {
   headers: Headers;
 }): Promise<TRPCContext> => {
-  console.log("🔧 Creating tRPC context with Supabase...");
-  console.log("🔍 Environment check:", {
-    hasSupabaseUrl: !!process.env["NEXT_PUBLIC_SUPABASE_URL"],
-    hasServiceRoleKey: !!process.env["SUPABASE_SERVICE_ROLE_KEY"],
-    hasAnonKey: !!process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"],
-    supabaseUrl:
-      process.env["NEXT_PUBLIC_SUPABASE_URL"]?.substring(0, 20) + "...",
-  });
-
   // Session aus Headers extrahieren
-  let session: Session | null = null;
+  const session: Session | null = null;
   let user: TRPCUser | null = null;
+  const debugHeader = opts.headers.get("x-debug-auth");
 
   try {
     const authHeader = opts.headers.get("Authorization");
-    const debugHeader = opts.headers.get("x-debug-auth");
 
-    console.log("🔍 Auth header found:", !!authHeader);
-    console.log("🔍 Debug header found:", !!debugHeader);
-    console.log("🔍 All headers:", Object.fromEntries(opts.headers.entries()));
+    // Nur Debug-Logs wenn explizit gewünscht
+    if (debugHeader === "true") {
+      console.log("🔍 Auth header found:", !!authHeader);
+      console.log("🔍 Debug header found:", !!debugHeader);
+    }
 
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       if (token) {
-        console.log("🔍 Token extracted, length:", token.length);
-        console.log("🔍 Token start:", token.substring(0, 20) + "...");
+        if (debugHeader === "true") {
+          console.log("🔍 Token extracted, length:", token.length);
+        }
 
         const supabaseAuth = createClient(
           process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
@@ -95,9 +88,6 @@ export const createTRPCContext = async (opts: {
         );
 
         try {
-          // 🔥 VERBESSERTE TOKEN-VALIDIERUNG MIT MEHR DEBUGGING
-          console.log("🔍 Starte Token-Validierung...");
-
           // Timeout für Token-Validierung hinzufügen
           const userPromise = supabaseAuth.auth.getUser(token);
           const timeoutPromise = new Promise<{
@@ -110,7 +100,7 @@ export const createTRPCContext = async (opts: {
                   data: { user: null },
                   error: { message: "Timeout" },
                 }),
-              5000, // Erhöht auf 5000ms für stabilere Verbindung
+              5000,
             ),
           );
 
@@ -121,25 +111,19 @@ export const createTRPCContext = async (opts: {
           } = result;
 
           if (error) {
-            console.log("❌ Token ungültig:", error.message);
-            if (error instanceof AuthError) {
-              console.log("❌ Error details:", {
-                message: error.message,
-                status: "status" in error ? error.status : undefined,
-                name: "name" in error ? error.name : undefined,
-              });
+            if (debugHeader === "true") {
+              console.log("❌ Token ungültig:", error.message);
             }
 
             // 🔥 VERSUCHE ALTERNATIVE TOKEN-VALIDIERUNG MIT JWT-DECODIERUNG
             if (error.message.includes("Invalid API key")) {
-              console.log(
-                "🔄 Service Role Key Problem - versuche JWT-Decodierung...",
-              );
+              if (debugHeader === "true") {
+                console.log(
+                  "🔄 Service Role Key Problem - versuche JWT-Decodierung...",
+                );
+              }
 
               try {
-                // 🔥 ALTERNATIVE TOKEN-VALIDIERUNG MIT JWT-DECODIERUNG
-                console.log("🔍 Versuche JWT-Token-Decodierung...");
-
                 // Decodiere den JWT Token manuell
                 const tokenParts = token.split(".");
                 if (tokenParts.length === 3) {
@@ -153,224 +137,107 @@ export const createTRPCContext = async (opts: {
                       role?: string;
                     };
 
-                    console.log("✅ JWT Token erfolgreich decodiert:", {
-                      sub: payload.sub,
-                      email: payload.email,
-                      exp: payload.exp,
-                      role: payload.role,
-                    });
+                    if (debugHeader === "true") {
+                      console.log("✅ JWT Token erfolgreich decodiert:", {
+                        sub: payload.sub,
+                        email: payload.email,
+                        exp: payload.exp,
+                        role: payload.role,
+                      });
+                    }
 
                     // Prüfe Token-Ablauf
                     const now = Math.floor(Date.now() / 1000);
                     if (payload.exp && now >= payload.exp) {
-                      console.log("❌ Token ist abgelaufen");
-                      throw new Error("Token expired");
-                    }
-
-                    // Erstelle User-Objekt aus JWT Payload
-                    const userFromJWT = {
-                      id: payload.sub ?? "",
-                      email: payload.email ?? "",
-                      role: payload.role ?? "authenticated",
-                    };
-
-                    console.log("✅ User aus JWT extrahiert:", userFromJWT);
-
-                    // Benutzer-Profil abrufen (versuche, aber ignoriere Fehler)
-                    let profile = null;
-                    try {
-                      const supabaseAnon = createClient(
-                        process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
-                        process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
-                        {
-                          auth: {
-                            persistSession: false,
-                          },
-                        },
-                      );
-
-                      const profileResult = await supabaseAnon
-                        .from("user_profiles")
-                        .select("*")
-                        .eq("user_id", userFromJWT.id)
-                        .single();
-
-                      const { data: profileData, error: profileError } =
-                        profileResult as {
-                          data: UserProfile | null;
-                          error: { message: string } | null;
-                        };
-
-                      if (profileError) {
-                        console.warn(
-                          "❌ Profile fetch failed:",
-                          profileError.message,
-                        );
-                        // Erstelle ein Standard-Profil für authentifizierte Benutzer
-                        profile = {
-                          id: userFromJWT.id,
-                          user_id: userFromJWT.id,
-                          email: userFromJWT.email ?? "",
-                          role: "user", // Standard-Rolle
-                          name: userFromJWT.email?.split("@")[0] ?? "User",
-                          created_at: new Date().toISOString(),
-                          updated_at: new Date().toISOString(),
-                        } as UserProfile;
-                      } else {
-                        profile = profileData;
+                      if (debugHeader === "true") {
+                        console.log("❌ JWT Token ist abgelaufen");
                       }
-                    } catch (profileError) {
-                      console.warn("❌ Profile fetch failed:", profileError);
-                      // Erstelle ein Standard-Profil für authentifizierte Benutzer
-                      profile = {
-                        id: userFromJWT.id,
-                        user_id: userFromJWT.id,
-                        email: userFromJWT.email ?? "",
-                        role: "user", // Standard-Rolle
-                        name: userFromJWT.email?.split("@")[0] ?? "User",
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                      } as UserProfile;
-                    }
-
-                    session = {
-                      user: {
-                        id: userFromJWT.id,
-                        email: userFromJWT.email ?? "",
-                      },
-                      profile: profile,
-                    };
-
-                    // Erstelle TRPCUser mit Permissions
-                    if (profile) {
-                      const { getRolePermissions } = await import("~/lib/auth");
-                      const permissions = getRolePermissions(profile.role);
-
-                      user = {
-                        id: userFromJWT.id,
-                        email: userFromJWT.email ?? "",
-                        role: profile.role,
-                        permissions: permissions,
+                      return {
+                        db: supabase,
+                        session: null,
+                        user: null,
                       };
                     }
 
-                    console.log(
-                      "✅ User authenticated with JWT:",
-                      userFromJWT.id,
-                      "Role:",
-                      profile?.role,
-                    );
+                    // Erstelle User-Objekt aus JWT-Payload
+                    user = {
+                      id: payload.sub ?? "",
+                      email: payload.email ?? "",
+                      role: payload.role ?? "user",
+                      permissions: getRolePermissions(payload.role ?? "user"),
+                    };
+
+                    if (debugHeader === "true") {
+                      console.log("✅ User aus JWT erstellt:", {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role,
+                      });
+                    }
                   } catch (jwtError) {
-                    console.error(
-                      "❌ JWT Decodierung fehlgeschlagen:",
-                      jwtError,
-                    );
-                    console.log(
-                      "🔄 Token-Fehler - verwende öffentlichen Zugriff",
-                    );
+                    if (debugHeader === "true") {
+                      console.log(
+                        "❌ JWT-Decodierung fehlgeschlagen:",
+                        jwtError,
+                      );
+                    }
                   }
-                } else {
-                  console.log("❌ Ungültiger JWT Token Format");
+                }
+              } catch (decodeError) {
+                if (debugHeader === "true") {
                   console.log(
-                    "🔄 Token-Fehler - verwende öffentlichen Zugriff",
+                    "❌ Token-Decodierung fehlgeschlagen:",
+                    decodeError,
                   );
                 }
-              } catch (tokenError) {
-                console.error(
-                  "❌ Alternative Token validation error:",
-                  tokenError,
-                );
-                console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
-              }
-            } else {
-              // Spezifische Behandlung für verschiedene Token-Fehler
-              if (
-                error.message.includes("Invalid JWT") ||
-                error.message.includes("JWT expired") ||
-                error.message.includes("Token has expired") ||
-                error.message.includes("signature verification failed")
-              ) {
-                console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
-              } else {
-                console.log("🔄 Auth-Fehler - verwende öffentlichen Zugriff");
               }
             }
           } else if (supabaseUser) {
-            console.log("✅ User authentifiziert:", supabaseUser.email);
-            console.log("✅ User ID:", supabaseUser.id);
-
-            // Benutzer-Profil abrufen
-            const profileResult = await supabaseAuth
-              .from("user_profiles")
-              .select("*")
-              .eq("user_id", supabaseUser.id)
-              .single();
-
-            const { data: profile, error: profileError } = profileResult as {
-              data: UserProfile | null;
-              error: { message: string } | null;
+            // Standard Supabase User-Validierung
+            user = {
+              id: supabaseUser.id,
+              email: supabaseUser.email ?? "",
+              role: (supabaseUser.user_metadata?.["role"] as string) ?? "user",
+              permissions: getRolePermissions(
+                (supabaseUser.user_metadata?.["role"] as string) ?? "user",
+              ),
             };
 
-            if (profileError) {
-              console.warn("❌ Profile fetch failed:", profileError.message);
+            if (debugHeader === "true") {
+              console.log("✅ User aus Supabase erstellt:", {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+              });
             }
-
-            session = {
-              user: {
-                id: supabaseUser.id,
-                email: supabaseUser.email ?? "",
-              },
-              profile: profile,
-            };
-
-            // Erstelle TRPCUser mit Permissions
-            if (profile) {
-              const { getRolePermissions } = await import("~/lib/auth");
-              const permissions = getRolePermissions(profile.role);
-
-              user = {
-                id: supabaseUser.id,
-                email: supabaseUser.email ?? "",
-                role: profile.role,
-                permissions: permissions,
-              };
-            }
-
-            console.log(
-              "✅ User authenticated:",
-              supabaseUser.id,
-              "Role:",
-              profile?.role,
-            );
-          } else {
-            console.log("⚠️ Kein User aus Token extrahiert");
           }
-        } catch (tokenError) {
-          console.error("❌ Token validation error:", tokenError);
-          console.log("🔄 Token-Fehler - verwende öffentlichen Zugriff");
+        } catch (authError) {
+          if (debugHeader === "true") {
+            console.error("❌ Auth-Fehler:", authError);
+          }
         }
-      } else {
-        console.log("⚠️ Kein Token im Authorization Header gefunden");
       }
-    } else {
-      console.log(
-        "ℹ️ No Authorization header found - verwende öffentlichen Zugriff",
-      );
     }
   } catch (error) {
-    console.error("❌ Context creation error:", error);
-    console.log("🔄 Context-Fehler - verwende öffentlichen Zugriff");
+    if (debugHeader === "true") {
+      console.error("❌ Context-Erstellung fehlgeschlagen:", error);
+    }
   }
 
-  console.log(
-    "✅ tRPC Context erstellt - Session:",
-    !!session,
-    "User:",
-    !!user,
-  );
+  if (debugHeader === "true") {
+    console.log(
+      "ℹ️ No Authorization header found - verwende öffentlichen Zugriff",
+    );
+    console.log(
+      "✅ tRPC Context erstellt - Session:",
+      !!session,
+      "User:",
+      !!user,
+    );
+  }
 
   return {
-    db: supabase, // ✅ Supabase Client wird als 'db' bereitgestellt
+    db: supabase,
     session,
     user,
   };
@@ -425,7 +292,6 @@ export const publicProcedure = t.procedure;
  */
 const timingMiddleware = t.middleware(async ({ path, next }) => {
   const start = Date.now();
-  console.log(`[TRPC] ${path} starting...`);
 
   // artificial delay in dev
   const waitMs = Math.floor(Math.random() * 400) + 100;
@@ -433,7 +299,11 @@ const timingMiddleware = t.middleware(async ({ path, next }) => {
   const result = await next();
 
   const end = Date.now();
-  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+
+  // Nur in Development loggen
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+  }
 
   return result;
 });
@@ -442,34 +312,12 @@ const timingMiddleware = t.middleware(async ({ path, next }) => {
  * Middleware for authentication
  */
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
-  console.log("🔍 Auth middleware: Prüfe Authentifizierung...");
-  console.log("🔍 Context Details:", {
-    hasUser: !!ctx.user,
-    userId: ctx.user?.id,
-    userEmail: ctx.user?.email,
-    userRole: ctx.user?.role,
-    hasSession: !!ctx.session,
-    sessionUser: ctx.session?.user?.id,
-  });
-
   if (!ctx.user) {
-    console.log("❌ Auth middleware: Kein User gefunden");
-    console.log("🔍 Context Debug:", {
-      user: ctx.user,
-      session: ctx.session,
-      hasUser: !!ctx.user,
-      hasSession: !!ctx.session,
-    });
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
     });
   }
-
-  console.log("✅ Auth middleware: User gefunden", {
-    userId: ctx.user.id,
-    userRole: ctx.user.role,
-  });
 
   return next({
     ctx: {
@@ -484,7 +332,6 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
  */
 const adminMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.user) {
-    console.log("❌ Admin middleware: Kein User gefunden");
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Nicht authentifiziert - Bitte melden Sie sich an",
@@ -494,17 +341,11 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
   // Prüfe Admin-Rechte
   const userRole = ctx.user.role;
   if (userRole !== "admin" && userRole !== "super_admin") {
-    console.log("❌ Admin middleware: Insufficient permissions:", userRole);
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Admin-Rechte erforderlich",
     });
   }
-
-  console.log("✅ Admin middleware: Admin-Rechte bestätigt", {
-    userId: ctx.user.id,
-    userRole: userRole,
-  });
 
   return next({
     ctx: {

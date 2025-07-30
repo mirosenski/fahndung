@@ -107,16 +107,8 @@ export const REMOTE_SUPABASE_CONFIG = {
   retryAttempts: 3,
 } as const;
 
-if (typeof window !== "undefined") {
-  console.log("🔧 Supabase Client Konfiguration:", {
-    url: supabaseUrl,
-    projectId: REMOTE_SUPABASE_CONFIG.projectId,
-    storageBucket: REMOTE_SUPABASE_CONFIG.storageBucket,
-  });
-}
-
-// Performance-Monitoring
-if (typeof window !== "undefined") {
+// Performance-Monitoring (nur in Development)
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const originalFetch = window.fetch;
   window.fetch = async (...args) => {
     const start = performance.now();

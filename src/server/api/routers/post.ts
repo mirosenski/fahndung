@@ -101,8 +101,6 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      console.log("🔍 getInvestigations aufgerufen mit:", input);
-
       try {
         let query = ctx.db
           .from("investigations")
@@ -131,37 +129,6 @@ export const postRouter = createTRPCRouter({
           );
         }
 
-        // Bilder sind bereits als JSON in der investigations Tabelle gespeichert
-        if (data && data.length > 0) {
-          console.log("📸 Fahndungen mit Bildern geladen:", data.length);
-
-          data.forEach((investigation: unknown) => {
-            const typedInvestigation = investigation as {
-              images?: Array<{
-                id: string;
-                url: string;
-                alt_text?: string;
-                caption?: string;
-              }>;
-            };
-
-            // Bilder sind bereits als JSON verfügbar, keine weitere Verarbeitung nötig
-            if (
-              typedInvestigation.images &&
-              typedInvestigation.images.length > 0
-            ) {
-              console.log(
-                `   ${typedInvestigation.images.length} Bilder in Fahndung gefunden`,
-              );
-            }
-          });
-        }
-
-        console.log(
-          "✅ Fahndungen erfolgreich geladen:",
-          data?.length ?? 0,
-          "mit Bildern",
-        );
         return data ?? [];
       } catch (error) {
         console.error("❌ Fehler beim Abrufen der Fahndungen:", error);
@@ -555,9 +522,6 @@ export const postRouter = createTRPCRouter({
   deleteInvestigation: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      console.log("🗑️ deleteInvestigation aufgerufen mit:", input);
-      console.log("👤 Benutzer:", ctx.user?.email, "Rolle:", ctx.user?.role);
-
       try {
         // Prüfe ob Fahndung existiert
         const existingResponse = (await ctx.db
@@ -566,7 +530,7 @@ export const postRouter = createTRPCRouter({
           .eq("id", input.id)
           .single()) as SupabaseResponse<{ created_by: string; title: string }>;
 
-        const { data: existing, error: fetchError } = existingResponse;
+        const { error: fetchError } = existingResponse;
 
         if (fetchError) {
           throw new Error("Fahndung nicht gefunden");
@@ -584,7 +548,6 @@ export const postRouter = createTRPCRouter({
           throw new Error(`Fehler beim Löschen der Fahndung: ${error.message}`);
         }
 
-        console.log("✅ Fahndung erfolgreich gelöscht:", existing?.title);
         return true;
       } catch (error) {
         console.error("❌ Fehler beim Löschen der Fahndung:", error);
@@ -601,8 +564,6 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("📢 publishInvestigation aufgerufen mit:", input);
-
       try {
         const newStatus = input.publish ? "published" : "active";
 
@@ -625,10 +586,6 @@ export const postRouter = createTRPCRouter({
           throw new Error(`Fehler beim Veröffentlichen: ${error.message}`);
         }
 
-        console.log(
-          `✅ Fahndung ${input.publish ? "veröffentlicht" : "unveröffentlicht"}:`,
-          data?.title,
-        );
         return data!;
       } catch (error) {
         console.error("❌ Fehler beim Veröffentlichen:", error);
@@ -645,8 +602,6 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("📦 archiveInvestigation aufgerufen mit:", input);
-
       try {
         const newStatus = input.archive ? "draft" : "active";
 
@@ -666,10 +621,6 @@ export const postRouter = createTRPCRouter({
           throw new Error(`Fehler beim Archivieren: ${error.message}`);
         }
 
-        console.log(
-          `✅ Fahndung ${input.archive ? "als Entwurf gesetzt" : "aktiviert"}:`,
-          data?.title,
-        );
         return data!;
       } catch (error) {
         console.error("❌ Fehler beim Archivieren:", error);
@@ -686,8 +637,6 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      console.log("🔍 getMyInvestigations aufgerufen mit:", input);
-
       try {
         // Zeige alle Fahndungen vom ptlsweb User (da alle neuen Fahndungen diesem User zugeordnet werden)
         const response = (await ctx.db
@@ -709,10 +658,6 @@ export const postRouter = createTRPCRouter({
           );
         }
 
-        console.log(
-          "✅ Meine Fahndungen erfolgreich geladen:",
-          data?.length ?? 0,
-        );
         return data ?? [];
       } catch (error) {
         console.error("❌ Fehler beim Abrufen eigener Fahndungen:", error);
