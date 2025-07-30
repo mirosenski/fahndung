@@ -1,0 +1,133 @@
+// 1. Wizard-Seite mit ProtectedRoute
+// src/app/fahndungen/neu/enhanced/page.tsx
+"use client";
+
+import React from "react";
+import ProtectedRoute from "~/components/ProtectedRoute";
+import FahndungWizardContainer from "~/components/fahndungen/FahndungWizardContainer";
+
+export default function EnhancedNeueFahndungPage() {
+  return (
+    <ProtectedRoute requiredRoles={["admin", "super_admin"]}>
+      <FahndungWizardContainer
+        mode="create"
+        title="Neue Fahndung erstellen"
+        description="Erstellen Sie eine neue Fahndung mit unserem erweiterten Wizard"
+      />
+    </ProtectedRoute>
+  );
+}
+
+// 2. Bearbeitungsseite mit ProtectedRoute (vereinfacht)
+// src/app/fahndungen/[slug]/bearbeiten/page.tsx
+"use client";
+
+import React from "react";
+import { useParams } from "next/navigation";
+import ProtectedRoute from "~/components/ProtectedRoute";
+import { api } from "~/trpc/react";
+import EnhancedFahndungWizard from "~/components/fahndungen/EnhancedFahndungWizard";
+import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
+
+export default function FahndungBearbeitenPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  // Prüfe ob es eine Fallnummer ist
+  const isCaseNumber = /^(?:POL-)?\d{4}-[A-Z]-\d{3,6}(?:-[A-Z])?$/.test(slug);
+
+  // tRPC Query für die Fahndung
+  const { data: investigation, isLoading } = api.post.getInvestigation.useQuery(
+    { id: isCaseNumber ? slug : "" },
+    { enabled: !!isCaseNumber }
+  );
+
+  return (
+    <ProtectedRoute requiredRoles={["editor", "admin", "super_admin"]}>
+      {isLoading ? (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="flex h-screen items-center justify-center">
+            <LoadingSpinner message="Lade Fahndungsdaten..." />
+          </div>
+        </div>
+      ) : investigation ? (
+        <EnhancedFahndungWizard 
+          initialData={convertToWizardData(investigation)} 
+          mode="edit" 
+        />
+      ) : (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <div className="flex h-screen items-center justify-center">
+            <div className="text-center">
+              <div className="mb-4 text-4xl">❌</div>
+              <div className="text-xl font-semibold">Fahndung nicht gefunden</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </ProtectedRoute>
+  );
+}
+
+// Hilfsfunktion für Datenkonvertierung
+function convertToWizardData(investigation: any) {
+  return {
+    step1: {
+      title: investigation.title,
+      caseNumber: investigation.case_number,
+      category: investigation.category,
+    },
+    step2: {
+      description: investigation.description,
+      shortDescription: investigation.short_description,
+      features: investigation.features,
+      priority: investigation.priority,
+      tags: investigation.tags,
+    },
+    step3: {
+      mainImage: null,
+      mainImageUrl: investigation.images?.[0]?.url ?? "/images/placeholders/fotos/platzhalterbild.svg",
+      additionalImages: [],
+      additionalImageUrls: investigation.images?.slice(1).map((img: any) => img.url) ?? [],
+      documents: [],
+    },
+    step4: {
+      mainLocation: investigation.location ? {
+        id: "main-location",
+        address: investigation.location,
+        lat: 0,
+        lng: 0,
+        type: "main" as const,
+      } : null,
+      additionalLocations: [],
+      searchRadius: 5,
+    },
+    step5: {
+      contactPerson: investigation.contact_info?.["person"] ?? "Polizei",
+      contactPhone: investigation.contact_info?.["phone"] ?? "+49 711 8990-0",
+      contactEmail: investigation.contact_info?.["email"] ?? "",
+      department: investigation.station ?? "Polizeipräsidium",
+      availableHours: "24/7",
+      publishStatus: "draft" as const,
+      urgencyLevel: "medium" as const,
+      requiresApproval: false,
+      visibility: {
+        internal: true,
+        regional: true,
+        national: false,
+        international: false,
+      },
+      notifications: {
+        emailAlerts: true,
+        smsAlerts: false,
+        appNotifications: true,
+        pressRelease: false,
+      },
+      articlePublishing: {
+        publishAsArticle: false,
+        generateSeoUrl: true,
+        keywords: [],
+      },
+    },
+  };
+}

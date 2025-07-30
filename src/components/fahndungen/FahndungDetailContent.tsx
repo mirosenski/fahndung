@@ -26,7 +26,7 @@ import WizardTabNavigation, {
   type WizardTab,
 } from "@/components/investigation/WizardTabNavigation";
 import PageLayout from "@/components/layout/PageLayout";
-import { getCurrentSession, type Session } from "~/lib/auth";
+import { getCurrentSession, type Session, canEdit } from "~/lib/auth";
 import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
 import { api } from "~/trpc/react";
 
@@ -582,16 +582,18 @@ export default function FahndungDetailContent({
             </div>
 
             <div className="flex items-center gap-2">
-              <Link
-                href={getFahndungEditUrl(
-                  investigation.step1.title,
-                  investigation.step1.caseNumber,
-                )}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                <Edit3 className="h-4 w-4" />
-                Bearbeiten
-              </Link>
+              {canEdit(session?.profile ?? null) && (
+                <Link
+                  href={getFahndungEditUrl(
+                    investigation.step1.title,
+                    investigation.step1.caseNumber,
+                  )}
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  <Edit3 className="h-4 w-4" />
+                  Bearbeiten
+                </Link>
+              )}
             </div>
           </div>
         </div>

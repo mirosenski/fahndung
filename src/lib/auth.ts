@@ -126,16 +126,36 @@ export const getRolePermissions = (role: string): AuthPermissions => {
     },
   };
 
-  const userPermissions: AuthPermissions = {
-    canRead: true,
-    canCreate: false,
-    canEdit: false,
-    canDelete: false,
-    canPublish: false,
-    canManageUsers: false,
-  };
+  return permissions[role] ?? permissions["user"]!;
+};
 
-  return permissions[role] ?? userPermissions;
+// Hilfsfunktionen für Rollenprüfungen
+export const hasRole = (
+  profile: UserProfile | null,
+  requiredRoles: string[],
+): boolean => {
+  if (!profile?.role) return false;
+  return requiredRoles.includes(profile.role);
+};
+
+export const canEdit = (profile: UserProfile | null): boolean => {
+  return hasRole(profile, ["editor", "admin", "super_admin"]);
+};
+
+export const canCreate = (profile: UserProfile | null): boolean => {
+  return hasRole(profile, ["editor", "admin", "super_admin"]);
+};
+
+export const canDelete = (profile: UserProfile | null): boolean => {
+  return hasRole(profile, ["admin", "super_admin"]);
+};
+
+export const canManageUsers = (profile: UserProfile | null): boolean => {
+  return hasRole(profile, ["admin", "super_admin"]);
+};
+
+export const canAccessWizard = (profile: UserProfile | null): boolean => {
+  return hasRole(profile, ["admin", "super_admin"]);
 };
 
 // Hilfsfunktionen für Rollenprüfung

@@ -219,6 +219,42 @@ export const postRouter = createTRPCRouter({
       }
     }),
 
+  // Öffentlich: Fahndung basierend auf SEO-Slug finden
+  findInvestigationBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // Lade alle Fahndungen und suche nach dem passenden Titel
+        const { data: investigations, error } = await ctx.db
+          .from("investigations")
+          .select("title, case_number")
+          .limit(50);
+
+        if (error) {
+          throw new Error(
+            `Fehler beim Abrufen der Fahndungen: ${error.message}`,
+          );
+        }
+
+        // Importiere generateSeoSlug für Client-Side Kompatibilität
+        const { generateSeoSlug } = await import("~/lib/seo");
+
+        for (const investigation of investigations ?? []) {
+          const expectedSlug = generateSeoSlug(investigation.title as string);
+          if (expectedSlug === input.slug) {
+            return investigation.case_number as string;
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("❌ Fehler beim Suchen der Fahndung nach Slug:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new Error(`Fehler beim Suchen der Fahndung: ${errorMessage}`);
+      }
+    }),
+
   // Öffentlich: Fahndung erstellen (temporär für Tests)
   createInvestigation: publicProcedure
     .input(
@@ -230,7 +266,7 @@ export const postRouter = createTRPCRouter({
         category: z.string().optional(),
         tags: z.array(z.string()).default([]),
         location: z.string().optional(),
-        contact_info: z.record(z.any()).optional(),
+        contact_info: z.record(z.unknown()).optional(),
         case_number: z.string().optional(),
         features: z.string().optional(),
         mainImageUrl: z.string().optional(), // URL des Hauptbildes

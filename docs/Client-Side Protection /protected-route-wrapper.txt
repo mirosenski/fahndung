@@ -1,0 +1,102 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "~/hooks/useAuth";
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  requiredRoles?: Array<"user" | "editor" | "admin" | "super_admin">;
+  redirectTo?: string;
+}
+
+export default function ProtectedRoute({
+  children,
+  fallback,
+  requiredRoles = [],
+  redirectTo = "/login",
+}: ProtectedRouteProps) {
+  const { session, loading, initialized } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log("🔐 ProtectedRoute: Prüfe Authentifizierung...", {
+      loading,
+      initialized,
+      hasSession: !!session,
+      userRole: session?.profile?.role,
+      requiredRoles,
+    });
+
+    if (initialized && !loading) {
+      // Keine Session = Login
+      if (!session) {
+        console.log("❌ ProtectedRoute: Keine Session - Weiterleitung zu Login");
+        router.push(redirectTo);
+        return;
+      }
+
+      // Rollenprüfung wenn requiredRoles angegeben
+      if (requiredRoles.length > 0 && session.profile) {
+        const hasRequiredRole = requiredRoles.includes(session.profile.role);
+        
+        if (!hasRequiredRole) {
+          console.log("❌ ProtectedRoute: Unzureichende Rechte", {
+            userRole: session.profile.role,
+            requiredRoles,
+          });
+          router.push("/dashboard?error=insufficient_permissions");
+          return;
+        }
+      }
+    }
+  }, [session, loading, initialized, router, requiredRoles, redirectTo]);
+
+  // Loading state für Hydration
+  if (!initialized || loading) {
+    return (
+      fallback ?? (
+        <div className="min-h-screen bg-gray-900 text-white">
+          <div className="flex h-screen items-center justify-center">
+            <div className="text-center">
+              <div className="mb-4 text-4xl">🔄</div>
+              <div className="text-xl font-semibold">Lade...</div>
+              <div className="mt-2 text-gray-400">
+                {!initialized
+                  ? "Initialisiere..."
+                  : "Prüfe Authentifizierung..."}
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    );
+  }
+
+  // Wenn keine Session nach Initialisierung oder unzureichende Rechte
+  if (!session || (requiredRoles.length > 0 && 
+      session.profile && 
+      !requiredRoles.includes(session.profile.role))) {
+    return (
+      fallback ?? (
+        <div className="min-h-screen bg-gray-900 text-white">
+          <div className="flex h-screen items-center justify-center">
+            <div className="text-center">
+              <div className="mb-4 text-4xl">🔐</div>
+              <div className="text-xl font-semibold">
+                {!session ? "Nicht authentifiziert" : "Zugriff verweigert"}
+              </div>
+              <div className="mt-2 text-gray-400">
+                Weiterleitung...
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    );
+  }
+
+  // Session vorhanden und Rechte OK - Rendere Children
+  return <>{children}</>;
+}
