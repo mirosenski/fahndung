@@ -8,7 +8,7 @@ import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { api } from "@/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
 import { getCurrentSession } from "~/lib/auth";
-import EnhancedFahndungWizard from "~/components/fahndungen/EnhancedFahndungWizard";
+import FahndungWizardContainer from "~/components/fahndungen/FahndungWizardContainer";
 import type { WizardData } from "~/components/fahndungen/types/WizardTypes";
 import { predefinedStations } from "~/lib/data/predefined-stations";
 
@@ -212,40 +212,13 @@ export default function FahndungBearbeitenPage() {
 
   return (
     <PageLayout session={session}>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push(`/fahndungen/${idString}`)}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Zurück zur Fahndung
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="w-full">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Fahndung bearbeiten
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Bearbeite alle Bereiche der Fahndung &quot;{investigation.title}
-              &quot;
-            </p>
-          </div>
-
-          {/* EnhancedFahndungWizard mit geladenen Daten */}
-          <div className="mx-auto max-w-4xl">
-            <EnhancedFahndungWizard initialData={wizardData} mode="edit" />
-          </div>
-        </div>
-      </div>
+      <FahndungWizardContainer
+        initialData={wizardData}
+        mode="edit"
+        backUrl={`/fahndungen/${idString}`}
+        title={`Fahndung bearbeiten: "${investigation.title}"`}
+        description={`Bearbeite alle Bereiche der Fahndung "${investigation.title}"`}
+      />
     </PageLayout>
   );
 }
