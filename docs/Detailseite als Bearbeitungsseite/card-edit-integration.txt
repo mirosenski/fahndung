@@ -1,0 +1,281 @@
+// Erweiterte Fahndungskarte mit Inline-Edit-Unterstützung
+
+interface ModernFahndungskarteProps {
+  data: FahndungsData;
+  className?: string;
+  investigationId?: string;
+  onAction?: () => void;
+  userRole?: string;
+  userPermissions?: {
+    canEdit?: boolean;
+    canDelete?: boolean;
+    canPublish?: boolean;
+  };
+  // Neue Props für Inline-Bearbeitung
+  isEditMode?: boolean;
+  onEditToggle?: () => void;
+  editedData?: Partial<FahndungsData>;
+  onFieldChange?: (field: string, value: any) => void;
+}
+
+const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
+  data: propData,
+  className = "",
+  investigationId,
+  onAction,
+  userRole,
+  userPermissions,
+  isEditMode = false,
+  onEditToggle,
+  editedData,
+  onFieldChange,
+}) => {
+  const router = useRouter();
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  
+  // Verwende editedData wenn im Edit-Modus, sonst propData
+  const data = isEditMode && editedData ? { ...propData, ...editedData } : propData;
+  
+  // Quick-Edit Button auf der Vorderseite
+  const renderEditButton = () => {
+    if (!userPermissions?.canEdit || !onEditToggle) return null;
+    
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onEditToggle();
+        }}
+        className={`absolute top-4 left-4 z-10 rounded-full p-2 transition-all ${
+          isEditMode 
+            ? "bg-green-500 text-white hover:bg-green-600" 
+            : "bg-white/90 text-gray-700 hover:bg-white"
+        }`}
+        aria-label={isEditMode ? "Bearbeitung speichern" : "Schnellbearbeitung"}
+      >
+        {isEditMode ? <Save className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
+      </button>
+    );
+  };
+
+  // Edit-Mode Indicator
+  const renderEditIndicator = () => {
+    if (!isEditMode) return null;
+    
+    return (
+      <div className="absolute top-0 left-0 right-0 z-20 bg-yellow-500/90 px-3 py-1 text-center">
+        <span className="text-xs font-medium text-white">
+          Bearbeitungsmodus - Änderungen werden live angezeigt
+        </span>
+      </div>
+    );
+  };
+
+  // Inline-editierbare Felder
+  const renderEditableTitle = () => {
+    if (!isEditMode || !onFieldChange) {
+      return (
+        <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
+          {data.step1.title}
+        </h3>
+      );
+    }
+
+    return (
+      <input
+        type="text"
+        value={data.step1.title}
+        onChange={(e) => onFieldChange("title", e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full bg-transparent text-lg font-bold text-gray-900 dark:text-white outline-none border-b-2 border-gray-300 focus:border-blue-500"
+        placeholder="Titel eingeben..."
+      />
+    );
+  };
+
+  const renderEditableDescription = () => {
+    if (!isEditMode || !onFieldChange) {
+      return (
+        <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+          {data.step2.shortDescription}
+        </p>
+      );
+    }
+
+    return (
+      <textarea
+        value={data.step2.shortDescription}
+        onChange={(e) => onFieldChange("shortDescription", e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full bg-transparent text-sm text-gray-600 dark:text-gray-400 outline-none resize-none border rounded p-1"
+        rows={2}
+        placeholder="Kurzbeschreibung..."
+      />
+    );
+  };
+
+  const renderEditablePriority = () => {
+    if (!isEditMode || !onFieldChange) {
+      return priority.pulse ? (
+        <div className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} animate-pulse`}>
+          {priority.label}
+        </div>
+      ) : null;
+    }
+
+    return (
+      <select
+        value={data.step2.priority}
+        onChange={(e) => onFieldChange("priority", e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold bg-white border"
+      >
+        <option value="normal">Normal</option>
+        <option value="urgent">Dringend</option>
+        <option value="new">Neu</option>
+      </select>
+    );
+  };
+
+  // Live-Preview während Bearbeitung
+  const renderLivePreview = () => {
+    if (!isEditMode) return null;
+
+    return (
+      <div className="absolute bottom-0 left-0 right-0 bg-blue-500/10 p-2 border-t border-blue-500/30">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-blue-700 dark:text-blue-300">
+            Live-Vorschau aktiv
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Reset changes
+              }}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              Zurücksetzen
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      className={`relative mx-auto h-[513px] w-full max-w-sm ${className}`}
+      style={{ perspective: "1000px" }}
+    >
+      {renderEditIndicator()}
+      
+      <div
+        className="relative h-full w-full transition-transform duration-500 ease-out"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        }}
+      >
+        {/* FRONT SIDE */}
+        <div
+          ref={frontRef}
+          className={`group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border bg-white shadow-lg transition-all duration-300 dark:bg-gray-900 ${
+            isEditMode 
+              ? "border-yellow-500 shadow-yellow-500/20" 
+              : "border-gray-200 hover:shadow-xl dark:border-gray-700"
+          }`}
+          style={{ backfaceVisibility: "hidden" }}
+          onClick={() => !isEditMode && router.push(getFahndungUrl(data.step1.title, data.step1.caseNumber))}
+        >
+          {renderEditButton()}
+          
+          {/* Image Section */}
+          <div className="relative h-[60%] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {renderEditablePriority()}
+            
+            <Image
+              src={data.step3.mainImageUrl ?? data.step3.mainImage ?? getPlaceholderImage()}
+              alt={`Hauptfoto von ${data.step1.title}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className={`object-cover transition-transform duration-500 ${
+                !isEditMode && "group-hover:scale-105"
+              }`}
+              priority
+            />
+
+            {isEditMode && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Open image picker
+                }}
+                className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
+              >
+                <div className="bg-white rounded-full p-3">
+                  <Camera className="h-6 w-6 text-gray-700" />
+                </div>
+              </button>
+            )}
+
+            {/* Category Badge */}
+            <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg bg-white/90 px-3 py-1 text-xs font-medium backdrop-blur-sm dark:bg-gray-900/90">
+              <span>{category.label}</span>
+            </div>
+
+            {/* Case Number Badge */}
+            <div className="absolute bottom-4 right-4">
+              <CaseNumberBadge caseNumber={data.step1.caseNumber} />
+            </div>
+          </div>
+
+          {/* Info Section */}
+          <div className="flex h-[40%] flex-col justify-between p-6">
+            <div className="space-y-3">
+              {renderEditableTitle()}
+              {renderEditableDescription()}
+            </div>
+
+            <div className="mt-auto flex items-center justify-between">
+              {!isEditMode ? (
+                <button
+                  ref={detailsButtonRef}
+                  className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    flipCard(true);
+                  }}
+                >
+                  <span>Details</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Info className="h-4 w-4" />
+                  <span>Klicken Sie auf Felder zum Bearbeiten</span>
+                </div>
+              )}
+
+              {data.step4.mainLocation && (
+                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <MapPin className="h-3 w-3" />
+                  <span className="max-w-24 truncate">
+                    {data.step4.mainLocation.address.split(",")[0]}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {renderLivePreview()}
+        </div>
+
+        {/* BACK SIDE - bleibt unverändert */}
+        {/* ... */}
+      </div>
+    </div>
+  );
+};

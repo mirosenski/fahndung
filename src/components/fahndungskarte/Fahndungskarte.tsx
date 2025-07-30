@@ -16,18 +16,18 @@ import {
   FileText,
   Camera,
   Phone,
-  Share2,
   ChevronRight,
   Info,
   Images,
   Map,
   MessageSquare,
+  Edit3,
 } from "lucide-react";
 import InteractiveMap, {
   type MapLocation,
 } from "@/components/shared/InteractiveMap";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
-import { getFahndungUrl, getFahndungEditUrl } from "~/lib/seo";
+import { getFahndungUrl } from "~/lib/seo";
 
 // Typ-Definitionen für moderne Fahndungskarte
 
@@ -178,8 +178,7 @@ interface ModernFahndungskarteProps {
 const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   data: propData,
   className = "",
-  investigationId: _investigationId,
-  onAction,
+  investigationId,
   userRole: _userRole,
   userPermissions,
 }) => {
@@ -188,6 +187,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const [activeTab, setActiveTab] = useState("overview");
   const [isAnimating, setIsAnimating] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showQuickEdit, setShowQuickEdit] = useState(false);
 
   // Hilfsfunktion für Platzhalterbild
   const getPlaceholderImage = () =>
@@ -231,57 +231,25 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const category = CATEGORY_CONFIG[data.step1.category];
   const priority = PRIORITY_CONFIG[data.step2.priority];
 
-  // Flip-Logik
-  const flipCard = useCallback(
-    (forceState?: boolean) => {
-      if (isAnimating) return;
-      setIsAnimating(true);
-      const newState = forceState ?? !isFlipped;
-      setIsFlipped(newState);
-
-      if (newState) {
-        setActiveTab("overview");
-        setTimeout(() => backRef.current?.focus(), 300);
-      } else {
-        setTimeout(() => detailsButtonRef.current?.focus(), 300);
-      }
-
-      setTimeout(() => setIsAnimating(false), 400);
-    },
-    [isAnimating, isFlipped],
-  );
-
-  // Verbesserte Share-Funktion
-  const handleShare = async () => {
-    if (typeof window === "undefined") return;
-
-    const detailUrl = `${window.location.origin}${getFahndungUrl(data.step1.title, data.step1.caseNumber)}`;
-
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `Fahndung: ${data.step1.title}`,
-          text: data.step2.shortDescription,
-          url: detailUrl,
-        });
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(detailUrl);
-      }
-    } catch (error) {
-      console.error("Share/Clipboard Fehler:", error);
+  // Quick Edit Handler
+  const handleQuickEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (investigationId) {
+      router.push(`/fahndungen/${investigationId}?edit=true`);
     }
   };
 
-  // Verbesserte Barrierefreiheit
-  const getAriaLabel = (tabId: string) => {
-    const labels: Record<string, string> = {
-      overview: "Übersicht anzeigen",
-      description: "Details anzeigen",
-      media: "Medien anzeigen",
-      location: "Standort anzeigen",
-    };
-    return labels[tabId];
-  };
+  // Flip-Logik
+  const flipCard = useCallback(() => {
+    if (isAnimating) return;
+
+    setIsAnimating(true);
+    setIsFlipped(!isFlipped);
+
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
+  }, [isFlipped, isAnimating]);
 
   // Verbesserte Keyboard Navigation
   useEffect(() => {
@@ -298,7 +266,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           if (activeElement === detailsButtonRef.current) {
             e.preventDefault();
             e.stopPropagation();
-            flipCard(true);
+            flipCard();
             return;
           }
         }
@@ -321,7 +289,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       if (isFlipped) {
         if (e.key === "Escape") {
           e.preventDefault();
-          flipCard(false);
+          flipCard();
           // Fokus zurück zur Karte
           setTimeout(() => frontRef.current?.focus(), 100);
         }
@@ -363,7 +331,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
 
     const handleClickOutside = (e: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
-        flipCard(false);
+        flipCard();
       }
     };
 
@@ -376,7 +344,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     if (!isFlipped) return;
 
     const handleScroll = () => {
-      flipCard(false);
+      flipCard();
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -388,7 +356,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     if (!isFlipped) return;
 
     const handlePopState = () => {
-      flipCard(false);
+      flipCard();
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -620,6 +588,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       style={{ perspective: "1000px" }}
       role="region"
       aria-label={`Fahndungskarte: ${data.step1.title}`}
+      onMouseEnter={() => setShowQuickEdit(true)}
+      onMouseLeave={() => setShowQuickEdit(false)}
     >
       <div
         className="relative h-full w-full transition-transform duration-500 ease-out"
@@ -634,12 +604,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden" }}
           onClick={() =>
-            router.push(
-              getFahndungUrl(
-                data.step1.title,
-                data.step1.caseNumber,
-              ),
-            )
+            router.push(getFahndungUrl(data.step1.title, data.step1.caseNumber))
           }
           role="button"
           aria-label={`Zur Detailseite von ${data.step1.title} navigieren`}
@@ -648,10 +613,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               router.push(
-                getFahndungUrl(
-                  data.step1.title,
-                  data.step1.caseNumber,
-                ),
+                getFahndungUrl(data.step1.title, data.step1.caseNumber),
               );
             }
           }}
@@ -667,6 +629,19 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 {priority.label}
               </div>
             )}
+
+            {/* Quick Edit Button - nur für Editoren */}
+            {userPermissions?.canEdit && showQuickEdit && (
+              <button
+                onClick={handleQuickEdit}
+                className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="Schnell bearbeiten"
+              >
+                <Edit3 className="h-3 w-3" />
+                Bearbeiten
+              </button>
+            )}
+
             <Image
               src={
                 imageError
@@ -712,13 +687,13 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                 onClick={(e) => {
                   e.stopPropagation();
-                  flipCard(true);
+                  flipCard();
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     e.stopPropagation();
-                    flipCard(true);
+                    flipCard();
                   }
                 }}
                 aria-label="Karte öffnen und Details anzeigen"
@@ -744,107 +719,64 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         <div
           ref={backRef}
           className="absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Details von ${data.step1.title}`}
-          tabIndex={-1}
+          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          {/* Header mit verbesserten Buttons */}
+          {/* Header mit Close Button */}
           <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-            <div>
-              <h2 className="font-bold text-gray-900 dark:text-white">
-                {data.step1.title}
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Fall #{data.step1.caseNumber}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleShare}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-gray-400 dark:hover:bg-gray-800"
-                aria-label="Fahndung teilen"
-                tabIndex={-1}
-              >
-                <Share2 className="h-4 w-4" />
-              </button>
-
-              <button
-                onClick={() => flipCard(false)}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-gray-400 dark:hover:bg-gray-800"
-                aria-label="Schließen"
-                tabIndex={-1}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Details
+            </h3>
+            <button
+              onClick={flipCard}
+              className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              aria-label="Karte schließen"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          {/* Tab-Navigation mit ARIA-Attributen */}
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <div className="flex overflow-x-auto">
-              {TAB_CONFIG.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap px-3 py-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-                    activeTab === tab.id
-                      ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
-                      : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                  }`}
-                  aria-label={getAriaLabel(tab.id)}
-                  aria-pressed={activeTab === tab.id}
-                  tabIndex={-1}
-                >
-                  <tab.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* Tab Navigation */}
+          <div className="flex border-b border-gray-200 dark:border-gray-700">
+            {TAB_CONFIG.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
+                    : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                }`}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Inhalt mit responsivem Grid */}
+          {/* Tab Content */}
           <div className="flex-1 overflow-y-auto p-4">{renderTabContent()}</div>
 
-          {/* Footer-Buttons mit Actions */}
+          {/* Footer mit Action Buttons */}
           <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-            <div className="flex gap-2">
+            <div className="flex items-center justify-between">
               <button
                 onClick={() =>
                   router.push(
-                    getFahndungUrl(
-                      data.step1.title,
-                      data.step1.caseNumber,
-                    ),
+                    getFahndungUrl(data.step1.title, data.step1.caseNumber),
                   )
                 }
-                className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                aria-label={`Zur Detailseite von ${data.step1.title}`}
-                tabIndex={-1}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                Zur Detailseite
+                <Eye className="h-4 w-4" />
+                Vollständige Ansicht
               </button>
 
               {userPermissions?.canEdit && (
                 <button
-                  onClick={() => {
-                    router.push(
-                      getFahndungEditUrl(
-                        data.step1.title,
-                        data.step1.caseNumber,
-                      ),
-                    );
-                    onAction?.();
-                  }}
-                  className="rounded-xl bg-blue-100 px-3 py-3 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
-                  aria-label="Fahndung bearbeiten"
-                  tabIndex={-1}
+                  onClick={handleQuickEdit}
+                  className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
+                  <Edit3 className="h-4 w-4" />
                   Bearbeiten
                 </button>
               )}
