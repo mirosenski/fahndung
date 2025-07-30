@@ -27,9 +27,6 @@ import {
 import WizardTabNavigation, {
   type WizardTab,
 } from "@/components/investigation/WizardTabNavigation";
-import BreadcrumbNavigation, {
-  type BreadcrumbItem,
-} from "@/components/ui/BreadcrumbNavigation";
 import PageLayout from "@/components/layout/PageLayout";
 import { getCurrentSession } from "~/lib/auth";
 import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
@@ -323,17 +320,6 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
       </PageLayout>
     );
   }
-
-  // Breadcrumb items
-  const breadcrumbItems: BreadcrumbItem[] = [
-    {
-      label: "Fahndungen",
-      href: "/fahndungen",
-    },
-    {
-      label: investigation.step1.title,
-    },
-  ];
 
   // Render content based on active tab
   const renderTabContent = () => {
@@ -643,8 +629,6 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <BreadcrumbNavigation items={breadcrumbItems} />
-
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
@@ -668,20 +652,31 @@ export default function FahndungDetailPage({ params: _params }: PageProps) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <WizardTabNavigation
-              tabs={wizardTabs}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <div className="flex h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div
+              className="bg-blue-600 transition-all duration-300 ease-in-out"
+              style={{ width: "20%" }}
             />
           </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3">{renderTabContent()}</div>
+          <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+            Schritt 1 von 5
+          </div>
         </div>
+
+        {/* Horizontal Wizard Navigation */}
+        <div className="mb-8">
+          <WizardTabNavigation
+            tabs={wizardTabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            showProgress={false}
+          />
+        </div>
+
+        {/* Main Content */}
+        <div className="w-full">{renderTabContent()}</div>
       </div>
     </PageLayout>
   );

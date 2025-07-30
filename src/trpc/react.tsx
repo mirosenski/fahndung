@@ -91,7 +91,7 @@ async function getAuthToken(): Promise<string | null> {
     }
 
     return session.access_token;
-  } catch (_error) {
+  } catch {
     return null;
   }
 }
@@ -121,7 +121,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
               if (authToken) {
                 headers.set("Authorization", `Bearer ${authToken}`);
               }
-            } catch (error) {
+            } catch {
               // Silent error handling
             }
 

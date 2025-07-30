@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { api } from "@/trpc/react";
-import Header from "~/components/layout/Header";
-import Footer from "~/components/layout/Footer";
-import { Breadcrumb } from "~/components/ui/Breadcrumb";
-import { useAuth } from "~/hooks/useAuth";
+import PageLayout from "~/components/layout/PageLayout";
+import { getCurrentSession } from "~/lib/auth";
 import EnhancedFahndungWizard from "~/components/fahndungen/EnhancedFahndungWizard";
 import type { WizardData } from "~/components/fahndungen/types/WizardTypes";
 import { predefinedStations } from "~/lib/data/predefined-stations";
@@ -16,14 +16,18 @@ export default function FahndungBearbeitenPage() {
   const params = useParams();
   const id = params?.["id"];
   const router = useRouter();
-  const { session } = useAuth();
+  const [session, setSession] = useState<any>(null);
   const [wizardData, setWizardData] = useState<Partial<WizardData> | null>(
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
 
   const idString =
-    typeof id === "string" ? id : Array.isArray(id) ? (id[0] ?? "") : "";
+    typeof id === "string" ? id : Array.isArray(id) ? (id[0]! ?? "") : "";
+
+  useEffect(() => {
+    void getCurrentSession().then(setSession);
+  }, []);
 
   // Lade Fahndungsdaten
   const {
@@ -100,24 +104,24 @@ export default function FahndungBearbeitenPage() {
             .slice(0, 3)
             .map((station, index) => ({
               id: `station-${index}`,
-              address: `${station.address}, ${station.city}`,
+              address: station.name,
               lat: station.coordinates[0],
               lng: station.coordinates[1],
-              type: "tatort" as const,
-              description: station.name,
-              timestamp: undefined,
+              type: "sonstiges" as const,
+              description: station.description,
             })),
           searchRadius: 5,
         },
         step5: {
-          contactPerson:
-            (investigation.contact_info?.["person"] as string) ?? "",
-          contactPhone: (investigation.contact_info?.["phone"] as string) ?? "",
-          contactEmail: (investigation.contact_info?.["email"] as string) ?? "",
+          contactPerson: investigation.created_by_user?.name ?? "",
+          contactPhone:
+            typeof investigation.contact_info?.["phone"] === "string"
+              ? investigation.contact_info["phone"]
+              : "",
+          contactEmail: investigation.created_by_user?.email ?? "",
           department: investigation.station ?? "",
-          availableHours: "Mo-Fr 8:00-16:00 Uhr",
-          publishStatus:
-            investigation.status === "published" ? "immediate" : "draft",
+          availableHours: "24/7",
+          publishStatus: "draft",
           urgencyLevel: "medium",
           requiresApproval: false,
           visibility: {
@@ -135,6 +139,8 @@ export default function FahndungBearbeitenPage() {
           articlePublishing: {
             publishAsArticle: false,
             generateSeoUrl: false,
+            seoTitle: "",
+            seoDescription: "",
             keywords: [],
           },
         },
@@ -145,107 +151,101 @@ export default function FahndungBearbeitenPage() {
     }
   }, [investigation]);
 
-  // Loading state
-  if (loading || isLoading) {
+  // Loading State
+  if (isLoading || loading) {
     return (
-      <div className="bg-background min-h-screen">
-        <Header
-          variant="dashboard"
-          session={session}
-        />
-
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-gray-400" />
-            <p className="text-gray-600">Lade Fahndung...</p>
+      <PageLayout session={session}>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <p className="text-gray-600 dark:text-gray-400">
+              Lade Fahndungsdaten...
+            </p>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
+  // Error State
   if (error || !investigation) {
     return (
-      <div className="bg-background min-h-screen">
-        <Header
-          variant="dashboard"
-          session={session}
-        />
-
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-            <p className="text-gray-600">Fahndung nicht gefunden</p>
+      <PageLayout session={session}>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Fahndung nicht gefunden
+            </h2>
+            <p className="max-w-md text-gray-600 dark:text-gray-400">
+              Die angeforderte Fahndung konnte nicht gefunden werden oder ist
+              nicht verfügbar.
+            </p>
             <button
               onClick={() => router.push("/fahndungen")}
-              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
+              <ArrowLeft className="h-4 w-4" />
               Zurück zur Übersicht
             </button>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
+  // Keine Daten
   if (!wizardData) {
     return (
-      <div className="bg-background min-h-screen">
-        <Header
-          variant="dashboard"
-          session={session}
-        />
-
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-gray-400" />
-            <p className="text-gray-600">Bereite Bearbeitung vor...</p>
+      <PageLayout session={session}>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <p className="text-gray-600 dark:text-gray-400">
+              Bereite Bearbeitung vor...
+            </p>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="bg-background min-h-screen">
-      <Header
-        variant="dashboard"
-        session={session}
-      />
-
-      <Breadcrumb
-        values={{
-          fahndungen: "Fahndungen",
-          [idString]: investigation.title,
-          bearbeiten: "Bearbeiten",
-        }}
-      />
-
-      <div className="container mx-auto py-8">
+    <PageLayout session={session}>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => router.push(`/fahndungen/${idString}`)}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Zurück zur Fahndung</span>
-            </button>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push(`/fahndungen/${idString}`)}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Zurück zur Fahndung
+              </button>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold">Fahndung bearbeiten</h1>
-          <p className="text-muted-foreground mt-2">
-            Bearbeite alle Bereiche der Fahndung &quot;{investigation.title}
-            &quot;
-          </p>
         </div>
 
-        {/* EnhancedFahndungWizard mit geladenen Daten */}
-        <div className="mx-auto max-w-2xl">
-          <EnhancedFahndungWizard initialData={wizardData} mode="edit" />
+        {/* Content */}
+        <div className="w-full">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Fahndung bearbeiten
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Bearbeite alle Bereiche der Fahndung &quot;{investigation.title}
+              &quot;
+            </p>
+          </div>
+
+          {/* EnhancedFahndungWizard mit geladenen Daten */}
+          <div className="mx-auto max-w-4xl">
+            <EnhancedFahndungWizard initialData={wizardData} mode="edit" />
+          </div>
         </div>
       </div>
-
-      <Footer variant="dashboard" session={session} />
-    </div>
+    </PageLayout>
   );
 }
