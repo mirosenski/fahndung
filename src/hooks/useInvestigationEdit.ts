@@ -6,50 +6,111 @@ import type { UIInvestigationData } from "~/lib/types/investigation.types";
 import { z } from "zod";
 
 export function useInvestigationEdit(investigationId: string) {
+  const utils = api.useUtils();
+
   const {
     data: dbInvestigation,
     isLoading: isLoadingData,
     refetch,
-  } = api.post.getInvestigation.useQuery({ id: investigationId });
-
-  // Update-Mutation hinzufügen
-  const updateMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: () => {
-      toast.success("Änderungen erfolgreich gespeichert");
-      // Refetch der Daten nach erfolgreichem Speichern
-      void refetch();
+  } = api.post.getInvestigation.useQuery(
+    { id: investigationId },
+    {
+      // Sofortige Cache-Invalidierung für schnellere Updates
+      staleTime: 0, // Sofort als veraltet markieren
+      // Aktivierte Refetch-Strategien
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      refetchInterval: 1000, // Jede Sekunde prüfen
     },
-    onError: (error) => {
+  );
+
+  // Update-Mutation mit verbesserter Cache-Invalidierung
+  const updateMutation = api.post.updateInvestigation.useMutation({
+    onMutate: async (newData) => {
+      // Optimistisches Update: Sofort UI aktualisieren
+      console.log("🚀 Optimistisches Update:", newData);
+
+      return { previousData: dbInvestigation };
+    },
+    onSuccess: (_updatedData) => {
+      toast.success("Änderungen erfolgreich gespeichert");
+
+      console.log("✅ Update erfolgreich - Cache aktualisiert");
+
+      // Sofortige Cache-Invalidierung für alle relevanten Queries
+      void utils.post.getInvestigation.invalidate({ id: investigationId });
+      void utils.post.getInvestigations.invalidate(); // Wichtig für die Fahndungsliste
+      void utils.post.getMyInvestigations.invalidate();
+
+      // Direkter Refetch ohne Verzögerung
+      void refetch();
+      void utils.post.getInvestigations.refetch();
+      void utils.post.getMyInvestigations.refetch();
+    },
+    onError: (error, _variables, _context) => {
       toast.error(`Fehler beim Speichern: ${error.message}`);
+
+      console.error("❌ Update-Fehler:", error);
+    },
+    onSettled: () => {
+      // Finale Synchronisation
+      void refetch();
     },
   });
 
-  // Delete-Mutation hinzufügen
+  // Delete-Mutation mit verbesserter Cache-Invalidierung
   const deleteMutation = api.post.deleteInvestigation.useMutation({
     onSuccess: () => {
       toast.success("Fahndung erfolgreich gelöscht");
+
+      // Sofortige Cache-Invalidierung für alle relevanten Queries
+      void utils.post.getInvestigations.invalidate();
+      void utils.post.getMyInvestigations.invalidate();
+
+      // Direkter Refetch für sofortige Synchronisation
+      void utils.post.getInvestigations.refetch();
+      void utils.post.getMyInvestigations.refetch();
     },
     onError: (error) => {
       toast.error(`Fehler beim Löschen: ${error.message}`);
     },
   });
 
-  // Publish-Mutation hinzufügen
+  // Publish-Mutation mit verbesserter Cache-Invalidierung
   const publishMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: () => {
+    onSuccess: (_updatedData) => {
       toast.success("Fahndung erfolgreich veröffentlicht");
+
+      // Sofortige Cache-Invalidierung für alle relevanten Queries
+      void utils.post.getInvestigation.invalidate({ id: investigationId });
+      void utils.post.getInvestigations.invalidate();
+      void utils.post.getMyInvestigations.invalidate();
+
+      // Direkter Refetch für sofortige Synchronisation
       void refetch();
+      void utils.post.getInvestigations.refetch();
+      void utils.post.getMyInvestigations.refetch();
     },
     onError: (error) => {
       toast.error(`Fehler beim Veröffentlichen: ${error.message}`);
     },
   });
 
-  // Archive-Mutation hinzufügen
+  // Archive-Mutation mit verbesserter Cache-Invalidierung
   const archiveMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: () => {
+    onSuccess: (_updatedData) => {
       toast.success("Fahndung erfolgreich archiviert");
+
+      // Sofortige Cache-Invalidierung für alle relevanten Queries
+      void utils.post.getInvestigation.invalidate({ id: investigationId });
+      void utils.post.getInvestigations.invalidate();
+      void utils.post.getMyInvestigations.invalidate();
+
+      // Direkter Refetch für sofortige Synchronisation
       void refetch();
+      void utils.post.getInvestigations.refetch();
+      void utils.post.getMyInvestigations.refetch();
     },
     onError: (error) => {
       toast.error(`Fehler beim Archivieren: ${error.message}`);

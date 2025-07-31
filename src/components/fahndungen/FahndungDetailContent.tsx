@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -36,7 +36,6 @@ import WizardTabNavigation, {
 import PageLayout from "@/components/layout/PageLayout";
 import { getCurrentSession, type Session, canEdit } from "~/lib/auth";
 import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
-import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -68,6 +67,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
+
+import { useInvestigationSync } from "~/hooks/useInvestigationSync";
+
 
 // Wizard Navigation Tabs
 const wizardTabs: WizardTab[] = [
@@ -124,6 +126,10 @@ export default function FahndungDetailContent({
     void getCurrentSession().then(setSession);
   }, []);
 
+  // Verwende die neue Synchronisations-Hook für bessere Datenaktualisierung
+  const { investigation: syncInvestigation, globalSync } =
+    useInvestigationSync(investigationId);
+
   // Prüfe Query-Parameter für automatischen Edit-Modus
   // Verwende den neuen Custom Hook
   const editHook = useInvestigationEdit(investigationId);
@@ -135,6 +141,7 @@ export default function FahndungDetailContent({
       editHook.startEditing();
     }
   }, [searchParams, session, editHook]);
+
   const {
     isEditing: isEditMode,
     original: investigation,
@@ -151,10 +158,8 @@ export default function FahndungDetailContent({
     unpublishInvestigation,
   } = editHook;
 
-  // Hole den ursprünglichen Status aus der Datenbankabfrage
-  const { data: dbInvestigation } = api.post.getInvestigation.useQuery({
-    id: investigationId,
-  });
+  // Verwende syncInvestigation als primäre Datenquelle
+  const dbInvestigation = syncInvestigation;
   const investigationStatus = dbInvestigation?.status;
 
   const handleDelete = async () => {
@@ -166,6 +171,16 @@ export default function FahndungDetailContent({
       console.error("Delete error:", error);
     }
   };
+
+  // Automatische Refetch nach Speichern
+  useEffect(() => {
+    if (!isEditMode && investigationId) {
+      // Sofortige Synchronisation nach dem Speichern
+      console.log("🔄 Sofortige Synchronisation nach Speichern");
+      globalSync();
+    }
+    return undefined;
+  }, [isEditMode, investigationId, globalSync]);
 
   // Loading State
   if (isLoading) {
@@ -208,10 +223,18 @@ export default function FahndungDetailContent({
   }
 
   // Render content based on active tab
-  const renderTabContent = () => {
+  const renderTabContent = (): React.JSX.Element => {
     const data = isEditMode ? editedData : investigation;
 
-    if (!data) return null;
+    if (!data) {
+      return (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <p className="text-gray-500 dark:text-gray-400">
+            Keine Daten verfügbar.
+          </p>
+        </div>
+      );
+    }
 
     switch (activeTab) {
       case "overview":

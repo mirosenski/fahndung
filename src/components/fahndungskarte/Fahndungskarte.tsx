@@ -28,7 +28,7 @@ import InteractiveMap, {
 } from "@/components/shared/InteractiveMap";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
 import { getFahndungUrl } from "~/lib/seo";
-import { api } from "~/trpc/react";
+import { useInvestigationSync } from "~/hooks/useInvestigationSync";
 
 // Typ-Definitionen für moderne Fahndungskarte
 
@@ -190,21 +190,144 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const [imageError, setImageError] = useState(false);
   const [showQuickEdit, setShowQuickEdit] = useState(false);
 
-  // API-Abfrage für echte Daten, falls investigationId vorhanden ist
-  const { refetch } = api.post.getInvestigation.useQuery(
-    { id: investigationId! },
-    {
-      enabled: !!investigationId,
-      refetchInterval: 10000, // Alle 10 Sekunden aktualisieren
-    },
-  );
+  // Verwende die neue Synchronisations-Hook für bessere Datenaktualisierung
+  const { investigation: syncInvestigation, syncAfterUpdate } =
+    useInvestigationSync(investigationId!);
+
+  // Konvertiere syncInvestigation zu FahndungsData Format
+  const convertInvestigationToFahndungsData = (
+    investigation: Record<string, unknown>,
+  ): FahndungsData => {
+    if (!investigation) return mockData;
+
+    return {
+      step1: {
+        title: (investigation["title"] as string) ?? "Unbekannte Fahndung",
+        category:
+          (investigation["category"] as CategoryType) ?? "MISSING_PERSON",
+        caseNumber: (investigation["case_number"] as string) ?? "",
+      },
+      step2: {
+        shortDescription: (investigation["short_description"] as string) ?? "",
+        description: (investigation["description"] as string) ?? "",
+        priority: (investigation["priority"] as PriorityType) ?? "normal",
+        tags: (investigation["tags"] as string[]) ?? [],
+        features: (investigation["features"] as string) ?? "",
+      },
+      step3: {
+        mainImage:
+          (investigation["images"] as Array<{ url: string }>)?.[0]?.url ?? "",
+        additionalImages:
+          (investigation["images"] as Array<{ url: string }>)
+            ?.slice(1)
+            .map((img) => img.url) ?? [],
+      },
+      step4: {
+        mainLocation: investigation["location"]
+          ? { address: investigation["location"] as string }
+          : undefined,
+      },
+      step5: {
+        contactPerson:
+          ((investigation["contact_info"] as Record<string, unknown>)?.[
+            "person"
+          ] as string) ?? "Polizei",
+        contactPhone:
+          ((investigation["contact_info"] as Record<string, unknown>)?.[
+            "phone"
+          ] as string) ?? "+49 711 8990-0",
+        contactEmail:
+          ((investigation["contact_info"] as Record<string, unknown>)?.[
+            "email"
+          ] as string) ?? "",
+        department:
+          ((investigation["contact_info"] as Record<string, unknown>)?.[
+            "department"
+          ] as string) ?? "Polizeipräsidium",
+        availableHours:
+          ((investigation["contact_info"] as Record<string, unknown>)?.[
+            "hours"
+          ] as string) ?? "24/7",
+      },
+    };
+  };
 
   // Verwende propData als Fallback, falls keine API-Daten verfügbar sind
-  const data = propData ?? mockData;
+  const convertedData = syncInvestigation
+    ? convertInvestigationToFahndungsData(
+        syncInvestigation as unknown as Record<string, unknown>,
+      )
+    : propData;
+  const data = convertedData ?? mockData;
+
+  // Sichere Datenprüfung mit Fallback-Werten
+  const safeData: FahndungsData = {
+    step1: {
+      title: data?.step1?.title ?? mockData.step1.title,
+      category: data?.step1?.category ?? mockData.step1.category,
+      caseNumber: data?.step1?.caseNumber ?? mockData.step1.caseNumber,
+    },
+    step2: {
+      shortDescription:
+        data?.step2?.shortDescription ?? mockData.step2.shortDescription,
+      description: data?.step2?.description ?? mockData.step2.description,
+      priority: data?.step2?.priority ?? mockData.step2.priority,
+      tags: data?.step2?.tags ?? mockData.step2.tags,
+      features: data?.step2?.features ?? mockData.step2.features,
+    },
+    step3: {
+      mainImage: data?.step3?.mainImage ?? mockData.step3.mainImage,
+      additionalImages:
+        data?.step3?.additionalImages ?? mockData.step3.additionalImages,
+    },
+    step4: {
+      mainLocation: data?.step4?.mainLocation ?? mockData.step4.mainLocation,
+    },
+    step5: {
+      contactPerson: data?.step5?.contactPerson ?? mockData.step5.contactPerson,
+      contactPhone: data?.step5?.contactPhone ?? mockData.step5.contactPhone,
+      contactEmail: data?.step5?.contactEmail ?? mockData.step5.contactEmail,
+      department: data?.step5?.department ?? mockData.step5.department,
+      availableHours:
+        data?.step5?.availableHours ?? mockData.step5.availableHours,
+    },
+  };
+
+  // Loading State für Daten
+  const isDataLoading = !syncInvestigation && !propData;
 
   // Hilfsfunktion für Platzhalterbild
   const getPlaceholderImage = () =>
     "/images/placeholders/fotos/platzhalterbild.svg";
+
+  // Sichere Bildquelle-Validierung
+  const getSafeImageSrc = () => {
+    if (imageError) {
+      return getPlaceholderImage();
+    }
+
+    const mainImageUrl = safeData.step3.mainImageUrl;
+    const mainImage = safeData.step3.mainImage;
+
+    // Prüfe ob die Bildquellen gültig sind (nicht leer, nicht undefined)
+    if (mainImageUrl && mainImageUrl.trim() !== "") {
+      return mainImageUrl;
+    }
+
+    if (mainImage && mainImage.trim() !== "") {
+      return mainImage;
+    }
+
+    return getPlaceholderImage();
+  };
+
+  // Sichere Bildquelle-Validierung für zusätzliche Bilder
+  const getSafeAdditionalImageSrc = (img: string) => {
+    if (!img || img.trim() === "") {
+      return getPlaceholderImage();
+    }
+    return img;
+  };
 
   // Bildfehler-Handler
   const handleImageError = () => {
@@ -240,8 +363,13 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const backRef = useRef<HTMLDivElement>(null);
   const detailsButtonRef = useRef<HTMLButtonElement>(null);
 
-  const category = CATEGORY_CONFIG[data.step1.category];
-  const priority = PRIORITY_CONFIG[data.step2.priority];
+  // Sichere Datenprüfung mit Fallback-Werten
+  const category = safeData?.step1?.category
+    ? CATEGORY_CONFIG[safeData.step1.category]
+    : CATEGORY_CONFIG.MISSING_PERSON;
+  const priority = safeData?.step2?.priority
+    ? PRIORITY_CONFIG[safeData.step2.priority]
+    : PRIORITY_CONFIG.normal;
 
   // Quick Edit Handler
   const handleQuickEdit = (e: React.MouseEvent) => {
@@ -254,20 +382,20 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   // Manuelle Aktualisierung der Daten
   const handleDataUpdate = useCallback(() => {
     if (investigationId) {
-      void refetch();
+      void syncAfterUpdate();
     }
-  }, [investigationId, refetch]);
+  }, [investigationId, syncAfterUpdate]);
 
-  // Automatische Aktualisierung alle 10 Sekunden
+  // Automatische Aktualisierung alle 5 Sekunden
   useEffect(() => {
     if (!investigationId) return;
 
     const interval = setInterval(() => {
-      void refetch();
-    }, 10000);
+      void syncAfterUpdate();
+    }, 5000); // Reduziert von 10 auf 5 Sekunden
 
     return () => clearInterval(interval);
-  }, [investigationId, refetch]);
+  }, [investigationId, syncAfterUpdate]);
 
   // Höre auf Änderungen in der URL (z.B. nach Bearbeitung)
   useEffect(() => {
@@ -404,6 +532,24 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isFlipped, flipCard]);
 
+  // Zeige Loading-State wenn Daten noch nicht verfügbar sind
+  if (isDataLoading) {
+    return (
+      <div
+        className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      >
+        <div className="flex items-center justify-center p-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Lade Fahndungsdaten...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Tab Content Renderer
   const renderTabContent = () => {
     switch (activeTab) {
@@ -417,7 +563,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     {category.label}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Fall #{data.step1.caseNumber}
+                    Fall #{safeData.step1.caseNumber}
                   </p>
                 </div>
               </div>
@@ -428,17 +574,17 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 Kurzbeschreibung
               </h4>
               <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                {data.step2.shortDescription}
+                {safeData.step2.shortDescription}
               </p>
             </div>
 
-            {data.step2.tags.length > 0 && (
+            {safeData.step2.tags.length > 0 && (
               <div>
                 <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
                   Merkmale
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {data.step2.tags.map((tag, index) => (
+                  {safeData.step2.tags.map((tag, index) => (
                     <span
                       key={index}
                       className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
@@ -459,10 +605,10 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 dark:text-white">
-                      {data.step5.contactPerson}
+                      {safeData.step5.contactPerson}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {data.step5.department}
+                      {safeData.step5.department}
                     </p>
                   </div>
                 </div>
@@ -470,25 +616,25 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-gray-500" />
                   <a
-                    href={`tel:${data.step5.contactPhone}`}
+                    href={`tel:${safeData.step5.contactPhone}`}
                     className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
-                    aria-label={`Anrufen: ${data.step5.contactPhone}`}
+                    aria-label={`Anrufen: ${safeData.step5.contactPhone}`}
                     tabIndex={-1}
                   >
-                    {data.step5.contactPhone}
+                    {safeData.step5.contactPhone}
                   </a>
                 </div>
 
-                {data.step5.contactEmail && (
+                {safeData.step5.contactEmail && (
                   <div className="flex items-center gap-3">
                     <MessageSquare className="h-4 w-4 text-gray-500" />
                     <a
-                      href={`mailto:${data.step5.contactEmail}`}
+                      href={`mailto:${safeData.step5.contactEmail}`}
                       className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
-                      aria-label={`E-Mail senden an: ${data.step5.contactEmail}`}
+                      aria-label={`E-Mail senden an: ${safeData.step5.contactEmail}`}
                       tabIndex={-1}
                     >
-                      {data.step5.contactEmail}
+                      {safeData.step5.contactEmail}
                     </a>
                   </div>
                 )}
@@ -500,7 +646,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                       Erreichbarkeit
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {data.step5.availableHours}
+                      {safeData.step5.availableHours}
                     </p>
                   </div>
                 </div>
@@ -517,17 +663,17 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 Detaillierte Beschreibung
               </h4>
               <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                {data.step2.description}
+                {safeData.step2.description}
               </p>
             </div>
 
-            {data.step2.features && (
+            {safeData.step2.features && (
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                 <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
                   Besondere Merkmale
                 </h4>
                 <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {data.step2.features}
+                  {safeData.step2.features}
                 </p>
               </div>
             )}
@@ -543,14 +689,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               </h4>
               <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-200">
                 <Image
-                  src={
-                    imageError
-                      ? getPlaceholderImage()
-                      : (data.step3.mainImageUrl ??
-                        data.step3.mainImage ??
-                        getPlaceholderImage())
-                  }
-                  alt={`Hauptfoto von ${data.step1.title}`}
+                  src={getSafeImageSrc()}
+                  alt={`Hauptfoto von ${safeData.step1.title}`}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
@@ -560,9 +700,9 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               </div>
             </div>
 
-            {((data.step3.additionalImageUrls &&
-              data.step3.additionalImageUrls.length > 0) ??
-              data.step3.additionalImages?.length > 0) && (
+            {((safeData.step3.additionalImageUrls &&
+              safeData.step3.additionalImageUrls.length > 0) ??
+              safeData.step3.additionalImages?.length > 0) && (
               <div>
                 <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
                   Weitere Bilder
@@ -570,8 +710,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   {/* Verwende zuerst die hochgeladenen URLs, dann die alten Bilder */}
                   {(
-                    data.step3.additionalImageUrls ??
-                    data.step3.additionalImages ??
+                    safeData.step3.additionalImageUrls ??
+                    safeData.step3.additionalImages ??
                     []
                   ).map((img, index) => (
                     <div
@@ -579,8 +719,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                       className="relative aspect-square overflow-hidden rounded-lg bg-gray-200"
                     >
                       <Image
-                        src={img}
-                        alt={`Zusatzbild ${index + 1} von ${data.step1.title}`}
+                        src={getSafeAdditionalImageSrc(img)}
+                        alt={`Zusatzbild ${index + 1} von ${safeData.step1.title}`}
                         fill
                         sizes="(max-width: 768px) 50vw, 25vw"
                         className="object-cover"
@@ -597,7 +737,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       case "location":
         return (
           <div className="space-y-4">
-            {data.step4.mainLocation ? (
+            {safeData.step4.mainLocation ? (
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900">
@@ -608,7 +748,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                       Letzter bekannter Aufenthaltsort
                     </h4>
                     <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                      {data.step4.mainLocation.address}
+                      {safeData.step4.mainLocation.address}
                     </p>
                   </div>
                 </div>
@@ -645,7 +785,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       className={`relative mx-auto h-[513px] w-full max-w-sm ${className}`}
       style={{ perspective: "1000px" }}
       role="region"
-      aria-label={`Fahndungskarte: ${data.step1.title}`}
+      aria-label={`Fahndungskarte: ${safeData.step1.title}`}
       onMouseEnter={() => setShowQuickEdit(true)}
       onMouseLeave={() => setShowQuickEdit(false)}
     >
@@ -662,16 +802,18 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden" }}
           onClick={() =>
-            router.push(getFahndungUrl(data.step1.title, data.step1.caseNumber))
+            router.push(
+              getFahndungUrl(safeData.step1.title, safeData.step1.caseNumber),
+            )
           }
           role="button"
-          aria-label={`Zur Detailseite von ${data.step1.title} navigieren`}
+          aria-label={`Zur Detailseite von ${safeData.step1.title} navigieren`}
           tabIndex={isFlipped ? -1 : 0}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               router.push(
-                getFahndungUrl(data.step1.title, data.step1.caseNumber),
+                getFahndungUrl(safeData.step1.title, safeData.step1.caseNumber),
               );
             }
           }}
@@ -679,7 +821,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           {/* Image Section - 60% (5% kürzer) */}
           <div className="relative h-[60%] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
             {/* Priority Badge - nur auf Vorderseite */}
-            {data.step2.priority !== "normal" && !isFlipped && (
+            {safeData.step2.priority !== "normal" && !isFlipped && (
               <div
                 className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
                 style={{ zIndex: 1 }}
@@ -701,14 +843,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             )}
 
             <Image
-              src={
-                imageError
-                  ? getPlaceholderImage()
-                  : (data.step3.mainImageUrl ??
-                    data.step3.mainImage ??
-                    getPlaceholderImage())
-              }
-              alt={`Hauptfoto von ${data.step1.title}`}
+              src={getSafeImageSrc()}
+              alt={`Hauptfoto von ${safeData.step1.title}`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -723,7 +859,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
 
             {/* Case Number Badge - horizontal alignment */}
             <div className="absolute bottom-4 right-4">
-              <CaseNumberBadge caseNumber={data.step1.caseNumber} />
+              <CaseNumberBadge caseNumber={safeData.step1.caseNumber} />
             </div>
           </div>
 
@@ -731,11 +867,11 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           <div className="flex h-[40%] flex-col justify-between p-6">
             <div className="space-y-3">
               <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
-                {data.step1.title}
+                {safeData.step1.title}
               </h3>
 
               <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                {data.step2.shortDescription}
+                {safeData.step2.shortDescription}
               </p>
             </div>
 
@@ -761,11 +897,11 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 <ChevronRight className="h-4 w-4" />
               </button>
 
-              {data.step4.mainLocation && (
+              {safeData.step4.mainLocation && (
                 <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                   <MapPin className="h-3 w-3" />
                   <span className="max-w-24 truncate">
-                    {data.step4.mainLocation.address.split(",")[0]}
+                    {safeData.step4.mainLocation.address.split(",")[0]}
                   </span>
                 </div>
               )}
@@ -820,7 +956,10 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <button
                 onClick={() =>
                   router.push(
-                    getFahndungUrl(data.step1.title, data.step1.caseNumber),
+                    getFahndungUrl(
+                      safeData.step1.title,
+                      safeData.step1.caseNumber,
+                    ),
                   )
                 }
                 className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

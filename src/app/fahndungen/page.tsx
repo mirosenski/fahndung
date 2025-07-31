@@ -1,7 +1,7 @@
 // src/app/fahndungen/page.tsx - Erweiterte Übersicht mit CRUD
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -12,8 +12,9 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { api } from "~/trpc/react";
 import PageLayout from "~/components/layout/PageLayout";
+
+import { useFahndungenOptimized } from "~/hooks/useFahndungenOptimized";
 
 import dynamic from "next/dynamic";
 
@@ -84,27 +85,21 @@ export default function FahndungenPage() {
     ? getRolePermissions(userProfile.role)
     : null;
 
-  // tRPC Queries
+  // Optimierte Fahndungen-Hook mit aggressiver Synchronisation
   const {
-    data: investigations = [],
-    isLoading,
-    refetch,
-  } = api.post.getInvestigations.useQuery({
+    investigations,
+    refetch: handleRefresh,
+  } = useFahndungenOptimized({
     limit: 50,
     offset: 0,
-    status: statusFilter === "all" ? undefined : statusFilter,
-    priority: priorityFilter === "all" ? undefined : priorityFilter,
+    status: statusFilter,
+    priority: priorityFilter,
+    viewMode,
+    currentUser: !!currentUser,
   });
 
-  const { data: myInvestigations = [], refetch: refetchMy } =
-    api.post.getMyInvestigations.useQuery(
-      { limit: 50, offset: 0 },
-      { enabled: viewMode === "my" && !!currentUser },
-    );
-
   // Aktuelle Daten basierend auf View Mode
-  const currentInvestigations: Investigation[] =
-    viewMode === "my" ? myInvestigations : investigations;
+  const currentInvestigations: Investigation[] = investigations;
 
   // Gefilterte Daten
   const filteredInvestigations = currentInvestigations.filter(
@@ -129,24 +124,21 @@ export default function FahndungenPage() {
   };
 
   // Event Handlers
-  const handleRefresh = async () => {
-    if (viewMode === "my") {
-      await refetchMy();
-    } else {
-      await refetch();
-    }
-  };
+  const handleRefreshClick = useCallback(async () => {
+    console.log("🔄 Manueller Refresh der Fahndungen");
+    void handleRefresh();
+  }, [handleRefresh]);
 
   // Loading State
-  if (authLoading ?? isLoading) {
+  if (authLoading) {
     return (
       <PageLayout session={session} variant="dashboard">
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500" />
-            <p className="mt-4 text-gray-600 dark:text-gray-400">
-              Fahndungen werden geladen...
-            </p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600 dark:text-gray-400">
+              Lade Fahndungen...
+            </span>
           </div>
         </div>
       </PageLayout>
@@ -302,7 +294,7 @@ export default function FahndungenPage() {
             </select>
 
             <button
-              onClick={handleRefresh}
+              onClick={handleRefreshClick}
               className="rounded-lg bg-gray-100 p-2 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             >
               <RefreshCw className="h-4 w-4" />
@@ -334,7 +326,7 @@ export default function FahndungenPage() {
         ) : (
           <FahndungskarteGrid
             investigations={filteredInvestigations}
-            onAction={handleRefresh}
+            onAction={handleRefreshClick}
             userRole={userProfile?.role}
             userPermissions={userPermissions ?? undefined}
           />
