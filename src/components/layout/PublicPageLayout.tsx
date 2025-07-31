@@ -20,4 +20,4 @@ export default function PublicPageLayout({
       <Footer variant="home" />
     </div>
   );
-} 
+}

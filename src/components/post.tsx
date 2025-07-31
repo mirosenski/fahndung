@@ -5,12 +5,14 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 
 export function LatestPost() {
-  const { data: investigations } = api.post.getInvestigations.useQuery({ limit: 1 });
+  const { data: investigations } = api.post.getInvestigations.useQuery({
+    limit: 1,
+  });
 
   const utils = api.useUtils();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  
+
   const createInvestigation = api.post.createInvestigation.useMutation({
     onSuccess: async () => {
       await utils.post.getInvestigations.invalidate();
@@ -28,17 +30,19 @@ export function LatestPost() {
           <h3 className="font-semibold text-white">Neueste Fahndung:</h3>
           <p className="text-sm text-gray-300">{latestInvestigation.title}</p>
           {latestInvestigation.description && (
-            <p className="mt-2 text-xs text-gray-400">{latestInvestigation.description}</p>
+            <p className="mt-2 text-xs text-gray-400">
+              {latestInvestigation.description}
+            </p>
           )}
         </div>
       ) : (
         <p className="mb-4 text-gray-300">Noch keine Fahndungen vorhanden.</p>
       )}
-      
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          createInvestigation.mutate({ 
+          createInvestigation.mutate({
             title,
             description: description ?? undefined,
           });

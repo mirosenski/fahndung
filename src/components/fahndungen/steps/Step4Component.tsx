@@ -164,7 +164,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -173,7 +173,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
                   e.key === "Enter" && searchLocation(searchQuery)
                 }
                 placeholder="Adresse oder Ort eingeben..."
-                className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
             <button

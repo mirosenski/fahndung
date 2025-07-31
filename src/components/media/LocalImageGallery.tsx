@@ -103,7 +103,7 @@ export default function LocalImageGallery() {
         <CardContent>
           {/* Suchleiste */}
           <div className="relative mb-6">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
               placeholder="Bilder durchsuchen..."
               value={searchTerm}
@@ -167,7 +167,7 @@ export default function LocalImageGallery() {
                     {!image.isPublic && (
                       <Badge
                         variant="secondary"
-                        className="absolute top-2 left-2"
+                        className="absolute left-2 top-2"
                       >
                         Privat
                       </Badge>
@@ -245,7 +245,7 @@ export default function LocalImageGallery() {
 
       {/* Bild-Detail Modal */}
       {selectedImage && (
-        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-lg bg-white">
             <div className="p-6">
               <div className="mb-4 flex items-start justify-between">

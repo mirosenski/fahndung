@@ -135,7 +135,7 @@ export default function FahndungFilter({
           {activeFilters.searchTerm && (
             <button
               onClick={() => setSearchTerm("")}
-              className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <X className="h-4 w-4" />
             </button>

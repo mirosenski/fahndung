@@ -28,6 +28,7 @@ import InteractiveMap, {
 } from "@/components/shared/InteractiveMap";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
 import { getFahndungUrl } from "~/lib/seo";
+import { api } from "~/trpc/react";
 
 // Typ-Definitionen für moderne Fahndungskarte
 
@@ -189,6 +190,18 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const [imageError, setImageError] = useState(false);
   const [showQuickEdit, setShowQuickEdit] = useState(false);
 
+  // API-Abfrage für echte Daten, falls investigationId vorhanden ist
+  const { refetch } = api.post.getInvestigation.useQuery(
+    { id: investigationId! },
+    {
+      enabled: !!investigationId,
+      refetchInterval: 10000, // Alle 10 Sekunden aktualisieren
+    },
+  );
+
+  // Verwende propData als Fallback, falls keine API-Daten verfügbar sind
+  const data = propData ?? mockData;
+
   // Hilfsfunktion für Platzhalterbild
   const getPlaceholderImage = () =>
     "/images/placeholders/fotos/platzhalterbild.svg";
@@ -227,7 +240,6 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const backRef = useRef<HTMLDivElement>(null);
   const detailsButtonRef = useRef<HTMLButtonElement>(null);
 
-  const data = propData ?? mockData;
   const category = CATEGORY_CONFIG[data.step1.category];
   const priority = PRIORITY_CONFIG[data.step2.priority];
 
@@ -238,6 +250,35 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       router.push(`/fahndungen/${investigationId}?edit=true`);
     }
   };
+
+  // Manuelle Aktualisierung der Daten
+  const handleDataUpdate = useCallback(() => {
+    if (investigationId) {
+      void refetch();
+    }
+  }, [investigationId, refetch]);
+
+  // Automatische Aktualisierung alle 10 Sekunden
+  useEffect(() => {
+    if (!investigationId) return;
+
+    const interval = setInterval(() => {
+      void refetch();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [investigationId, refetch]);
+
+  // Höre auf Änderungen in der URL (z.B. nach Bearbeitung)
+  useEffect(() => {
+    const handlePopState = () => {
+      // Aktualisiere Daten wenn zur Seite zurückgekehrt wird
+      handleDataUpdate();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [handleDataUpdate]);
 
   // Flip-Logik
   const flipCard = useCallback(() => {
@@ -556,7 +597,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       case "location":
         return (
           <div className="space-y-4">
-            {data.step4.mainLocation && (
+            {data.step4.mainLocation ? (
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900">
@@ -568,6 +609,23 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     </h4>
                     <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                       {data.step4.mainLocation.address}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
+                    <MapPin className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Keine Ortsdaten verfügbar
+                    </h4>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                      Für diesen Fall sind noch keine Ortsinformationen
+                      hinterlegt.
                     </p>
                   </div>
                 </div>
@@ -741,14 +799,14 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                className={`flex min-w-0 flex-1 items-center justify-center gap-1 px-2 py-3 text-xs font-medium transition-colors ${
                   activeTab === tab.id
                     ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
                     : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 }`}
               >
-                <tab.icon className="h-4 w-4" />
-                {tab.label}
+                <tab.icon className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{tab.label}</span>
               </button>
             ))}
           </div>

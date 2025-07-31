@@ -85,11 +85,10 @@ export default function RegisterForm() {
       console.log("🔐 Starte Supabase Auth Registrierung...");
 
       // Prüfe zuerst, ob der Benutzer bereits existiert
-      const { data: existingUser } =
-        await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
       if (existingUser.user) {
         // Benutzer existiert bereits und Passwort ist korrekt

@@ -58,7 +58,7 @@ export default function AutoSetup() {
   // Optional: Zeige eine kleine Erfolgsmeldung für 3 Sekunden
   if (isSetup && setupMessage) {
     return (
-      <div className="fixed right-4 bottom-4 z-50">
+      <div className="fixed bottom-4 right-4 z-50">
         <div className="flex items-center space-x-2 rounded-lg bg-green-600/90 p-3 text-white shadow-lg backdrop-blur-sm">
           <CheckCircle className="h-5 w-5" />
           <span className="text-sm">Benutzer-Setup erfolgreich</span>

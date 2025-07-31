@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-
   // SEO-Redirects für Fahndungsdetailseiten (optional, kann später aktiviert werden)
   // if (pathname.match(/^\/fahndungen\/[^/]+$/)) {
   //   const slug = pathname.split('/').pop();

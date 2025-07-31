@@ -5,17 +5,26 @@
  * Validiert die korrekte Struktur und Verfügbarkeit der Design-Tokens
  */
 
-const { colors, layout, componentClasses, components } = require("../src/lib/design-tokens.ts");
+const {
+  colors,
+  layout,
+  componentClasses,
+  components,
+} = require("../src/lib/design-tokens.ts");
 
 function testDesignTokens() {
   console.log("🧪 Teste Design-Tokens...\n");
-  
+
   let testsPassed = 0;
   let testsFailed = 0;
-  
+
   // Test 1: Colors existieren
   try {
-    if (colors.background.primary && colors.text.primary && colors.border.primary) {
+    if (
+      colors.background.primary &&
+      colors.text.primary &&
+      colors.border.primary
+    ) {
       console.log("✅ Colors-Tokens sind verfügbar");
       testsPassed++;
     } else {
@@ -25,7 +34,7 @@ function testDesignTokens() {
     console.log("❌ Colors-Tokens Test fehlgeschlagen:", error.message);
     testsFailed++;
   }
-  
+
   // Test 2: Layout existiert
   try {
     if (layout.container && layout.section) {
@@ -38,7 +47,7 @@ function testDesignTokens() {
     console.log("❌ Layout-Tokens Test fehlgeschlagen:", error.message);
     testsFailed++;
   }
-  
+
   // Test 3: ComponentClasses existieren
   try {
     if (componentClasses.badge && componentClasses.badge.base) {
@@ -48,10 +57,13 @@ function testDesignTokens() {
       throw new Error("Badge-ComponentClasses fehlen");
     }
   } catch (error) {
-    console.log("❌ Badge-ComponentClasses Test fehlgeschlagen:", error.message);
+    console.log(
+      "❌ Badge-ComponentClasses Test fehlgeschlagen:",
+      error.message,
+    );
     testsFailed++;
   }
-  
+
   // Test 4: Components existieren
   try {
     if (components.button && components.button.base) {
@@ -64,7 +76,7 @@ function testDesignTokens() {
     console.log("❌ Button-Components Test fehlgeschlagen:", error.message);
     testsFailed++;
   }
-  
+
   // Test 5: Card-ComponentClasses existieren
   try {
     if (componentClasses.card && componentClasses.card.base) {
@@ -77,17 +89,21 @@ function testDesignTokens() {
     console.log("❌ Card-ComponentClasses Test fehlgeschlagen:", error.message);
     testsFailed++;
   }
-  
+
   console.log(`\n📊 Test-Ergebnisse:`);
   console.log(`   - Bestanden: ${testsPassed}`);
   console.log(`   - Fehlgeschlagen: ${testsFailed}`);
   console.log(`   - Gesamt: ${testsPassed + testsFailed}`);
-  
+
   if (testsFailed === 0) {
-    console.log("\n🎉 Alle Tests bestanden! Design-Tokens sind korrekt konfiguriert.");
+    console.log(
+      "\n🎉 Alle Tests bestanden! Design-Tokens sind korrekt konfiguriert.",
+    );
     process.exit(0);
   } else {
-    console.log("\n⚠️  Einige Tests fehlgeschlagen. Bitte überprüfen Sie die Design-Tokens.");
+    console.log(
+      "\n⚠️  Einige Tests fehlgeschlagen. Bitte überprüfen Sie die Design-Tokens.",
+    );
     process.exit(1);
   }
 }
@@ -95,8 +111,8 @@ function testDesignTokens() {
 // CLI Interface
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
-  if (args.includes('--help') || args.includes('-h')) {
+
+  if (args.includes("--help") || args.includes("-h")) {
     console.log(`
 Design-Token Test Tool
 
@@ -111,8 +127,8 @@ Beispiele:
     `);
     process.exit(0);
   }
-  
+
   testDesignTokens();
 }
 
-module.exports = { testDesignTokens }; 
+module.exports = { testDesignTokens };

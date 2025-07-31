@@ -39,7 +39,6 @@ export default function MediaTabEnhanced() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-
   const { session, loading: authLoading, isAuthenticated } = useAuth();
   const { uploadFile, isUploading, progress } = useSupabaseUpload();
 
@@ -225,7 +224,6 @@ export default function MediaTabEnhanced() {
         </div>
 
         <div className="flex items-center space-x-3">
-
           {!isAuthenticated ? (
             <button
               onClick={handleLogin}
@@ -251,11 +249,9 @@ export default function MediaTabEnhanced() {
         </div>
       </div>
 
-
-
       {/* Upload Section - Only show for admins */}
       {showUpload && isAdmin && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-700 dark:bg-gray-800">
+        <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               🚀 Supabase Upload (Neue Funktion)
@@ -394,7 +390,7 @@ export default function MediaTabEnhanced() {
             placeholder="Medien durchsuchen..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-sm focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="focus:outline-hidden w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
         </div>
 
@@ -408,7 +404,7 @@ export default function MediaTabEnhanced() {
                 e.target.value as "all" | "image" | "video" | "document",
               )
             }
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="focus:outline-hidden rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
             <option value="all">Alle Typen</option>
             <option value="image">Bilder</option>
@@ -423,7 +419,7 @@ export default function MediaTabEnhanced() {
           <select
             value={selectedDirectory}
             onChange={(e) => handleDirectoryChange(e.target.value)}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="focus:outline-hidden rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
             <option value="all">Alle Verzeichnisse</option>
             {availableDirectories.map((dir) => (

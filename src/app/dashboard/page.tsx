@@ -103,8 +103,6 @@ export default function Dashboard() {
     await logout();
   }, [logout]);
 
-
-
   const loadAdminData = useCallback(async () => {
     if (!isAdmin(session?.profile ?? null)) return;
 
@@ -287,11 +285,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      <Header
-        variant="dashboard"
-        session={session}
-        onLogout={handleLogout}
-      />
+      <Header variant="dashboard" session={session} onLogout={handleLogout} />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">

@@ -28,9 +28,8 @@ export default function Login() {
       }
 
       // Zuerst Session bereinigen
-  
-      await clearAuthSession();
 
+      await clearAuthSession();
 
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -49,7 +48,6 @@ export default function Login() {
           setError(`Login-Fehler: ${error.message}`);
         }
       } else {
-
         router.push("/dashboard");
       }
     } catch (err) {

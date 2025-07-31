@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Video,
-  Hand,
-  Phone,
-  Mail,
-  AlertTriangle,
-} from "lucide-react";
+import { Video, Hand, Phone, Mail, AlertTriangle } from "lucide-react";
 import PublicPageLayout from "~/components/layout/PublicPageLayout";
 
 export const metadata: Metadata = {

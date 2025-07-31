@@ -20,7 +20,10 @@ export default function BreadcrumbNavigation({
   className = "",
 }: BreadcrumbNavigationProps) {
   return (
-    <nav className={`breadcrumb-navigation ${className}`} aria-label="Breadcrumb">
+    <nav
+      className={`breadcrumb-navigation ${className}`}
+      aria-label="Breadcrumb"
+    >
       <ol className="flex items-center space-x-2 text-sm">
         <li>
           <Link
@@ -31,7 +34,7 @@ export default function BreadcrumbNavigation({
             <span className="sr-only">Startseite</span>
           </Link>
         </li>
-        
+
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
             <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -54,4 +57,4 @@ export default function BreadcrumbNavigation({
       </ol>
     </nav>
   );
-} 
+}

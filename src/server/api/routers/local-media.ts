@@ -29,7 +29,10 @@ export const localMediaRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // Prüfe ob User authentifiziert ist (optional)
       const userId = ctx.session?.user?.id;
-      console.log("👤 Upload Request - User ID:", userId ?? "Nicht authentifiziert");
+      console.log(
+        "👤 Upload Request - User ID:",
+        userId ?? "Nicht authentifiziert",
+      );
 
       try {
         console.log("🚀 Lokaler Upload startet für:", input.filename);

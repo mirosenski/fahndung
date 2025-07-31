@@ -7,34 +7,34 @@ export interface CompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
-  format?: 'jpeg' | 'webp' | 'png';
+  format?: "jpeg" | "webp" | "png";
 }
 
 export const compressImage = async (
   file: File,
-  options: CompressionOptions = {}
+  options: CompressionOptions = {},
 ): Promise<File> => {
   const {
     maxWidth = 1920,
     maxHeight = 1080,
     quality = 0.8,
-    format = 'jpeg'
+    format = "jpeg",
   } = options;
 
   return new Promise((resolve, reject) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
 
     img.onload = () => {
       // Berechne neue Dimensionen
       let { width, height } = img;
-      
+
       if (width > maxWidth) {
         height = (height * maxWidth) / width;
         width = maxWidth;
       }
-      
+
       if (height > maxHeight) {
         width = (width * maxHeight) / height;
         height = maxHeight;
@@ -58,16 +58,16 @@ export const compressImage = async (
             });
             resolve(compressedFile);
           } else {
-            reject(new Error('Bildkompression fehlgeschlagen'));
+            reject(new Error("Bildkompression fehlgeschlagen"));
           }
         },
         `image/${format}`,
-        quality
+        quality,
       );
     };
 
-    img.onerror = () => reject(new Error('Bild konnte nicht geladen werden'));
-    
+    img.onerror = () => reject(new Error("Bild konnte nicht geladen werden"));
+
     // Bild laden
     const url = URL.createObjectURL(file);
     img.src = url;
@@ -78,7 +78,7 @@ export const compressImage = async (
  * Prüft ob eine Datei komprimiert werden sollte
  */
 export const shouldCompressImage = (file: File): boolean => {
-  const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  const imageTypes = ["image/jpeg", "image/png", "image/webp"];
   const maxSize = 2 * 1024 * 1024; // 2MB
 
   return imageTypes.includes(file.type) && file.size > maxSize;
@@ -89,7 +89,7 @@ export const shouldCompressImage = (file: File): boolean => {
  */
 export const estimateCompressedSize = (file: File): number => {
   if (!shouldCompressImage(file)) return file.size;
-  
+
   // Grobe Schätzung: 30-50% der ursprünglichen Größe
   return Math.round(file.size * 0.4);
-}; 
+};

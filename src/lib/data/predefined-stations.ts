@@ -3,7 +3,7 @@
 
 export interface PredefinedStation {
   name: string;
-  type: 'praesidium' | 'revier';
+  type: "praesidium" | "revier";
   city: string;
   address: string;
   coordinates: [number, number];
@@ -27,7 +27,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "stuttgart@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Hauptsitz der Polizei Baden-Württemberg"
+    description: "Hauptsitz der Polizei Baden-Württemberg",
   },
   {
     name: "Polizeipräsidium Karlsruhe",
@@ -39,31 +39,31 @@ export const predefinedStations: PredefinedStation[] = [
     email: "karlsruhe@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Karlsruhe"
+    description: "Polizeipräsidium Karlsruhe",
   },
   {
     name: "Polizeipräsidium Mannheim",
     type: "praesidium",
     city: "Mannheim",
     address: "Collinistraße 1",
-    coordinates: [49.4875, 8.4660],
+    coordinates: [49.4875, 8.466],
     telefon: "0621 174-0",
     email: "mannheim@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Mannheim"
+    description: "Polizeipräsidium Mannheim",
   },
   {
     name: "Polizeipräsidium Freiburg",
     type: "praesidium",
     city: "Freiburg",
     address: "Basler Landstraße 113",
-    coordinates: [47.9990, 7.8421],
+    coordinates: [47.999, 7.8421],
     telefon: "0761 882-0",
     email: "freiburg@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Freiburg"
+    description: "Polizeipräsidium Freiburg",
   },
   {
     name: "Polizeipräsidium Heilbronn",
@@ -75,19 +75,19 @@ export const predefinedStations: PredefinedStation[] = [
     email: "heilbronn@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Heilbronn"
+    description: "Polizeipräsidium Heilbronn",
   },
   {
     name: "Polizeipräsidium Aalen",
     type: "praesidium",
     city: "Aalen",
     address: "Böhmerwaldstraße 20",
-    coordinates: [48.830248, 10.091980],
+    coordinates: [48.830248, 10.09198],
     telefon: "07361 580-0",
     email: "aalen@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Aalen"
+    description: "Polizeipräsidium Aalen",
   },
   {
     name: "Polizeipräsidium Konstanz",
@@ -99,7 +99,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "konstanz@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Konstanz"
+    description: "Polizeipräsidium Konstanz",
   },
   {
     name: "Polizeipräsidium Ludwigsburg",
@@ -111,7 +111,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "ludwigsburg@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Ludwigsburg"
+    description: "Polizeipräsidium Ludwigsburg",
   },
   {
     name: "Polizeipräsidium Offenburg",
@@ -123,7 +123,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "offenburg@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Offenburg"
+    description: "Polizeipräsidium Offenburg",
   },
   {
     name: "Polizeipräsidium Pforzheim",
@@ -135,7 +135,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "pforzheim@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Pforzheim"
+    description: "Polizeipräsidium Pforzheim",
   },
   {
     name: "Polizeipräsidium Ravensburg",
@@ -147,7 +147,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "ravensburg@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Ravensburg"
+    description: "Polizeipräsidium Ravensburg",
   },
   {
     name: "Polizeipräsidium Reutlingen",
@@ -159,7 +159,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "reutlingen@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Reutlingen"
+    description: "Polizeipräsidium Reutlingen",
   },
   {
     name: "Polizeipräsidium Ulm",
@@ -171,7 +171,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "ulm@polizei.bwl.de",
     notdienst24h: true,
     isActive: true,
-    description: "Polizeipräsidium Ulm"
+    description: "Polizeipräsidium Ulm",
   },
 
   // === REVIERE STUTTGART ===
@@ -185,7 +185,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier1.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Zentrum Stuttgart"
+    description: "Zentrum Stuttgart",
   },
   {
     name: "Polizeirevier 2 Bad Cannstatt",
@@ -197,7 +197,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier2.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Bad Cannstatt"
+    description: "Bad Cannstatt",
   },
   {
     name: "Polizeirevier 3 Feuerbach",
@@ -209,7 +209,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier3.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Feuerbach"
+    description: "Feuerbach",
   },
   {
     name: "Polizeirevier 4 Zuffenhausen",
@@ -221,7 +221,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier4.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Zuffenhausen"
+    description: "Zuffenhausen",
   },
   {
     name: "Polizeirevier 5 Vaihingen",
@@ -233,7 +233,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier5.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Vaihingen"
+    description: "Vaihingen",
   },
   {
     name: "Polizeirevier 6 Martin-Luther Straße",
@@ -245,7 +245,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier6.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Stuttgart Nord"
+    description: "Stuttgart Nord",
   },
   {
     name: "Polizeirevier 7 Ludwigsburger Straße",
@@ -257,7 +257,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier7.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Stuttgart Nord-Ost"
+    description: "Stuttgart Nord-Ost",
   },
   {
     name: "Polizeirevier 8 Kärntner Straße",
@@ -269,7 +269,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier8.stuttgart@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Stuttgart West"
+    description: "Stuttgart West",
   },
 
   // === REVIERE KARLSRUHE ===
@@ -283,7 +283,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-mitte.karlsruhe@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Karlsruhe Mitte"
+    description: "Karlsruhe Mitte",
   },
   {
     name: "Polizeirevier Karlsruhe-Durlach",
@@ -295,7 +295,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-durlach.karlsruhe@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Karlsruhe Durlach"
+    description: "Karlsruhe Durlach",
   },
   {
     name: "Polizeirevier Karlsruhe-Mühlburg",
@@ -307,7 +307,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-muehlburg.karlsruhe@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Karlsruhe Mühlburg"
+    description: "Karlsruhe Mühlburg",
   },
   {
     name: "Polizeirevier Karlsruhe-Rüppurr",
@@ -319,7 +319,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-rueppurr.karlsruhe@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Karlsruhe Rüppurr"
+    description: "Karlsruhe Rüppurr",
   },
 
   // === REVIERE MANNHEIM ===
@@ -328,12 +328,12 @@ export const predefinedStations: PredefinedStation[] = [
     type: "revier",
     city: "Mannheim",
     address: "M1 1",
-    coordinates: [49.4875, 8.4660],
+    coordinates: [49.4875, 8.466],
     telefon: "0621 174-1000",
     email: "revier-innenstadt.mannheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Mannheim Innenstadt"
+    description: "Mannheim Innenstadt",
   },
   {
     name: "Polizeirevier Mannheim-Neckarau",
@@ -345,7 +345,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-neckarau.mannheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Mannheim Neckarau"
+    description: "Mannheim Neckarau",
   },
   {
     name: "Polizeirevier Mannheim-Rheinau",
@@ -357,7 +357,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-rheinau.mannheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Mannheim Rheinau"
+    description: "Mannheim Rheinau",
   },
   {
     name: "Polizeirevier Mannheim-Schwetzingerstadt",
@@ -369,7 +369,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-schwetzingerstadt.mannheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Mannheim Schwetzingerstadt"
+    description: "Mannheim Schwetzingerstadt",
   },
 
   // === REVIERE FREIBURG ===
@@ -378,12 +378,12 @@ export const predefinedStations: PredefinedStation[] = [
     type: "revier",
     city: "Freiburg",
     address: "Kaiser-Joseph-Straße 167",
-    coordinates: [47.9990, 7.8421],
+    coordinates: [47.999, 7.8421],
     telefon: "0761 882-1000",
     email: "revier-innenstadt.freiburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Freiburg Innenstadt"
+    description: "Freiburg Innenstadt",
   },
   {
     name: "Polizeirevier Freiburg-Landwasser",
@@ -395,7 +395,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-landwasser.freiburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Freiburg Landwasser"
+    description: "Freiburg Landwasser",
   },
   {
     name: "Polizeirevier Freiburg-St. Georgen",
@@ -407,7 +407,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-stgeorgen.freiburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Freiburg St. Georgen"
+    description: "Freiburg St. Georgen",
   },
   {
     name: "Polizeirevier Freiburg-Wiehre",
@@ -419,7 +419,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-wiehre.freiburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Freiburg Wiehre"
+    description: "Freiburg Wiehre",
   },
 
   // === REVIERE HEILBRONN ===
@@ -433,7 +433,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.heilbronn@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Heilbronn Innenstadt"
+    description: "Heilbronn Innenstadt",
   },
   {
     name: "Polizeirevier Heilbronn-Böckingen",
@@ -445,7 +445,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-boeckingen.heilbronn@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Heilbronn Böckingen"
+    description: "Heilbronn Böckingen",
   },
   {
     name: "Polizeirevier Heilbronn-Sontheim",
@@ -457,7 +457,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-sontheim.heilbronn@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Heilbronn Sontheim"
+    description: "Heilbronn Sontheim",
   },
 
   // === REVIERE AALEN ===
@@ -471,7 +471,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.aalen@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Aalen Revier"
+    description: "Aalen Revier",
   },
   {
     name: "Polizeirevier Backnang",
@@ -483,7 +483,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.backnang@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Backnang Revier"
+    description: "Backnang Revier",
   },
   {
     name: "Polizeirevier Crailsheim",
@@ -495,7 +495,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.crailsheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Crailsheim Revier"
+    description: "Crailsheim Revier",
   },
   {
     name: "Polizeirevier Ellwangen",
@@ -507,7 +507,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.ellwangen@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ellwangen Revier"
+    description: "Ellwangen Revier",
   },
   {
     name: "Polizeirevier Fellbach",
@@ -519,7 +519,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.fellbach@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Fellbach Revier"
+    description: "Fellbach Revier",
   },
   {
     name: "Polizeirevier Schorndorf",
@@ -531,7 +531,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.schorndorf@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Schorndorf Revier"
+    description: "Schorndorf Revier",
   },
   {
     name: "Polizeirevier Schwäbisch Gmünd",
@@ -543,7 +543,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.schwaebischgmuend@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Schwäbisch Gmünd Revier"
+    description: "Schwäbisch Gmünd Revier",
   },
   {
     name: "Polizeirevier Schwäbisch Hall",
@@ -555,7 +555,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.schwaebischhall@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Schwäbisch Hall Revier"
+    description: "Schwäbisch Hall Revier",
   },
   {
     name: "Polizeirevier Waiblingen",
@@ -567,7 +567,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.waiblingen@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Waiblingen Revier"
+    description: "Waiblingen Revier",
   },
   {
     name: "Polizeirevier Winnenden",
@@ -579,7 +579,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier.winnenden@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Winnenden Revier"
+    description: "Winnenden Revier",
   },
 
   // === REVIERE KONSTANZ ===
@@ -593,7 +593,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.konstanz@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Konstanz Innenstadt"
+    description: "Konstanz Innenstadt",
   },
   {
     name: "Polizeirevier Konstanz-Petershausen",
@@ -605,7 +605,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-petershausen.konstanz@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Konstanz Petershausen"
+    description: "Konstanz Petershausen",
   },
 
   // === REVIERE LUDWIGSBURG ===
@@ -619,7 +619,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.ludwigsburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ludwigsburg Innenstadt"
+    description: "Ludwigsburg Innenstadt",
   },
   {
     name: "Polizeirevier Ludwigsburg-Oßweil",
@@ -631,7 +631,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-osswell.ludwigsburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ludwigsburg Oßweil"
+    description: "Ludwigsburg Oßweil",
   },
 
   // === REVIERE OFFENBURG ===
@@ -645,7 +645,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.offenburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Offenburg Innenstadt"
+    description: "Offenburg Innenstadt",
   },
   {
     name: "Polizeirevier Offenburg-Zell",
@@ -657,7 +657,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-zell.offenburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Offenburg Zell"
+    description: "Offenburg Zell",
   },
 
   // === REVIERE PFORZHEIM ===
@@ -671,7 +671,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.pforzheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Pforzheim Innenstadt"
+    description: "Pforzheim Innenstadt",
   },
   {
     name: "Polizeirevier Pforzheim-Brötzingen",
@@ -683,7 +683,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-broetzingen.pforzheim@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Pforzheim Brötzingen"
+    description: "Pforzheim Brötzingen",
   },
 
   // === REVIERE RAVENSBURG ===
@@ -697,7 +697,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.ravensburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ravensburg Innenstadt"
+    description: "Ravensburg Innenstadt",
   },
   {
     name: "Polizeirevier Ravensburg-Weingarten",
@@ -709,7 +709,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-weingarten.ravensburg@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ravensburg Weingarten"
+    description: "Ravensburg Weingarten",
   },
 
   // === REVIERE REUTLINGEN ===
@@ -723,7 +723,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.reutlingen@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Reutlingen Innenstadt"
+    description: "Reutlingen Innenstadt",
   },
   {
     name: "Polizeirevier Reutlingen-Betzingen",
@@ -735,7 +735,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-betzingen.reutlingen@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Reutlingen Betzingen"
+    description: "Reutlingen Betzingen",
   },
 
   // === REVIERE ULM ===
@@ -749,7 +749,7 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-innenstadt.ulm@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ulm Innenstadt"
+    description: "Ulm Innenstadt",
   },
   {
     name: "Polizeirevier Ulm-Söflingen",
@@ -761,23 +761,27 @@ export const predefinedStations: PredefinedStation[] = [
     email: "revier-soeflingen.ulm@polizei.bwl.de",
     notdienst24h: false,
     isActive: true,
-    description: "Ulm Söflingen"
-  }
+    description: "Ulm Söflingen",
+  },
 ];
 
 // Hilfsfunktionen
-export const getPredefinedStationsByType = (type: 'praesidium' | 'revier'): PredefinedStation[] => {
-  return predefinedStations.filter(station => station.type === type);
+export const getPredefinedStationsByType = (
+  type: "praesidium" | "revier",
+): PredefinedStation[] => {
+  return predefinedStations.filter((station) => station.type === type);
 };
 
-export const getPredefinedStationsByCity = (city: string): PredefinedStation[] => {
-  return predefinedStations.filter(station => station.city === city);
+export const getPredefinedStationsByCity = (
+  city: string,
+): PredefinedStation[] => {
+  return predefinedStations.filter((station) => station.city === city);
 };
 
 export const getPredefinedPraesidien = (): PredefinedStation[] => {
-  return getPredefinedStationsByType('praesidium');
+  return getPredefinedStationsByType("praesidium");
 };
 
 export const getPredefinedReviere = (): PredefinedStation[] => {
-  return getPredefinedStationsByType('revier');
-}; 
+  return getPredefinedStationsByType("revier");
+};

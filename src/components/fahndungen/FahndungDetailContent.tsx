@@ -22,6 +22,11 @@ import {
   AlertCircle,
   Info,
   Loader2,
+  MoreVertical,
+  Trash2,
+  Archive,
+  EyeOff,
+  AlertTriangle,
 } from "lucide-react";
 
 // Import components
@@ -43,149 +48,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { toast } from "sonner";
 
-// Types für echte Datenbankdaten
-interface DatabaseInvestigation {
-  id: string;
-  title: string;
-  case_number: string;
-  description: string;
-  short_description: string;
-  status: string;
-  priority: "normal" | "urgent" | "new";
-  category: string;
-  location: string;
-  station: string;
-  features: string;
-  date: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-  assigned_to?: string;
-  tags: string[];
-  metadata: Record<string, unknown>;
-  contact_info?: Record<string, unknown>;
-  created_by_user?: {
-    name: string;
-    email: string;
-  };
-  assigned_to_user?: {
-    name: string;
-    email: string;
-  };
-  images?: Array<{
-    id: string;
-    url: string;
-    alt_text?: string;
-    caption?: string;
-  }>;
-  published_as_article?: boolean;
-  article_slug?: string;
-  article_content?: {
-    blocks: Array<{
-      type: string;
-      content: Record<string, unknown>;
-      id?: string;
-    }>;
-  };
-  article_meta?: {
-    seo_title?: string;
-    seo_description?: string;
-    keywords?: string[];
-    author?: string;
-    reading_time?: number;
-  };
-}
-
-// UI Data Types
-interface UIInvestigationData {
-  id: string;
-  step1: {
-    title: string;
-    category:
-      | "WANTED_PERSON"
-      | "MISSING_PERSON"
-      | "UNKNOWN_DEAD"
-      | "STOLEN_GOODS";
-    caseNumber: string;
-  };
-  step2: {
-    shortDescription: string;
-    description: string;
-    priority: "normal" | "urgent" | "new";
-    tags: string[];
-    features: string;
-  };
-  step3: {
-    mainImage: string;
-    additionalImages: string[];
-  };
-  step4: {
-    mainLocation?: { address: string };
-  };
-  step5: {
-    contactPerson: string;
-    contactPhone: string;
-    contactEmail: string;
-    department: string;
-    availableHours: string;
-  };
-  images: Array<{
-    id: string;
-    url: string;
-    alt_text?: string;
-    caption?: string;
-  }>;
-  contact_info: Record<string, unknown>;
-}
-
-// Konvertierung von Datenbankdaten zu UI-Format
-const convertDatabaseToUIFormat = (
-  dbData: DatabaseInvestigation,
-): UIInvestigationData => {
-  return {
-    id: dbData.id,
-    step1: {
-      title: dbData.title,
-      category: dbData.category as
-        | "WANTED_PERSON"
-        | "MISSING_PERSON"
-        | "UNKNOWN_DEAD"
-        | "STOLEN_GOODS",
-      caseNumber: dbData.case_number,
-    },
-    step2: {
-      shortDescription: dbData.short_description ?? "",
-      description: dbData.description,
-      priority: dbData.priority,
-      tags: dbData.tags ?? [],
-      features: dbData.features,
-    },
-    step3: {
-      mainImage:
-        dbData.images?.[0]?.url ??
-        "/images/placeholders/fotos/platzhalterbild.svg",
-      additionalImages: dbData.images?.slice(1).map((img) => img.url) ?? [],
-    },
-    step4: {
-      mainLocation: dbData.location ? { address: dbData.location } : undefined,
-    },
-    step5: {
-      contactPerson:
-        (dbData.contact_info?.["person"] as string | undefined) ?? "Polizei",
-      contactPhone:
-        (dbData.contact_info?.["phone"] as string | undefined) ??
-        "+49 711 8990-0",
-      contactEmail:
-        (dbData.contact_info?.["email"] as string | undefined) ?? "",
-      department: dbData.station ?? "Polizeipräsidium",
-      availableHours: "Mo-Fr 08:00-18:00, Sa-So Bereitschaftsdienst",
-    },
-    images: dbData.images ?? [],
-    contact_info: dbData.contact_info ?? {},
-  };
-};
+import { useInvestigationEdit } from "~/hooks/useInvestigationEdit";
+import { InvestigationEditErrorBoundary } from "~/components/fahndungen/InvestigationEditErrorBoundary";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 
 // Wizard Navigation Tabs
 const wizardTabs: WizardTab[] = [
@@ -235,120 +117,54 @@ export default function FahndungDetailContent({
 }: FahndungDetailContentProps) {
   const searchParams = useSearchParams();
   const [session, setSession] = React.useState<Session | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editedData, setEditedData] = useState<UIInvestigationData | null>(
-    null,
-  );
   const [activeTab, setActiveTab] = useState("overview");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   React.useEffect(() => {
     void getCurrentSession().then(setSession);
   }, []);
 
   // Prüfe Query-Parameter für automatischen Edit-Modus
+  // Verwende den neuen Custom Hook
+  const editHook = useInvestigationEdit(investigationId);
+
   React.useEffect(() => {
     const editParam = searchParams?.get("edit");
     if (editParam === "true" && canEdit(session?.profile ?? null)) {
-      setIsEditMode(true);
+      // Start editing when edit param is present
+      editHook.startEditing();
     }
-  }, [searchParams, session]);
-
-  // Lade echte Daten aus der Datenbank
+  }, [searchParams, session, editHook]);
   const {
-    data: dbInvestigation,
+    isEditing: isEditMode,
+    original: investigation,
+    current: editedData,
     isLoading,
-    error,
-    refetch,
-  } = api.post.getInvestigation.useQuery(
-    { id: investigationId },
-    {
-      enabled: !!investigationId,
-    },
-  );
+    validationWarnings,
+    updateField,
+    save,
+    cancel,
+    startEditing,
+    deleteInvestigation,
+    publishInvestigation,
+    archiveInvestigation,
+    unpublishInvestigation,
+  } = editHook;
 
-  // Update mutation
-  const updateMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: () => {
-      toast.success("Fahndung erfolgreich aktualisiert");
-      setIsEditMode(false);
-      void refetch();
-    },
-    onError: (error) => {
-      toast.error(`Fehler beim Aktualisieren: ${error.message}`);
-    },
+  // Hole den ursprünglichen Status aus der Datenbankabfrage
+  const { data: dbInvestigation } = api.post.getInvestigation.useQuery({
+    id: investigationId,
   });
+  const investigationStatus = dbInvestigation?.status;
 
-  // Konvertiere Datenbankdaten zu UI-Format
-  const investigation = dbInvestigation
-    ? convertDatabaseToUIFormat(dbInvestigation)
-    : null;
-
-  // Initialisiere editedData wenn investigation geladen ist
-  React.useEffect(() => {
-    if (investigation && !editedData) {
-      setEditedData(investigation);
-    }
-  }, [investigation, editedData]);
-
-  // Edit-Modus Toggle
-  const handleEditToggle = () => {
-    if (isEditMode) {
-      // Cancel edit mode
-      setEditedData(investigation);
-      setIsEditMode(false);
-    } else {
-      // Enter edit mode
-      setEditedData(investigation);
-      setIsEditMode(true);
-    }
-  };
-
-  // Save changes
-  const handleSave = async () => {
-    if (!editedData || !dbInvestigation) return;
-
+  const handleDelete = async () => {
     try {
-      await updateMutation.mutateAsync({
-        id: investigationId,
-        title: editedData.step1.title,
-        description: editedData.step2.description,
-        short_description: editedData.step2.shortDescription,
-        priority: editedData.step2.priority,
-        category: editedData.step1.category,
-        location: editedData.step4.mainLocation?.address ?? "",
-        features: editedData.step2.features,
-        contact_info: {
-          person: editedData.step5.contactPerson,
-          phone: editedData.step5.contactPhone,
-          email: editedData.step5.contactEmail,
-        },
-        tags: editedData.step2.tags,
-      });
+      await deleteInvestigation();
+      // Redirect to fahndungen list after successful deletion
+      window.location.href = "/fahndungen";
     } catch (error) {
-      console.error(
-        "Fehler beim Speichern:",
-        error instanceof Error ? error.message : String(error),
-      );
+      console.error("Delete error:", error);
     }
-  };
-
-  // Handle field changes
-  const handleFieldChange = (
-    step: keyof UIInvestigationData,
-    field: string,
-    value: unknown,
-  ) => {
-    setEditedData((prev) => {
-      if (!prev) return prev;
-      const stepData = prev[step] as Record<string, unknown>;
-      return {
-        ...prev,
-        [step]: {
-          ...stepData,
-          [field]: value,
-        },
-      };
-    });
   };
 
   // Loading State
@@ -361,31 +177,6 @@ export default function FahndungDetailContent({
             <p className="text-gray-600 dark:text-gray-400">
               Lade Fahndungsdaten...
             </p>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
-
-  // Error State
-  if (error) {
-    return (
-      <PageLayout session={session}>
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <AlertCircle className="h-12 w-12 text-red-500" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Fahndung nicht gefunden
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Die angeforderte Fahndung konnte nicht geladen werden.
-            </p>
-            <Link
-              href="/fahndungen"
-              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Zurück zur Übersicht
-            </Link>
           </div>
         </div>
       </PageLayout>
@@ -435,7 +226,7 @@ export default function FahndungDetailContent({
                     <Select
                       value={data.step1.category}
                       onValueChange={(value) =>
-                        handleFieldChange("step1", "category", value)
+                        updateField("step1", "category", value)
                       }
                     >
                       <SelectTrigger className="w-auto border-white/30 bg-white/20 text-white">
@@ -470,7 +261,7 @@ export default function FahndungDetailContent({
                     <Select
                       value={data.step2.priority}
                       onValueChange={(value) =>
-                        handleFieldChange("step2", "priority", value)
+                        updateField("step2", "priority", value)
                       }
                     >
                       <SelectTrigger className="w-auto border-white/30 bg-white/20 text-white">
@@ -505,7 +296,7 @@ export default function FahndungDetailContent({
                   <Input
                     value={data.step1.title}
                     onChange={(e) =>
-                      handleFieldChange("step1", "title", e.target.value)
+                      updateField("step1", "title", e.target.value)
                     }
                     className="mb-2 border-white/30 bg-white/10 text-3xl font-bold text-white placeholder-white/70"
                     placeholder="Titel eingeben..."
@@ -520,11 +311,7 @@ export default function FahndungDetailContent({
                   <Textarea
                     value={data.step2.shortDescription}
                     onChange={(e) =>
-                      handleFieldChange(
-                        "step2",
-                        "shortDescription",
-                        e.target.value,
-                      )
+                      updateField("step2", "shortDescription", e.target.value)
                     }
                     className="border-white/30 bg-white/10 text-lg text-blue-100 placeholder-white/70"
                     placeholder="Kurze Beschreibung..."
@@ -550,7 +337,7 @@ export default function FahndungDetailContent({
 
             {/* Case Number */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <CaseNumberDetailed caseNumber={data.step1.caseNumber} />
+              <CaseNumberDetailed caseNumber={data.step1.caseNumber ?? ""} />
             </div>
 
             {/* Description */}
@@ -562,7 +349,7 @@ export default function FahndungDetailContent({
                 <Textarea
                   value={data.step2.description}
                   onChange={(e) =>
-                    handleFieldChange("step2", "description", e.target.value)
+                    updateField("step2", "description", e.target.value)
                   }
                   className="leading-relaxed"
                   rows={6}
@@ -585,7 +372,7 @@ export default function FahndungDetailContent({
                   <Textarea
                     value={data.step2.features}
                     onChange={(e) =>
-                      handleFieldChange("step2", "features", e.target.value)
+                      updateField("step2", "features", e.target.value)
                     }
                     className="leading-relaxed"
                     rows={4}
@@ -630,11 +417,7 @@ export default function FahndungDetailContent({
                     <Input
                       value={data.step5.contactPerson}
                       onChange={(e) =>
-                        handleFieldChange(
-                          "step5",
-                          "contactPerson",
-                          e.target.value,
-                        )
+                        updateField("step5", "contactPerson", e.target.value)
                       }
                       className="flex-1"
                       placeholder="Kontaktperson..."
@@ -651,11 +434,7 @@ export default function FahndungDetailContent({
                     <Input
                       value={data.step5.contactPhone}
                       onChange={(e) =>
-                        handleFieldChange(
-                          "step5",
-                          "contactPhone",
-                          e.target.value,
-                        )
+                        updateField("step5", "contactPhone", e.target.value)
                       }
                       className="flex-1"
                       placeholder="Telefonnummer..."
@@ -673,11 +452,7 @@ export default function FahndungDetailContent({
                       <Input
                         value={data.step5.contactEmail}
                         onChange={(e) =>
-                          handleFieldChange(
-                            "step5",
-                            "contactEmail",
-                            e.target.value,
-                          )
+                          updateField("step5", "contactEmail", e.target.value)
                         }
                         className="flex-1"
                         placeholder="E-Mail..."
@@ -717,7 +492,7 @@ export default function FahndungDetailContent({
                 <Textarea
                   value={data.step2.description}
                   onChange={(e) =>
-                    handleFieldChange("step2", "description", e.target.value)
+                    updateField("step2", "description", e.target.value)
                   }
                   className="whitespace-pre-wrap leading-relaxed"
                   rows={12}
@@ -739,7 +514,7 @@ export default function FahndungDetailContent({
                   <Textarea
                     value={data.step2.features}
                     onChange={(e) =>
-                      handleFieldChange("step2", "features", e.target.value)
+                      updateField("step2", "features", e.target.value)
                     }
                     className="whitespace-pre-wrap leading-relaxed"
                     rows={8}
@@ -763,7 +538,9 @@ export default function FahndungDetailContent({
                 Medien
               </h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {data.images?.map((image, index: number) => (
+                {(
+                  data as { images?: Array<{ url: string; alt_text?: string }> }
+                ).images?.map((image, index: number) => (
                   <div
                     key={index}
                     className="relative aspect-video overflow-hidden rounded-lg"
@@ -776,7 +553,14 @@ export default function FahndungDetailContent({
                     />
                   </div>
                 ))}
-                {(!data.images || data.images.length === 0) && (
+                {(!(
+                  data as { images?: Array<{ url: string; alt_text?: string }> }
+                ).images ||
+                  (
+                    data as {
+                      images?: Array<{ url: string; alt_text?: string }>;
+                    }
+                  ).images?.length === 0) && (
                   <div className="col-span-full flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                     <div className="text-center">
                       <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -802,7 +586,7 @@ export default function FahndungDetailContent({
                 <Input
                   value={data.step4.mainLocation?.address ?? ""}
                   onChange={(e) =>
-                    handleFieldChange("step4", "mainLocation", {
+                    updateField("step4", "mainLocation", {
                       address: e.target.value,
                     })
                   }
@@ -835,11 +619,7 @@ export default function FahndungDetailContent({
                     <Input
                       value={data.step5.contactPerson}
                       onChange={(e) =>
-                        handleFieldChange(
-                          "step5",
-                          "contactPerson",
-                          e.target.value,
-                        )
+                        updateField("step5", "contactPerson", e.target.value)
                       }
                       className="mt-1"
                       placeholder="Kontaktperson..."
@@ -858,11 +638,7 @@ export default function FahndungDetailContent({
                     <Input
                       value={data.step5.contactPhone}
                       onChange={(e) =>
-                        handleFieldChange(
-                          "step5",
-                          "contactPhone",
-                          e.target.value,
-                        )
+                        updateField("step5", "contactPhone", e.target.value)
                       }
                       className="mt-1"
                       placeholder="Telefonnummer..."
@@ -881,11 +657,7 @@ export default function FahndungDetailContent({
                     <Input
                       value={data.step5.contactEmail}
                       onChange={(e) =>
-                        handleFieldChange(
-                          "step5",
-                          "contactEmail",
-                          e.target.value,
-                        )
+                        updateField("step5", "contactEmail", e.target.value)
                       }
                       className="mt-1"
                       placeholder="E-Mail..."
@@ -929,88 +701,188 @@ export default function FahndungDetailContent({
   };
 
   return (
-    <PageLayout session={session}>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/fahndungen"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Zurück zu allen Fahndungen
-              </Link>
-            </div>
+    <InvestigationEditErrorBoundary>
+      <PageLayout session={session}>
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/fahndungen"
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Zurück zu allen Fahndungen
+                </Link>
+              </div>
 
-            <div className="flex items-center gap-2">
-              {canEdit(session?.profile ?? null) && (
-                <>
-                  {isEditMode ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={handleSave}
-                        disabled={updateMutation.isPending}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                      >
-                        {updateMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
+              <div className="flex items-center gap-2">
+                {canEdit(session?.profile ?? null) && (
+                  <>
+                    {isEditMode ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={save}
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                        >
                           <Save className="h-4 w-4" />
-                        )}
-                        Speichern
-                      </Button>
-                      <Button
-                        onClick={handleEditToggle}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                      >
-                        <X className="h-4 w-4" />
-                        Abbrechen
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={handleEditToggle}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                      Bearbeiten
-                    </Button>
-                  )}
-                </>
-              )}
+                          Speichern
+                        </Button>
+                        <Button
+                          onClick={cancel}
+                          variant="outline"
+                          className="flex items-center gap-2"
+                        >
+                          <X className="h-4 w-4" />
+                          Abbrechen
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={startEditing}
+                          className="flex items-center gap-2"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                          Bearbeiten
+                        </Button>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {investigation && (
+                              <>
+                                {investigationStatus === "draft" && (
+                                  <DropdownMenuItem
+                                    onClick={() => publishInvestigation()}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                    Veröffentlichen
+                                  </DropdownMenuItem>
+                                )}
+
+                                {investigationStatus === "published" && (
+                                  <DropdownMenuItem
+                                    onClick={() => unpublishInvestigation()}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <EyeOff className="h-4 w-4" />
+                                    Unveröffentlichen
+                                  </DropdownMenuItem>
+                                )}
+
+                                {investigationStatus !== "archived" && (
+                                  <DropdownMenuItem
+                                    onClick={() => archiveInvestigation()}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <Archive className="h-4 w-4" />
+                                    Archivieren
+                                  </DropdownMenuItem>
+                                )}
+
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuItem
+                                  onClick={() => setIsDeleteDialogOpen(true)}
+                                  className="flex items-center gap-2 text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Löschen
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-            <div
-              className="bg-blue-600 transition-all duration-300 ease-in-out"
-              style={{ width: "20%" }}
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+              <div
+                className="bg-blue-600 transition-all duration-300 ease-in-out"
+                style={{ width: "20%" }}
+              />
+            </div>
+            <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+              Schritt 1 von 5
+            </div>
+          </div>
+
+          {/* Horizontal Wizard Navigation */}
+          <div className="mb-8">
+            <WizardTabNavigation
+              tabs={wizardTabs}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              showProgress={false}
             />
           </div>
-          <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            Schritt 1 von 5
-          </div>
-        </div>
 
-        {/* Horizontal Wizard Navigation */}
-        <div className="mb-8">
-          <WizardTabNavigation
-            tabs={wizardTabs}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            showProgress={false}
-          />
-        </div>
+          {/* Validation Warnings */}
+          {validationWarnings && validationWarnings.length > 0 && (
+            <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+              <h4 className="mb-2 font-medium text-yellow-800">
+                Datenqualitäts-Hinweise:
+              </h4>
+              <ul className="list-inside list-disc text-sm text-yellow-700">
+                {validationWarnings.map((warning, index) => (
+                  <li key={index}>{warning}</li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-yellow-600">
+                Diese Hinweise beeinträchtigen nicht die Bearbeitung, sollten
+                aber behoben werden.
+              </p>
+            </div>
+          )}
 
-        {/* Main Content */}
-        <div className="w-full">{renderTabContent()}</div>
-      </div>
-    </PageLayout>
+          {/* Main Content */}
+          <div className="w-full">{renderTabContent()}</div>
+        </div>
+      </PageLayout>
+
+      {/* Lösch-Dialog */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Fahndung löschen
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Sind Sie sicher, dass Sie die Fahndung &quot;
+              {investigation?.step1.title}
+              &quot; löschen möchten? Diese Aktion kann nicht rückgängig gemacht
+              werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </InvestigationEditErrorBoundary>
   );
 }

@@ -16,4 +16,4 @@ export function GlobalErrorHandler() {
   }, []);
 
   return null;
-} 
+}

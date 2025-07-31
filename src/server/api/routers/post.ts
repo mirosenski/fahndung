@@ -396,23 +396,41 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string().uuid(),
-        title: z.string().optional(),
-        description: z.string().optional(),
+        title: z.string().min(1).optional(),
+        description: z.string().min(1).optional(),
         short_description: z.string().optional(),
-        status: z.string().optional(),
+        status: z.enum(["draft", "active", "published", "archived"]).optional(),
         priority: z.enum(["normal", "urgent", "new"]).optional(),
-        category: z.string().optional(),
+        category: z
+          .enum([
+            "WANTED_PERSON",
+            "MISSING_PERSON",
+            "UNKNOWN_DEAD",
+            "STOLEN_GOODS",
+          ])
+          .optional(),
         tags: z.array(z.string()).optional(),
         location: z.string().optional(),
-        contact_info: z.record(z.any()).optional(),
+        contact_info: z
+          .object({
+            person: z.string().optional(),
+            phone: z.string().optional(),
+            email: z.string().email().optional(),
+            hours: z.string().optional(),
+          })
+          .optional(),
         features: z.string().optional(),
+        station: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("✏️ updateInvestigation aufgerufen mit:", input);
+      console.log("🔍 API DEBUG: updateInvestigation aufgerufen");
+      console.log("🔍 API DEBUG: Input:", input);
+      console.log("🔍 API DEBUG: User:", ctx.user?.email);
 
       try {
         // Prüfe ob Fahndung existiert
+        console.log("🔍 API DEBUG: Prüfe ob Fahndung existiert...");
         const existingResponse = (await ctx.db
           .from("investigations")
           .select("id")
@@ -422,11 +440,22 @@ export const postRouter = createTRPCRouter({
         const { error: fetchError } = existingResponse;
 
         if (fetchError) {
+          console.error("❌ API DEBUG: Fahndung nicht gefunden:", fetchError);
           throw new Error("Fahndung nicht gefunden");
         }
 
-        const { id, ...updateData } = input;
+        console.log("✅ API DEBUG: Fahndung gefunden");
 
+        // Berechtigungsprüfung (falls implementiert)
+        // const hasPermission = await checkEditPermission(ctx.user?.id, input.id);
+        // if (!hasPermission) {
+        //   throw new Error("Keine Berechtigung zum Bearbeiten");
+        // }
+
+        const { id, ...updateData } = input;
+        console.log("🔍 API DEBUG: Update-Daten:", updateData);
+
+        console.log("🔍 API DEBUG: Sende Update an Supabase...");
         const response = (await ctx.db
           .from("investigations")
           .update({
@@ -440,15 +469,22 @@ export const postRouter = createTRPCRouter({
         const { data, error } = response;
 
         if (error) {
+          console.error("❌ API DEBUG: Supabase Update Fehler:", error);
           throw new Error(
             `Fehler beim Aktualisieren der Fahndung: ${error.message}`,
           );
         }
 
-        console.log("✅ Fahndung erfolgreich aktualisiert:", data?.title);
+        console.log(
+          "✅ API DEBUG: Fahndung erfolgreich aktualisiert:",
+          data?.title,
+        );
         return data!;
       } catch (error) {
-        console.error("❌ Fehler beim Aktualisieren der Fahndung:", error);
+        console.error(
+          "❌ API DEBUG: Fehler beim Aktualisieren der Fahndung:",
+          error,
+        );
         throw new Error(
           `Fehler beim Aktualisieren der Fahndung: ${String(error)}`,
         );

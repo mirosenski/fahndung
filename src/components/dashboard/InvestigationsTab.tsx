@@ -226,20 +226,12 @@ export default function InvestigationsTab({
   };
 
   const handleView = (investigation: Investigation) => {
-    router.push(
-      getFahndungUrl(
-        investigation.title,
-        investigation.case_number,
-      ),
-    );
+    router.push(getFahndungUrl(investigation.title, investigation.case_number));
   };
 
   const handleEdit = (investigation: Investigation) => {
     router.push(
-      getFahndungEditUrl(
-        investigation.title,
-        investigation.case_number,
-      ),
+      getFahndungEditUrl(investigation.title, investigation.case_number),
     );
   };
 

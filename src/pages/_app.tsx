@@ -15,10 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const MyApp: AppType = ({
-  Component,
-  pageProps,
-}) => {
+const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <TRPCReactProvider>
       <Theme>
@@ -28,7 +25,9 @@ const MyApp: AppType = ({
           enableSystem
           disableTransitionOnChange
         >
-          <div className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>
+          <div
+            className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}
+          >
             <Component {...pageProps} />
           </div>
         </ThemeProvider>
@@ -37,4 +36,4 @@ const MyApp: AppType = ({
   );
 };
 
-export default MyApp; 
+export default MyApp;

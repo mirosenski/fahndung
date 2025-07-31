@@ -35,11 +35,7 @@ export default function PageLayout({
     <div className={cn("min-h-screen", colors.background.primary, className)}>
       {/* Header */}
       {showHeader && (
-        <Header
-          variant={variant}
-          session={session}
-          onLogout={onLogout}
-        />
+        <Header variant={variant} session={session} onLogout={onLogout} />
       )}
 
       {/* Breadcrumb */}

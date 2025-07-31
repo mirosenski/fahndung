@@ -389,7 +389,8 @@ const FahndungWizardContainer = ({
           ],
           // Bild-URLs hinzufügen
           mainImageUrl: wizardData.step3?.mainImageUrl ?? undefined,
-          additionalImageUrls: wizardData.step3?.additionalImageUrls ?? undefined,
+          additionalImageUrls:
+            wizardData.step3?.additionalImageUrls ?? undefined,
         });
       }
     } catch (error) {
@@ -489,14 +490,16 @@ const FahndungWizardContainer = ({
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {title ?? (mode === "create"
-              ? "Neue Fahndung erstellen"
-              : "Fahndung bearbeiten")}
+            {title ??
+              (mode === "create"
+                ? "Neue Fahndung erstellen"
+                : "Fahndung bearbeiten")}
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {description ?? (mode === "create"
-              ? "Erstellen Sie eine neue Fahndung mit unserem erweiterten Wizard"
-              : "Bearbeiten Sie die bestehende Fahndung")}
+            {description ??
+              (mode === "create"
+                ? "Erstellen Sie eine neue Fahndung mit unserem erweiterten Wizard"
+                : "Bearbeiten Sie die bestehende Fahndung")}
           </p>
         </div>
 
@@ -659,4 +662,4 @@ const FahndungWizardContainer = ({
   );
 };
 
-export default FahndungWizardContainer; 
+export default FahndungWizardContainer;

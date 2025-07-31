@@ -115,7 +115,7 @@ export function LoadingSpinner({
         {showRetry && onRetry && (
           <button
             onClick={onRetry}
-            className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-hidden dark:bg-blue-500 dark:hover:bg-blue-600"
+            className="focus:outline-hidden inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Erneut versuchen</span>

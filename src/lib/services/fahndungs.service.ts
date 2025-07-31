@@ -30,7 +30,7 @@ export interface InvestigationData {
   case_number: string;
   description: string;
   short_description: string;
-  status: "draft" | "active" | "published" | "closed";
+  status: "draft" | "active" | "published" | "archived";
   priority: "normal" | "urgent" | "new";
   category:
     | "WANTED_PERSON"

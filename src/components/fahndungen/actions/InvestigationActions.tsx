@@ -143,20 +143,12 @@ export default function InvestigationActions({
 
   const handleEdit = () => {
     router.push(
-      getFahndungEditUrl(
-        investigation.title,
-        investigation.case_number,
-      ),
+      getFahndungEditUrl(investigation.title, investigation.case_number),
     );
   };
 
   const handleView = () => {
-    router.push(
-      getFahndungUrl(
-        investigation.title,
-        investigation.case_number,
-      ),
-    );
+    router.push(getFahndungUrl(investigation.title, investigation.case_number));
   };
 
   const handleCopyLink = async () => {

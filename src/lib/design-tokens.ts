@@ -26,8 +26,10 @@ export const colors = {
   },
   // Status
   status: {
-    success: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-    warning: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+    success:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    warning:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
     error: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
     info: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   },
@@ -38,7 +40,8 @@ export const layout = {
   container: "container mx-auto px-4",
   section: "py-8",
   card: "rounded-lg border bg-card text-card-foreground shadow-xs",
-  cardHover: "rounded-lg border bg-card text-card-foreground shadow-xs transition-shadow hover:shadow-md",
+  cardHover:
+    "rounded-lg border bg-card text-card-foreground shadow-xs transition-shadow hover:shadow-md",
 } as const;
 
 // Komponenten-Tokens
@@ -51,17 +54,23 @@ export const components = {
   badge: {
     base: "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
     default: "bg-secondary text-secondary-foreground",
-    outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+    outline:
+      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    destructive: "border-transparent bg-destructive text-destructive-foreground",
+    destructive:
+      "border-transparent bg-destructive text-destructive-foreground",
   },
   button: {
     base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50",
     variants: {
-      default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
-      destructive: "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90",
-      outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
-      secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+      default:
+        "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+      destructive:
+        "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90",
+      outline:
+        "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+      secondary:
+        "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
       ghost: "hover:bg-accent hover:text-accent-foreground",
       link: "text-primary underline-offset-4 hover:underline",
     },
@@ -79,7 +88,7 @@ export const createComponentClass = (
   baseClass: string,
   variant?: string,
   size?: string,
-  className?: string
+  className?: string,
 ) => {
   return cn(baseClass, variant, size, className);
 };
@@ -90,9 +99,11 @@ export const componentClasses = {
   badge: {
     base: "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
     default: "bg-secondary text-secondary-foreground",
-    outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+    outline:
+      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    destructive: "border-transparent bg-destructive text-destructive-foreground",
+    destructive:
+      "border-transparent bg-destructive text-destructive-foreground",
   },
   // Card-Komponenten
   card: {
@@ -105,7 +116,8 @@ export const componentClasses = {
   },
   // Form-Komponenten
   form: {
-    label: "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+    label:
+      "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
     description: "text-sm text-muted-foreground",
     message: "text-sm font-medium",
     messageError: "text-sm font-medium text-destructive",
@@ -122,7 +134,8 @@ export const componentClasses = {
     wrapper: "w-full overflow-auto",
     table: "w-full caption-bottom text-sm",
     header: "border-b border-border bg-muted/50",
-    headerCell: "h-12 px-4 text-left align-middle font-medium text-muted-foreground",
+    headerCell:
+      "h-12 px-4 text-left align-middle font-medium text-muted-foreground",
     row: "border-b border-border transition-colors hover:bg-muted/50",
     cell: "p-4 align-middle",
   },
@@ -137,7 +150,7 @@ export const migrateGrayClasses = {
   "bg-gray-800": "bg-card",
   "bg-gray-900": "bg-background",
   "bg-white": "bg-background",
-  
+
   // Text
   "text-gray-900": "text-foreground",
   "text-gray-800": "text-foreground",
@@ -146,7 +159,7 @@ export const migrateGrayClasses = {
   "text-gray-500": "text-muted-foreground",
   "text-gray-400": "text-muted-foreground",
   "text-gray-300": "text-muted-foreground",
-  
+
   // Border
   "border-gray-200": "border-border",
   "border-gray-300": "border-border",
@@ -157,10 +170,10 @@ export const migrateGrayClasses = {
 // Utility für Migration
 export const migrateClass = (className: string): string => {
   let migratedClass = className;
-  
+
   Object.entries(migrateGrayClasses).forEach(([oldClass, newClass]) => {
-    migratedClass = migratedClass.replace(new RegExp(oldClass, 'g'), newClass);
+    migratedClass = migratedClass.replace(new RegExp(oldClass, "g"), newClass);
   });
-  
+
   return migratedClass;
-}; 
+};

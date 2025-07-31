@@ -141,7 +141,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </MapContainer>
 
       {/* Legende */}
-      <div className="absolute top-4 right-4 rounded-lg bg-white p-3 text-sm shadow-lg">
+      <div className="absolute right-4 top-4 rounded-lg bg-white p-3 text-sm shadow-lg">
         <h4 className="mb-2 font-bold">Legende</h4>
         <div className="space-y-1">
           <div className="flex items-center gap-2">

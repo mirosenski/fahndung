@@ -32,7 +32,7 @@ export function useFahndung(id: string) {
       const convertedData: InvestigationData = {
         ...rawData,
         status:
-          (rawData.status as "draft" | "active" | "published" | "closed") ??
+          (rawData.status as "draft" | "active" | "published" | "archived") ??
           "active",
         priority: rawData.priority ?? "normal",
         category:
@@ -69,8 +69,11 @@ export function useFahndung(id: string) {
       const convertedData: InvestigationData = {
         ...updatedData,
         status:
-          (updatedData.status as "draft" | "active" | "published" | "closed") ??
-          "active",
+          (updatedData.status as
+            | "draft"
+            | "active"
+            | "published"
+            | "archived") ?? "active",
         priority: updatedData.priority ?? "normal",
         category:
           (updatedData.category as

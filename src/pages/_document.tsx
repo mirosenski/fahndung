@@ -4,7 +4,10 @@ export default function Document() {
   return (
     <Html lang="de" suppressHydrationWarning>
       <Head>
-        <meta name="description" content="Polizei-Technisches Logistik-System" />
+        <meta
+          name="description"
+          content="Polizei-Technisches Logistik-System"
+        />
       </Head>
       <body suppressHydrationWarning>
         <Main />
@@ -12,4 +15,4 @@ export default function Document() {
       </body>
     </Html>
   );
-} 
+}

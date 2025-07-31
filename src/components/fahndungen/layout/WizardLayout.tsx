@@ -27,7 +27,7 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
   const isMobileView = isMobile ?? responsiveIsMobile;
 
   const BottomNavigation = () => (
-    <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-center justify-between p-4">
         <button
           onClick={onPrevious}

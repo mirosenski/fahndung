@@ -133,7 +133,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
           {/* Navigation - Rechts */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 sm:gap-6">
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
+              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
                 Navigation
               </h2>
               <ul className="font-medium text-gray-500 dark:text-gray-400">
@@ -160,7 +160,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
 
             {/* Rechtliche Links */}
             <div>
-              <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
+              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
                 Rechtliches
               </h2>
               <ul className="font-medium text-gray-500 dark:text-gray-400">
@@ -177,11 +177,11 @@ export default function Footer({ variant = "home" }: FooterProps) {
         </div>
 
         {/* Trennlinie */}
-        <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8 dark:border-gray-700" />
+        <hr className="my-6 border-gray-200 dark:border-gray-700 sm:mx-auto lg:my-8" />
 
         {/* Copyright, Theme Toggle und Social Media */}
         <div className="sm:flex sm:items-center sm:justify-between">
-          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+          <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
             © {currentYear}{" "}
             <Link href="/" className="hover:underline">
               Landeskriminalamt Baden-Württemberg

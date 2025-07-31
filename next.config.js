@@ -7,7 +7,7 @@
 const config = {
   // Temporär deaktiviert wegen doppelter Renders in React 19
   reactStrictMode: false,
-  
+
   experimental: {
     // optimizePackageImports: ["lucide-react"], // Temporär deaktiviert wegen HMR Problem
   },
