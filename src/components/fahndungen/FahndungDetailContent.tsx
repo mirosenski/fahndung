@@ -70,7 +70,6 @@ import {
 
 import { useInvestigationSync } from "~/hooks/useInvestigationSync";
 
-
 // Wizard Navigation Tabs
 const wizardTabs: WizardTab[] = [
   {
@@ -134,13 +133,17 @@ export default function FahndungDetailContent({
   // Verwende den neuen Custom Hook
   const editHook = useInvestigationEdit(investigationId);
 
+  // Separate useEffect for edit parameter handling
   React.useEffect(() => {
     const editParam = searchParams?.get("edit");
-    if (editParam === "true" && canEdit(session?.profile ?? null)) {
-      // Start editing when edit param is present
+    if (
+      editParam === "true" &&
+      canEdit(session?.profile ?? null) &&
+      !editHook.isEditing // Nur wenn noch nicht im Edit-Modus
+    ) {
       editHook.startEditing();
     }
-  }, [searchParams, session, editHook]);
+  }, [searchParams, session?.profile, editHook]);
 
   const {
     isEditing: isEditMode,
