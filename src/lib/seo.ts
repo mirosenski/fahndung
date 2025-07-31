@@ -88,9 +88,9 @@ export function getFahndungUrl(title: string, caseNumber: string): string {
 export function getFahndungEditUrl(title: string, caseNumber: string): string {
   try {
     const slug = generateSeoSlug(title);
-    return `/fahndungen/${slug}/bearbeiten`;
+    return `/fahndungen/${slug}?edit=true`;
   } catch {
     // Fallback auf Standard-URL
-    return `/fahndungen/${caseNumber}/bearbeiten`;
+    return `/fahndungen/${caseNumber}?edit=true`;
   }
 }
