@@ -48,7 +48,14 @@ export default function Login() {
           setError(`Login-Fehler: ${error.message}`);
         }
       } else {
-        router.push("/dashboard");
+        // Prüfe, ob eine Redirect-URL gespeichert wurde
+        const redirectUrl = sessionStorage.getItem("redirectAfterLogin");
+        if (redirectUrl && redirectUrl !== "/login") {
+          sessionStorage.removeItem("redirectAfterLogin");
+          router.push(redirectUrl);
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch (err) {
       console.error("Unerwarteter Login-Fehler:", err);
