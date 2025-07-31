@@ -6,6 +6,9 @@ import { AlertTriangle, Eye } from "lucide-react";
 import { api } from "~/trpc/react";
 
 import FahndungFilter, { type FilterState } from "./FahndungFilter";
+import ViewToggle from "./ViewToggle";
+import FahndungskarteList from "~/components/fahndungskarte/FahndungskarteList";
+import { type ViewMode } from "~/types/fahndungskarte";
 import dynamic from "next/dynamic";
 
 // Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
@@ -36,6 +39,7 @@ interface Investigation {
 
 export default function HomeContent() {
   const [mounted, setMounted] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid-3");
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     status: [],
     priority: [],
@@ -172,22 +176,35 @@ export default function HomeContent() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Aktuelle Fahndungen
             </h2>
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <Eye className="h-4 w-4" />
-              <span>
-                {typedInvestigations ? filteredInvestigations.length : 0} von{" "}
-                {typedInvestigations && Array.isArray(typedInvestigations)
-                  ? typedInvestigations.length
-                  : 0}{" "}
-                Fahndungen
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                <Eye className="h-4 w-4" />
+                <span>
+                  {typedInvestigations ? filteredInvestigations.length : 0} von{" "}
+                  {typedInvestigations && Array.isArray(typedInvestigations)
+                    ? typedInvestigations.length
+                    : 0}{" "}
+                  Fahndungen
+                </span>
+              </div>
+              <ViewToggle
+                currentView={viewMode}
+                onViewChange={setViewMode}
+              />
             </div>
           </div>
 
           {typedInvestigations &&
           filteredInvestigations &&
           filteredInvestigations.length > 0 ? (
-            <FahndungskarteGrid investigations={filteredInvestigations} />
+            viewMode === "list" ? (
+              <FahndungskarteList investigations={filteredInvestigations} />
+            ) : (
+              <FahndungskarteGrid 
+                investigations={filteredInvestigations} 
+                viewMode={viewMode}
+              />
+            )
           ) : (
             <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800">
               <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-gray-400" />

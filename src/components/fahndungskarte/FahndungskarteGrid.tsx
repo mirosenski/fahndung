@@ -19,45 +19,8 @@ const ModernFahndungskarte = dynamic(
   },
 );
 
-// Typ-Definitionen für echte Daten aus der Datenbank
-interface Investigation {
-  id: string;
-  title: string;
-  case_number: string;
-  description: string;
-  short_description: string;
-  status: string;
-  priority: "normal" | "urgent" | "new";
-  category: string;
-  location: string;
-  station: string;
-  features: string;
-  date: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-  assigned_to?: string;
-  tags: string[];
-  metadata: Record<string, unknown>;
-  contact_info?: Record<string, unknown>;
-  created_by_user?: {
-    name: string;
-    email: string;
-  };
-  assigned_to_user?: {
-    name: string;
-    email: string;
-  };
-  images?: Array<{
-    id: string;
-    url: string;
-    alt_text?: string;
-    caption?: string;
-  }>;
-}
-
 // Konvertierung von Datenbank-Daten zu FahndungsData Format
-const convertInvestigationToFahndungsData = (investigation: Investigation) => {
+const convertInvestigationToFahndungsData = (investigation: Fahndungskarte) => {
   // Fallback-Bilder für verschiedene Kategorien
   const getDefaultImage = (category: string) => {
     switch (category) {
@@ -135,9 +98,12 @@ const convertInvestigationToFahndungsData = (investigation: Investigation) => {
   };
 };
 
+import { type Fahndungskarte, type ViewMode } from "~/types/fahndungskarte";
+
 interface FahndungskarteGridProps {
-  investigations: Investigation[];
+  investigations: Fahndungskarte[];
   className?: string;
+  viewMode?: ViewMode;
   onAction?: () => void;
   userRole?: string;
   userPermissions?: {
@@ -150,14 +116,24 @@ interface FahndungskarteGridProps {
 const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
   investigations,
   className = "",
+  viewMode = "grid-3",
   onAction,
   userRole,
   userPermissions,
 }) => {
+  // Grid-Klassen basierend auf viewMode
+  const getGridClasses = () => {
+    switch (viewMode) {
+      case "grid-4":
+        return "grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+      case "grid-3":
+      default:
+        return "grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3";
+    }
+  };
+
   return (
-    <div
-      className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${className}`}
-    >
+    <div className={`grid ${getGridClasses()} ${className}`}>
       {investigations.map((investigation) => (
         <ModernFahndungskarte
           key={investigation.id}
