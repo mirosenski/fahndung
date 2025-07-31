@@ -7,7 +7,7 @@ import { api } from "~/trpc/react";
 
 import FahndungFilter, { type FilterState } from "./FahndungFilter";
 import ViewToggle from "./ViewToggle";
-import FahndungskarteList from "~/components/fahndungskarte/FahndungskarteList";
+import FahndungskarteListFlat from "~/components/fahndungskarte/FahndungskarteListFlat";
 import { type ViewMode } from "~/types/fahndungskarte";
 import dynamic from "next/dynamic";
 
@@ -187,21 +187,18 @@ export default function HomeContent() {
                   Fahndungen
                 </span>
               </div>
-              <ViewToggle
-                currentView={viewMode}
-                onViewChange={setViewMode}
-              />
+              <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
             </div>
           </div>
 
           {typedInvestigations &&
           filteredInvestigations &&
           filteredInvestigations.length > 0 ? (
-            viewMode === "list" ? (
-              <FahndungskarteList investigations={filteredInvestigations} />
+            viewMode === "list-flat" ? (
+              <FahndungskarteListFlat investigations={filteredInvestigations} />
             ) : (
-              <FahndungskarteGrid 
-                investigations={filteredInvestigations} 
+              <FahndungskarteGrid
+                investigations={filteredInvestigations}
                 viewMode={viewMode}
               />
             )

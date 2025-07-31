@@ -34,4 +34,4 @@ export interface Fahndungskarte {
   }>;
 }
 
-export type ViewMode = 'grid-3' | 'grid-4' | 'list'; 
+export type ViewMode = "grid-3" | "grid-4" | "list-flat";

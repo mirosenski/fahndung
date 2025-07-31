@@ -125,15 +125,40 @@ const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
   const getGridClasses = () => {
     switch (viewMode) {
       case "grid-4":
-        return "grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
       case "grid-3":
       default:
-        return "grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3";
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3";
     }
   };
 
+  // Gap-Klassen basierend auf viewMode
+  const getGapClasses = () => {
+    switch (viewMode) {
+      case "grid-4":
+        return "gap-8"; // Einheitliche 32px Abstände für 4er-Grid
+      case "grid-3":
+      default:
+        return "gap-x-8 gap-y-12"; // Mehr vertikaler Abstand für 3er-Grid
+    }
+  };
+
+  // Padding-Klassen basierend auf viewMode
+  const getPaddingClasses = () => {
+    switch (viewMode) {
+      case "grid-4":
+        return "py-8"; // Nur vertikales Padding für 4er-Grid
+      case "grid-3":
+      default:
+        return "py-8"; // Gleiches Padding wie 4er-Grid
+    }
+  };
+
+  // Container mit einheitlichen Abständen
   return (
-    <div className={`grid ${getGridClasses()} ${className}`}>
+    <div
+      className={`grid ${getGridClasses()} ${getGapClasses()} ${getPaddingClasses()} ${className} w-full`}
+    >
       {investigations.map((investigation) => (
         <ModernFahndungskarte
           key={investigation.id}

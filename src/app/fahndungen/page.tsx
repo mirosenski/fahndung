@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import PageLayout from "~/components/layout/PageLayout";
 import ViewToggle from "~/components/home/ViewToggle";
-import FahndungskarteList from "~/components/fahndungskarte/FahndungskarteList";
+import FahndungskarteListFlat from "~/components/fahndungskarte/FahndungskarteListFlat";
 import { type ViewMode } from "~/types/fahndungskarte";
 
 import { useFahndungenOptimized } from "~/hooks/useFahndungenOptimized";
@@ -90,10 +90,7 @@ export default function FahndungenPage() {
     : null;
 
   // Optimierte Fahndungen-Hook mit aggressiver Synchronisation
-  const {
-    investigations,
-    refetch: handleRefresh,
-  } = useFahndungenOptimized({
+  const { investigations, refetch: handleRefresh } = useFahndungenOptimized({
     limit: 50,
     offset: 0,
     status: statusFilter,
@@ -332,23 +329,21 @@ export default function FahndungenPage() {
               </button>
             )}
           </div>
+        ) : displayView === "list-flat" ? (
+          <FahndungskarteListFlat
+            investigations={filteredInvestigations}
+            onAction={handleRefreshClick}
+            userRole={userProfile?.role}
+            userPermissions={userPermissions ?? undefined}
+          />
         ) : (
-          displayView === "list" ? (
-            <FahndungskarteList
-              investigations={filteredInvestigations}
-              onAction={handleRefreshClick}
-              userRole={userProfile?.role}
-              userPermissions={userPermissions ?? undefined}
-            />
-          ) : (
-            <FahndungskarteGrid
-              investigations={filteredInvestigations}
-              viewMode={displayView}
-              onAction={handleRefreshClick}
-              userRole={userProfile?.role}
-              userPermissions={userPermissions ?? undefined}
-            />
-          )
+          <FahndungskarteGrid
+            investigations={filteredInvestigations}
+            viewMode={displayView}
+            onAction={handleRefreshClick}
+            userRole={userProfile?.role}
+            userPermissions={userPermissions ?? undefined}
+          />
         )}
       </div>
     </PageLayout>
