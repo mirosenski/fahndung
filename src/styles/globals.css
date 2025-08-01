@@ -1,5 +1,6 @@
 @import "@radix-ui/themes/styles.css";
 @import "./focus.css";
+@import "./accessibility.css";
 
 @config "../../tailwind.config.js";
 @import "tailwindcss";
@@ -96,14 +97,14 @@
 
 @layer components {
   .fahndungskarte {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 
-           transition-all duration-200 hover:shadow-lg hover:scale-[1.02];
+    @apply rounded-lg bg-white p-4 shadow-md transition-all 
+           duration-200 hover:scale-[1.02] hover:shadow-lg dark:bg-gray-800;
   }
-  
+
   .view-transition {
     @apply transition-opacity duration-200;
   }
-  
+
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
