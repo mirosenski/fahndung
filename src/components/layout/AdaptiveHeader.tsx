@@ -282,7 +282,7 @@ const AdaptiveDesktopHeader = ({
         ${
           isScrolled
             ? "w-full border-b border-border bg-background/95 px-6 py-3 shadow-lg dark:bg-background/90"
-            : "mx-auto mt-4 max-w-[1273px] rounded-[10px] border border-border/70 bg-background/60 px-6 py-4 shadow-lg dark:bg-background/40"
+            : "container mx-auto mt-4 max-w-[1273px] rounded-[10px] border border-border/70 bg-background/60 px-6 py-4 shadow-lg dark:bg-background/40"
         }
       `}
       >
