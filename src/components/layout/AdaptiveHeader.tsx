@@ -299,9 +299,9 @@ const AdaptiveDesktopHeader = ({
             aria-label="Hauptnavigation"
           >
             {/* Mega Menu Items */}
-            <HoverMegaMenu title="SICHERHEIT" />
-            <HoverMegaMenu title="SERVICE" />
-            <HoverMegaMenu title="ORGANISATION" />
+            <HoverMegaMenu title="Sicherheit" />
+            <HoverMegaMenu title="Service" />
+            <HoverMegaMenu title="Polizei" />
 
             {/* Right Actions */}
             <div className="ml-6 flex items-center gap-3">

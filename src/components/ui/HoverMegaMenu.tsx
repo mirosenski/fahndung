@@ -2,6 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface HoverMegaMenuProps {
   title: string;
@@ -16,6 +17,7 @@ interface HoverMegaMenuProps {
 export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,7 +38,7 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
   // Standard-Menü-Items basierend auf dem Titel
   const getDefaultItems = (menuTitle: string) => {
     switch (menuTitle) {
-      case "SICHERHEIT":
+      case "Sicherheit":
         return [
           {
             title: "Fahndungen",
@@ -54,7 +56,7 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
             href: "/hinweise",
           },
         ];
-      case "SERVICE":
+      case "Service":
         return [
           {
             title: "Kontakt",
@@ -68,7 +70,7 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
             href: "/downloads",
           },
         ];
-      case "ORGANISATION":
+      case "Polizei":
         return [
           {
             title: "Über uns",
@@ -93,25 +95,94 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
 
   const menuItems = items.length > 0 ? items : getDefaultItems(title);
 
+  // Bestimme die URL für den Menütitel basierend auf dem Titel
+  const getTitleUrl = (menuTitle: string) => {
+    switch (menuTitle) {
+      case "Sicherheit":
+        return "/sicherheit";
+      case "Service":
+        return "/service";
+      case "Polizei":
+        return "/polizei";
+      default:
+        return "#";
+    }
+  };
+
+  const titleUrl = getTitleUrl(title);
+
+  // Keyboard Navigation Handler
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        // Wenn der Fokus auf dem Link ist, navigiere zur Seite
+        if (event.currentTarget.tagName === "A") {
+          router.push(titleUrl);
+        } else {
+          // Wenn der Fokus auf dem Toggle-Button ist, öffne/schließe Menü
+          setIsOpen(!isOpen);
+        }
+        break;
+      case "Escape":
+        setIsOpen(false);
+        break;
+      case "ArrowDown":
+        if (isOpen) {
+          event.preventDefault();
+          const firstMenuItem = menuRef.current?.querySelector(
+            "a[href]",
+          ) as HTMLElement | null;
+          firstMenuItem?.focus();
+        }
+        break;
+    }
+  };
+
   return (
     <div
       ref={menuRef}
       className="relative"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
+      onKeyDown={handleKeyDown}
     >
-      <button
-        className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {title}
-        <ChevronDown
-          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
+      <div className="flex items-center">
+        <a
+          href={titleUrl}
+          className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          tabIndex={0}
+          role="button"
+          aria-label={`${title} Hauptseite öffnen`}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              router.push(titleUrl);
+            }
+          }}
+        >
+          {title}
+        </a>
+        <button
+          className="flex items-center gap-1 rounded-md px-1 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-expanded={isOpen}
+          aria-haspopup="true"
+          aria-label={`${title} Untermenü ${isOpen ? "schließen" : "öffnen"}`}
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+      </div>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border border-border bg-background shadow-lg">
+        <div
+          className="absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border border-border bg-background shadow-lg"
+          role="menu"
+          aria-label={`${title} Untermenü`}
+        >
           <div className="p-4">
             <div className="grid gap-3">
               {menuItems.map((item, index) => (
@@ -120,6 +191,8 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
                   href={item.href}
                   className="group flex items-start gap-3 rounded-md p-3 transition-colors hover:bg-accent"
                   onClick={() => setIsOpen(false)}
+                  tabIndex={isOpen ? 0 : -1}
+                  role="menuitem"
                 >
                   {"icon" in item && item.icon && (
                     <div className="h-5 w-5 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-primary">
