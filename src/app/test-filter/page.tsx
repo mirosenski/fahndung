@@ -101,10 +101,10 @@ export default function TestFilterPage() {
       const searchLower = currentFilters.searchTerm.toLowerCase();
       filtered = filtered.filter(
         (f) =>
-          f.title.toLowerCase().includes(searchLower) ||
-          f.description.toLowerCase().includes(searchLower) ||
-          f.station.toLowerCase().includes(searchLower) ||
-          f.case_number.toLowerCase().includes(searchLower),
+          (f.title?.toLowerCase() ?? "").includes(searchLower) ||
+          (f.description?.toLowerCase() ?? "").includes(searchLower) ||
+          (f.station?.toLowerCase() ?? "").includes(searchLower) ||
+          (f.case_number?.toLowerCase() ?? "").includes(searchLower),
       );
     }
 
@@ -118,7 +118,7 @@ export default function TestFilterPage() {
     // Fahndungstyp
     if (currentFilters.fahndungstyp !== "all") {
       filtered = filtered.filter(
-        (f) => mapCategoryToFilter(f.category) === currentFilters.fahndungstyp,
+        (f) => mapCategoryToFilter(f.category ?? "") === currentFilters.fahndungstyp,
       );
     }
 
@@ -126,7 +126,7 @@ export default function TestFilterPage() {
     if (currentFilters.neue) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      filtered = filtered.filter((f) => new Date(f.created_at) > oneWeekAgo);
+      filtered = filtered.filter((f) => f.created_at && new Date(f.created_at) > oneWeekAgo);
     }
 
     // Eilfahndungen (basierend auf priority)
@@ -137,7 +137,7 @@ export default function TestFilterPage() {
     // Regionen
     if (currentFilters.region.length > 0) {
       filtered = filtered.filter((f) => {
-        const region = extractRegionFromLocation(f.location);
+        const region = extractRegionFromLocation(f.location ?? "");
         return currentFilters.region.includes(region);
       });
     }

@@ -132,9 +132,9 @@ const CustomDropdown = ({
           <span className="truncate">
             {value === "Alle Dienststellen" || value === "all"
               ? placeholder
-              : options.find((opt) => opt === value) ??
+              : (options.find((opt) => opt === value) ??
                 FAHNDUNGSTYPEN.find((t) => t.value === value)?.label ??
-                value}
+                value)}
           </span>
         </span>
         <ChevronDown
@@ -276,13 +276,28 @@ export const CompactFilter: React.FC<CompactFilterProps> = ({
   const updateFilter = useCallback(
     (key: keyof CompactFilterState, value: unknown) => {
       setFilters((prev) => {
-        const newFilters = { ...prev, [key]: value as CompactFilterState[keyof CompactFilterState] };
-        onFilterChange(newFilters);
+        const newFilters = {
+          ...prev,
+          [key]: value as CompactFilterState[keyof CompactFilterState],
+        };
         return newFilters;
       });
     },
+    [],
+  );
+
+  // Callback für Filter-Änderungen
+  const handleFilterChange = useCallback(
+    (newFilters: CompactFilterState) => {
+      onFilterChange(newFilters);
+    },
     [onFilterChange],
   );
+
+  // Überwache Filter-Änderungen und benachrichtige Parent
+  useEffect(() => {
+    handleFilterChange(filters);
+  }, [filters, handleFilterChange]);
 
   // Aktive Filter zählen
   const activeFilterCount = useMemo(() => {
@@ -307,8 +322,8 @@ export const CompactFilter: React.FC<CompactFilterProps> = ({
       region: [],
     };
     setFilters(resetState);
-    onFilterChange(resetState);
-  }, [onFilterChange]);
+    handleFilterChange(resetState);
+  }, [handleFilterChange]);
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -534,7 +549,9 @@ export const CompactFilter: React.FC<CompactFilterProps> = ({
                         <label
                           key={type.value}
                           className={`flex cursor-pointer items-center gap-3 rounded-lg p-3 ${
-                            filters.fahndungstyp === type.value ? "bg-accent" : ""
+                            filters.fahndungstyp === type.value
+                              ? "bg-accent"
+                              : ""
                           }`}
                         >
                           <input
