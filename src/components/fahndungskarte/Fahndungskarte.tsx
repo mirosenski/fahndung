@@ -174,6 +174,7 @@ interface ModernFahndungskarteProps {
     canDelete?: boolean;
     canPublish?: boolean;
   };
+  viewMode?: "grid-3" | "grid-4" | "list-flat";
 }
 
 const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
@@ -182,6 +183,7 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   investigationId,
   userRole: _userRole,
   userPermissions,
+  viewMode = "grid-3",
 }) => {
   const router = useRouter();
   const [isFlipped, setIsFlipped] = useState(false);
@@ -362,6 +364,20 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
   const detailsButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Bildproportionen basierend auf viewMode
+  const getImageProportions = () => {
+    switch (viewMode) {
+      case "grid-3":
+        return { imageHeight: "70%", infoHeight: "30%" };
+      case "grid-4":
+      case "list-flat":
+      default:
+        return { imageHeight: "60%", infoHeight: "40%" };
+    }
+  };
+
+  const { imageHeight, infoHeight } = getImageProportions();
 
   // Sichere Datenprüfung mit Fallback-Werten
   const category = safeData?.step1?.category
@@ -818,8 +834,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             }
           }}
         >
-          {/* Image Section - 60% (5% kürzer) */}
-          <div className="relative h-[60%] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+          {/* Image Section - dynamische Höhe basierend auf viewMode */}
+          <div className={`relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800`} style={{ height: imageHeight }}>
             {/* Priority Badge - nur auf Vorderseite */}
             {safeData.step2.priority !== "normal" && !isFlipped && (
               <div
@@ -863,8 +879,8 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             </div>
           </div>
 
-          {/* Info Section - 40% (5% mehr für den kürzeren Bildbereich) */}
-          <div className="flex h-[40%] flex-col justify-between p-6">
+          {/* Info Section - dynamische Höhe basierend auf viewMode */}
+          <div className="flex flex-col justify-between p-6" style={{ height: infoHeight }}>
             <div className="space-y-3">
               <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
                 {safeData.step1.title}

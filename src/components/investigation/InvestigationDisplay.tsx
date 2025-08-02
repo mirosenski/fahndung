@@ -116,6 +116,7 @@ export interface InvestigationDisplayProps {
   };
   onEdit?: (step: string) => void;
   className?: string;
+  viewMode?: "grid-3" | "grid-4" | "list-flat";
 }
 
 import { getCategoryLabel, getCategoryStyles } from "@/types/categories";
@@ -147,8 +148,23 @@ const getUrgencyColor = (level: string): string => {
 const FlipCard: React.FC<{
   data: InvestigationDisplayProps["data"];
   className?: string;
-}> = ({ data, className = "" }) => {
+  viewMode?: "grid-3" | "grid-4" | "list-flat";
+}> = ({ data, className = "", viewMode = "grid-3" }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // Bildproportionen basierend auf viewMode
+  const getImageProportions = () => {
+    switch (viewMode) {
+      case "grid-3":
+        return { imageHeight: "70%", infoHeight: "30%" };
+      case "grid-4":
+      case "list-flat":
+      default:
+        return { imageHeight: "60%", infoHeight: "40%" };
+    }
+  };
+
+  const { imageHeight, infoHeight } = getImageProportions();
 
   return (
     <div className={`relative ${className}`} style={{ perspective: "1000px" }}>
@@ -165,7 +181,10 @@ const FlipCard: React.FC<{
           style={{ backfaceVisibility: "hidden" }}
         >
           {/* Image Section */}
-          <div className="relative h-[60%] w-full bg-gray-200 dark:bg-gray-700">
+          <div
+            className="relative w-full bg-gray-200 dark:bg-gray-700"
+            style={{ height: imageHeight }}
+          >
             {data.step3.imagePreviews && data.step3.imagePreviews.length > 0 ? (
               <>
                 {/* Main Image */}
@@ -208,7 +227,10 @@ const FlipCard: React.FC<{
           </div>
 
           {/* Content Section */}
-          <div className="flex h-[40%] flex-col justify-between p-4">
+          <div
+            className="flex flex-col justify-between p-4"
+            style={{ height: infoHeight }}
+          >
             <div>
               <h3 className="mb-1 line-clamp-2 text-lg font-bold">
                 {data.step1.title}
@@ -301,6 +323,7 @@ export default function InvestigationDisplay({
   data,
   onEdit,
   className = "",
+  viewMode = "grid-3",
 }: InvestigationDisplayProps) {
   // Memoized calculations
 
@@ -845,6 +868,7 @@ export default function InvestigationDisplay({
       <FlipCard
         data={data}
         className="h-[500px] w-full max-w-[320px] md:h-[608px] md:max-w-[385px]"
+        viewMode={viewMode}
       />
     </div>
   );
