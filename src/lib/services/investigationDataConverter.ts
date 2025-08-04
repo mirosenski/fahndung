@@ -3,7 +3,7 @@ import {
   UIInvestigationDBSchema,
   UIInvestigationEditSchema,
 } from "~/lib/types/investigation.types";
-import { z } from "zod";
+import { type z } from "zod";
 
 export type Result<T> =
   | { success: true; data: T }

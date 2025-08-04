@@ -24,7 +24,7 @@ export function useInvestigationSync(investigationId: string) {
       refetchOnWindowFocus: true,
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 1000, // Alle 1 Sekunde automatisch refetchen
+      refetchInterval: 10000, // Alle 10 Sekunden als Fallback (Real-time ist primär)
     },
   );
 
@@ -73,7 +73,7 @@ export function useInvestigationSync(investigationId: string) {
     globalSync();
   }, [globalSync]);
 
-  // Automatische Synchronisation alle 1 Sekunde
+  // Automatische Synchronisation alle 10 Sekunden (als Fallback)
   useEffect(() => {
     if (!investigationId) return;
 
@@ -82,11 +82,11 @@ export function useInvestigationSync(investigationId: string) {
       const timeSinceLastUpdate = now - lastUpdateRef.current;
 
       // Nur refetchen wenn keine kürzlichen Updates
-      if (timeSinceLastUpdate > 1000) {
-        console.log("🔄 Automatische Synchronisation");
+      if (timeSinceLastUpdate > 10000) {
+        console.log("🔄 Automatische Synchronisation (Fallback)");
         manualRefetch();
       }
-    }, 1000);
+    }, 10000);
 
     return () => {
       if (syncIntervalRef.current) {

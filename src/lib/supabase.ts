@@ -40,7 +40,9 @@ const getSupabaseInstance = () => {
     },
     realtime: {
       params: {
-        eventsPerSecond: 10,
+        eventsPerSecond: 50, // Erhöht für bessere Performance
+        heartbeatIntervalMs: 1000, // Häufigere Heartbeats
+        reconnectAfterMs: 1000, // Schnellere Reconnection
       },
     },
     global: {
@@ -172,19 +174,65 @@ export const subscribeToInvestigations = (
     };
   }
 
+  console.log("🔗 Erstelle Supabase Real-time Subscription für investigations");
+
+  // Verwende Postgres Changes (einfacher Ansatz)
   return supabase
-    .channel("investigations")
+    .channel("investigations-realtime")
     .on(
       "postgres_changes",
       {
-        event: "*",
+        event: "*", // Alle Events (INSERT, UPDATE, DELETE)
         schema: "public",
         table: "investigations",
       },
-      callback,
+      (payload) => {
+        console.log("📡 Real-time Event erhalten:", payload);
+        callback(payload);
+      },
     )
-    .subscribe(() => {
-      // intentionally left blank
+    .subscribe((status) => {
+      console.log("🔗 Real-time Subscription Status:", status);
+    });
+};
+
+// Alternative: Broadcast-basierte Real-time Subscriptions (für bessere Skalierbarkeit)
+export const subscribeToInvestigationsBroadcast = (
+  investigationId: string,
+  callback: (payload: Record<string, unknown>) => void,
+) => {
+  if (!supabase) {
+    console.warn(
+      "⚠️ Supabase nicht konfiguriert - Broadcast Real-time Updates deaktiviert",
+    );
+    return {
+      unsubscribe: () => {
+        // No-op da Supabase nicht verfügbar
+      },
+    };
+  }
+
+  console.log("🔗 Erstelle Broadcast Real-time Subscription für Investigation:", investigationId);
+
+  // Verwende Broadcast (empfohlen für Skalierbarkeit)
+  return supabase
+    .channel(`topic:${investigationId}`, {
+      config: { private: true }, // Private Channel für Broadcast
+    })
+    .on("broadcast", { event: "INSERT" }, (payload) => {
+      console.log("📡 Broadcast INSERT Event:", payload);
+      callback(payload);
+    })
+    .on("broadcast", { event: "UPDATE" }, (payload) => {
+      console.log("📡 Broadcast UPDATE Event:", payload);
+      callback(payload);
+    })
+    .on("broadcast", { event: "DELETE" }, (payload) => {
+      console.log("📡 Broadcast DELETE Event:", payload);
+      callback(payload);
+    })
+    .subscribe((status) => {
+      console.log("🔗 Broadcast Real-time Subscription Status:", status);
     });
 };
 

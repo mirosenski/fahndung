@@ -17,7 +17,7 @@ export const createQueryClient = () =>
         // Optimistische Updates aktivieren
         retry: 1,
         retryDelay: 1000,
-        // Aggressivere Refetch-Intervalle für Fahndungen
+        // Reduzierte Refetch-Intervalle da Real-time Updates aktiv sind
         refetchInterval: (query) => {
           // Spezielle Behandlung für Fahndungs-Queries
           if (
@@ -26,7 +26,7 @@ export const createQueryClient = () =>
               query.queryKey[1] === "getMyInvestigations" ||
               query.queryKey[1] === "getInvestigation")
           ) {
-            return 2000; // Alle 2 Sekunden für Fahndungen
+            return 10000; // Alle 10 Sekunden als Fallback (Real-time ist primär)
           }
           return false; // Kein automatisches Refetch für andere Queries
         },

@@ -40,12 +40,12 @@ export function useFahndungenOptimized(options: {
       priority: priority === "all" ? undefined : priority,
     },
     {
-      // Aggressive Synchronisation für sofortige Updates
+      // Reduzierte Synchronisation da Real-time Updates aktiv sind
       staleTime: 0, // Sofort als veraltet markieren
       refetchOnWindowFocus: true,
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 2000, // Alle 2 Sekunden automatisch refetchen
+      refetchInterval: 10000, // Alle 10 Sekunden als Fallback (Real-time ist primär)
     },
   );
 
@@ -57,12 +57,12 @@ export function useFahndungenOptimized(options: {
     { limit, offset },
     {
       enabled: viewMode === "my" && currentUser,
-      // Aggressive Synchronisation für sofortige Updates
+      // Reduzierte Synchronisation da Real-time Updates aktiv sind
       staleTime: 0, // Sofort als veraltet markieren
       refetchOnWindowFocus: true,
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 2000, // Alle 2 Sekunden automatisch refetchen
+      refetchInterval: 10000, // Alle 10 Sekunden als Fallback (Real-time ist primär)
     },
   );
 
@@ -112,18 +112,20 @@ export function useFahndungenOptimized(options: {
     [syncInvestigation],
   );
 
-  // Automatische Synchronisation alle 2 Sekunden
+  // Automatische Synchronisation alle 10 Sekunden (als Fallback)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const timeSinceLastUpdate = now - lastUpdateRef.current;
 
       // Nur refetchen wenn keine kürzlichen Updates
-      if (timeSinceLastUpdate > 2000) {
-        console.log("🔄 Automatische Synchronisation der Fahndungen");
+      if (timeSinceLastUpdate > 10000) {
+        console.log(
+          "🔄 Automatische Synchronisation der Fahndungen (Fallback)",
+        );
         void manualRefetch();
       }
-    }, 2000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [manualRefetch]);
