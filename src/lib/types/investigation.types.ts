@@ -13,10 +13,10 @@ export const UIInvestigationInputSchema = z.object({
     caseNumber: z.string().optional(),
   }),
   step2: z.object({
-    shortDescription: z.string().min(10, "Mindestens 10 Zeichen"),
-    description: z.string().min(50, "Mindestens 50 Zeichen"),
+    shortDescription: z.string().min(5, "Mindestens 5 Zeichen"), // Von 10 auf 5 reduziert
+    description: z.string().min(10, "Mindestens 10 Zeichen"), // Von 20 auf 10 reduziert
     priority: z.enum(["normal", "urgent", "new"]),
-    tags: z.array(z.string()).min(1, "Mindestens ein Tag"),
+    tags: z.array(z.string()).optional().default([]), // Optional gemacht
     features: z.string(),
   }),
   step3: z.object({
@@ -28,9 +28,42 @@ export const UIInvestigationInputSchema = z.object({
   }),
   step5: z.object({
     contactPerson: z.string().min(1, "Kontaktperson erforderlich"),
-    contactPhone: z
-      .string()
-      .regex(/^[\d\s\-\+\(\)]+$/, "Ungültiges Telefonnummer-Format"),
+    contactPhone: z.string().optional().default(""), // Komplett optional gemacht
+    contactEmail: z.string().email().optional().or(z.literal("")),
+    department: z.string(),
+    availableHours: z.string(),
+  }),
+});
+
+// Schema für das Bearbeiten bestehender Daten (toleranter)
+export const UIInvestigationEditSchema = z.object({
+  step1: z.object({
+    title: z.string().min(1, "Titel ist erforderlich"),
+    category: z.enum([
+      "WANTED_PERSON",
+      "MISSING_PERSON",
+      "UNKNOWN_DEAD",
+      "STOLEN_GOODS",
+    ]),
+    caseNumber: z.string().optional(),
+  }),
+  step2: z.object({
+    shortDescription: z.string().min(1, "Kurzbeschreibung ist erforderlich"), // Mindestens 1 Zeichen
+    description: z.string().min(1, "Beschreibung ist erforderlich"), // Mindestens 1 Zeichen
+    priority: z.enum(["normal", "urgent", "new"]),
+    tags: z.array(z.string()).optional().default([]),
+    features: z.string(),
+  }),
+  step3: z.object({
+    mainImage: z.string().nullable(),
+    additionalImages: z.array(z.string()),
+  }),
+  step4: z.object({
+    mainLocation: z.object({ address: z.string() }).nullable(),
+  }),
+  step5: z.object({
+    contactPerson: z.string().min(1, "Kontaktperson erforderlich"),
+    contactPhone: z.string().optional().default(""),
     contactEmail: z.string().email().optional().or(z.literal("")),
     department: z.string(),
     availableHours: z.string(),

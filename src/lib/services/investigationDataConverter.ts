@@ -1,9 +1,9 @@
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
 import {
   UIInvestigationDBSchema,
-  UIInvestigationInputSchema,
-  type UIInvestigationData,
+  UIInvestigationEditSchema,
 } from "~/lib/types/investigation.types";
-import type { z } from "zod";
+import { z } from "zod";
 
 export type Result<T> =
   | { success: true; data: T }
@@ -112,8 +112,11 @@ export class InvestigationDataConverter {
    * Bereinigt Telefonnummern für DB-Format
    */
   static sanitizePhoneNumber(phone: string): string {
+    if (!phone || phone === "null" || phone === "undefined") return "";
+
     // Entferne ungültige Zeichen, behalte aber das Format
-    return phone.replace(/[^\d\s\-\+\(\)]/g, "");
+    // Erlaubt: Ziffern, Leerzeichen, -, +, (, ), ., /, :, ,, ;
+    return phone.replace(/[^\d\s\-\+\(\)\.\/\:\,\;]/g, "");
   }
 
   /**
@@ -172,10 +175,52 @@ export class InvestigationDataConverter {
     isValid: boolean;
     errors: string[];
   } {
-    // Verwende das strenge Schema nur für Benutzereingaben
-    const validation = UIInvestigationInputSchema.safeParse(data);
+    console.log("🔍 DEBUG: Validiere Daten:", JSON.stringify(data, null, 2));
+
+    // Bereinige Daten vor der Validierung
+    const cleanedData = {
+      ...data,
+      step1: {
+        title: data.step1?.title?.trim() ?? "",
+        category: data.step1?.category ?? "MISSING_PERSON",
+        caseNumber: data.step1?.caseNumber ?? "",
+      },
+      step2: {
+        shortDescription: data.step2?.shortDescription?.trim() ?? "",
+        description: data.step2?.description?.trim() ?? "",
+        priority: data.step2?.priority ?? "normal",
+        tags: data.step2?.tags ?? [],
+        features: data.step2?.features ?? "",
+      },
+      step3: {
+        mainImage: data.step3?.mainImage ?? null,
+        additionalImages: data.step3?.additionalImages ?? [],
+      },
+      step4: {
+        mainLocation: data.step4?.mainLocation ?? null,
+      },
+      step5: {
+        contactPerson: data.step5?.contactPerson?.trim() ?? "",
+        contactPhone: data.step5?.contactPhone?.trim() ?? "",
+        contactEmail: data.step5?.contactEmail?.trim() ?? "",
+        department: data.step5?.department ?? "",
+        availableHours: data.step5?.availableHours ?? "",
+      },
+    };
+
+    console.log(
+      "🔍 DEBUG: Bereinigte Daten:",
+      JSON.stringify(cleanedData, null, 2),
+    );
+
+    // Verwende das tolerantere Edit-Schema für bestehende Daten
+    const validation = UIInvestigationEditSchema.safeParse(cleanedData);
 
     if (!validation.success) {
+      console.log(
+        "🔍 DEBUG: Validierungsfehler Details:",
+        validation.error.errors,
+      );
       const errors = validation.error.errors.map((err) => {
         const path = err.path.join(".");
         return `${path}: ${err.message}`;
@@ -210,22 +255,58 @@ export class InvestigationDataConverter {
     features?: string;
     station?: string;
   } {
-    return {
-      title: uiData.step1.title ?? undefined,
-      description: uiData.step2.description ?? undefined,
-      short_description: uiData.step2.shortDescription ?? undefined,
-      priority: uiData.step2.priority,
-      category: uiData.step1.category,
-      tags: uiData.step2.tags.length > 0 ? uiData.step2.tags : undefined,
-      location: uiData.step4.mainLocation?.address ?? undefined,
-      contact_info: {
-        person: uiData.step5.contactPerson ?? undefined,
-        phone: this.sanitizePhoneNumber(uiData.step5.contactPhone) ?? undefined,
-        email: this.sanitizeEmail(uiData.step5.contactEmail) ?? undefined,
-        hours: uiData.step5.availableHours ?? undefined,
+    // Bereinige Daten vor der Konvertierung
+    const cleanedData = {
+      ...uiData,
+      step1: {
+        title: uiData.step1?.title?.trim() ?? "",
+        category: uiData.step1?.category ?? "MISSING_PERSON",
+        caseNumber: uiData.step1?.caseNumber ?? "",
       },
-      features: uiData.step2.features ?? undefined,
-      station: uiData.step5.department ?? undefined,
+      step2: {
+        shortDescription: uiData.step2?.shortDescription?.trim() ?? "",
+        description: uiData.step2?.description?.trim() ?? "",
+        priority: uiData.step2?.priority ?? "normal",
+        tags: uiData.step2?.tags ?? [],
+        features: uiData.step2?.features ?? "",
+      },
+      step3: {
+        mainImage: uiData.step3?.mainImage ?? null,
+        additionalImages: uiData.step3?.additionalImages ?? [],
+      },
+      step4: {
+        mainLocation: uiData.step4?.mainLocation ?? null,
+      },
+      step5: {
+        contactPerson: uiData.step5?.contactPerson?.trim() ?? "",
+        contactPhone: uiData.step5?.contactPhone?.trim() ?? "",
+        contactEmail: uiData.step5?.contactEmail?.trim() ?? "",
+        department: uiData.step5?.department ?? "",
+        availableHours: uiData.step5?.availableHours ?? "",
+      },
+    };
+
+    return {
+      title: cleanedData.step1.title ?? undefined,
+      description: cleanedData.step2.description ?? undefined,
+      short_description: cleanedData.step2.shortDescription ?? undefined,
+      priority: cleanedData.step2.priority,
+      category: cleanedData.step1.category,
+      tags:
+        cleanedData.step2.tags.length > 0 ? cleanedData.step2.tags : undefined,
+      location: cleanedData.step4.mainLocation?.address ?? undefined,
+      contact_info: {
+        person: cleanedData.step5.contactPerson || undefined,
+        phone:
+          this.sanitizePhoneNumber(cleanedData.step5.contactPhone) || undefined,
+        email: ((): string | undefined => {
+          const sanitized = this.sanitizeEmail(cleanedData.step5.contactEmail);
+          return sanitized ? sanitized : undefined;
+        })(),
+        hours: cleanedData.step5.availableHours || undefined,
+      },
+      features: cleanedData.step2.features ?? undefined,
+      station: cleanedData.step5.department ?? undefined,
     };
   }
 }

@@ -147,6 +147,7 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
       onKeyDown={handleKeyDown}
+      style={{ position: "relative" }}
     >
       <div className="flex items-center">
         <a
@@ -182,6 +183,12 @@ export function HoverMegaMenu({ title, items = [] }: HoverMegaMenuProps) {
           className="absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border border-border bg-background shadow-lg"
           role="menu"
           aria-label={`${title} Untermenü`}
+          style={{
+            left: "0",
+            right: "auto",
+            transform: "translateX(0)",
+            maxWidth: "calc(100vw - 2rem)",
+          }}
         >
           <div className="p-4">
             <div className="grid gap-3">

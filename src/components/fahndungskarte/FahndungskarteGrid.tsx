@@ -167,7 +167,6 @@ const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
           onAction={onAction}
           userRole={userRole}
           userPermissions={userPermissions}
-          viewMode={viewMode}
         />
       ))}
     </div>

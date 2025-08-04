@@ -26,7 +26,7 @@ import {
 import InteractiveMap, {
   type MapLocation,
 } from "@/components/shared/InteractiveMap";
-import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
+
 import { getFahndungUrl } from "~/lib/seo";
 import { useInvestigationSync } from "~/hooks/useInvestigationSync";
 
@@ -174,7 +174,6 @@ interface ModernFahndungskarteProps {
     canDelete?: boolean;
     canPublish?: boolean;
   };
-  viewMode?: "grid-3" | "grid-4" | "list-flat";
 }
 
 const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
@@ -183,7 +182,6 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   investigationId,
   userRole: _userRole,
   userPermissions,
-  viewMode = "grid-3",
 }) => {
   const router = useRouter();
   const [isFlipped, setIsFlipped] = useState(false);
@@ -364,20 +362,6 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
   const detailsButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Bildproportionen basierend auf viewMode
-  const getImageProportions = () => {
-    switch (viewMode) {
-      case "grid-3":
-        return { imageHeight: "70%", infoHeight: "30%" };
-      case "grid-4":
-      case "list-flat":
-      default:
-        return { imageHeight: "60%", infoHeight: "40%" };
-    }
-  };
-
-  const { imageHeight, infoHeight } = getImageProportions();
 
   // Sichere Datenprüfung mit Fallback-Werten
   const category = safeData?.step1?.category
@@ -834,24 +818,27 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             }
           }}
         >
-          {/* Image Section - dynamische Höhe basierend auf viewMode */}
-          <div className={`relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800`} style={{ height: imageHeight }}>
-            {/* Priority Badge - nur auf Vorderseite */}
-            {safeData.step2.priority !== "normal" && !isFlipped && (
-              <div
-                className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
-                style={{ zIndex: 1 }}
-              >
-                {priority.label}
-              </div>
-            )}
-
+          {/* Image Section - größerer Anteil wie im Bild */}
+          <div
+            className={`relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800`}
+            style={{ height: "60%" }}
+          >
             {/* Quick Edit Button - nur für Editoren */}
             {userPermissions?.canEdit && showQuickEdit && (
               <button
                 onClick={handleQuickEdit}
-                className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (investigationId) {
+                      router.push(`/fahndungen/${investigationId}?edit=true`);
+                    }
+                  }
+                }}
+                className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 aria-label="Schnell bearbeiten"
+                tabIndex={0}
               >
                 <Edit3 className="h-3 w-3" />
                 Bearbeiten
@@ -868,33 +855,94 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               onError={handleImageError}
             />
 
-            {/* Category Badge */}
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-lg bg-white/90 px-3 py-1 text-xs font-medium backdrop-blur-sm dark:bg-gray-900/90">
-              <span>{category.label}</span>
-            </div>
-
-            {/* Case Number Badge - horizontal alignment */}
-            <div className="absolute bottom-4 right-4">
-              <CaseNumberBadge caseNumber={safeData.step1.caseNumber} />
-            </div>
+            {/* DRINGEND/NEU Badge - obere rechte Ecke, nur auf Vorderseite */}
+            {safeData.step2.priority !== "normal" && !isFlipped && (
+              <div
+                className={`absolute right-4 top-4 rounded px-2 py-0.5 text-xs font-bold text-white ${priority.color} ${priority.pulse ? "animate-pulse" : ""}`}
+                style={{ zIndex: 1 }}
+                role="status"
+                aria-label={`Priority: ${priority.label}`}
+              >
+                {priority.label}
+              </div>
+            )}
           </div>
 
-          {/* Info Section - dynamische Höhe basierend auf viewMode */}
-          <div className="flex flex-col justify-between p-6" style={{ height: infoHeight }}>
-            <div className="space-y-3">
-              <h3 className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-white">
+          {/* Info Section - kleinerer Anteil wie im Bild */}
+          <div
+            className="flex flex-col justify-between p-4"
+            style={{ height: "40%" }}
+          >
+            <div className="space-y-2">
+              {/* Location/Date und Fahndungsart auf einer Ebene */}
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  {safeData.step4.mainLocation?.address.split(",")[0] ??
+                    "Unbekannt"}{" "}
+                  |{" "}
+                  {safeData.step1.caseNumber
+                    ? new Date().toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "Unbekannt"}
+                </div>
+                <div
+                  className="rounded border border-gray-300 bg-white px-2 py-0.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                  role="status"
+                  aria-label={`Kategorie: ${category.label}`}
+                >
+                  {category.label}
+                </div>
+              </div>
+
+              {/* Name */}
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 {safeData.step1.title}
               </h3>
 
+              {/* Kurze Beschreibung */}
               <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 {safeData.step2.shortDescription}
               </p>
             </div>
 
             <div className="mt-auto flex items-center justify-between">
+              {/* Mehr erfahren Button */}
               <button
-                ref={detailsButtonRef}
-                className="flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(
+                    getFahndungUrl(
+                      safeData.step1.title,
+                      safeData.step1.caseNumber,
+                    ),
+                  );
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push(
+                      getFahndungUrl(
+                        safeData.step1.title,
+                        safeData.step1.caseNumber,
+                      ),
+                    );
+                  }
+                }}
+                aria-label="Mehr erfahren"
+                tabIndex={0}
+              >
+                <span>Mehr erfahren</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              {/* Three-dot Menu - Flip-Funktion */}
+              <button
+                className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-300"
                 onClick={(e) => {
                   e.stopPropagation();
                   flipCard();
@@ -906,21 +954,15 @@ const ModernFahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     flipCard();
                   }
                 }}
-                aria-label="Karte öffnen und Details anzeigen"
-                tabIndex={isFlipped ? -1 : 0}
+                aria-label="Karte umdrehen"
+                tabIndex={0}
               >
-                <span>Details</span>
-                <ChevronRight className="h-4 w-4" />
-              </button>
-
-              {safeData.step4.mainLocation && (
-                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                  <MapPin className="h-3 w-3" />
-                  <span className="max-w-24 truncate">
-                    {safeData.step4.mainLocation.address.split(",")[0]}
-                  </span>
+                <div className="flex flex-col gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
                 </div>
-              )}
+              </button>
             </div>
           </div>
         </div>

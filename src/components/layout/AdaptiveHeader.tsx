@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
 import {
   Type,
   Eye,
   EyeOff,
-  Palette,
-  Volume2,
   Menu,
   User,
   LogIn,
@@ -14,14 +13,17 @@ import {
   LogOut,
   ChevronDown,
   Shield,
+  X,
 } from "lucide-react";
 import { Logo } from "../ui/Logo";
-import { ThemeToggle } from "../ui/ThemeToggle";
-import { HoverMegaMenu } from "../ui/HoverMegaMenu";
+import { FontSizeToggle } from "../ui/FontSizeToggle";
+import { SystemThemeToggle } from "../ui/SystemThemeToggle";
+import { EnhancedMegaMenu } from "../ui/EnhancedMegaMenu";
 import { SearchBar } from "../ui/SearchBar";
 import { useRouter, usePathname } from "next/navigation";
 import { type Session } from "~/lib/auth";
 import { useAuth } from "~/hooks/useAuth";
+import { useStableSession } from "~/hooks/useStableSession";
 
 interface AdaptiveHeaderProps {
   variant?: "home" | "dashboard" | "login" | "register" | "admin";
@@ -52,120 +54,48 @@ const useAdaptiveScroll = (threshold = 50) => {
   return isScrolled;
 };
 
-// Meta-Bar Component (verschwindet beim Scrollen)
+// Meta-Bar Component (immer sichtbar)
 const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
-  const [settings, setSettings] = useState({
-    fontSize: "normal" as "small" | "normal" | "large",
-    contrast: false,
-    language: "de",
-  });
-
-  const toggleFontSize = () => {
-    const sizes: Array<"small" | "normal" | "large"> = [
-      "small",
-      "normal",
-      "large",
-    ];
-    const current = sizes.indexOf(settings.fontSize);
-    const nextIndex = (current + 1) % sizes.length;
-    const next = sizes[nextIndex]!;
-    setSettings((prev) => ({ ...prev, fontSize: next }));
-
-    document.documentElement.className =
-      document.documentElement.className.replace(
-        /text-(small|normal|large)/g,
-        "",
-      );
-    document.documentElement.classList.add(`text-${next}`);
-  };
-
-  const toggleContrast = () => {
-    const newContrast = !settings.contrast;
-    setSettings((prev) => ({ ...prev, contrast: newContrast }));
-    document.documentElement.classList.toggle("high-contrast", newContrast);
-  };
-
   return (
     <div
       className={`
-      w-full overflow-hidden bg-slate-900 text-white
-      transition-all duration-300 ease-out dark:bg-slate-950
+      duration-800 w-full overflow-hidden bg-slate-900
+      text-white transition-all ease-out dark:bg-slate-950
       ${isVisible ? "h-8 opacity-100" : "h-0 opacity-0"}
     `}
     >
       <div className="container mx-auto flex h-8 items-center justify-between px-4">
-        {/* Links: Accessibility Controls */}
+        {/* Links: Gebärdensprache, Leichte Sprache & Textvergrößerung */}
         <div className="flex items-center gap-4 text-xs">
-          <button
-            onClick={toggleFontSize}
+          <Link
+            href="/gebaerdensprache"
             className="flex items-center gap-1 rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
-            aria-label="Schriftgröße ändern"
+            tabIndex={1}
           >
-            <Type className="h-3 w-3" />
-            <span className="hidden sm:inline">
-              {settings.fontSize === "small"
-                ? "A-"
-                : settings.fontSize === "large"
-                  ? "A+"
-                  : "A"}
-            </span>
-          </button>
-
-          <button
-            onClick={toggleContrast}
-            className="flex items-center gap-1 rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
-            aria-label={
-              settings.contrast ? "Normaler Kontrast" : "Hoher Kontrast"
-            }
-          >
-            {settings.contrast ? (
-              <EyeOff className="h-3 w-3" />
-            ) : (
-              <Eye className="h-3 w-3" />
-            )}
-            <span className="hidden sm:inline">Kontrast</span>
-          </button>
-
-          <button className="flex items-center gap-1 rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900">
-            <Volume2 className="h-3 w-3" />
-            <span className="hidden sm:inline">Vorlesen</span>
-          </button>
-
-          <a
+            <svg className="h-3 w-3" viewBox="0 0 7.15 7.7" fill="currentColor">
+              <path d="M5.13.07c.08-.06.18-.09.27-.05.05.02.09.07.1.12.01.06,0,.13-.03.19-.1.16-.21.3-.32.45-.16.21-.32.42-.46.64-.09.14-.19.28-.27.43-.02.04-.04.1-.02.14.01.03.04.03.07.03.02-.02.04-.03.06-.05.47-.46.94-.9,1.43-1.34.09-.08.18-.16.28-.23.06-.04.13-.05.2-.04.06.02.1.06.13.11.02.04.03.08.02.13-.01.07-.06.13-.11.19-.08.08-.15.16-.23.24-.13.13-.24.26-.37.38-.16.16-.31.31-.46.47-.15.15-.3.3-.44.45-.04.05-.08.09-.11.15-.01.03.02.06.04.07.04,0,.07-.02.11-.03.18-.1.35-.22.53-.34.36-.24.72-.49,1.09-.72.07-.04.14-.08.23-.08.08,0,.16.05.18.13.03.07.01.14-.03.2-.04.06-.09.1-.14.14-.28.24-.57.46-.86.68-.24.18-.48.35-.72.54-.03.03-.08.07-.08.12,0,.05.05.07.09.07.07,0,.14-.03.21-.05.43-.15.86-.3,1.3-.45.08-.03.17-.04.25,0,.04.02.07.06.08.1.02.05,0,.1-.03.14-.08.12-.21.17-.33.24-.15.08-.31.16-.47.23-.06.03-.12.06-.19.09-.15.07-.31.15-.46.22-.12.06-.24.11-.36.17-.01,0-.02.01-.02.02,0,0,0,0-.01,0-.04.02-.09.05-.13.07-.19.1-.37.21-.54.33-.09.06-.18.12-.27.17-.04.02-.08.04-.12.07-.01,0-.02.01-.03.02-.07.04-.15.06-.23.06-.22-.02-.43-.06-.64-.11-.2-.05-.4-.1-.6-.16,0,0-.01,0-.01-.01.01,0,.03,0,.04-.01.03-.01.05-.02.08-.03.06-.02.11-.05.16-.08.25-.12.49-.28.65-.51.06-.1.11-.21.1-.32,0-.09-.04-.18-.12-.23-.07-.05-.15-.05-.23-.04-.07.02-.12.06-.18.09-.07.04-.14.07-.22.11-.19.09-.39.17-.59.24-.24.08-.49.16-.75.19-.02,0-.04,0-.05,0,.06-.07.13-.14.17-.22.11-.18.16-.38.19-.59.03-.16.05-.32.1-.48.05-.16.11-.32.17-.48.09-.27.16-.55.22-.83.03-.12.05-.24.07-.36.01-.07.02-.14.04-.21.01-.04.04-.08.08-.09.05-.02.11,0,.16.04.1.08.15.21.17.33.01.11.02.21,0,.32-.01.2-.05.39-.1.58-.02.12-.05.24-.01.36,0,0,0,.02.01.02.02.05.07.08.12.09.05,0,.11,0,.16-.02.14-.07.25-.19.36-.3.07-.08.14-.17.21-.26.21-.27.42-.54.64-.8.17-.21.34-.41.53-.6.08-.09.16-.18.26-.26Z" />
+              <path d="M3.35,3.36s.09-.02.12.02c.03.04.03.1.02.15-.02.1-.08.18-.15.25-.1.11-.22.19-.35.27-.16.09-.33.16-.5.23-.05.02-.09.06-.09.11,0,.05.04.1.09.12.24.1.5.15.76.22.48.11.96.22,1.43.36.16.05.32.09.47.16.04.02.08.06.1.11.02.08-.02.18-.1.21-.06.02-.12,0-.18,0-.13-.02-.26-.05-.39-.08-.23-.05-.46-.09-.69-.14-.2-.04-.41-.09-.61-.12-.04,0-.09-.01-.12.02-.03.02-.03.06-.01.08.04.05.1.07.15.09.38.16.76.3,1.14.47.09.04.18.08.27.12.05.02.09.04.14.07.08.04.18.08.22.16.03.07.01.16-.04.21-.04.05-.11.07-.17.07-.12-.01-.23-.06-.34-.1-.52-.18-1.03-.37-1.54-.57-.05-.02-.12-.04-.17,0-.02.03-.01.08.02.1.08.08.18.14.27.2.26.16.52.31.78.46.13.07.26.15.38.22.06.04.12.07.17.11.03.03.05.06.05.1,0,.07-.04.14-.1.18-.05.04-.12.03-.18.01-.09-.03-.18-.08-.27-.12-.02,0-.04-.02-.05-.03-.07-.03-.13-.07-.2-.1-.02-.01-.04-.02-.07-.03-.12-.06-.23-.12-.35-.18-.05-.03-.11-.06-.16-.09-.08-.05-.17-.09-.25-.14-.08-.05-.17-.09-.25-.14-.05-.03-.1-.06-.16-.08-.04,0-.09.03-.07.07.03.07.09.12.14.17.19.18.38.36.57.54.1.1.2.19.29.29.03.04.07.08.08.13.02.07-.03.14-.09.16-.08.03-.16,0-.23-.04-.14-.08-.26-.19-.39-.29-.16-.13-.31-.26-.47-.39,0,0-.01,0-.02,0h.01c-.15-.12-.29-.25-.45-.35-.03-.02-.07-.04-.1-.06-.17-.1-.35-.19-.54-.27-.22-.1-.43-.21-.62-.37-.17-.14-.33-.31-.44-.5-.01-.03-.03-.05-.04-.08-.01-.02-.02-.05-.04-.07,0-.03.02-.04.04-.06.17-.19.33-.39.45-.62,0,0,0-.02.01-.02.04-.08.09-.17.1-.26.13.03.27,0,.39-.04.11-.04.22-.08.33-.13.09-.05.18-.11.28-.14.03-.01.07-.02.1-.02.21-.04.43-.09.63-.17.27-.1.54-.21.79-.34.08-.04.15-.08.22-.11Z" />
+            </svg>
+            <span className="hidden sm:inline">Gebärdensprache</span>
+          </Link>
+          <Link
             href="/leichte-sprache"
             className="flex items-center gap-1 rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
+            tabIndex={2}
           >
-            <span className="text-xs">Leichte Sprache</span>
-          </a>
+            <svg className="h-3 w-3" viewBox="0 0 7.24 7.7" fill="currentColor">
+              <circle cx="3.62" cy="1.22" r="1.22" />
+              <path d="M0,2.32v4.13c.54,0,1.49.06,2.46.61.36.2.65.43.88.64V3.51c-.22-.19-.48-.39-.81-.57-.95-.53-1.98-.61-2.53-.61Z" />
+              <path d="M3.9,3.51v4.19c.23-.21.52-.44.88-.64.98-.55,1.93-.62,2.46-.61V2.32c-.55,0-1.59.08-2.53.61-.32.18-.59.38-.81.57Z" />
+            </svg>
+            <span className="hidden sm:inline">Leichte Sprache</span>
+          </Link>
+          <FontSizeToggle />
         </div>
 
-        {/* Rechts: Sprache & Settings */}
+        {/* Rechts: System Theme Toggle */}
         <div className="flex items-center gap-4 text-xs">
-          <select
-            value={settings.language}
-            onChange={(e) =>
-              setSettings((prev) => ({ ...prev, language: e.target.value }))
-            }
-            className="rounded bg-transparent px-1 text-slate-400 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
-            aria-label="Sprache wählen"
-          >
-            <option value="de" className="bg-slate-900">
-              DE
-            </option>
-            <option value="en" className="bg-slate-900">
-              EN
-            </option>
-            <option value="fr" className="bg-slate-900">
-              FR
-            </option>
-            <option value="tr" className="bg-slate-900">
-              TR
-            </option>
-          </select>
-
-          <button className="rounded p-1 text-slate-400 transition-colors hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900">
-            <Palette className="h-3 w-3" />
-          </button>
+          <SystemThemeToggle />
         </div>
       </div>
     </div>
@@ -175,31 +105,51 @@ const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
 // Adaptive Desktop Header (freistehend → sticky full-width)
 const AdaptiveDesktopHeader = ({
   isScrolled,
-  session,
+  session: externalSession,
+  showMetaBar,
+  setShowMetaBar,
+  onLogout,
 }: {
   isScrolled: boolean;
   session?: Session | null;
+  showMetaBar: boolean;
+  setShowMetaBar: (show: boolean) => void;
+  onLogout?: () => void;
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { session: authSession } = useAuth();
+  const { logout: authLogout } = useAuth();
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
 
-  // Verwende externe Session oder Session aus useAuth
-  const currentSession = session ?? authSession;
+  // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
+  const {
+    session: currentSession,
+    isAuthenticated,
+    loading,
+  } = useStableSession(externalSession);
 
-  const handleLogin = () => {
+  const handleLogin = useCallback(() => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("redirectAfterLogin", pathname ?? "/");
     }
     router.push("/login");
-  };
+  }, [pathname, router]);
 
-  const renderUserActions = () => {
-    if (currentSession) {
+  // OPTIMIERTE LÖSUNG: Memoized Avatar-Bereich mit stabiler Höhe
+  const renderUserActions = useMemo(() => {
+    if (loading) {
+      // Loading state - zeige nichts um Flackern zu vermeiden
       return (
-        <div className="flex items-center gap-3">
-          {/* +Fahndung Link - nur anzeigen wenn nicht auf Wizard-Seiten und User ist Admin/Super_Admin */}
+        <div className="flex h-9 items-center gap-3">
+          <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+        </div>
+      );
+    }
+
+    if (isAuthenticated && currentSession) {
+      return (
+        <div className="flex h-9 items-center gap-3">
+          {/* Admin Button */}
           {(currentSession?.profile?.role === "admin" ||
             currentSession?.profile?.role === "super_admin") &&
             !pathname?.startsWith("/fahndungen/neu") && (
@@ -212,11 +162,12 @@ const AdaptiveDesktopHeader = ({
               </button>
             )}
 
-          {/* User Avatar Menu */}
+          {/* User Avatar - OPTIMIERT */}
           <div className="relative">
             <button
               onClick={() => setIsAvatarMenuOpen(!isAvatarMenuOpen)}
-              className="flex items-center gap-2 rounded-full bg-accent p-2 transition-colors hover:bg-accent/80"
+              className="flex h-9 items-center gap-2 rounded-full bg-accent p-2 transition-colors hover:bg-accent/80"
+              aria-label="Benutzer-Menü"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <User className="h-4 w-4" />
@@ -227,7 +178,7 @@ const AdaptiveDesktopHeader = ({
             {isAvatarMenuOpen && (
               <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-border bg-background py-2 shadow-lg">
                 <div className="px-4 py-2 text-sm text-muted-foreground">
-                  {currentSession.user?.email}
+                  {currentSession?.user?.email}
                 </div>
                 <div className="border-t border-border">
                   <button
@@ -241,9 +192,18 @@ const AdaptiveDesktopHeader = ({
                     <span>Dashboard</span>
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       setIsAvatarMenuOpen(false);
-                      router.push("/logout");
+                      try {
+                        if (onLogout) {
+                          onLogout();
+                        } else {
+                          await authLogout();
+                        }
+                      } catch (error) {
+                        console.error("Fehler beim Logout:", error);
+                        router.push("/login");
+                      }
                     }}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10"
                   >
@@ -258,16 +218,28 @@ const AdaptiveDesktopHeader = ({
       );
     } else {
       return (
-        <button
-          onClick={handleLogin}
-          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
-        >
-          <LogIn className="h-4 w-4" />
-          <span>Login</span>
-        </button>
+        <div className="flex h-9 items-center gap-3">
+          <button
+            onClick={handleLogin}
+            className="flex h-9 items-center gap-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+          >
+            <LogIn className="h-4 w-4" />
+            <span>Login</span>
+          </button>
+        </div>
       );
     }
-  };
+  }, [
+    loading,
+    isAuthenticated,
+    currentSession,
+    isAvatarMenuOpen,
+    pathname,
+    router,
+    onLogout,
+    authLogout,
+    handleLogin,
+  ]);
 
   return (
     <div
@@ -276,13 +248,40 @@ const AdaptiveDesktopHeader = ({
       ${isScrolled ? "sticky top-0 z-50" : "relative"}
     `}
     >
+      {/* Meta Accessibility Bar - im normalen Zustand immer sichtbar, im Sticky-Zustand nur wenn eingeblendet */}
+      {(!isScrolled || showMetaBar) && (
+        <div className="w-full">
+          <MetaAccessibilityBar isVisible={!isScrolled || showMetaBar} />
+        </div>
+      )}
+
       <div
         className={`
-        backdrop-blur-xl transition-all duration-300 ease-out
+        /* Echte Glas-Basis */
+        /* 
+        Stärkere
+        Kontraste
+        
+        für helles Theme */ /* Gradient für
+        Tiefe 
+        - stärker
+        im
+        
+        hellen Theme */ /* Animationen */ /* Dark Mode -
+        subtiler
+        
+        */ rounded-2xl border border-gray-200
+        bg-white
+        shadow-sm
+        transition-all duration-300
+        hover:shadow-md
+        dark:border-gray-700
+        dark:bg-gray-900
+        
         ${
           isScrolled
-            ? "w-full border-b border-border bg-background/95 px-6 py-3 shadow-lg dark:bg-background/90"
-            : "container mx-auto mt-4 max-w-[1273px] rounded-[10px] border border-border/70 bg-background/60 px-6 py-4 shadow-lg dark:bg-background/40"
+            ? "w-full rounded-none px-6 py-3"
+            : "container mx-auto mt-4 max-w-[1273px] rounded-2xl px-6 py-4"
         }
       `}
       >
@@ -299,9 +298,9 @@ const AdaptiveDesktopHeader = ({
             aria-label="Hauptnavigation"
           >
             {/* Mega Menu Items */}
-            <HoverMegaMenu title="Sicherheit" />
-            <HoverMegaMenu title="Service" />
-            <HoverMegaMenu title="Polizei" />
+            <EnhancedMegaMenu title="Sicherheit" />
+            <EnhancedMegaMenu title="Service" />
+            <EnhancedMegaMenu title="Polizei" />
 
             {/* Right Actions */}
             <div className="ml-6 flex items-center gap-3">
@@ -310,15 +309,72 @@ const AdaptiveDesktopHeader = ({
                 size={isScrolled ? "compact" : "default"}
                 placeholder="Suchen..."
               />
-              <ThemeToggle />
-              {renderUserActions()}
+              {renderUserActions}
 
-              {/* A11y Button (nur wenn Meta-Bar nicht sichtbar) */}
-              {isScrolled && (
-                <button className="rounded-lg border border-border bg-background/80 p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                  <Eye className="h-4 w-4" />
-                </button>
-              )}
+              {/* A11y Button - nur im Sticky-Zustand sichtbar */}
+              <div
+                className={`duration-600 transition-all ease-out ${
+                  isScrolled ? "h-8 w-8 opacity-100" : "h-8 w-0 opacity-0"
+                }`}
+              >
+                {isScrolled && (
+                  <button
+                    onClick={() => setShowMetaBar(!showMetaBar)}
+                    className="
+                      /* Glass Button Base */
+                      /*
+                      Shadows
+                      für
+                      3D 
+                      */ 
+                      /*
+                      Hover 
+                      State
+                      */
+                      /* Smooth Transitions
+                      
+                      */ /* Shine Effect mit
+                      before
+                      
+                      */ /* Focus States
+                      */ 
+                      /*
+                      Dark
+                      Mode
+                      */
+                      
+                      relative h-full w-full
+                      rounded-xl
+                      border border-gray-200 bg-white/90 p-1.5
+                      shadow-sm backdrop-blur-sm
+                      transition-all
+                      duration-200
+                      hover:border-gray-300 hover:bg-white hover:shadow-md
+                      focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2
+                      dark:border-slate-600 dark:bg-slate-800/90
+                      dark:hover:border-slate-500 dark:hover:bg-slate-800
+                    "
+                    title={
+                      showMetaBar
+                        ? "Barrierefreiheit ausblenden"
+                        : "Barrierefreiheit anzeigen"
+                    }
+                    aria-label={
+                      showMetaBar
+                        ? "Barrierefreiheit ausblenden"
+                        : "Barrierefreiheit anzeigen"
+                    }
+                  >
+                    <div className="duration-400 transition-all ease-out">
+                      {showMetaBar ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </div>
+                  </button>
+                )}
+              </div>
             </div>
           </nav>
         </div>
@@ -330,7 +386,7 @@ const AdaptiveDesktopHeader = ({
 // Mobile Header mit integrierten Meta-Controls
 const ResponsiveMobileHeader = ({
   onMenuToggle,
-  session,
+  session: externalSession,
 }: {
   onMenuToggle: () => void;
   session?: Session | null;
@@ -338,10 +394,13 @@ const ResponsiveMobileHeader = ({
   const [showMetaControls, setShowMetaControls] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { session: authSession } = useAuth();
 
-  // Verwende externe Session oder Session aus useAuth
-  const currentSession = session ?? authSession;
+  // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
+  const {
+    session: currentSession,
+    isAuthenticated,
+    loading,
+  } = useStableSession(externalSession);
 
   const handleLogin = () => {
     if (typeof window !== "undefined") {
@@ -351,7 +410,33 @@ const ResponsiveMobileHeader = ({
   };
 
   return (
-    <div className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm lg:hidden">
+    <div
+      className="
+        /* Mobile Glass Base */
+        /*
+        SVG
+        Noise für
+        
+        Realismus */ /* Komplexe Schatten -
+        stärker
+        
+        für helles Theme */ /* Glatte Animationen */ /*
+        Layout
+        
+        */ /* Dark Mode
+        */
+        sticky
+        top-0
+        
+        z-50 w-full rounded-xl
+        border-b border-gray-200 bg-white shadow-sm
+        
+        transition-all duration-300 hover:shadow-md dark:border-gray-700
+        dark:bg-gray-900
+
+        lg:hidden
+      "
+    >
       {/* Meta Controls Bar (mobile) */}
       {showMetaControls && (
         <div className="bg-slate-900 px-4 py-2 text-white">
@@ -381,22 +466,94 @@ const ResponsiveMobileHeader = ({
         <Logo className="text-foreground" showLink={true} />
 
         <div className="flex items-center gap-3">
-          <ThemeToggle />
-
           {/* Meta Controls Toggle */}
           <button
             onClick={() => setShowMetaControls(!showMetaControls)}
-            className="rounded-lg border border-border p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+            className="
+              /* Glass Button Base */
+              /*
+              Shadows
+              für
+              3D 
+              */ 
+              /*
+              Hover 
+              State
+              */
+              /*
+              
+              Smooth Transitions */ /* Shine
+              Effect
+              
+              mit before */ /*
+              Dark 
+              Mode
+              */
+              relative
+              overflow-hidden
+              
+                              rounded-xl border border-gray-200 bg-white/90 p-2
+                shadow-sm backdrop-blur-sm transition-all duration-200
+                hover:border-gray-300 hover:bg-white hover:shadow-md
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                dark:border-slate-600 dark:bg-slate-800/90
+                dark:hover:border-slate-500 dark:hover:bg-slate-800
+            "
             aria-label="Barrierefreiheit"
           >
             <Eye className="h-4 w-4" />
           </button>
 
-          {/* User Actions */}
-          {currentSession ? (
+          {/* User Actions - OPTIMIERT */}
+          {loading ? (
+            <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+          ) : isAuthenticated && currentSession ? (
             <button
               onClick={() => router.push("/dashboard")}
-              className="rounded-lg border border-border p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              className="
+                /* Glass Button Base */
+                /*
+                Shadows
+                für
+                3D 
+                */ 
+                /*
+                Hover 
+                State
+                */
+                /*
+                
+                Smooth Transitions */ /* Shine
+                Effect
+                
+                mit before */ /*
+                Dark 
+                Mode
+                */
+                to-white/12
+                hover:to-white/18
+                
+                relative overflow-hidden rounded-2xl border
+                border-white/50 
+                bg-gradient-to-br
+                
+                from-white/25 p-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_4px_12px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-all duration-300
+                before:absolute
+                before:inset-0
+                before:translate-x-[-100%]
+                before:bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.3)_50%,transparent_70%)]
+                before:transition-transform
+                before:duration-700
+                hover:scale-[1.02]
+                
+                hover:border-white/60 hover:from-white/35 hover:shadow-[inset_0_1px_3px_rgba(255,255,255,0.8),0_6px_20px_rgba(0,0,0,0.2)] hover:before:translate-x-[100%]
+                dark:border-slate-600/30
+                dark:from-slate-800/15
+                dark:to-slate-800/5
+                dark:hover:border-slate-600/40
+                dark:hover:from-slate-800/20
+                dark:hover:to-slate-800/10
+              "
               aria-label="Dashboard"
             >
               <User className="h-4 w-4" />
@@ -404,7 +561,41 @@ const ResponsiveMobileHeader = ({
           ) : (
             <button
               onClick={handleLogin}
-              className="rounded-lg border border-border p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              className="
+                /* Glass Button Base */
+                /*
+                Shadows
+                für
+                3D 
+                */ 
+                /*
+                Hover 
+                State
+                */
+                /*
+                
+                Smooth Transitions */ /* Shine
+                Effect
+                
+                mit before */ /*
+                Dark 
+                Mode
+                */
+                relative
+                overflow-hidden
+                
+                rounded-2xl border border-white/30 bg-gradient-to-br
+                from-white/15 
+                to-white/5
+                
+                p-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.1)] backdrop-blur-2xl transition-all duration-300 before:absolute
+                before:inset-0
+                before:translate-x-[-100%]
+                hover:border-gray-300 hover:bg-white hover:shadow-md
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                dark:border-slate-600 dark:bg-slate-800/90
+                dark:hover:border-slate-500 dark:hover:bg-slate-800
+              "
               aria-label="Login"
             >
               <LogIn className="h-4 w-4" />
@@ -414,7 +605,15 @@ const ResponsiveMobileHeader = ({
           {/* Hamburger Menu */}
           <button
             onClick={onMenuToggle}
-            className="rounded-lg border border-border p-2 transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+            className="
+              relative
+              rounded-xl border border-gray-200 bg-white/90 p-2
+              shadow-sm backdrop-blur-sm transition-all duration-200
+              hover:border-gray-300 hover:bg-white hover:shadow-md
+              focus:outline-none focus:ring-2 focus:ring-blue-500/50
+              dark:border-slate-600 dark:bg-slate-800/90
+              dark:hover:border-slate-500 dark:hover:bg-slate-800
+            "
             aria-label="Menü öffnen"
           >
             <Menu className="h-5 w-5" />
@@ -426,13 +625,16 @@ const ResponsiveMobileHeader = ({
 };
 
 // Main Header Component
-const AdaptiveHeader = ({ session: externalSession }: AdaptiveHeaderProps) => {
+const AdaptiveHeader = ({
+  session: externalSession,
+  onLogout,
+}: AdaptiveHeaderProps) => {
   const isScrolled = useAdaptiveScroll(50);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { session: authSession } = useAuth();
+  const [showMetaBar, setShowMetaBar] = useState(false);
 
-  // Verwende externe Session oder Session aus useAuth
-  const session = externalSession ?? authSession;
+  // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
+  const { session } = useStableSession(externalSession);
 
   return (
     <>
@@ -445,13 +647,14 @@ const AdaptiveHeader = ({ session: externalSession }: AdaptiveHeaderProps) => {
         Zum Hauptinhalt springen
       </a>
 
-      {/* Meta Accessibility Bar - nur Desktop, verschwindet beim Scrollen */}
-      <div className="hidden lg:block">
-        <MetaAccessibilityBar isVisible={!isScrolled} />
-      </div>
-
       {/* Adaptive Desktop Header */}
-      <AdaptiveDesktopHeader isScrolled={isScrolled} session={session} />
+      <AdaptiveDesktopHeader
+        isScrolled={isScrolled}
+        session={session}
+        showMetaBar={showMetaBar}
+        setShowMetaBar={setShowMetaBar}
+        onLogout={onLogout}
+      />
 
       {/* Mobile Header */}
       <ResponsiveMobileHeader
@@ -459,7 +662,146 @@ const AdaptiveHeader = ({ session: externalSession }: AdaptiveHeaderProps) => {
         session={session}
       />
 
-      {/* Mobile Menu würde hier kommen - Ihre vorhandene MobileMenu Komponente */}
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <>
+          {/* Mobile Menu Overlay */}
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-all duration-300 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Mobile Menu */}
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm transform bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-out dark:bg-gray-900/95 md:hidden">
+            <div className="flex h-full flex-col">
+              <div className="border-b border-gray-200/50 p-6 dark:border-gray-700/50">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Navigation
+                  </h2>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-lg p-2 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
+                    aria-label="Menü schließen"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              <nav
+                className="flex-1 overflow-y-auto px-4 py-6"
+                role="navigation"
+                aria-label="Mobile Navigation"
+              >
+                <div className="space-y-4">
+                  {/* Sicherheit */}
+                  <div>
+                    <Link
+                      href="/sicherheit"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-800 transition-all duration-200 hover:bg-gray-100/50 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-800/50 dark:hover:text-blue-400"
+                    >
+                      <span className="font-medium">Sicherheit</span>
+                    </Link>
+                    <div className="ml-4 mt-2 space-y-2">
+                      <Link
+                        href="/fahndungen"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Fahndungen
+                      </Link>
+                      <Link
+                        href="/statistiken"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Statistiken
+                      </Link>
+                      <Link
+                        href="/hinweise"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Hinweise
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Service */}
+                  <div>
+                    <Link
+                      href="/service"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-800 transition-all duration-200 hover:bg-gray-100/50 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-800/50 dark:hover:text-blue-400"
+                    >
+                      <span className="font-medium">Service</span>
+                    </Link>
+                    <div className="ml-4 mt-2 space-y-2">
+                      <Link
+                        href="/kontakt"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Kontakt
+                      </Link>
+                      <Link
+                        href="/faq"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        FAQ
+                      </Link>
+                      <Link
+                        href="/downloads"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Downloads
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Polizei */}
+                  <div>
+                    <Link
+                      href="/polizei"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-800 transition-all duration-200 hover:bg-gray-100/50 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-800/50 dark:hover:text-blue-400"
+                    >
+                      <span className="font-medium">Polizei</span>
+                    </Link>
+                    <div className="ml-4 mt-2 space-y-2">
+                      <Link
+                        href="/ueber-uns"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Über uns
+                      </Link>
+                      <Link
+                        href="/karriere"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Karriere
+                      </Link>
+                      <Link
+                        href="/presse"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
+                      >
+                        Presse
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

@@ -23,7 +23,7 @@ export const useAuth = () => {
   const hasInitialized = useRef(false);
   const authListenerSetup = useRef(false);
   const retryCount = useRef(0);
-  const maxRetries = 2; // Reduziert von 3 auf 2
+  const maxRetries = 1; // RADIKALE OPTIMIERUNG: Nur 1 Retry
 
   // Verbesserte Session-Prüfung mit Retry-Logic
   const checkSession = useCallback(async (force = false) => {
@@ -46,10 +46,10 @@ export const useAuth = () => {
     setTimeoutReached(false);
 
     try {
-      // Optimierte Session-Prüfung mit kürzerem Timeout
+      // RADIKALE OPTIMIERUNG: Noch kürzerer Timeout
       const sessionPromise = getCurrentSession();
       const timeoutPromise = new Promise<null>(
-        (resolve) => setTimeout(() => resolve(null), 1500), // Reduziert von 3000ms auf 1500ms
+        (resolve) => setTimeout(() => resolve(null), 800), // Reduziert von 1500ms auf 800ms
       );
 
       const currentSession = await Promise.race([
@@ -132,24 +132,37 @@ export const useAuth = () => {
         session ? "Session vorhanden" : "Keine Session",
       );
 
-      // Vereinfachte Event-Behandlung
+      // RADIKALE OPTIMIERUNG: Sofortige Reaktion ohne Verzögerungen
       if (event === "SIGNED_OUT") {
+        // Sofortige Reaktion für Logout
         setSession(null);
         setLoading(false);
         setInitialized(true);
-        retryCount.current = 0; // Reset retry count
+        setError(null);
+        retryCount.current = 0;
       } else if (event === "SIGNED_IN" && session) {
-        // Nur bei SIGNED_IN erneut prüfen
-        retryCount.current = 0; // Reset retry count
-        await checkSession(true);
+        // Sofortige Reaktion für Login
+        // Konvertiere Supabase Session zu benutzerdefinierter Session
+        const customSession = {
+          user: {
+            id: session.user.id,
+            email: session.user.email ?? "",
+          },
+          profile: null, // Wird später geladen
+        };
+        setSession(customSession);
+        setLoading(false);
+        setInitialized(true);
+        setError(null);
+        retryCount.current = 0;
       }
-      // TOKEN_REFRESHED ignorieren um Schleifen zu vermeiden
+      // TOKEN_REFRESHED und andere Events komplett ignorieren
     });
 
     return () => {
       subscription?.unsubscribe();
     };
-  }, [checkSession]);
+  }, []);
 
   // Zusätzlicher Effect für Message Port Error Handling
   useEffect(() => {

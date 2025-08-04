@@ -232,6 +232,7 @@ export function useInvestigationEdit(investigationId: string) {
     }
 
     console.log("🔍 DEBUG: Validiere Daten...");
+    console.log("🔍 DEBUG: editState.current:", JSON.stringify(editState.current, null, 2));
     // Validiere nur Benutzereingaben beim Speichern
     const validation = InvestigationDataConverter.validateForSave(
       editState.current,
