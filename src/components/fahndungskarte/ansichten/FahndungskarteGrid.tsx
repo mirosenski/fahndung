@@ -4,10 +4,10 @@ import React from "react";
 import dynamic from "next/dynamic";
 
 // Dynamischer Import der Fahndungskarte mit SSR deaktiviert
-const ModernFahndungskarte = dynamic(
+const Fahndungskarte = dynamic(
   () =>
-    import("./Fahndungskarte").then((mod) => ({
-      default: mod.ModernFahndungskarte,
+    import("../Fahndungskarte").then((mod) => ({
+      default: mod.default,
     })),
   {
     ssr: false,
@@ -160,7 +160,7 @@ const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
       className={`grid ${getGridClasses()} ${getGapClasses()} ${getPaddingClasses()} ${className} w-full`}
     >
       {investigations.map((investigation) => (
-        <ModernFahndungskarte
+                    <Fahndungskarte
           key={investigation.id}
           data={convertInvestigationToFahndungsData(investigation)}
           investigationId={investigation.id}

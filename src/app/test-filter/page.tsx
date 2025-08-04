@@ -13,7 +13,7 @@ import type { Fahndungskarte } from "@/types/fahndungskarte";
 
 // Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
 const FahndungskarteGrid = dynamic(
-  () => import("~/components/fahndungskarte/FahndungskarteGrid"),
+  () => import("~/components/fahndungskarte/ansichten/FahndungskarteGrid"),
   {
     ssr: false,
     loading: () => (
@@ -118,7 +118,8 @@ export default function TestFilterPage() {
     // Fahndungstyp
     if (currentFilters.fahndungstyp !== "all") {
       filtered = filtered.filter(
-        (f) => mapCategoryToFilter(f.category ?? "") === currentFilters.fahndungstyp,
+        (f) =>
+          mapCategoryToFilter(f.category ?? "") === currentFilters.fahndungstyp,
       );
     }
 
@@ -126,7 +127,9 @@ export default function TestFilterPage() {
     if (currentFilters.neue) {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      filtered = filtered.filter((f) => f.created_at && new Date(f.created_at) > oneWeekAgo);
+      filtered = filtered.filter(
+        (f) => f.created_at && new Date(f.created_at) > oneWeekAgo,
+      );
     }
 
     // Eilfahndungen (basierend auf priority)

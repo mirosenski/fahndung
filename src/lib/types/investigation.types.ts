@@ -29,7 +29,14 @@ export const UIInvestigationInputSchema = z.object({
   step5: z.object({
     contactPerson: z.string().min(1, "Kontaktperson erforderlich"),
     contactPhone: z.string().optional().default(""), // Komplett optional gemacht
-    contactEmail: z.string().email().optional().or(z.literal("")),
+    contactEmail: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (email) => email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+        { message: "Ungültige E-Mail-Adresse" },
+      ),
     department: z.string(),
     availableHours: z.string(),
   }),
@@ -64,7 +71,14 @@ export const UIInvestigationEditSchema = z.object({
   step5: z.object({
     contactPerson: z.string().min(1, "Kontaktperson erforderlich"),
     contactPhone: z.string().optional().default(""),
-    contactEmail: z.string().email().optional().or(z.literal("")),
+    contactEmail: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (email) => email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+        { message: "Ungültige E-Mail-Adresse" },
+      ),
     department: z.string(),
     availableHours: z.string(),
   }),
@@ -122,7 +136,14 @@ export type UIInvestigationData = z.infer<typeof UIInvestigationDBSchema>;
 export const ContactInfoSchema = z.object({
   person: z.string().optional(),
   phone: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z
+    .string()
+    .optional()
+    .refine(
+      (email) =>
+        !email || email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+      { message: "Ungültige E-Mail-Adresse" },
+    ),
   hours: z.string().optional(),
 });
 

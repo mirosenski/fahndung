@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { ModernFahndungskarte } from "~/components/fahndungskarte/Fahndungskarte";
+import Fahndungskarte from "~/components/fahndungskarte/Fahndungskarte";
 import type { WizardData } from "../types/WizardTypes";
 
 interface LivePreviewCardProps {
@@ -74,7 +74,7 @@ const LivePreviewCard: React.FC<LivePreviewCardProps> = ({ data }) => {
 
   return (
     <div className="flex w-full justify-center">
-      <ModernFahndungskarte data={fahndungsData} className="scale-90" />
+      <Fahndungskarte data={fahndungsData} className="scale-90" />
     </div>
   );
 };

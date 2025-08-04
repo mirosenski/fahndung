@@ -7,13 +7,13 @@ import { api } from "~/trpc/react";
 
 import FahndungFilter, { type FilterState } from "./FahndungFilter";
 import ViewToggle from "./ViewToggle";
-import FahndungskarteListFlat from "~/components/fahndungskarte/FahndungskarteListFlat";
+import FahndungskarteListFlat from "~/components/fahndungskarte/ansichten/FahndungskarteListFlat";
 import { type ViewMode } from "~/types/fahndungskarte";
 import dynamic from "next/dynamic";
 
 // Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
 const FahndungskarteGrid = dynamic(
-  () => import("~/components/fahndungskarte/FahndungskarteGrid"),
+  () => import("~/components/fahndungskarte/ansichten/FahndungskarteGrid"),
   {
     ssr: false,
     loading: () => (

@@ -261,6 +261,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         title: z.string().min(1),
         description: z.string().optional(),
+        short_description: z.string().optional(), // Kurze Beschreibung hinzugefügt
         status: z.string().default("active"),
         priority: z.enum(["normal", "urgent", "new"]).default("normal"),
         category: z.string().optional(),
@@ -358,7 +359,7 @@ export const postRouter = createTRPCRouter({
             category: input.category ?? "MISSING_PERSON",
             tags: input.tags,
             location: input.location ?? "",
-            short_description: input.title,
+            short_description: input.short_description ?? input.title, // Verwende die kurze Beschreibung oder Fallback auf Titel
             station: "Allgemein",
             features: input.features ?? "",
             date: new Date().toISOString(),
@@ -415,7 +416,16 @@ export const postRouter = createTRPCRouter({
           .object({
             person: z.string().optional(),
             phone: z.string().optional(),
-            email: z.string().email().optional(),
+            email: z
+              .string()
+              .optional()
+              .refine(
+                (email) =>
+                  !email ||
+                  email === "" ||
+                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+                { message: "Ungültige E-Mail-Adresse" },
+              ),
             hours: z.string().optional(),
           })
           .optional(),

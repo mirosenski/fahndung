@@ -373,6 +373,7 @@ const FahndungWizardContainer = ({
         await createInvestigation.mutateAsync({
           title: wizardData.step1?.title ?? "",
           description: wizardData.step2?.description ?? "",
+          short_description: wizardData.step2?.shortDescription ?? "", // Kurze Beschreibung hinzugefügt
           status: finalStatus,
           priority: wizardData.step2?.priority ?? "normal",
           category: wizardData.step1?.category ?? "MISSING_PERSON",

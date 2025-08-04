@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import PageLayout from "~/components/layout/PageLayout";
 import ViewToggle from "~/components/home/ViewToggle";
-import FahndungskarteListFlat from "~/components/fahndungskarte/FahndungskarteListFlat";
+import FahndungskarteListFlat from "~/components/fahndungskarte/ansichten/FahndungskarteListFlat";
 import { type ViewMode } from "~/types/fahndungskarte";
 
 import { useFahndungenOptimized } from "~/hooks/useFahndungenOptimized";
@@ -23,7 +23,7 @@ import dynamic from "next/dynamic";
 
 // Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
 const FahndungskarteGrid = dynamic(
-  () => import("~/components/fahndungskarte/FahndungskarteGrid"),
+  () => import("~/components/fahndungskarte/ansichten/FahndungskarteGrid"),
   {
     ssr: false,
     loading: () => (
