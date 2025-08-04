@@ -634,7 +634,7 @@ const AdaptiveHeader = ({
   const [showMetaBar, setShowMetaBar] = useState(false);
 
   // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
-  const { session } = useStableSession(externalSession);
+  const { session, isAuthenticated } = useStableSession(externalSession);
 
   return (
     <>
@@ -706,11 +706,17 @@ const AdaptiveHeader = ({
                     </Link>
                     <div className="ml-4 mt-2 space-y-2">
                       <Link
-                        href="/fahndungen"
+                        href={
+                          isAuthenticated
+                            ? "/fahndungen/neu/enhanced"
+                            : "/fahndungen"
+                        }
                         onClick={() => setMobileMenuOpen(false)}
                         className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
                       >
-                        Fahndungen
+                        {isAuthenticated
+                          ? "Fahndungen verwalten"
+                          : "Fahndungen"}
                       </Link>
                       <Link
                         href="/statistiken"

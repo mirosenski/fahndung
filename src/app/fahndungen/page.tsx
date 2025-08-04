@@ -1,7 +1,7 @@
 // src/app/fahndungen/page.tsx - Erweiterte Übersicht mit CRUD
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -75,7 +75,7 @@ interface Investigation {
 
 export default function FahndungenPage() {
   const router = useRouter();
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -88,6 +88,13 @@ export default function FahndungenPage() {
   const userPermissions = userProfile
     ? getRolePermissions(userProfile.role)
     : null;
+
+  // Weiterleitung für angemeldete Benutzer zur Vizard-Seite
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push("/fahndungen/neu/enhanced");
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   // Optimierte Fahndungen-Hook mit aggressiver Synchronisation
   const { investigations, refetch: handleRefresh } = useFahndungenOptimized({

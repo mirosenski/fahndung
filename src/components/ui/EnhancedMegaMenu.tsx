@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown, ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "~/hooks/useAuth";
 
 interface MenuItem {
   label: string;
@@ -48,6 +49,7 @@ export function EnhancedMegaMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { isAuthenticated } = useAuth();
 
   // Standard-Menü-Items basierend auf dem Titel
   const getDefaultItems = (menuTitle: string): MenuItem => {
@@ -59,30 +61,36 @@ export function EnhancedMegaMenu({
           subItems: [
             {
               label: "Fahndungen",
-              href: "/fahndungen",
-              description: "Aktuelle Fahndungsfälle",
-              subItems: [
-                {
-                  label: "Straftäter",
-                  href: "/fahndungen/straftaeter",
-                  description: "Fahndung nach Straftätern",
-                },
-                {
-                  label: "Vermisste",
-                  href: "/fahndungen/vermisste",
-                  description: "Fahndung nach vermissten Personen",
-                },
-                {
-                  label: "Unbekannte Tote",
-                  href: "/fahndungen/unbekannte-tote",
-                  description: "Fahndung zur Identifizierung",
-                },
-                {
-                  label: "Sachen",
-                  href: "/fahndungen/sachen",
-                  description: "Fahndung nach gestohlenen Sachen",
-                },
-              ],
+              href: isAuthenticated
+                ? "/fahndungen/neu/enhanced"
+                : "/fahndungen",
+              description: isAuthenticated
+                ? "Fahndungen verwalten"
+                : "Aktuelle Fahndungsfälle",
+              subItems: isAuthenticated
+                ? []
+                : [
+                    {
+                      label: "Straftäter",
+                      href: "/fahndungen/straftaeter",
+                      description: "Fahndung nach Straftätern",
+                    },
+                    {
+                      label: "Vermisste",
+                      href: "/fahndungen/vermisste",
+                      description: "Fahndung nach vermissten Personen",
+                    },
+                    {
+                      label: "Unbekannte Tote",
+                      href: "/fahndungen/unbekannte-tote",
+                      description: "Fahndung zur Identifizierung",
+                    },
+                    {
+                      label: "Sachen",
+                      href: "/fahndungen/sachen",
+                      description: "Fahndung nach gestohlenen Sachen",
+                    },
+                  ],
             },
             {
               label: "Statistiken",

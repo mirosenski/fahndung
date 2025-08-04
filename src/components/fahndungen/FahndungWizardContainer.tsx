@@ -150,7 +150,8 @@ const FahndungWizardContainer = ({
     onSuccess: (data) => {
       console.log("✅ Fahndung erfolgreich erstellt:", data);
       if (wizardData.step5?.publishStatus === "immediate") {
-        router.push(`/fahndungen/${data.id}`);
+        // Verwende die case_number statt der internen id für die URL
+        router.push(`/fahndungen/${data.case_number}`);
       } else {
         router.push("/fahndungen");
       }
