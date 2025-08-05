@@ -312,41 +312,7 @@ const AdaptiveDesktopHeader = ({
                 {isScrolled && (
                   <button
                     onClick={() => setShowMetaBar(!showMetaBar)}
-                    className="
-                      /* Glass Button Base */
-                      /*
-                      Shadows
-                      für
-                      3D 
-                      */ 
-                      /*
-                      Hover 
-                      State
-                      */
-                      /* Smooth Transitions
-                      
-                      */ /* Shine Effect mit
-                      before
-                      
-                      */ /* Focus States
-                      */ 
-                      /*
-                      Dark
-                      Mode
-                      */
-                      
-                      relative h-full w-full
-                      touch-manipulation
-                      select-none rounded-xl border border-gray-200
-                      bg-white/90 p-1.5
-                      shadow-sm
-                      backdrop-blur-sm
-                      transition-all duration-200 hover:border-gray-300
-                      hover:bg-white hover:shadow-md focus:outline-none focus:ring-2
-                      focus:ring-blue-500/50 focus:ring-offset-2
-                      dark:border-slate-600 dark:bg-slate-800/90
-                      dark:hover:border-slate-500 dark:hover:bg-slate-800
-                    "
+                    className="relative h-full w-full touch-manipulation select-none rounded-xl border border-gray-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-300 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
                     title={
                       showMetaBar
                         ? "Barrierefreiheit ausblenden"
@@ -386,31 +352,7 @@ const ResponsiveMobileHeader = ({
 
   return (
     <div
-      className="
-        /* Mobile Glass Base */
-        /*
-        SVG
-        Noise für
-        
-        Realismus */ /* Komplexe Schatten -
-        stärker
-        
-        für helles Theme */ /* Glatte Animationen */ /*
-        Layout
-        
-        */ /* Dark Mode
-        */
-        sticky
-        top-0
-        
-        z-50 w-full rounded-xl
-        border-b border-gray-200 bg-white shadow-sm
-        
-        transition-all duration-300 hover:shadow-md dark:border-gray-700
-        dark:bg-gray-900
-
-        lg:hidden
-      "
+      className="sticky top-0 z-50 w-full rounded-xl border-b border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 lg:hidden"
     >
       {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
       {showMetaControls && (
@@ -455,37 +397,7 @@ const ResponsiveMobileHeader = ({
           {/* Meta Controls Toggle */}
           <button
             onClick={() => setShowMetaControls(!showMetaControls)}
-            className="
-              /* Glass Button Base */
-              /*
-              Shadows
-              für
-              3D 
-              */ 
-              /*
-              Hover 
-              State
-              */
-              /*
-              
-              Smooth Transitions */ /* Shine
-              Effect
-              
-              mit before */ /*
-              Dark 
-              Mode
-              */
-              relative
-              touch-manipulation
-              
-                              select-none overflow-hidden rounded-xl border border-gray-200
-                bg-white/90 p-2 shadow-sm backdrop-blur-sm
-                transition-all duration-200 hover:border-gray-300
-                hover:bg-white hover:shadow-md focus:outline-none
-                focus:ring-2 focus:ring-blue-500/50
-                dark:border-slate-600 dark:bg-slate-800/90
-                dark:hover:border-slate-500 dark:hover:bg-slate-800
-            "
+            className="relative touch-manipulation select-none overflow-hidden rounded-xl border border-gray-200 bg-white/90 p-2 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-300 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
             aria-label="Barrierefreiheit"
           >
             <Eye className="h-4 w-4" />
@@ -494,16 +406,7 @@ const ResponsiveMobileHeader = ({
           {/* Hamburger Menu Button */}
           <button
             onClick={onMenuToggle}
-            className="
-              relative
-              touch-manipulation select-none rounded-xl border border-gray-200
-              bg-white/90 p-2 shadow-sm backdrop-blur-sm
-              transition-all duration-200 hover:border-gray-300
-              hover:bg-white hover:shadow-md focus:outline-none
-              focus:ring-2 focus:ring-blue-500/50
-              dark:border-slate-600 dark:bg-slate-800/90
-              dark:hover:border-slate-500 dark:hover:bg-slate-800
-            "
+            className="relative touch-manipulation select-none rounded-xl border border-gray-200 bg-white/90 p-2 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-300 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
             aria-label="Menü öffnen"
           >
             <Menu className="h-5 w-5" />
