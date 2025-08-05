@@ -163,7 +163,7 @@ export function Breadcrumb({
   };
 
   const getItemClasses = (isCurrent: boolean): string => {
-    const baseClasses = "px-3 py-1.5 rounded-md transition-colors";
+    const baseClasses = "px-2 py-1 rounded-md transition-colors";
 
     if (isCurrent) {
       return `${baseClasses} text-gray-700 bg-gray-100 dark:text-gray-200 dark:bg-gray-800`;
@@ -189,7 +189,7 @@ export function Breadcrumb({
       className={`flex w-full bg-white dark:bg-gray-900 ${getVariantClasses()} ${className}`}
     >
       <div className="container mx-auto px-4">
-        <ol className="flex flex-wrap items-center gap-2 text-sm">
+        <ol className="flex flex-wrap items-center gap-1 text-sm">
           {processedItems.map((item, index) => (
             <Fragment
               key={
@@ -211,7 +211,7 @@ export function Breadcrumb({
                       <ChevronRight className="h-4 w-4 text-gray-400" />
                     </li>
                   )}
-                  <li className="flex items-center">
+                  <li className="ml-2 flex items-center">
                     {(item as BreadcrumbItem).isCurrent ? (
                       <span
                         aria-current="page"

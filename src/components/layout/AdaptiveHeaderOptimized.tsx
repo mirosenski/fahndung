@@ -41,10 +41,18 @@ interface AdaptiveHeaderProps {
 // OPTIMIERTER Scroll Hook - Eliminiert Zittern mit RequestAnimationFrame
 const useOptimizedScroll = (threshold = 50) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
+  // Hydration-Sicherheit: Erst nach Client-Side Mount aktivieren
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const updateScrollState = useCallback(() => {
+    if (!isClient) return;
+
     const currentScrollY = window.scrollY;
     const shouldBeScrolled = currentScrollY > threshold;
 
@@ -55,16 +63,18 @@ const useOptimizedScroll = (threshold = 50) => {
 
     lastScrollY.current = currentScrollY;
     ticking.current = false;
-  }, [isScrolled, threshold]);
+  }, [isScrolled, threshold, isClient]);
 
   const handleScroll = useCallback(() => {
-    if (!ticking.current) {
+    if (!ticking.current && isClient) {
       window.requestAnimationFrame(updateScrollState);
       ticking.current = true;
     }
-  }, [updateScrollState]);
+  }, [updateScrollState, isClient]);
 
   useEffect(() => {
+    if (!isClient) return;
+
     // Passive Listener für bessere Performance
     window.addEventListener("scroll", handleScroll, { passive: true });
 
@@ -74,9 +84,10 @@ const useOptimizedScroll = (threshold = 50) => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [handleScroll, updateScrollState]);
+  }, [handleScroll, updateScrollState, isClient]);
 
-  return isScrolled;
+  // Beim SSR immer false zurückgeben, um Hydration-Fehler zu vermeiden
+  return isClient ? isScrolled : false;
 };
 
 // Throttle-Funktion für Performance (entfernt - ungenutzt)
@@ -287,7 +298,7 @@ const AdaptiveDesktopHeader = ({
       {(!isScrolled || showMetaBar) && (
         <div
           className={`
-            ${isScrolled ? "w-full" : "container mx-auto max-w-[1273px]"}
+            ${isScrolled ? "w-full" : "container mx-auto px-4"}
           `}
         >
           {/* Abstand zum oberen Rand - explizit transparent */}
@@ -304,12 +315,8 @@ const AdaptiveDesktopHeader = ({
       {/* Header Container - im freistehenden Zustand direkt an Meta-Navigation */}
       <div
         className={`
-          ${
-            isScrolled
-              ? "w-full"
-              : "container mx-auto max-w-[1273px] rounded-b-2xl"
-          }
-        `}
+            ${isScrolled ? "w-full" : "container mx-auto rounded-b-2xl px-4"}
+          `}
       >
         <div
           className={`
