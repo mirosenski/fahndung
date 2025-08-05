@@ -62,15 +62,38 @@ a, button {
 
 /* Mobile-spezifische Optimierungen */
 @media (max-width: 1024px) {
-  /* Verhindert Overscroll-Bounce auf iOS */
+  /* Verhindert Overscroll-Bounce auf iOS - ohne position: fixed */
   body {
-    position: fixed;
-    overflow-y: scroll;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Verbesserte Touch-Scrolling-Unterstützung */
+    touch-action: pan-y;
   }
   
   body.menu-open {
     overflow: hidden;
+    position: fixed;
+    width: 100%;
+    /* Verhindert Scroll während Menu offen */
+    touch-action: none;
+  }
+  
+  /* Verbesserte Scroll-Performance für Container */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  
+  /* iOS-spezifische Optimierungen */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      /* Verbesserte iOS-Scrolling */
+      -webkit-overflow-scrolling: touch;
+      /* Verhindert Zoom bei Doppel-Tap */
+      touch-action: manipulation;
+    }
   }
 }
 

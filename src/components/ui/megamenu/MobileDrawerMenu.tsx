@@ -14,6 +14,7 @@ import {
   Phone,
   HelpCircle,
   Shield,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,13 +45,13 @@ export function MobileDrawerMenu({
   const [searchQuery, setSearchQuery] = useState("");
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, session } = useAuth();
 
   // Default menu items mit Lucide Icons
   const defaultItems: MenuItem[] = [
     {
       label: "Fahndungen",
-      href: isAuthenticated ? "/fahndungen/neu/enhanced" : "/fahndungen",
+      href: isAuthenticated ? "/fahndungen" : "/fahndungen",
       description: isAuthenticated
         ? "Fahndungen verwalten"
         : "Aktuelle Fahndungsfälle und Hinweise",
@@ -361,6 +362,19 @@ export function MobileDrawerMenu({
                 <div className="space-y-2">
                   {isAuthenticated ? (
                     <>
+                      {/* User Info */}
+                      <div className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        <User className="h-5 w-5" />
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-700 dark:text-gray-200">
+                            Angemeldet als:
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-500">
+                            {session?.user?.email ?? "Unbekannt"}
+                          </span>
+                        </div>
+                      </div>
+
                       <button
                         onClick={() => {
                           router.push("/dashboard");

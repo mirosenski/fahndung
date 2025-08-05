@@ -6,7 +6,7 @@ import EnhancedFahndungWizard from "~/components/fahndungen/EnhancedFahndungWiza
 
 export default function EnhancedNeueFahndungPage() {
   return (
-    <ProtectedRoute requiredRoles={["admin", "super_admin"]}>
+    <ProtectedRoute requiredRoles={["editor", "admin", "super_admin"]}>
       <EnhancedFahndungWizard mode="create" />
     </ProtectedRoute>
   );

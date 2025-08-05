@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { FileText, Image as ImageIcon, Users } from "lucide-react";
+import { FileText, Image as ImageIcon, Users, User } from "lucide-react";
 import { api } from "~/trpc/react";
 import { isAdmin, isEditor, getAllUsers, getAdminActions } from "~/lib/auth";
 import type { UserProfile, UserActivity, AdminAction } from "~/lib/auth";
@@ -289,6 +289,23 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+        {/* User Info */}
+        <div className="mb-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+              <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                Willkommen im Dashboard
+              </h2>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Angemeldet als: {session?.user?.email || "Unbekannt"}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Tabs */}
         <div className="mb-8">
           <div className="border-b border-gray-200 dark:border-gray-700">

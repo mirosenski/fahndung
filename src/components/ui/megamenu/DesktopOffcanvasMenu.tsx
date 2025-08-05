@@ -14,6 +14,7 @@ import {
   Package,
   Phone,
   HelpCircle,
+  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,13 +44,13 @@ export function DesktopOffcanvasMenu({
   const [searchQuery, setSearchQuery] = useState("");
   const overlayRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, session } = useAuth();
 
   // Default menu items mit Lucide Icons
   const defaultItems: MenuItem[] = [
     {
       label: "Fahndungen",
-      href: isAuthenticated ? "/fahndungen/neu/enhanced" : "/fahndungen",
+      href: isAuthenticated ? "/fahndungen" : "/fahndungen",
       description: isAuthenticated
         ? "Fahndungen verwalten"
         : "Aktuelle Fahndungsfälle und Hinweise",
@@ -269,6 +270,19 @@ export function DesktopOffcanvasMenu({
                 <div className="mt-6 border-t border-gray-200 pt-4 dark:border-neutral-700">
                   {isAuthenticated ? (
                     <div className="space-y-2">
+                      {/* User Info */}
+                      <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-neutral-400">
+                        <User className="h-4 w-4" />
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-700 dark:text-neutral-300">
+                            Angemeldet als:
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-neutral-500">
+                            {session?.user?.email ?? "Unbekannt"}
+                          </span>
+                        </div>
+                      </div>
+
                       <button
                         onClick={() => {
                           router.push("/dashboard");

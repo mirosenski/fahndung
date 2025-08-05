@@ -9,17 +9,7 @@ import React, {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Eye,
-  EyeOff,
-  Menu,
-  User,
-  Plus,
-  LogOut,
-  ChevronDown,
-  Shield,
-  X,
-} from "lucide-react";
+import { Eye, EyeOff, Menu, Plus, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { FontSizeToggle } from "../ui/FontSizeToggle";
 import { SystemThemeToggle } from "../ui/SystemThemeToggle";
@@ -29,7 +19,7 @@ import { DesktopOffcanvasMenu } from "../ui/megamenu/DesktopOffcanvasMenu";
 
 import { useRouter, usePathname } from "next/navigation";
 import { type Session } from "~/lib/auth";
-import { useAuth } from "~/hooks/useAuth";
+
 import { useStableSession } from "~/hooks/useStableSession";
 
 interface AdaptiveHeaderProps {
@@ -153,7 +143,6 @@ const AdaptiveDesktopHeader = ({
   session: externalSession,
   showMetaBar,
   setShowMetaBar,
-  onLogout,
   isMenuOpen,
   setIsMenuOpen,
 }: {
@@ -161,14 +150,11 @@ const AdaptiveDesktopHeader = ({
   session?: Session | null;
   showMetaBar: boolean;
   setShowMetaBar: (show: boolean) => void;
-  onLogout?: () => void;
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { logout: authLogout } = useAuth();
-  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
 
   // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
   const {
@@ -191,8 +177,9 @@ const AdaptiveDesktopHeader = ({
     if (isAuthenticated && currentSession) {
       return (
         <div className="flex h-9 items-center gap-3">
-          {/* Admin Button */}
-          {(currentSession?.profile?.role === "admin" ||
+          {/* Fahndung Button - für Editor, Admin und Super Admin */}
+          {(currentSession?.profile?.role === "editor" ||
+            currentSession?.profile?.role === "admin" ||
             currentSession?.profile?.role === "super_admin") &&
             !pathname?.startsWith("/fahndungen/neu") && (
               <button
@@ -204,58 +191,17 @@ const AdaptiveDesktopHeader = ({
               </button>
             )}
 
-          {/* User Avatar - OPTIMIERT */}
-          <div className="relative">
-            <button
-              onClick={() => setIsAvatarMenuOpen(!isAvatarMenuOpen)}
-              className="flex h-9 items-center gap-2 rounded-full bg-accent p-2 transition-colors hover:bg-accent/80"
-              aria-label="Benutzer-Menü"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <User className="h-4 w-4" />
-              </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </button>
-
-            {isAvatarMenuOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-border bg-background py-2 shadow-lg">
-                <div className="px-4 py-2 text-sm text-muted-foreground">
-                  {currentSession?.user?.email}
-                </div>
-                <div className="border-t border-border">
-                  <button
-                    onClick={() => {
-                      setIsAvatarMenuOpen(false);
-                      router.push("/dashboard");
-                    }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-accent"
-                  >
-                    <Shield className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </button>
-                  <button
-                    onClick={async () => {
-                      setIsAvatarMenuOpen(false);
-                      try {
-                        if (onLogout) {
-                          onLogout();
-                        } else {
-                          await authLogout();
-                        }
-                      } catch (error) {
-                        console.error("Fehler beim Logout:", error);
-                        router.push("/login");
-                      }
-                    }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Abmelden</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Hamburger Menu Button - auch für angemeldete Benutzer */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            aria-haspopup="dialog"
+            aria-expanded={isMenuOpen}
+            aria-controls="desktop-offcanvas-menu"
+          >
+            <Menu className="h-4 w-4" />
+            <span>Menü</span>
+          </button>
         </div>
       );
     } else {
@@ -278,11 +224,8 @@ const AdaptiveDesktopHeader = ({
     loading,
     isAuthenticated,
     currentSession,
-    isAvatarMenuOpen,
     pathname,
     router,
-    onLogout,
-    authLogout,
     isMenuOpen,
     setIsMenuOpen,
   ]);
@@ -502,7 +445,6 @@ const ResponsiveMobileHeader = ({
 // Main Header Component
 const AdaptiveHeaderOptimized = ({
   session: externalSession,
-  onLogout,
 }: AdaptiveHeaderProps) => {
   const isScrolled = useOptimizedScroll(50);
   const [showMetaBar, setShowMetaBar] = useState(false);
@@ -550,7 +492,6 @@ const AdaptiveHeaderOptimized = ({
         session={session}
         showMetaBar={showMetaBar}
         setShowMetaBar={setShowMetaBar}
-        onLogout={onLogout}
         isMenuOpen={isMenuOpen}
         setIsMenuOpen={setIsMenuOpen}
       />
