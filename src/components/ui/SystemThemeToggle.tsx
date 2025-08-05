@@ -49,7 +49,7 @@ export function SystemThemeToggle() {
   if (!mounted) {
     return (
       <button
-        className="flex items-center gap-1 rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
+        className="flex items-center gap-1 rounded px-2 py-1 text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 focus:ring-offset-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-blue-500 dark:focus:ring-offset-slate-900"
         aria-label="Theme wechseln"
       >
         <Monitor className="h-3 w-3" />
@@ -61,7 +61,7 @@ export function SystemThemeToggle() {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-1 rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
+      className="flex items-center gap-1 rounded px-2 py-1 text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 focus:ring-offset-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-blue-500 dark:focus:ring-offset-slate-900"
       aria-label="Theme wechseln"
       title={`Aktuelles Theme: ${getThemeLabel()}`}
     >

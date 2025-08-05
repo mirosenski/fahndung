@@ -1,0 +1,230 @@
+"use client";
+
+import { useState } from "react";
+import { 
+  GlassmorphismHeader, 
+  GlassCard, 
+  GlassButton, 
+  GlassInput 
+} from "./GlassmorphismHeader";
+import { Search, Settings, Sparkles, Palette } from "lucide-react";
+
+export default function GlassmorphismDemo() {
+  const [selectedVariant, setSelectedVariant] = useState<"subtle" | "frosted" | "aurora" | "premium">("frosted");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const variants = [
+    { id: "subtle", name: "Subtle", icon: "🌊", description: "Dezent und elegant" },
+    { id: "frosted", name: "Frosted", icon: "❄️", description: "Klassisch gefrostet" },
+    { id: "aurora", name: "Aurora", icon: "🌈", description: "Animierte Farbverläufe" },
+    { id: "premium", name: "Premium", icon: "💎", description: "Maximaler Effekt" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-40">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
+        <div className="absolute top-40 right-20 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-8 left-40 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000" />
+      </div>
+
+      {/* Header mit ausgewählter Variante */}
+      <GlassmorphismHeader 
+        variant={selectedVariant}
+        onSearch={(query) => {
+          console.log("Suche:", query);
+          setSearchQuery(query);
+        }}
+      />
+
+      {/* Demo Content */}
+      <main className="container mx-auto px-4 py-12 space-y-12">
+        {/* Variant Selector */}
+        <section className="text-center space-y-6">
+          <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+            Glassmorphism Design System
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300">
+            Moderne Glass-Effekte mit Tailwind CSS
+          </p>
+
+          {/* Variant Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            {variants.map((variant) => (
+              <GlassCard
+                key={variant.id}
+                className={`
+                  p-6 cursor-pointer transition-all duration-300
+                  ${selectedVariant === variant.id 
+                    ? 'ring-2 ring-blue-500 ring-offset-2 scale-105' 
+                    : 'hover:scale-102'}
+                `}
+                onClick={() => setSelectedVariant(variant.id as any)}
+              >
+                <div className="text-4xl mb-2">{variant.icon}</div>
+                <h3 className="font-semibold text-lg">{variant.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {variant.description}
+                </p>
+              </GlassCard>
+            ))}
+          </div>
+        </section>
+
+        {/* Component Showcase */}
+        <section className="space-y-8">
+          <h2 className="text-3xl font-bold text-center">Glass Komponenten</h2>
+
+          {/* Buttons */}
+          <GlassCard className="p-8 space-y-6">
+            <h3 className="text-xl font-semibold flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Glass Buttons
+            </h3>
+            <div className="flex flex-wrap gap-4">
+              <GlassButton variant="default">Default</GlassButton>
+              <GlassButton variant="primary">Primary</GlassButton>
+              <GlassButton variant="ghost">Ghost</GlassButton>
+              <GlassButton variant="primary" size="lg">
+                Large Button
+              </GlassButton>
+              <GlassButton variant="default" size="sm">
+                Small
+              </GlassButton>
+            </div>
+          </GlassCard>
+
+          {/* Inputs */}
+          <GlassCard className="p-8 space-y-6">
+            <h3 className="text-xl font-semibold flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Glass Inputs
+            </h3>
+            <div className="space-y-4 max-w-md">
+              <GlassInput 
+                type="text" 
+                placeholder="Name eingeben..." 
+              />
+              <GlassInput 
+                type="email" 
+                placeholder="E-Mail Adresse..." 
+              />
+              <div className="relative">
+                <GlassInput 
+                  type="search" 
+                  placeholder="Suchen..." 
+                  className="pr-10"
+                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* Complex Glass Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <GlassCard className="p-8 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Premium Features</h3>
+                <Settings className="h-5 w-5 text-gray-500" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Diese Karte demonstriert die Glass-Effekte mit verschiedenen Inhalten
+                und Layouts. Die Transparenz und Blur-Effekte passen sich automatisch
+                an den Hintergrund an.
+              </p>
+              <div className="flex gap-2">
+                <GlassButton variant="primary" size="sm">Mehr erfahren</GlassButton>
+                <GlassButton variant="ghost" size="sm">Später</GlassButton>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-8 space-y-4 overflow-hidden">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Statistiken</h3>
+                <Palette className="h-5 w-5 text-gray-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="glass-refraction p-4 rounded-lg bg-white/10 dark:bg-gray-800/10">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    2.4k
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Besucher
+                  </div>
+                </div>
+                <div className="glass-refraction p-4 rounded-lg bg-white/10 dark:bg-gray-800/10">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    98%
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Zufriedenheit
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          </div>
+        </section>
+
+        {/* Code Example */}
+        <section>
+          <GlassCard className="p-8 space-y-4">
+            <h3 className="text-xl font-semibold">Integration</h3>
+            <pre className="p-4 rounded-lg bg-black/10 dark:bg-white/5 overflow-x-auto">
+              <code className="text-sm">
+{`import { GlassmorphismHeader } from "./GlassmorphismHeader";
+
+function App() {
+  return (
+    <GlassmorphismHeader 
+      variant="${selectedVariant}"
+      onSearch={(query) => console.log(query)}
+    />
+  );
+}`}
+              </code>
+            </pre>
+          </GlassCard>
+        </section>
+
+        {searchQuery && (
+          <GlassCard className="p-6">
+            <p className="text-center text-gray-600 dark:text-gray-300">
+              Suchergebnisse für: <strong>{searchQuery}</strong>
+            </p>
+          </GlassCard>
+        )}
+      </main>
+    </div>
+  );
+}
+
+// Füge diese Animationen zu deiner globalen CSS hinzu:
+const animationStyles = `
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+`;
