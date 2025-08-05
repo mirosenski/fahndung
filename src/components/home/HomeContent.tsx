@@ -172,11 +172,11 @@ export default function HomeContent() {
 
         {/* Investigations List */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Aktuelle Fahndungen
             </h2>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                 <Eye className="h-4 w-4" />
                 <span>

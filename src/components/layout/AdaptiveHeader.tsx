@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
-  Type,
   Eye,
   EyeOff,
   Menu,
@@ -13,13 +12,13 @@ import {
   LogOut,
   ChevronDown,
   Shield,
-  X,
 } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { FontSizeToggle } from "../ui/FontSizeToggle";
 import { SystemThemeToggle } from "../ui/SystemThemeToggle";
-import { EnhancedMegaMenu } from "../ui/EnhancedMegaMenu";
-import { SearchBar } from "../ui/SearchBar";
+import { MegaMenu } from "../ui/megamenu";
+import { MobileDrawerMenu } from "../ui/megamenu/MobileDrawerMenu";
+
 import { useRouter, usePathname } from "next/navigation";
 import { type Session } from "~/lib/auth";
 import { useAuth } from "~/hooks/useAuth";
@@ -297,18 +296,11 @@ const AdaptiveDesktopHeader = ({
             role="navigation"
             aria-label="Hauptnavigation"
           >
-            {/* Mega Menu Items */}
-            <EnhancedMegaMenu title="Sicherheit" />
-            <EnhancedMegaMenu title="Service" />
-            <EnhancedMegaMenu title="Polizei" />
+            {/* Mega Menu */}
+            <MegaMenu />
 
             {/* Right Actions */}
             <div className="ml-6 flex items-center gap-3">
-              <SearchBar
-                variant="desktop"
-                size={isScrolled ? "compact" : "default"}
-                placeholder="Suchen..."
-              />
               {renderUserActions}
 
               {/* A11y Button - nur im Sticky-Zustand sichtbar */}
@@ -386,28 +378,10 @@ const AdaptiveDesktopHeader = ({
 // Mobile Header mit integrierten Meta-Controls
 const ResponsiveMobileHeader = ({
   onMenuToggle,
-  session: externalSession,
 }: {
   onMenuToggle: () => void;
-  session?: Session | null;
 }) => {
   const [showMetaControls, setShowMetaControls] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
-  const {
-    session: currentSession,
-    isAuthenticated,
-    loading,
-  } = useStableSession(externalSession);
-
-  const handleLogin = () => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("redirectAfterLogin", pathname ?? "/");
-    }
-    router.push("/login");
-  };
 
   return (
     <div
@@ -437,26 +411,37 @@ const ResponsiveMobileHeader = ({
         lg:hidden
       "
     >
-      {/* Meta Controls Bar (mobile) */}
+      {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
       {showMetaControls && (
         <div className="bg-slate-900 px-4 py-2 text-white">
           <div className="flex items-center justify-between text-xs">
+            {/* Links: Gebärdensprache, Leichte Sprache & Textvergrößerung */}
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-1 text-slate-400 hover:text-white">
-                <Type className="h-3 w-3" />
-                <span>A</span>
-              </button>
-              <button className="flex items-center gap-1 text-slate-400 hover:text-white">
-                <Eye className="h-3 w-3" />
-                <span>Kontrast</span>
+              <Link
+                href="/gebaerdensprache"
+                className="rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
+              >
+                <span>Gebärdensprache</span>
+              </Link>
+              <Link
+                href="/leichte-sprache"
+                className="rounded px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-slate-900"
+              >
+                <span>Leichte Sprache</span>
+              </Link>
+              <FontSizeToggle />
+            </div>
+
+            {/* Rechts: System Theme Toggle & Close Button */}
+            <div className="flex items-center gap-3">
+              <SystemThemeToggle />
+              <button
+                onClick={() => setShowMetaControls(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
               </button>
             </div>
-            <button
-              onClick={() => setShowMetaControls(false)}
-              className="text-slate-400 hover:text-white"
-            >
-              ✕
-            </button>
           </div>
         </div>
       )}
@@ -504,105 +489,7 @@ const ResponsiveMobileHeader = ({
             <Eye className="h-4 w-4" />
           </button>
 
-          {/* User Actions - OPTIMIERT */}
-          {loading ? (
-            <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
-          ) : isAuthenticated && currentSession ? (
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="
-                /* Glass Button Base */
-                /*
-                Shadows
-                für
-                3D 
-                */ 
-                /*
-                Hover 
-                State
-                */
-                /*
-                
-                Smooth Transitions */ /* Shine
-                Effect
-                
-                mit before */ /*
-                Dark 
-                Mode
-                */
-                to-white/12
-                hover:to-white/18
-                
-                relative overflow-hidden rounded-2xl border
-                border-white/50 
-                bg-gradient-to-br
-                
-                from-white/25 p-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_4px_12px_rgba(0,0,0,0.15)] backdrop-blur-2xl transition-all duration-300
-                before:absolute
-                before:inset-0
-                before:translate-x-[-100%]
-                before:bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.3)_50%,transparent_70%)]
-                before:transition-transform
-                before:duration-700
-                hover:scale-[1.02]
-                
-                hover:border-white/60 hover:from-white/35 hover:shadow-[inset_0_1px_3px_rgba(255,255,255,0.8),0_6px_20px_rgba(0,0,0,0.2)] hover:before:translate-x-[100%]
-                dark:border-slate-600/30
-                dark:from-slate-800/15
-                dark:to-slate-800/5
-                dark:hover:border-slate-600/40
-                dark:hover:from-slate-800/20
-                dark:hover:to-slate-800/10
-              "
-              aria-label="Dashboard"
-            >
-              <User className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              onClick={handleLogin}
-              className="
-                /* Glass Button Base */
-                /*
-                Shadows
-                für
-                3D 
-                */ 
-                /*
-                Hover 
-                State
-                */
-                /*
-                
-                Smooth Transitions */ /* Shine
-                Effect
-                
-                mit before */ /*
-                Dark 
-                Mode
-                */
-                relative
-                overflow-hidden
-                
-                rounded-2xl border border-white/30 bg-gradient-to-br
-                from-white/15 
-                to-white/5
-                
-                p-2 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.1)] backdrop-blur-2xl transition-all duration-300 before:absolute
-                before:inset-0
-                before:translate-x-[-100%]
-                hover:border-gray-300 hover:bg-white hover:shadow-md
-                focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                dark:border-slate-600 dark:bg-slate-800/90
-                dark:hover:border-slate-500 dark:hover:bg-slate-800
-              "
-              aria-label="Login"
-            >
-              <LogIn className="h-4 w-4" />
-            </button>
-          )}
-
-          {/* Hamburger Menu */}
+          {/* Hamburger Menu Button */}
           <button
             onClick={onMenuToggle}
             className="
@@ -630,11 +517,11 @@ const AdaptiveHeader = ({
   onLogout,
 }: AdaptiveHeaderProps) => {
   const isScrolled = useAdaptiveScroll(50);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showMetaBar, setShowMetaBar] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
-  const { session, isAuthenticated } = useStableSession(externalSession);
+  const { session } = useStableSession(externalSession);
 
   return (
     <>
@@ -657,157 +544,13 @@ const AdaptiveHeader = ({
       />
 
       {/* Mobile Header */}
-      <ResponsiveMobileHeader
-        onMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
-        session={session}
+      <ResponsiveMobileHeader onMenuToggle={() => setMobileMenuOpen(true)} />
+
+      {/* Mobile Drawer Menu */}
+      <MobileDrawerMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
       />
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <>
-          {/* Mobile Menu Overlay */}
-          <div
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-all duration-300 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-
-          {/* Mobile Menu */}
-          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm transform bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-out dark:bg-gray-900/95 md:hidden">
-            <div className="flex h-full flex-col">
-              <div className="border-b border-gray-200/50 p-6 dark:border-gray-700/50">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Navigation
-                  </h2>
-                  <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="rounded-lg p-2 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
-                    aria-label="Menü schließen"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              <nav
-                className="flex-1 overflow-y-auto px-4 py-6"
-                role="navigation"
-                aria-label="Mobile Navigation"
-              >
-                <div className="space-y-4">
-                  {/* Sicherheit */}
-                  <div>
-                    <Link
-                      href="/sicherheit"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-800 transition-all duration-200 hover:bg-gray-100/50 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-800/50 dark:hover:text-blue-400"
-                    >
-                      <span className="font-medium">Sicherheit</span>
-                    </Link>
-                    <div className="ml-4 mt-2 space-y-2">
-                      <Link
-                        href={
-                          isAuthenticated
-                            ? "/fahndungen/neu/enhanced"
-                            : "/fahndungen"
-                        }
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        {isAuthenticated
-                          ? "Fahndungen verwalten"
-                          : "Fahndungen"}
-                      </Link>
-                      <Link
-                        href="/statistiken"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Statistiken
-                      </Link>
-                      <Link
-                        href="/hinweise"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Hinweise
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Service */}
-                  <div>
-                    <Link
-                      href="/service"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-800 transition-all duration-200 hover:bg-gray-100/50 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-800/50 dark:hover:text-blue-400"
-                    >
-                      <span className="font-medium">Service</span>
-                    </Link>
-                    <div className="ml-4 mt-2 space-y-2">
-                      <Link
-                        href="/kontakt"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Kontakt
-                      </Link>
-                      <Link
-                        href="/faq"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        FAQ
-                      </Link>
-                      <Link
-                        href="/downloads"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Downloads
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Polizei */}
-                  <div>
-                    <Link
-                      href="/polizei"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-gray-800 transition-all duration-200 hover:bg-gray-100/50 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-800/50 dark:hover:text-blue-400"
-                    >
-                      <span className="font-medium">Polizei</span>
-                    </Link>
-                    <div className="ml-4 mt-2 space-y-2">
-                      <Link
-                        href="/ueber-uns"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Über uns
-                      </Link>
-                      <Link
-                        href="/karriere"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Karriere
-                      </Link>
-                      <Link
-                        href="/presse"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block rounded-lg py-2 pl-4 text-gray-600 transition-all duration-200 hover:bg-gray-50/50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:text-blue-400"
-                      >
-                        Presse
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </nav>
-            </div>
-          </div>
-        </>
-      )}
     </>
   );
 };

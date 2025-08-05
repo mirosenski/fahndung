@@ -43,7 +43,7 @@ export default function ViewToggle({
         <button
           key={mode}
           onClick={() => onViewChange(mode)}
-          className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+          className={`flex items-center gap-1 rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 sm:gap-2 sm:px-3 ${
             currentView === mode
               ? "bg-white text-blue-700 shadow-sm dark:bg-gray-700 dark:text-blue-300"
               : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
