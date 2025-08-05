@@ -1,10 +1,11 @@
-import AdaptiveHeader from "~/components/layout/AdaptiveHeader";
+import AdaptiveHeaderOptimized from "~/components/layout/AdaptiveHeaderOptimized";
+import { HeaderPerformanceTest } from "~/components/layout/HeaderPerformanceTest";
 
 export default function TestHeaderPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Test der neuen Header-Komponente */}
-      <AdaptiveHeader variant="home" />
+      <AdaptiveHeaderOptimized variant="home" />
 
       {/* Test-Content mit viel Scroll-Space */}
       <main id="main-content" className="container mx-auto px-4 py-8">
@@ -65,6 +66,9 @@ export default function TestHeaderPage() {
           ))}
         </div>
       </main>
+
+      {/* Performance Test */}
+      <HeaderPerformanceTest />
     </div>
   );
 }

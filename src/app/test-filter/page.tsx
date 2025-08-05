@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { CompactFilter } from "@/components/fahndungen/CompactFilter";
 import type { CompactFilterState } from "@/components/fahndungen/CompactFilter";
-import AdaptiveHeader from "@/components/layout/AdaptiveHeader";
+import AdaptiveHeaderOptimized from "@/components/layout/AdaptiveHeaderOptimized";
 import Footer from "@/components/layout/Footer";
 import { ChevronRight, Search } from "lucide-react";
 import { api } from "~/trpc/react";
@@ -155,7 +155,7 @@ export default function TestFilterPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <AdaptiveHeader />
+      <AdaptiveHeaderOptimized />
 
       {/* Breadcrumb */}
       <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">

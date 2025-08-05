@@ -1,7 +1,7 @@
 "use client";
 
 import { Breadcrumb } from "~/components/ui/Breadcrumb";
-import AdaptiveHeader from "./AdaptiveHeader";
+import AdaptiveHeaderOptimized from "./AdaptiveHeaderOptimized";
 import { type Session } from "~/lib/auth";
 
 interface HeaderProps {
@@ -17,7 +17,7 @@ export default function Header({
 }: HeaderProps) {
   return (
     <>
-      <AdaptiveHeader variant={variant} session={session} onLogout={onLogout} />
+      <AdaptiveHeaderOptimized variant={variant} session={session} onLogout={onLogout} />
       <Breadcrumb />
     </>
   );

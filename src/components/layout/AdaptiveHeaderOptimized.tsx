@@ -18,6 +18,7 @@ import {
   LogOut,
   ChevronDown,
   Shield,
+  X,
 } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { FontSizeToggle } from "../ui/FontSizeToggle";
@@ -37,8 +38,8 @@ interface AdaptiveHeaderProps {
   onLogout?: () => void;
 }
 
-// OPTIMIERTER Scroll Hook - Eliminiert Zittern
-const useAdaptiveScroll = (threshold = 50) => {
+// OPTIMIERTER Scroll Hook - Eliminiert Zittern mit RequestAnimationFrame
+const useOptimizedScroll = (threshold = 50) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
@@ -56,36 +57,48 @@ const useAdaptiveScroll = (threshold = 50) => {
     ticking.current = false;
   }, [isScrolled, threshold]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!ticking.current) {
-        requestAnimationFrame(updateScrollState);
-        ticking.current = true;
-      }
-    };
+  const handleScroll = useCallback(() => {
+    if (!ticking.current) {
+      window.requestAnimationFrame(updateScrollState);
+      ticking.current = true;
+    }
+  }, [updateScrollState]);
 
+  useEffect(() => {
     // Passive Listener für bessere Performance
     window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Initial check
+    updateScrollState();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [updateScrollState]);
+  }, [handleScroll, updateScrollState]);
 
   return isScrolled;
 };
 
+// Throttle-Funktion für Performance (entfernt - ungenutzt)
+
 // Meta-Bar Component (immer sichtbar)
-const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
+const MetaAccessibilityBar = ({
+  isVisible,
+  isScrolled,
+}: {
+  isVisible: boolean;
+  isScrolled: boolean;
+}) => {
   return (
     <div
       className={`
       w-full overflow-hidden bg-slate-900 text-white 
       transition-all duration-500 ease-out dark:bg-slate-950
       ${isVisible ? "h-8 opacity-100" : "h-0 opacity-0"}
+      ${!isScrolled ? "rounded-t-2xl" : ""}
     `}
     >
-      <div className="container mx-auto flex h-8 items-center justify-between px-4">
+      <div className="flex h-8 items-center justify-between px-4">
         {/* Links: Gebärdensprache, Leichte Sprache & Textvergrößerung */}
         <div className="flex items-center gap-4 text-xs">
           <Link
@@ -272,109 +285,131 @@ const AdaptiveDesktopHeader = ({
     >
       {/* Meta Accessibility Bar - im normalen Zustand immer sichtbar, im Sticky-Zustand nur wenn eingeblendet */}
       {(!isScrolled || showMetaBar) && (
-        <div className="w-full">
-          <MetaAccessibilityBar isVisible={!isScrolled || showMetaBar} />
+        <div
+          className={`
+            ${isScrolled ? "w-full" : "container mx-auto mt-4 max-w-[1273px]"}
+            ${!isScrolled ? "mt-0" : ""}
+          `}
+        >
+          <MetaAccessibilityBar
+            isVisible={!isScrolled || showMetaBar}
+            isScrolled={isScrolled}
+          />
         </div>
       )}
 
+      {/* Header Container - im freistehenden Zustand direkt an Meta-Navigation */}
       <div
         className={`
-        rounded-2xl border border-gray-200 bg-white shadow-sm
-        transition-all duration-500 ease-out hover:shadow-md
-        dark:border-gray-700 dark:bg-gray-900
-        
-        ${
-          isScrolled
-            ? "w-full rounded-none px-6 py-0"
-            : "container mx-auto mt-4 max-w-[1273px] rounded-2xl px-6 py-1"
-        }
-      `}
+          ${
+            isScrolled
+              ? "w-full"
+              : "container mx-auto max-w-[1273px] rounded-b-2xl"
+          }
+        `}
       >
-        <div className="flex w-full items-center justify-between">
-          {/* Logo - adaptiert Größe */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="transition-opacity hover:opacity-80">
-              <div
-                className={`flex items-center space-x-2 sm:space-x-4 ${isScrolled ? "space-x-0" : ""}`}
-              >
-                <Image
-                  alt="Fahndung Logo"
-                  width={32}
-                  height={32}
-                  className={`${isScrolled ? "h-8 w-8 sm:h-10 sm:w-10" : "h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12"}`}
-                  src="/logo.svg"
-                  priority
-                />
-                {!isScrolled && (
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm font-bold leading-tight tracking-tight text-gray-900 dark:text-white sm:text-lg lg:text-xl">
-                      FAHNDUNG
-                    </span>
-                    <span
-                      className="text-xs font-medium leading-tight text-gray-600 dark:text-gray-300 sm:text-sm lg:text-base"
-                      style={{
-                        fontStretch: "expanded",
-                        fontVariationSettings: '"wdth" 150',
-                        textJustify: "inter-word",
-                        width: "100%",
-                        display: "block",
-                        letterSpacing: "0.15em",
-                      }}
-                    >
-                      POLIZEI BW
-                    </span>
-                  </div>
-                )}
-              </div>
-            </Link>
-          </div>
-
-          {/* Navigation */}
-          <nav
-            className="flex items-center gap-4"
-            role="navigation"
-            aria-label="Hauptnavigation"
+        <div
+          className={`
+            border border-gray-200 bg-white shadow-sm
+            transition-all duration-500 ease-out hover:shadow-md
+            dark:border-gray-700 dark:bg-gray-900
+            ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl"}
+          `}
+          style={{
+            // Hardware-Acceleration für smoothe Performance
+            transform: "translate3d(0, 0, 0)",
+            backfaceVisibility: "hidden",
+            perspective: 1000,
+          }}
+        >
+          <div
+            className={`flex w-full items-center justify-between ${isScrolled ? "px-6 py-0" : "px-6 py-1"}`}
           >
-            {/* Desktop Mega Menu */}
-            <DesktopMegaMenu />
-
-            {/* Right Actions */}
-            <div className="ml-6 flex items-center gap-3">
-              {renderUserActions}
-
-              {/* A11y Button - nur im Sticky-Zustand sichtbar */}
-              <div
-                className={`transition-all duration-500 ease-out ${
-                  isScrolled ? "h-8 w-8 opacity-100" : "h-8 w-0 opacity-0"
-                }`}
-              >
-                {isScrolled && (
-                  <button
-                    onClick={() => setShowMetaBar(!showMetaBar)}
-                    className="relative h-full w-full touch-manipulation select-none rounded-xl border border-gray-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-300 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
-                    title={
-                      showMetaBar
-                        ? "Barrierefreiheit ausblenden"
-                        : "Barrierefreiheit anzeigen"
-                    }
-                    aria-label={
-                      showMetaBar
-                        ? "Barrierefreiheit ausblenden"
-                        : "Barrierefreiheit anzeigen"
-                    }
-                  >
-                    <div className="duration-400 transition-all ease-out">
-                      {showMetaBar ? (
-                        <Eye className="h-4 w-4" />
-                      ) : (
-                        <EyeOff className="h-4 w-4" />
-                      )}
+            {/* Logo - adaptiert Größe */}
+            <div className="flex-shrink-0">
+              <Link href="/" className="transition-opacity hover:opacity-80">
+                <div
+                  className={`flex items-center space-x-2 sm:space-x-4 ${isScrolled ? "space-x-0" : ""}`}
+                >
+                  <Image
+                    alt="Fahndung Logo"
+                    width={32}
+                    height={32}
+                    className={`${isScrolled ? "h-8 w-8 sm:h-10 sm:w-10" : "h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12"}`}
+                    src="/logo.svg"
+                    priority
+                  />
+                  {!isScrolled && (
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-bold leading-tight tracking-tight text-gray-900 dark:text-white sm:text-lg lg:text-xl">
+                        FAHNDUNG
+                      </span>
+                      <span
+                        className="text-xs font-medium leading-tight text-gray-600 dark:text-gray-300 sm:text-sm lg:text-base"
+                        style={{
+                          fontStretch: "expanded",
+                          fontVariationSettings: '"wdth" 150',
+                          textJustify: "inter-word",
+                          width: "100%",
+                          display: "block",
+                          letterSpacing: "0.15em",
+                        }}
+                      >
+                        POLIZEI BW
+                      </span>
                     </div>
-                  </button>
-                )}
-              </div>
+                  )}
+                </div>
+              </Link>
             </div>
-          </nav>
+
+            {/* Navigation */}
+            <nav
+              className="flex items-center gap-4"
+              role="navigation"
+              aria-label="Hauptnavigation"
+            >
+              {/* Desktop Mega Menu */}
+              <DesktopMegaMenu />
+
+              {/* Right Actions */}
+              <div className="ml-6 flex items-center gap-3">
+                {renderUserActions}
+
+                {/* A11y Button - nur im Sticky-Zustand sichtbar */}
+                <div
+                  className={`transition-all duration-500 ease-out ${
+                    isScrolled ? "h-8 w-8 opacity-100" : "h-8 w-0 opacity-0"
+                  }`}
+                >
+                  {isScrolled && (
+                    <button
+                      onClick={() => setShowMetaBar(!showMetaBar)}
+                      className="relative h-full w-full touch-manipulation select-none rounded-xl border border-gray-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-300 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
+                      title={
+                        showMetaBar
+                          ? "Barrierefreiheit ausblenden"
+                          : "Barrierefreiheit anzeigen"
+                      }
+                      aria-label={
+                        showMetaBar
+                          ? "Barrierefreiheit ausblenden"
+                          : "Barrierefreiheit anzeigen"
+                      }
+                    >
+                      <div className="duration-400 transition-all ease-out">
+                        {showMetaBar ? (
+                          <Eye className="h-4 w-4" />
+                        ) : (
+                          <EyeOff className="h-4 w-4" />
+                        )}
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </nav>
+          </div>
         </div>
       </div>
     </div>
@@ -419,7 +454,7 @@ const ResponsiveMobileHeader = ({
                 onClick={() => setShowMetaControls(false)}
                 className="text-slate-400 hover:text-white"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -455,11 +490,11 @@ const ResponsiveMobileHeader = ({
 };
 
 // Main Header Component
-const AdaptiveHeader = ({
+const AdaptiveHeaderOptimized = ({
   session: externalSession,
   onLogout,
 }: AdaptiveHeaderProps) => {
-  const isScrolled = useAdaptiveScroll(50);
+  const isScrolled = useOptimizedScroll(50);
   const [showMetaBar, setShowMetaBar] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -467,8 +502,29 @@ const AdaptiveHeader = ({
   // RADIKALE LÖSUNG: Verwende useStableSession für stabile Session-Behandlung
   const { session } = useStableSession(externalSession);
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.classList.add("menu-open");
+    } else {
+      document.body.style.overflow = "";
+      document.body.classList.remove("menu-open");
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+      document.body.classList.remove("menu-open");
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <>
+      {/* Placeholder für Header-Höhe um Layout-Shift zu vermeiden - nur wenn Header sticky ist */}
+      {isScrolled && (
+        <div className="header-placeholder h-16 sm:h-20 lg:h-24" />
+      )}
+
       {/* Skip Link */}
       <a
         href="#main-content"
@@ -507,4 +563,4 @@ const AdaptiveHeader = ({
   );
 };
 
-export default AdaptiveHeader;
+export default AdaptiveHeaderOptimized;

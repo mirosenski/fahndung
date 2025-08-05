@@ -1,6 +1,7 @@
 @import "@radix-ui/themes/styles.css";
 @import "./focus.css";
 @import "./accessibility.css";
+@import "./header-optimizations.css";
 
 @config "../../tailwind.config.js";
 @import "tailwindcss";
