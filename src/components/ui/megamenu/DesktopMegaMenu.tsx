@@ -10,14 +10,9 @@ import {
   Shield,
   Phone,
   HelpCircle,
-  Download,
-  TrendingUp,
-  Lightbulb,
-  Monitor,
   Users,
   AlertTriangle,
   Package,
-  Building2,
 } from "lucide-react";
 import { useAuth } from "~/hooks/useAuth";
 import type { MenuItem, DesktopMegaMenuProps } from "./types";
@@ -72,39 +67,6 @@ export function DesktopMegaMenu({ menuItems, logo }: DesktopMegaMenuProps) {
                 ],
           },
           {
-            label: "Kriminalstatistik",
-            href: "/statistiken",
-            description: "Zahlen und Fakten zur Sicherheitslage",
-            icon: <TrendingUp className="h-5 w-5" />,
-          },
-          {
-            label: "Prävention",
-            href: "/praevention",
-            description: "Vorbeugung und Sicherheitstipps",
-            icon: <Shield className="h-5 w-5" />,
-          },
-          {
-            label: "Hinweise geben",
-            href: "/hinweise",
-            description: "Anonyme Hinweise an die Polizei",
-            icon: <Lightbulb className="h-5 w-5" />,
-          },
-        ],
-      },
-      {
-        label: "Service",
-        href: "/service",
-        description: "Bürgerservice",
-        icon: <Building2 className="h-5 w-5" />,
-        subItems: [
-          {
-            label: "Online-Services",
-            href: "/online-services",
-            description: "Digitale Dienste und Anträge",
-            icon: <Monitor className="h-5 w-5" />,
-            badge: "24/7",
-          },
-          {
             label: "Kontakt",
             href: "/kontakt",
             description: "So erreichen Sie uns",
@@ -115,12 +77,6 @@ export function DesktopMegaMenu({ menuItems, logo }: DesktopMegaMenuProps) {
             href: "/faq",
             description: "Häufig gestellte Fragen",
             icon: <HelpCircle className="h-5 w-5" />,
-          },
-          {
-            label: "Downloads",
-            href: "/downloads",
-            description: "Formulare und Merkblätter",
-            icon: <Download className="h-5 w-5" />,
           },
         ],
       },
@@ -283,11 +239,33 @@ export function DesktopMegaMenu({ menuItems, logo }: DesktopMegaMenuProps) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute left-0 mt-2 w-screen max-w-md transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2"
+                      className="absolute left-0 mt-2 w-screen max-w-lg transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2"
                     >
                       <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                        <div className="relative grid gap-6 bg-white px-5 py-6 dark:bg-gray-800 sm:gap-8 sm:p-8 lg:grid-cols-2">
-                          {item.subItems?.map(renderMenuCard)}
+                        <div className="relative bg-white px-5 py-6 dark:bg-gray-800 sm:p-8">
+                          {/* Fahndungen - Volle Breite oben */}
+                          {item.subItems?.find(
+                            (subItem) => subItem.label === "Fahndungen",
+                          ) && (
+                            <div className="mb-6">
+                              {renderMenuCard(
+                                item.subItems.find(
+                                  (subItem) => subItem.label === "Fahndungen",
+                                )!,
+                              )}
+                            </div>
+                          )}
+
+                          {/* FAQ und Kontakt - Kleinere Karten unten */}
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            {item.subItems
+                              ?.filter(
+                                (subItem) =>
+                                  subItem.label === "FAQ" ||
+                                  subItem.label === "Kontakt",
+                              )
+                              .map(renderMenuCard)}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
