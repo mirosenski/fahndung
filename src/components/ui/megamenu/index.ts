@@ -1,6 +1,5 @@
-export { MegaMenu } from "./MegaMenu";
 export { DesktopMegaMenu } from "./DesktopMegaMenu";
-export { MobileMegaMenu } from "./MobileMegaMenu";
+export { MobileDrawerMenu } from "./MobileDrawerMenu";
 export { default as NavigationWrapper } from "./NavigationWrapper";
 
 // Types

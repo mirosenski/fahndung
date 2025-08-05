@@ -7,17 +7,7 @@ export interface MenuItem {
   subItems?: MenuItem[];
 }
 
-export interface MegaMenuProps {
-  menuItems?: MenuItem[];
-  logo?: React.ReactNode;
-  className?: string;
-}
-
 export interface DesktopMegaMenuProps {
   menuItems?: MenuItem[];
   logo?: React.ReactNode;
-}
-
-export interface MobileMegaMenuProps {
-  menuItems?: MenuItem[];
 }

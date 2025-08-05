@@ -5,19 +5,6 @@ import { useState, useEffect, useCallback } from "react";
 import type { MenuItem } from "./types";
 
 // Dynamisch laden für bessere Performance
-const MobileMegaMenu = dynamic(
-  () =>
-    import("./MobileMegaMenu").then((mod) => ({ default: mod.MobileMegaMenu })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-2 md:hidden">
-        <div className="h-6 w-6 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-      </div>
-    ),
-  },
-);
-
 const DesktopMegaMenu = dynamic(
   () =>
     import("./DesktopMegaMenu").then((mod) => ({
@@ -82,7 +69,6 @@ export default function NavigationWrapper({
 
   return (
     <>
-      {isMobile && <MobileMegaMenu menuItems={menuItems} />}
       <div className="hidden md:block">
         <DesktopMegaMenu menuItems={menuItems} logo={logo} />
       </div>

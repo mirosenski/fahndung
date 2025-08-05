@@ -16,7 +16,7 @@ import {
 import { Logo } from "../ui/Logo";
 import { FontSizeToggle } from "../ui/FontSizeToggle";
 import { SystemThemeToggle } from "../ui/SystemThemeToggle";
-import { MegaMenu } from "../ui/megamenu";
+import { DesktopMegaMenu } from "../ui/megamenu/DesktopMegaMenu";
 import { MobileDrawerMenu } from "../ui/megamenu/MobileDrawerMenu";
 
 import { useRouter, usePathname } from "next/navigation";
@@ -296,8 +296,8 @@ const AdaptiveDesktopHeader = ({
             role="navigation"
             aria-label="Hauptnavigation"
           >
-            {/* Mega Menu */}
-            <MegaMenu />
+            {/* Desktop Mega Menu */}
+            <DesktopMegaMenu />
 
             {/* Right Actions */}
             <div className="ml-6 flex items-center gap-3">
