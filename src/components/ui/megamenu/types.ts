@@ -8,6 +8,5 @@ export interface MenuItem {
 }
 
 export interface DesktopMegaMenuProps {
-  menuItems?: MenuItem[];
   logo?: React.ReactNode;
 }

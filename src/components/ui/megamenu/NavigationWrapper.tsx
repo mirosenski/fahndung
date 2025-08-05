@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useState, useEffect, useCallback } from "react";
-import type { MenuItem } from "./types";
 
 // Dynamisch laden für bessere Performance
 const DesktopMegaMenu = dynamic(
@@ -21,14 +20,10 @@ const DesktopMegaMenu = dynamic(
 );
 
 interface NavigationWrapperProps {
-  menuItems?: MenuItem[];
   logo?: React.ReactNode;
 }
 
-export default function NavigationWrapper({
-  menuItems,
-  logo,
-}: NavigationWrapperProps) {
+export default function NavigationWrapper({ logo }: NavigationWrapperProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -70,7 +65,7 @@ export default function NavigationWrapper({
   return (
     <>
       <div className="hidden md:block">
-        <DesktopMegaMenu menuItems={menuItems} logo={logo} />
+        <DesktopMegaMenu logo={logo} />
       </div>
     </>
   );

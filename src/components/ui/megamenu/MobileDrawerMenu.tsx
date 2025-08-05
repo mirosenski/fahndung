@@ -4,16 +4,16 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   X,
   ChevronDown,
+  LogOut,
+  LogIn,
+  UserPlus,
   Search,
-  Shield,
   Users,
   AlertTriangle,
   Package,
   Phone,
   HelpCircle,
-  LogOut,
-  LogIn,
-  UserPlus,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -49,55 +49,49 @@ export function MobileDrawerMenu({
   // Default menu items mit Lucide Icons
   const defaultItems: MenuItem[] = [
     {
-      label: "Sicherheit",
-      href: "/sicherheit",
-      subItems: [
-        {
-          label: "Fahndungen",
-          href: isAuthenticated ? "/fahndungen/neu/enhanced" : "/fahndungen",
-          description: isAuthenticated
-            ? "Fahndungen verwalten"
-            : "Aktuelle Fahndungsfälle und Hinweise",
-          icon: <Search className="h-5 w-5" />,
-          badge: "Neu",
-          subItems: isAuthenticated
-            ? []
-            : [
-                {
-                  label: "Straftäter",
-                  href: "/fahndungen/straftaeter",
-                  icon: <Users className="h-4 w-4" />,
-                },
-                {
-                  label: "Vermisste Personen",
-                  href: "/fahndungen/vermisste",
-                  icon: <AlertTriangle className="h-4 w-4" />,
-                },
-                {
-                  label: "Unbekannte Tote",
-                  href: "/fahndungen/unbekannte-tote",
-                  icon: <Package className="h-4 w-4" />,
-                },
-                {
-                  label: "Gestohlene Sachen",
-                  href: "/fahndungen/sachen",
-                  icon: <Package className="h-4 w-4" />,
-                },
-              ],
-        },
-        {
-          label: "Kontakt",
-          href: "/kontakt",
-          description: "So erreichen Sie uns",
-          icon: <Phone className="h-5 w-5" />,
-        },
-        {
-          label: "FAQ",
-          href: "/faq",
-          description: "Häufig gestellte Fragen",
-          icon: <HelpCircle className="h-5 w-5" />,
-        },
-      ],
+      label: "Fahndungen",
+      href: isAuthenticated ? "/fahndungen/neu/enhanced" : "/fahndungen",
+      description: isAuthenticated
+        ? "Fahndungen verwalten"
+        : "Aktuelle Fahndungsfälle und Hinweise",
+      icon: <Search className="h-5 w-5" />,
+      badge: "Neu",
+      subItems: isAuthenticated
+        ? []
+        : [
+            {
+              label: "Straftäter",
+              href: "/fahndungen/straftaeter",
+              icon: <Users className="h-4 w-4" />,
+            },
+            {
+              label: "Vermisste Personen",
+              href: "/fahndungen/vermisste",
+              icon: <AlertTriangle className="h-4 w-4" />,
+            },
+            {
+              label: "Unbekannte Tote",
+              href: "/fahndungen/unbekannte-tote",
+              icon: <Package className="h-4 w-4" />,
+            },
+            {
+              label: "Gestohlene Sachen",
+              href: "/fahndungen/sachen",
+              icon: <Package className="h-4 w-4" />,
+            },
+          ],
+    },
+    {
+      label: "FAQ",
+      href: "/faq",
+      description: "Häufig gestellte Fragen",
+      icon: <HelpCircle className="h-5 w-5" />,
+    },
+    {
+      label: "Kontakt",
+      href: "/kontakt",
+      description: "So erreichen Sie uns",
+      icon: <Phone className="h-5 w-5" />,
     },
   ];
 
@@ -344,8 +338,8 @@ export function MobileDrawerMenu({
                 </div>
               </div>
 
-              {/* Menu Items - Scrollable */}
-              <div className="flex-1 overflow-y-auto">
+              {/* Menu Items - Scrollable mit Padding für sticky Footer */}
+              <div className="flex-1 overflow-y-auto pb-32">
                 <nav
                   className="space-y-1 p-4"
                   role="navigation"
@@ -362,8 +356,8 @@ export function MobileDrawerMenu({
                 </nav>
               </div>
 
-              {/* User Section - für alle Benutzer */}
-              <div className="border-t border-gray-200 p-4 dark:border-gray-700">
+              {/* Sticky Footer mit User Section */}
+              <div className="sticky bottom-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
                 <div className="space-y-2">
                   {isAuthenticated ? (
                     <>
