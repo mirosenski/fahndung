@@ -93,8 +93,8 @@ const MetaAccessibilityBar = ({
   return (
     <div
       className={`
-      w-full overflow-hidden bg-slate-100 text-slate-800 
-      transition-all duration-500 ease-out dark:bg-slate-950 dark:text-white
+      w-full overflow-hidden bg-background text-foreground 
+      transition-all duration-500 ease-out
       ${isVisible ? "h-8 opacity-100" : "h-0 opacity-0"}
       ${!isScrolled ? "rounded-t-2xl" : ""}
     `}
@@ -266,7 +266,7 @@ const AdaptiveDesktopHeader = ({
             border border-gray-200 bg-white shadow-sm
             transition-all duration-500 ease-out hover:shadow-md
             dark:border-gray-700 dark:bg-gray-900
-            ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl"}
+            ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl rounded-t-2xl"}
           `}
           style={{
             // Hardware-Acceleration für smoothe Performance
@@ -381,7 +381,7 @@ const ResponsiveMobileHeader = ({
     <div className="sticky top-0 z-50 w-full rounded-xl border-b border-slate-200 bg-slate-50 shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 lg:hidden">
       {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
       {showMetaControls && (
-        <div className="bg-slate-100 px-4 py-2 text-slate-800 dark:bg-slate-900 dark:text-white">
+        <div className="bg-background px-4 py-2 text-foreground">
           <div className="flex items-center justify-between text-xs">
             {/* Links: Gebärdensprache, Leichte Sprache & Textvergrößerung */}
             <div className="flex items-center gap-3">
