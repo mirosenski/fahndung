@@ -23,7 +23,7 @@ export default function PolizeiPage() {
       {/* Hauptbereiche */}
       <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Über uns */}
-        <Link href="/ueber-uns" className="group">
+        <Link href="/kontakt" className="group">
           <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2 text-primary">
@@ -40,7 +40,7 @@ export default function PolizeiPage() {
         </Link>
 
         {/* Karriere */}
-        <Link href="/karriere" className="group">
+        <Link href="/kontakt" className="group">
           <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
@@ -57,7 +57,7 @@ export default function PolizeiPage() {
         </Link>
 
         {/* Presse */}
-        <Link href="/presse" className="group">
+        <Link href="/kontakt" className="group">
           <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-green-500/10 p-2 text-green-500">
@@ -163,13 +163,13 @@ export default function PolizeiPage() {
               </li>
               <li>
                 •{" "}
-                <Link href="/presse" className="text-primary hover:underline">
+                <Link href="/kontakt" className="text-primary hover:underline">
                   Presseanfragen
                 </Link>
               </li>
               <li>
                 •{" "}
-                <Link href="/karriere" className="text-primary hover:underline">
+                <Link href="/kontakt" className="text-primary hover:underline">
                   Karriereberatung
                 </Link>
               </li>

@@ -5,7 +5,7 @@ import type { DesktopMegaMenuProps } from "./types";
 export function DesktopMegaMenu({ logo }: DesktopMegaMenuProps) {
   return (
     <nav
-      className="sticky top-0 z-50 bg-white/80 backdrop-blur-md dark:bg-gray-900/80"
+      className="sticky top-0 z-50 bg-background/80 backdrop-blur-md"
       role="navigation"
       aria-label="Hauptnavigation"
     >

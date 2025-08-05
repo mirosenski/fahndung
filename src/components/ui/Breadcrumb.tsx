@@ -186,7 +186,7 @@ export function Breadcrumb({
   return (
     <nav
       aria-label="Breadcrumb"
-      className={`flex w-full bg-white dark:bg-gray-900 ${getVariantClasses()} ${className}`}
+      className={`flex w-full bg-background ${getVariantClasses()} ${className}`}
     >
       <div className="container mx-auto px-4">
         <ol className="flex flex-wrap items-center gap-1 text-sm">

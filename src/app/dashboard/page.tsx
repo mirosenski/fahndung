@@ -166,7 +166,7 @@ export default function Dashboard() {
   // Loading state mit verbesserter UX
   if (!initialized || loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="min-h-screen bg-background">
         <div className="flex h-screen items-center justify-center">
           <div className="text-center">
             <LoadingSpinner message="Lade Dashboard..." />
@@ -182,7 +182,7 @@ export default function Dashboard() {
   // Auth check - return null instead of router.push to avoid render cycle issues
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="min-h-screen bg-background">
         <div className="flex h-screen items-center justify-center">
           <div className="text-center">
             <div className="mb-4 text-4xl">🔐</div>

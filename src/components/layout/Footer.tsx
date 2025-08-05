@@ -116,7 +116,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <footer className="border-t border-gray-200 bg-background">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="md:flex md:justify-between">
           {/* Logo und Beschreibung - Links */}

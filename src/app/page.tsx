@@ -9,7 +9,7 @@ export default function Home() {
   const { session } = useAuth();
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
+    <main className="min-h-screen bg-background">
       <Header variant="home" session={session} />
       <HomeContent />
       <Footer variant="home" />

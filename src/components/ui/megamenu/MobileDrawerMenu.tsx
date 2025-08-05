@@ -308,10 +308,10 @@ export function MobileDrawerMenu({
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-2xl dark:bg-gray-900 md:hidden"
+              className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-2xl md:hidden"
             >
               {/* Sticky Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-background p-4">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Navigation
                 </h2>
@@ -358,7 +358,7 @@ export function MobileDrawerMenu({
               </div>
 
               {/* Sticky Footer mit User Section */}
-              <div className="sticky bottom-0 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+              <div className="sticky bottom-0 border-t border-gray-200 bg-background p-4">
                 <div className="space-y-2">
                   {isAuthenticated ? (
                     <>

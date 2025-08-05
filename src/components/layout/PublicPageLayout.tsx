@@ -14,7 +14,7 @@ export default function PublicPageLayout({
   className = "",
 }: PublicPageLayoutProps) {
   return (
-    <div className={`min-h-screen bg-white dark:bg-gray-900 ${className}`}>
+    <div className={`min-h-screen bg-background ${className}`}>
       <Header variant="home" />
       <main className="flex-1">{children}</main>
       <Footer variant="home" />

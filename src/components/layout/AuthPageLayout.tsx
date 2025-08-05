@@ -16,7 +16,7 @@ export default function AuthPageLayout({
   className = "",
 }: AuthPageLayoutProps) {
   return (
-    <div className={`min-h-screen bg-white dark:bg-gray-900 ${className}`}>
+    <div className={`min-h-screen bg-background ${className}`}>
       <Header variant={variant} />
       <main className="flex-1">{children}</main>
       <Footer variant={variant} />
