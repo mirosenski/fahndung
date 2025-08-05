@@ -236,7 +236,7 @@ export function MobileDrawerMenu({
             {hasSubItems && (
               <button
                 onClick={() => toggleExpanded(currentPath)}
-                className="flex-shrink-0 p-3 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-900"
+                className="flex-shrink-0 touch-manipulation select-none p-3 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-900"
                 aria-expanded={isExpanded}
                 aria-label={`${isExpanded ? "Schließen" : "Öffnen"} ${item.label}`}
               >
@@ -322,7 +322,7 @@ export function MobileDrawerMenu({
                 </h2>
                 <button
                   onClick={() => onClose()}
-                  className="p-2 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-900"
+                  className="touch-manipulation select-none p-2 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-900"
                   aria-label="Menü schließen"
                 >
                   <X className="h-6 w-6" />
@@ -372,7 +372,7 @@ export function MobileDrawerMenu({
                           router.push("/dashboard");
                           onClose();
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                        className="flex w-full touch-manipulation select-none items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                       >
                         <Shield className="h-5 w-5" />
                         <span>Dashboard</span>
@@ -387,7 +387,7 @@ export function MobileDrawerMenu({
                             router.push("/login");
                           }
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                        className="flex w-full touch-manipulation select-none items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                       >
                         <LogOut className="h-5 w-5" />
                         <span>Abmelden</span>
@@ -400,7 +400,7 @@ export function MobileDrawerMenu({
                           router.push("/login");
                           onClose();
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                        className="flex w-full touch-manipulation select-none items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                       >
                         <LogIn className="h-5 w-5" />
                         <span>Anmelden</span>
@@ -410,7 +410,7 @@ export function MobileDrawerMenu({
                           router.push("/register");
                           onClose();
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-green-600 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
+                        className="flex w-full touch-manipulation select-none items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-green-600 transition-colors hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20"
                       >
                         <UserPlus className="h-5 w-5" />
                         <span>Registrieren</span>

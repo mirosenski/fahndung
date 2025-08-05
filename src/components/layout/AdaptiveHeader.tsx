@@ -336,13 +336,14 @@ const AdaptiveDesktopHeader = ({
                       */
                       
                       relative h-full w-full
-                      rounded-xl
-                      border border-gray-200 bg-white/90 p-1.5
-                      shadow-sm backdrop-blur-sm
-                      transition-all
-                      duration-200
-                      hover:border-gray-300 hover:bg-white hover:shadow-md
-                      focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2
+                      touch-manipulation
+                      select-none rounded-xl border border-gray-200
+                      bg-white/90 p-1.5
+                      shadow-sm
+                      backdrop-blur-sm
+                      transition-all duration-200 hover:border-gray-300
+                      hover:bg-white hover:shadow-md focus:outline-none focus:ring-2
+                      focus:ring-blue-500/50 focus:ring-offset-2
                       dark:border-slate-600 dark:bg-slate-800/90
                       dark:hover:border-slate-500 dark:hover:bg-slate-800
                     "
@@ -475,12 +476,13 @@ const ResponsiveMobileHeader = ({
               Mode
               */
               relative
-              overflow-hidden
+              touch-manipulation
               
-                              rounded-xl border border-gray-200 bg-white/90 p-2
-                shadow-sm backdrop-blur-sm transition-all duration-200
-                hover:border-gray-300 hover:bg-white hover:shadow-md
-                focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                              select-none overflow-hidden rounded-xl border border-gray-200
+                bg-white/90 p-2 shadow-sm backdrop-blur-sm
+                transition-all duration-200 hover:border-gray-300
+                hover:bg-white hover:shadow-md focus:outline-none
+                focus:ring-2 focus:ring-blue-500/50
                 dark:border-slate-600 dark:bg-slate-800/90
                 dark:hover:border-slate-500 dark:hover:bg-slate-800
             "
@@ -494,10 +496,11 @@ const ResponsiveMobileHeader = ({
             onClick={onMenuToggle}
             className="
               relative
-              rounded-xl border border-gray-200 bg-white/90 p-2
-              shadow-sm backdrop-blur-sm transition-all duration-200
-              hover:border-gray-300 hover:bg-white hover:shadow-md
-              focus:outline-none focus:ring-2 focus:ring-blue-500/50
+              touch-manipulation select-none rounded-xl border border-gray-200
+              bg-white/90 p-2 shadow-sm backdrop-blur-sm
+              transition-all duration-200 hover:border-gray-300
+              hover:bg-white hover:shadow-md focus:outline-none
+              focus:ring-2 focus:ring-blue-500/50
               dark:border-slate-600 dark:bg-slate-800/90
               dark:hover:border-slate-500 dark:hover:bg-slate-800
             "
