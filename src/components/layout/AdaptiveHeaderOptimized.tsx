@@ -287,10 +287,13 @@ const AdaptiveDesktopHeader = ({
       {(!isScrolled || showMetaBar) && (
         <div
           className={`
-            ${isScrolled ? "w-full" : "container mx-auto mt-4 max-w-[1273px]"}
-            ${!isScrolled ? "mt-0" : ""}
+            ${isScrolled ? "w-full" : "container mx-auto max-w-[1273px]"}
           `}
         >
+          {/* Abstand zum oberen Rand - explizit transparent */}
+          {!isScrolled && (
+            <div className="h-8 bg-transparent dark:bg-transparent"></div>
+          )}
           <MetaAccessibilityBar
             isVisible={!isScrolled || showMetaBar}
             isScrolled={isScrolled}
