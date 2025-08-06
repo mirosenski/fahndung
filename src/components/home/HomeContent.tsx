@@ -10,6 +10,7 @@ import ViewToggle from "./ViewToggle";
 import FahndungskarteListFlat from "~/components/fahndungskarte/ansichten/FahndungskarteListFlat";
 import { type ViewMode } from "~/types/fahndungskarte";
 import dynamic from "next/dynamic";
+import HeroSection from "./HeroSection";
 
 // Dynamischer Import der FahndungskarteGrid mit SSR deaktiviert
 const FahndungskarteGrid = dynamic(
@@ -163,8 +164,38 @@ export default function HomeContent() {
 
   return (
     <>
+      {/* Hero Section */}
+      <HeroSection
+        showAlert={true}
+        alertText="EILMELDUNG! Polizei sucht Zeugen zu aktuellem Fall"
+        title="Hinweise helfen"
+        subtitle="Unterstützen Sie die Polizei bei Ermittlungen!"
+        primaryButtonText="Fahndungen ansehen"
+        secondaryButtonText="Hinweis abgeben"
+        showUrgentFahndungen={true}
+        urgentInvestigations={
+          typedInvestigations
+            ?.filter(
+              (investigation) =>
+                investigation.priority === "urgent" ||
+                investigation.status === "urgent",
+            )
+            .slice(0, 3) || []
+        }
+        onPrimaryClick={() => {
+          // Scroll to main content
+          document
+            .getElementById("main-content")
+            ?.scrollIntoView({ behavior: "smooth" });
+        }}
+        onSecondaryClick={() => {
+          // Navigate to contact page or open contact form
+          window.location.href = "/kontakt";
+        }}
+      />
+
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div id="main-content" className="container mx-auto px-4 py-8">
         {/* Filter und Suche */}
         <div className="mb-8">
           <FahndungFilter onFilterChange={handleFilterChange} />
