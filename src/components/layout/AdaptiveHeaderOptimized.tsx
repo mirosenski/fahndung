@@ -8,7 +8,6 @@ import React, {
   useRef,
 } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Eye, EyeOff, Menu, Plus, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { FontSizeToggle } from "../ui/FontSizeToggle";
@@ -273,40 +272,7 @@ const AdaptiveDesktopHeader = ({
           >
             {/* Logo - adaptiert Größe */}
             <div className="flex-shrink-0">
-              <Link href="/" className="transition-opacity hover:opacity-80">
-                <div
-                  className={`flex items-center space-x-2 sm:space-x-4 ${isScrolled ? "space-x-0" : ""}`}
-                >
-                  <Image
-                    alt="Fahndung Logo"
-                    width={32}
-                    height={32}
-                    className={`${isScrolled ? "h-8 w-8 sm:h-10 sm:w-10" : "h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12"}`}
-                    src="/logo.svg"
-                    priority
-                  />
-                  {!isScrolled && (
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm font-bold leading-tight tracking-tight text-gray-900 dark:text-white sm:text-lg lg:text-xl">
-                        FAHNDUNG
-                      </span>
-                      <span
-                        className="text-xs font-medium leading-tight text-gray-600 dark:text-gray-300 sm:text-sm lg:text-base"
-                        style={{
-                          fontStretch: "expanded",
-                          fontVariationSettings: '"wdth" 150',
-                          textJustify: "inter-word",
-                          width: "100%",
-                          display: "block",
-                          letterSpacing: "0.15em",
-                        }}
-                      >
-                        POLIZEI BW
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
+              <Logo className="text-foreground" showLink={true} />
             </div>
 
             {/* Navigation */}

@@ -45,8 +45,10 @@ const config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        inter: ["var(--font-inter)", "system-ui", "sans-serif"],
+        arial: ["var(--font-arial)", "system-ui", "sans-serif"],
+        mono: ["ui-monospace", "monospace"],
       },
       fontWeight: {
         // Theme-spezifische Font-Gewichtungen

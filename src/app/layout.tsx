@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "~/styles/globals.css";
+import "~/styles/fonts.css";
 import "leaflet/dist/leaflet.css";
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -8,16 +8,6 @@ import { SessionManager } from "~/components/SessionManager";
 import { Theme } from "@radix-ui/themes";
 import { RealtimeSyncWrapper } from "~/components/RealtimeSyncWrapper";
 // Der Import von GlobalErrorHandler wurde entfernt, da das Modul nicht gefunden werden kann.
-
-const geist = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Fahndung - PTLS",
@@ -31,10 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" suppressHydrationWarning>
-      <body
-        className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}
-        suppressHydrationWarning
-      >
+      <body className="antialiased" suppressHydrationWarning>
         <TRPCReactProvider>
           <Theme>
             <ThemeProvider
