@@ -5,7 +5,7 @@ import {
   findInvestigationBySlug,
   validateSeoSlug,
 } from "~/lib/seo";
-import FahndungDetailContent from "~/components/fahndungen/FahndungDetailContent";
+import FahndungCategoriesContainer from "~/components/fahndungen/categories/FahndungCategoriesContainer";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -19,7 +19,7 @@ export default async function FahndungSlugPage({ params }: PageProps) {
 
   if (isCaseNumber) {
     // Direkte Fallnummer - verwende die ID-Route
-    return <FahndungDetailContent investigationId={slug} />;
+    return <FahndungCategoriesContainer investigationId={slug} />;
   }
 
   // 2. Fahndung basierend auf Titel-Slug finden
@@ -51,7 +51,7 @@ export default async function FahndungSlugPage({ params }: PageProps) {
     }
 
     // 5. Normale Detailseite rendern
-    return <FahndungDetailContent investigationId={caseNumber} />;
+    return <FahndungCategoriesContainer investigationId={caseNumber} />;
   } catch (error) {
     console.error("❌ Fehler beim Abrufen der Fahndung:", error);
     return notFound();

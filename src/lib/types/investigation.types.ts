@@ -71,14 +71,7 @@ export const UIInvestigationEditSchema = z.object({
   step5: z.object({
     contactPerson: z.string().min(1, "Kontaktperson erforderlich"),
     contactPhone: z.string().optional().default(""),
-    contactEmail: z
-      .string()
-      .optional()
-      .default("")
-      .refine(
-        (email) => email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-        { message: "Ungültige E-Mail-Adresse" },
-      ),
+    contactEmail: z.string().optional().default(""),
     department: z.string(),
     availableHours: z.string(),
   }),

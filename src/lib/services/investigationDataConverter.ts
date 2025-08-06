@@ -296,14 +296,14 @@ export class InvestigationDataConverter {
         cleanedData.step2.tags.length > 0 ? cleanedData.step2.tags : undefined,
       location: cleanedData.step4.mainLocation?.address ?? undefined,
       contact_info: {
-        person: cleanedData.step5.contactPerson || undefined,
+        person: cleanedData.step5.contactPerson ?? undefined,
         phone:
           this.sanitizePhoneNumber(cleanedData.step5.contactPhone) || undefined,
         email: ((): string | undefined => {
           const sanitized = this.sanitizeEmail(cleanedData.step5.contactEmail);
           return sanitized ? sanitized : undefined;
         })(),
-        hours: cleanedData.step5.availableHours || undefined,
+        hours: cleanedData.step5.availableHours ?? undefined,
       },
       features: cleanedData.step2.features ?? undefined,
       station: cleanedData.step5.department ?? undefined,
