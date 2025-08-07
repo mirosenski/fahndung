@@ -47,13 +47,19 @@ const config = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Verbesserte Pfad-Behandlung
-    domains: ["rgbxdxrhwrszidbnsmuy.supabase.co"],
+    domains: ["rgbxdxrhwrszidbnsmuy.supabase.co", "via.placeholder.com"],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "rgbxdxrhwrszidbnsmuy.supabase.co",
         port: "",
         pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

@@ -10,6 +10,11 @@ export function useInvestigationSync(investigationId: string) {
   const lastUpdateRef = useRef<number>(0);
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  console.log(
+    "🔍 DEBUG: useInvestigationSync aufgerufen mit ID:",
+    investigationId,
+  );
+
   // Query mit optimierter Synchronisation
   const {
     data: investigation,
@@ -20,13 +25,35 @@ export function useInvestigationSync(investigationId: string) {
     { id: investigationId },
     {
       enabled: !!investigationId,
-      staleTime: 0, // Keine Cache-Zeit für sofortige Updates
-      refetchOnWindowFocus: true,
+      staleTime: 30 * 1000, // 30 Sekunden Cache für bessere Performance
+      refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 10000, // Alle 10 Sekunden als Fallback (Real-time ist primär)
+      refetchInterval: 30000, // Alle 30 Sekunden als Fallback (reduziert von 10s)
     },
   );
+
+  console.log("🔍 DEBUG: Query-Status:", {
+    isLoading,
+    hasData: !!investigation,
+    hasError: !!error,
+    investigationId,
+  });
+
+  if (investigation) {
+    console.log("✅ DEBUG: Investigation-Daten geladen:", {
+      id: investigation.id,
+      title: investigation.title,
+      case_number: investigation.case_number,
+      category: investigation.category,
+      priority: investigation.priority,
+      images_count: investigation.images?.length ?? 0,
+    });
+  }
+
+  if (error) {
+    console.error("❌ DEBUG: Query-Fehler:", error);
+  }
 
   // Globale Synchronisationsfunktion
   const globalSync = useCallback(() => {
@@ -73,7 +100,7 @@ export function useInvestigationSync(investigationId: string) {
     globalSync();
   }, [globalSync]);
 
-  // Automatische Synchronisation alle 10 Sekunden (als Fallback)
+  // Automatische Synchronisation alle 30 Sekunden (reduziert von 10s)
   useEffect(() => {
     if (!investigationId) return;
 
@@ -82,11 +109,11 @@ export function useInvestigationSync(investigationId: string) {
       const timeSinceLastUpdate = now - lastUpdateRef.current;
 
       // Nur refetchen wenn keine kürzlichen Updates
-      if (timeSinceLastUpdate > 10000) {
+      if (timeSinceLastUpdate > 30000) {
         console.log("🔄 Automatische Synchronisation (Fallback)");
         manualRefetch();
       }
-    }, 10000);
+    }, 30000); // Reduziert von 10s auf 30s
 
     return () => {
       if (syncIntervalRef.current) {
@@ -117,7 +144,7 @@ export function useInvestigationSync(investigationId: string) {
     return () => window.removeEventListener("online", handleOnline);
   }, [globalSync]);
 
-  // Event Listener für Visibility Change (Tab-Wechsel)
+  // Event Listener für Visibility Change (Tab-Wechsel) - nur bei Bedarf
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {

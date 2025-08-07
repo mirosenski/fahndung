@@ -27,7 +27,7 @@ export function useFahndungenOptimized(options: {
   const lastUpdateRef = useRef<number>(0);
   const { globalSync, syncInvestigation } = useGlobalSync();
 
-  // Optimierte Queries mit aggressiver Synchronisation
+  // Optimierte Queries mit reduzierter Synchronisation
   const {
     data: investigations = [],
     isLoading: isLoadingAll,
@@ -40,12 +40,12 @@ export function useFahndungenOptimized(options: {
       priority: priority === "all" ? undefined : priority,
     },
     {
-      // Reduzierte Synchronisation da Real-time Updates aktiv sind
-      staleTime: 0, // Sofort als veraltet markieren
-      refetchOnWindowFocus: true,
+      // Reduzierte Synchronisation für bessere Performance
+      staleTime: 30 * 1000, // 30 Sekunden Cache
+      refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 10000, // Alle 10 Sekunden als Fallback (Real-time ist primär)
+      refetchInterval: 30000, // Alle 30 Sekunden als Fallback (reduziert von 10s)
     },
   );
 
@@ -57,12 +57,12 @@ export function useFahndungenOptimized(options: {
     { limit, offset },
     {
       enabled: viewMode === "my" && currentUser,
-      // Reduzierte Synchronisation da Real-time Updates aktiv sind
-      staleTime: 0, // Sofort als veraltet markieren
-      refetchOnWindowFocus: true,
+      // Reduzierte Synchronisation für bessere Performance
+      staleTime: 30 * 1000, // 30 Sekunden Cache
+      refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 10000, // Alle 10 Sekunden als Fallback (Real-time ist primär)
+      refetchInterval: 30000, // Alle 30 Sekunden als Fallback (reduziert von 10s)
     },
   );
 
@@ -112,20 +112,20 @@ export function useFahndungenOptimized(options: {
     [syncInvestigation],
   );
 
-  // Automatische Synchronisation alle 10 Sekunden (als Fallback)
+  // Automatische Synchronisation alle 30 Sekunden (reduziert von 10s)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const timeSinceLastUpdate = now - lastUpdateRef.current;
 
       // Nur refetchen wenn keine kürzlichen Updates
-      if (timeSinceLastUpdate > 10000) {
+      if (timeSinceLastUpdate > 30000) {
         console.log(
           "🔄 Automatische Synchronisation der Fahndungen (Fallback)",
         );
         void manualRefetch();
       }
-    }, 10000);
+    }, 30000); // Reduziert von 10s auf 30s
 
     return () => clearInterval(interval);
   }, [manualRefetch]);
@@ -141,7 +141,7 @@ export function useFahndungenOptimized(options: {
     return () => window.removeEventListener("focus", handleFocus);
   }, [manualRefetch]);
 
-  // Event Listener für Visibility Change (Tab-Wechsel)
+  // Event Listener für Visibility Change (Tab-Wechsel) - nur bei Bedarf
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {

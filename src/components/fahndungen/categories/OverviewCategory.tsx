@@ -1,51 +1,60 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
+import Image from "next/image";
 import {
   Info,
   Calendar,
-  Eye,
   User,
-  Shield,
-  Clock,
   MapPin,
-  AlertTriangle,
-  FileText,
   Phone,
   Mail,
   ChevronRight,
-  Badge,
-  Tag,
-  Image,
-  FileImage,
-  Download,
-  Share2,
   Heart,
-  MessageCircle,
+  Share2,
+  X,
+  Upload,
+  Camera,
+  Maximize2,
   Map,
-  Navigation,
-  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
-import NextImage from "next/image";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { Badge as BadgeComponent } from "~/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { CaseNumberDetailed } from "~/components/ui/CaseNumberDisplay";
-
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
+// Types
 interface OverviewCategoryProps {
-  data: UIInvestigationData;
+  data: {
+    step1?: {
+      title?: string;
+      caseNumber?: string;
+      category?: string;
+    };
+    step2?: {
+      priority?: string;
+      shortDescription?: string;
+    };
+    step3?: {
+      mainImage?: string | null;
+      additionalImages?: string[];
+    };
+    step4?: {
+      mainLocation?: {
+        address?: string;
+      } | null;
+    };
+    step5?: {
+      contactPerson?: string;
+      contactPhone?: string;
+      contactEmail?: string;
+      department?: string;
+      availableHours?: string;
+    };
+  };
   isEditMode: boolean;
   updateField: (
     step: keyof UIInvestigationData,
@@ -55,548 +64,668 @@ interface OverviewCategoryProps {
   onNext: () => void;
 }
 
-interface UploadedImage {
-  id: string;
-  url: string;
-  alt_text?: string;
-  caption?: string;
+interface TouchGesture {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
 }
 
-export default function OverviewCategory({
+// Memoized OverviewCategory für bessere Performance
+const OverviewCategory = React.memo(function OverviewCategory({
   data,
   isEditMode,
   updateField,
   onNext,
 }: OverviewCategoryProps) {
-  const [isMapLoading, setIsMapLoading] = useState(false);
+  // Debug-Logging
+  console.log("🔍 DEBUG: OverviewCategory erhält Daten:", {
+    hasData: !!data,
+    step1: data?.step1,
+    step2: data?.step2,
+    step3: data?.step3,
+    step4: data?.step4,
+    step5: data?.step5,
+    isEditMode,
+  });
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "MISSING_PERSON":
-        return <User className="h-5 w-5" />;
-      case "WANTED_PERSON":
-        return <AlertTriangle className="h-5 w-5" />;
-      case "UNKNOWN_DEAD":
-        return <Badge className="h-5 w-5" />;
-      case "STOLEN_GOODS":
-        return <FileText className="h-5 w-5" />;
-      default:
-        return <Info className="h-5 w-5" />;
+  // State Management
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [touchGesture, setTouchGesture] = useState<TouchGesture | null>(null);
+
+  // Refs für Performance
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const swipeThreshold = 50;
+
+  // Memoized Touch Handlers für Mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    setTouchGesture({
+      startX: touch.clientX,
+      startY: touch.clientY,
+      endX: touch.clientX,
+      endY: touch.clientY,
+    });
+  }, []);
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchGesture) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+
+      setTouchGesture((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          endX: touch.clientX,
+          endY: touch.clientY,
+        };
+      });
+    },
+    [touchGesture],
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchGesture) return;
+
+    const deltaX = touchGesture.endX - touchGesture.startX;
+    const deltaY = touchGesture.endY - touchGesture.startY;
+
+    // Horizontale Swipe für Bildwechsel
+    if (
+      Math.abs(deltaX) > swipeThreshold &&
+      Math.abs(deltaX) > Math.abs(deltaY)
+    ) {
+      const images = data.step3?.additionalImages ?? [];
+      if (images.length > 0) {
+        if (deltaX > 0) {
+          // Swipe nach rechts - vorheriges Bild
+          setSelectedImageIndex((prev) =>
+            prev > 0 ? prev - 1 : images.length - 1,
+          );
+        } else {
+          // Swipe nach links - nächstes Bild
+          setSelectedImageIndex((prev) =>
+            prev < images.length - 1 ? prev + 1 : 0,
+          );
+        }
+      }
     }
-  };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300";
-      case "new":
-        return "bg-green-50 border-green-200 text-green-700 dark:bg-green-950 dark:border-green-800 dark:text-green-300";
-      default:
-        return "bg-gray-50 border-gray-200 text-gray-700 dark:bg-gray-950 dark:border-gray-800 dark:text-gray-300";
+    setTouchGesture(null);
+  }, [touchGesture, data.step3?.additionalImages]);
+
+  // Memoized Image Data
+  const imageData = useMemo(() => {
+    const mainImage = data.step3?.mainImage;
+    const additionalImages = data.step3?.additionalImages ?? [];
+    const allImages = mainImage
+      ? [mainImage, ...additionalImages]
+      : additionalImages;
+
+    return {
+      mainImage,
+      additionalImages,
+      allImages,
+      currentImage: allImages[selectedImageIndex] ?? mainImage,
+    };
+  }, [data.step3?.mainImage, data.step3?.additionalImages, selectedImageIndex]);
+
+  // Memoized Category Data
+  const categoryData = useMemo(() => {
+    const category = data.step1?.category;
+    return {
+      icon: getCategoryIcon(category),
+      label: getCategoryLabel(category),
+      style: getCategoryStyle(category),
+    };
+  }, [data.step1?.category]);
+
+  // Memoized Priority Data
+  const priorityData = useMemo(() => {
+    const priority = data.step2?.priority;
+    return {
+      style: getPriorityStyle(priority),
+      dotColor: getPriorityDotColor(priority),
+      label: getPriorityLabel(priority),
+    };
+  }, [data.step2?.priority]);
+
+  // Memoized Contact Data
+  const contactData = useMemo(() => {
+    return {
+      person: data.step5?.contactPerson ?? "Polizei",
+      phone: data.step5?.contactPhone ?? "+49 711 8990-0",
+      email: data.step5?.contactEmail ?? "",
+      department: data.step5?.department ?? "Polizeipräsidium",
+      hours: data.step5?.availableHours ?? "24/7",
+    };
+  }, [data.step5]);
+
+  // Memoized Location Data
+  const locationData = useMemo(() => {
+    return {
+      address: data.step4?.mainLocation?.address ?? "Keine Adresse angegeben",
+      hasLocation: !!data.step4?.mainLocation?.address,
+    };
+  }, [data.step4?.mainLocation?.address]);
+
+  // Memoized File Upload Handler
+  const handleFileUpload = useCallback(
+    async (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        // Simuliere Upload-Progress
+        for (let i = 0; i <= 100; i += 10) {
+          setUploadProgress(i);
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+
+        // Hier würde der echte Upload-Code stehen
+        console.log("Dateien hochgeladen:", files);
+
+        // Update field mit neuen Bildern
+        const imageUrls = Array.from(files).map((file) =>
+          URL.createObjectURL(file),
+        );
+        void updateField("step3", "additionalImages", imageUrls);
+
+        setUploadProgress(100);
+        setTimeout(() => setUploadProgress(0), 1000);
+      } catch (error) {
+        console.error("Upload-Fehler:", error);
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [updateField],
+  );
+
+  // Memoized Drag and Drop Handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      void handleFileUpload(e.dataTransfer.files);
+    },
+    [handleFileUpload],
+  );
+
+  // Memoized Image Navigation
+  const nextImage = useCallback(() => {
+    if (imageData.allImages.length > 1) {
+      setSelectedImageIndex((prev) =>
+        prev < imageData.allImages.length - 1 ? prev + 1 : 0,
+      );
     }
-  };
+  }, [imageData.allImages.length]);
 
-  // Echte Daten aus dem UIInvestigationData Modell
-  const mainImage = data.step3?.mainImage ?? null;
-  const uploadedImages: UploadedImage[] =
-    (data.step3?.additionalImages?.map((url, index) => ({
-      id: `image-${index}`,
-      url,
-      alt_text: `Bild ${index + 1}`,
-    })) as UploadedImage[]) ?? [];
-  const location =
-    data.step4?.mainLocation?.address ?? "Standort nicht angegeben";
-  const shortDescription =
-    data.step2.shortDescription ?? "Keine Beschreibung verfügbar";
+  const previousImage = useCallback(() => {
+    if (imageData.allImages.length > 1) {
+      setSelectedImageIndex((prev) =>
+        prev > 0 ? prev - 1 : imageData.allImages.length - 1,
+      );
+    }
+  }, [imageData.allImages.length]);
 
-  // Karten-URL generieren
+  // Memoized Fullscreen Handler
+  const toggleFullscreen = useCallback(() => {
+    setIsImageFullscreen(!isImageFullscreen);
+  }, [isImageFullscreen]);
+
+  // Memoized Keyboard Handler
   useEffect(() => {
-    if (location && location !== "Standort nicht angegeben") {
-      setIsMapLoading(true);
-      // Google Maps Static API URL (wird aktuell nicht verwendet, da OpenStreetMap verwendet wird)
-      // const googleMapsUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(location)}&zoom=13&size=400x300&markers=color:red%7C${encodeURIComponent(location)}`;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isImageFullscreen) {
+        switch (e.key) {
+          case "Escape":
+            setIsImageFullscreen(false);
+            break;
+          case "ArrowLeft":
+            previousImage();
+            break;
+          case "ArrowRight":
+            nextImage();
+            break;
+        }
+      }
+    };
 
-      // Fallback zu OpenStreetMap wenn kein API Key
-      setIsMapLoading(false);
-    }
-  }, [location]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isImageFullscreen, previousImage, nextImage]);
 
-  const openInMaps = () => {
-    if (location && location !== "Standort nicht angegeben") {
-      const encodedAddress = encodeURIComponent(location);
-      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-      window.open(mapsUrl, "_blank");
-    }
-  };
+  // Memoized Content Sections
+  const headerSection = useMemo(
+    () => (
+      <div className="mb-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-2xl">{categoryData.icon}</span>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryData.style}`}
+              >
+                {categoryData.label}
+              </span>
+            </div>
+            <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+              {data.step1?.title ?? "Unbekannte Fahndung"}
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Fallnummer: {data.step1?.caseNumber ?? "N/A"}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${priorityData.style}`}
+            >
+              <div
+                className={`h-2 w-2 rounded-full ${priorityData.dotColor}`}
+              ></div>
+              {priorityData.label}
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+    [data.step1?.title, data.step1?.caseNumber, categoryData, priorityData],
+  );
 
-  return (
-    <div className="w-full space-y-6">
-      {/* Hero Section with Main Image */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-        {/* Main Image */}
-        {mainImage ? (
-          <div className="absolute inset-0">
-            <NextImage
-              src={mainImage}
-              alt="Hauptbild"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-            <div className="absolute inset-0 bg-black/30" />
+  const descriptionSection = useMemo(
+    () => (
+      <div className="mb-6">
+        <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+          Kurzbeschreibung
+        </h2>
+        <p className="text-gray-700 dark:text-gray-300">
+          {data.step2?.shortDescription ?? "Keine Beschreibung verfügbar."}
+        </p>
+      </div>
+    ),
+    [data.step2?.shortDescription],
+  );
+
+  const imageSection = useMemo(
+    () => (
+      <div className="mb-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Bilder ({imageData.allImages.length})
+          </h2>
+          {isEditMode && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+            >
+              <Upload className="h-4 w-4" />
+              Bilder hinzufügen
+            </button>
+          )}
+        </div>
+
+        {imageData.allImages.length > 0 ? (
+          <div className="relative">
+            <div
+              ref={imageContainerRef}
+              className={`relative overflow-hidden rounded-lg border-2 border-dashed ${
+                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {imageData.currentImage && (
+                <div className="relative">
+                  <Image
+                    src={imageData.currentImage}
+                    alt="Fahndungsbild"
+                    width={600}
+                    height={400}
+                    className="h-64 w-full object-cover"
+                    onClick={toggleFullscreen}
+                    onError={(e) => {
+                      console.error(
+                        "❌ Bild-Ladefehler:",
+                        imageData.currentImage,
+                      );
+                      // Fallback zu einem Platzhalter-Bild
+                      const target = e.target as HTMLImageElement;
+                      target.src =
+                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJpbGQgZmVobHQ8L3RleHQ+PC9zdmc+";
+                    }}
+                  />
+                </div>
+              )}
+
+              {imageData.allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={previousImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                  >
+                    <ChevronRight className="h-4 w-4 rotate-180" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={toggleFullscreen}
+                className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </button>
+            </div>
+
+            {imageData.allImages.length > 1 && (
+              <div className="mt-3 flex justify-center gap-2">
+                {imageData.allImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`h-2 w-2 rounded-full ${
+                      index === selectedImageIndex
+                        ? "bg-blue-600"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20">
-            <div className="flex h-full w-full items-center justify-center">
-              <div className="text-center text-white/60">
-                <Image
-                  className="mx-auto mb-4 h-16 w-16"
-                  aria-hidden="true"
-                  aria-label="Hauptbild Icon"
-                />
-                <p className="text-lg font-medium">Hauptbild</p>
-                <p className="text-sm">Klicken Sie zum Hochladen</p>
-              </div>
+          <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+            <div className="text-center">
+              <Camera className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-500">
+                Keine Bilder verfügbar
+              </p>
             </div>
           </div>
         )}
 
-        <div className="relative z-10 p-6 lg:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex-1 space-y-4">
-              {/* Category and Priority Badges */}
-              <div className="flex flex-wrap items-center gap-3">
-                {isEditMode ? (
-                  <>
-                    <Select
-                      value={data.step1.category}
-                      onValueChange={(value) =>
-                        updateField("step1", "category", value)
-                      }
-                    >
-                      <SelectTrigger className="w-auto border-white/20 bg-white/10 text-white backdrop-blur-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MISSING_PERSON">
-                          Vermisste Person
-                        </SelectItem>
-                        <SelectItem value="WANTED_PERSON">
-                          Straftäter
-                        </SelectItem>
-                        <SelectItem value="UNKNOWN_DEAD">
-                          Unbekannte Tote
-                        </SelectItem>
-                        <SelectItem value="STOLEN_GOODS">
-                          Gestohlene Sachen
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={(e) => handleFileUpload(e.target.files)}
+          className="hidden"
+        />
+      </div>
+    ),
+    [
+      imageData,
+      isEditMode,
+      isDragging,
+      selectedImageIndex,
+      handleDragOver,
+      handleDragLeave,
+      handleDrop,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
+      toggleFullscreen,
+      nextImage,
+      previousImage,
+      handleFileUpload,
+    ],
+  );
 
-                    <Select
-                      value={data.step2.priority}
-                      onValueChange={(value) =>
-                        updateField("step2", "priority", value)
-                      }
-                    >
-                      <SelectTrigger className="w-auto border-white/20 bg-white/10 text-white backdrop-blur-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="urgent">Dringend</SelectItem>
-                        <SelectItem value="new">Neu</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white backdrop-blur-sm">
-                      {getCategoryIcon(data.step1.category)}
-                      <span className="text-sm font-medium">
-                        {data.step1.category === "MISSING_PERSON"
-                          ? "Vermisste Person"
-                          : data.step1.category === "WANTED_PERSON"
-                            ? "Straftäter"
-                            : data.step1.category === "UNKNOWN_DEAD"
-                              ? "Unbekannte Tote"
-                              : "Gestohlene Sachen"}
-                      </span>
-                    </div>
+  const locationSection = useMemo(
+    () => (
+      <div className="mb-6">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+          <MapPin className="h-5 w-5" />
+          Standort
+        </h2>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <p className="text-gray-700 dark:text-gray-300">
+            {locationData.address}
+          </p>
+          {locationData.hasLocation && (
+            <button className="mt-2 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700">
+              <Map className="h-4 w-4" />
+              Auf Karte anzeigen
+            </button>
+          )}
+        </div>
+      </div>
+    ),
+    [locationData],
+  );
 
-                    <div
-                      className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${getPriorityColor(data.step2.priority)}`}
-                    >
-                      <div
-                        className={`h-2 w-2 rounded-full ${
-                          data.step2.priority === "urgent"
-                            ? "bg-red-500"
-                            : data.step2.priority === "new"
-                              ? "bg-green-500"
-                              : "bg-gray-500"
-                        }`}
-                      />
-                      {data.step2.priority === "urgent"
-                        ? "Dringend"
-                        : data.step2.priority === "new"
-                          ? "Neu"
-                          : "Normal"}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Title */}
-              {isEditMode ? (
-                <Input
-                  value={data.step1.title}
-                  onChange={(e) =>
-                    updateField("step1", "title", e.target.value)
-                  }
-                  className="border-0 bg-transparent text-3xl font-bold text-white placeholder-white/50 focus:border-0 focus:ring-0 lg:text-4xl"
-                  placeholder="Titel eingeben..."
-                />
-              ) : (
-                <h1 className="text-3xl font-bold leading-tight text-white lg:text-4xl">
-                  {data.step1.title}
-                </h1>
-              )}
-
-              {/* Short Description */}
-              {isEditMode ? (
-                <Textarea
-                  value={data.step2.shortDescription}
-                  onChange={(e) =>
-                    updateField("step2", "shortDescription", e.target.value)
-                  }
-                  className="resize-none border-0 bg-transparent text-lg text-blue-100 placeholder-white/50 focus:border-0 focus:ring-0"
-                  placeholder="Kurze Beschreibung..."
-                  rows={2}
-                />
-              ) : (
-                <p className="max-w-2xl text-lg leading-relaxed text-blue-100">
-                  {shortDescription}
-                </p>
-              )}
+  const contactSection = useMemo(
+    () => (
+      <div className="mb-6">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+          <Phone className="h-5 w-5" />
+          Kontakt
+        </h2>
+        <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <User className="h-4 w-4 text-gray-500" />
+              <span className="text-gray-700 dark:text-gray-300">
+                {contactData.person}
+              </span>
             </div>
-
-            {/* Case Number and Stats */}
-            <div className="flex flex-col items-start gap-4 lg:items-end">
-              <div className="text-left lg:text-right">
-                <CaseNumberDetailed caseNumber={data.step1.caseNumber ?? ""} />
-              </div>
-
-              <div className="flex items-center gap-4 text-sm text-blue-100">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {new Date().toLocaleDateString("de-DE")}
-                </span>
-                <span className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />0 Aufrufe
+            <div className="flex items-center gap-3">
+              <Phone className="h-4 w-4 text-gray-500" />
+              <span className="text-gray-700 dark:text-gray-300">
+                {contactData.phone}
+              </span>
+            </div>
+            {contactData.email && (
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-gray-500" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  {contactData.email}
                 </span>
               </div>
+            )}
+            <div className="flex items-center gap-3">
+              <Info className="h-4 w-4 text-gray-500" />
+              <span className="text-gray-700 dark:text-gray-300">
+                {contactData.department}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <span className="text-gray-700 dark:text-gray-300">
+                {contactData.hours}
+              </span>
             </div>
           </div>
         </div>
       </div>
+    ),
+    [contactData],
+  );
 
-      {/* Quick Actions */}
-      {isEditMode && (
-        <Card className="border-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Nächste Schritte
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Fügen Sie weitere Details hinzu
-                </p>
-              </div>
-              <Button onClick={onNext} className="flex items-center gap-2">
-                Zur Beschreibung
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+  const actionSection = useMemo(
+    () => (
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+            <Share2 className="h-4 w-4" />
+            Teilen
+          </button>
+          <button className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+            <Heart className="h-4 w-4" />
+            Merken
+          </button>
+        </div>
+        <button
+          onClick={onNext}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Weiter
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    ),
+    [onNext],
+  );
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      {headerSection}
+      {descriptionSection}
+      {imageSection}
+      {locationSection}
+      {contactSection}
+      {actionSection}
+
+      {/* Fullscreen Modal */}
+      {isImageFullscreen && imageData.currentImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+          <button
+            onClick={toggleFullscreen}
+            className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <Image
+            src={imageData.currentImage}
+            alt="Fahndungsbild (Vollbild)"
+            width={800}
+            height={600}
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+          />
+        </div>
       )}
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left Column - Contact & Details */}
-        <div className="space-y-6 lg:col-span-1">
-          {/* Contact Information */}
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5 text-blue-600" />
-                Kontaktinformationen
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Kontaktperson
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {data.step5.contactPerson || "Nicht angegeben"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <Shield className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Abteilung
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {data.step5.department || "Nicht angegeben"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Verfügbare Zeiten
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {data.step5.availableHours || "Nicht angegeben"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Case Details */}
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <FileText className="h-5 w-5 text-blue-600" />
-                Fall-Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <Tag className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Status
-                    </p>
-                    <BadgeComponent variant="secondary" className="mt-1">
-                      Aktiv
-                    </BadgeComponent>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Bereich
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      Bundesweit
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Erstellt am
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {new Date().toLocaleDateString("de-DE")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Location Map */}
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Map className="h-5 w-5 text-blue-600" />
-                Standort
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-                  <Navigation className="h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Letzter bekannter Standort
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {location}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Interactive Map */}
-                {location && location !== "Standort nicht angegeben" ? (
-                  <div className="space-y-3">
-                    <div className="aspect-video w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                      {isMapLoading ? (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <div className="text-center text-gray-400">
-                            <Map className="mx-auto mb-2 h-8 w-8 animate-pulse" />
-                            <p className="text-sm">Karte wird geladen...</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="relative h-full w-full">
-                          <iframe
-                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(location)}&layer=mapnik&marker=${encodeURIComponent(location)}`}
-                            className="h-full w-full border-0"
-                            title="Standort Karte"
-                            loading="lazy"
-                          />
-                          <div className="pointer-events-none absolute inset-0" />
-                        </div>
-                      )}
-                    </div>
-
-                    <Button
-                      onClick={openInMaps}
-                      variant="outline"
-                      className="flex w-full items-center gap-2"
-                    >
-                      <ExternalLinkIcon className="h-4 w-4" />
-                      In Google Maps öffnen
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="aspect-video w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
-                    <div className="flex h-full w-full items-center justify-center">
-                      <div className="text-center text-gray-400">
-                        <Map className="mx-auto mb-2 h-8 w-8" />
-                        <p className="text-sm">Kein Standort verfügbar</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Images & Documents */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* Image Gallery */}
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Image
-                  className="h-5 w-5 text-blue-600"
-                  aria-hidden="true"
-                  aria-label="Bilder und Dokumente Icon"
-                />
-                Bilder & Dokumente
-                {uploadedImages.length > 0 && (
-                  <BadgeComponent variant="secondary" className="ml-2">
-                    {uploadedImages.length}
-                  </BadgeComponent>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {uploadedImages.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                  {uploadedImages.map((image, index) => (
-                    <div
-                      key={index}
-                      className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
-                    >
-                      <NextImage
-                        src={image.url}
-                        alt={image.alt_text ?? `Bild ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                      />
-                      <div className="absolute inset-0 bg-black/0 transition-all group-hover:bg-black/20" />
-                      <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                  {/* Empty State Placeholders */}
-                  {[1, 2, 3, 4].map((index) => (
-                    <div
-                      key={index}
-                      className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
-                    >
-                      <div className="flex h-full w-full items-center justify-center">
-                        <div className="text-center text-gray-400">
-                          <FileImage className="mx-auto mb-2 h-8 w-8" />
-                          <p className="text-xs">Bild {index}</p>
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 bg-black/0 transition-all group-hover:bg-black/20" />
-                      <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Kontakt aufnehmen
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              E-Mail senden
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Share2 className="h-4 w-4" />
-              Teilen
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Merken
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              Kommentar
-            </Button>
+      {/* Upload Progress */}
+      {isUploading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="rounded-lg bg-white p-6 dark:bg-gray-800">
+            <div className="mb-4 text-center">
+              <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Bilder werden hochgeladen...
+              </p>
+            </div>
+            <div className="w-64 rounded-full bg-gray-200 dark:bg-gray-700">
+              <div
+                className="h-2 rounded-full bg-blue-600 transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
+});
+
+// Helper Functions
+function getCategoryIcon(category?: string): string {
+  switch (category) {
+    case "WANTED_PERSON":
+      return "🚨";
+    case "MISSING_PERSON":
+      return "👤";
+    case "UNKNOWN_DEAD":
+      return "⚰️";
+    case "STOLEN_GOODS":
+      return "💎";
+    default:
+      return "📋";
+  }
 }
+
+function getCategoryLabel(category?: string): string {
+  switch (category) {
+    case "WANTED_PERSON":
+      return "STRAFTÄTER";
+    case "MISSING_PERSON":
+      return "VERMISSTE PERSON";
+    case "UNKNOWN_DEAD":
+      return "UNBEKANNTE TOTE";
+    case "STOLEN_GOODS":
+      return "GESTOHLENE SACHE";
+    default:
+      return "UNBEKANNT";
+  }
+}
+
+function getCategoryStyle(category?: string): string {
+  switch (category) {
+    case "WANTED_PERSON":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    case "MISSING_PERSON":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    case "UNKNOWN_DEAD":
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    case "STOLEN_GOODS":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  }
+}
+
+function getPriorityStyle(priority?: string): string {
+  switch (priority) {
+    case "urgent":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    case "new":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    default:
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+  }
+}
+
+function getPriorityDotColor(priority?: string): string {
+  switch (priority) {
+    case "urgent":
+      return "bg-red-500";
+    case "new":
+      return "bg-green-500";
+    default:
+      return "bg-blue-500";
+  }
+}
+
+function getPriorityLabel(priority?: string): string {
+  switch (priority) {
+    case "urgent":
+      return "Dringend";
+    case "new":
+      return "Neu";
+    default:
+      return "Normal";
+  }
+}
+
+export default OverviewCategory;

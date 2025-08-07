@@ -28,7 +28,9 @@ export default function LocationsCategory({
   onNext,
   onPrevious,
 }: LocationsCategoryProps) {
-  const mainLocation = data.step4.mainLocation;
+  // Sicherheitsmaßnahme: Stelle sicher, dass step4 existiert
+  const step4 = data.step4 ?? { mainLocation: null };
+  const mainLocation = step4.mainLocation;
 
   const updateMainLocation = (field: string, value: unknown) => {
     updateField("step4", "mainLocation", {

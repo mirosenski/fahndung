@@ -1,51 +1,81 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  ArrowLeft,
-  Edit3,
-  Save,
-  X,
-  MoreVertical,
-  Trash2,
-  Archive,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import React, { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { getCurrentSession, type Session, canEdit } from "~/lib/auth";
-import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import PageLayout from "@/components/layout/PageLayout";
-import { InvestigationEditErrorBoundary } from "~/components/fahndungen/InvestigationEditErrorBoundary";
-import { useInvestigationEdit } from "~/hooks/useInvestigationEdit";
+import { ArrowLeft, Save, Edit, Eye, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { api } from "~/trpc/react";
 import { useInvestigationSync } from "~/hooks/useInvestigationSync";
+import { useInvestigationEdit } from "~/hooks/useInvestigationEdit";
+import { useAuth } from "~/hooks/useAuth";
+import { canEdit } from "~/lib/auth";
+import PageLayout from "~/components/layout/PageLayout";
+import { InvestigationEditErrorBoundary } from "~/components/fahndungen/InvestigationEditErrorBoundary";
+import { Button } from "~/components/ui/button";
+import dynamic from "next/dynamic";
+import { InvestigationDataConverter } from "~/lib/services/investigationDataConverter";
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
-// Import categories
-import {
-  OverviewCategory,
-  DescriptionCategory,
-  MediaCategory,
-  LocationsCategory,
-  ContactCategory,
-} from "./index";
+// Lazy Loading für bessere Performance
+const OverviewCategory = dynamic(
+  () => import("./OverviewCategory"),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const DescriptionCategory = dynamic(
+  () => import("./DescriptionCategory"),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const MediaCategory = dynamic(
+  () => import("./MediaCategory"),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const LocationsCategory = dynamic(
+  () => import("./LocationsCategory"),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const ContactCategory = dynamic(
+  () => import("./ContactCategory"),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface FahndungCategoriesContainerProps {
   investigationId: string;
@@ -54,127 +84,175 @@ interface FahndungCategoriesContainerProps {
 export default function FahndungCategoriesContainer({
   investigationId,
 }: FahndungCategoriesContainerProps) {
-  const searchParams = useSearchParams();
-  const [session, setSession] = React.useState<Session | null>(null);
+  const router = useRouter();
+  const { session } = useAuth();
   const [activeCategory, setActiveCategory] = useState("overview");
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  React.useEffect(() => {
-    void getCurrentSession().then(setSession);
+  // Optimierte Hooks mit reduzierter Synchronisation
+  const { investigation, isLoading } = useInvestigationSync(investigationId);
+  const {
+    editedData,
+    isEditMode,
+    save,
+    updateField,
+    globalSync,
+  } = useInvestigationEdit(investigationId);
+
+  // Delete mutation hook
+  const deleteMutation = api.post.deleteInvestigation.useMutation({
+    onSuccess: () => {
+      router.push("/fahndungen");
+    },
+    onError: (error) => {
+      console.error("Fehler beim Löschen:", error);
+    },
+  });
+
+  // Memoized Navigation Function
+  const navigateToCategory = useCallback((category: string) => {
+    setActiveCategory(category);
   }, []);
 
-  // Verwende die Synchronisations-Hook für bessere Datenaktualisierung
-  const { investigation: syncInvestigation, globalSync } =
-    useInvestigationSync(investigationId);
-
-  // Verwende den Custom Hook für Edit-Funktionalität
-  const editHook = useInvestigationEdit(investigationId);
-
-  // Separate useEffect for edit parameter handling
-  React.useEffect(() => {
-    const editParam = searchParams?.get("edit");
-    if (
-      editParam === "true" &&
-      canEdit(session?.profile ?? null) &&
-      !editHook.isEditing
-    ) {
-      editHook.startEditing();
-    }
-  }, [searchParams, session?.profile, editHook]);
-
-  const {
-    isEditing: isEditMode,
-    original: investigation,
-    current: editedData,
-    isLoading,
-    validationWarnings,
-    updateField,
-    save,
-    cancel,
-    startEditing,
-    deleteInvestigation,
-    publishInvestigation,
-    archiveInvestigation,
-    unpublishInvestigation,
-  } = editHook;
-
-  // Verwende syncInvestigation als primäre Datenquelle
-  const dbInvestigation = syncInvestigation;
-  const investigationStatus = dbInvestigation?.status;
-
-  const handleDelete = async () => {
-    try {
-      await deleteInvestigation();
-      window.location.href = "/fahndungen";
-    } catch (error) {
-      console.error("Delete error:", error);
-    }
-  };
-
-  // Automatische Refetch nach Speichern
-  React.useEffect(() => {
-    if (!isEditMode && investigationId) {
-      console.log("🔄 Sofortige Synchronisation nach Speichern");
-      globalSync();
-    }
-  }, [isEditMode, investigationId, globalSync]);
-
-  // Navigation zwischen Kategorien
-  const navigateToCategory = (category: string) => {
-    setActiveCategory(category);
-  };
-
-  const handleSave = async () => {
+  // Memoized Save Handler
+  const handleSave = useCallback(async () => {
     await save();
-    // Nach dem Speichern zur Übersicht zurückkehren
     setActiveCategory("overview");
-  };
+  }, [save]);
 
-  // Loading State
-  if (isLoading) {
-    return (
-      <PageLayout session={session}>
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-            <p className="text-gray-600 dark:text-gray-400">
-              Lade Fahndungsdaten...
-            </p>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
+  // Memoized Delete Handler
+  const handleDelete = useCallback(async () => {
+    if (!investigation) return;
 
-  if (!investigation) {
-    return (
-      <PageLayout session={session}>
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
-              <div className="h-6 w-6 text-white">!</div>
+    try {
+      await deleteMutation.mutateAsync({ id: investigationId });
+    } catch (error) {
+      console.error("Fehler beim Löschen:", error);
+    }
+  }, [investigation, investigationId, deleteMutation]);
+
+  // Memoized Loading State
+  const loadingState = useMemo(() => {
+    if (isLoading) {
+      return (
+        <PageLayout session={session}>
+          <div className="flex min-h-[400px] items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+              <p className="text-gray-600 dark:text-gray-400">
+                Lade Fahndungsdaten...
+              </p>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Fahndung nicht gefunden
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Die angeforderte Fahndung existiert nicht.
-            </p>
-            <Link
-              href="/fahndungen"
-              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Zurück zur Übersicht
-            </Link>
           </div>
-        </div>
-      </PageLayout>
-    );
-  }
+        </PageLayout>
+      );
+    }
+    return null;
+  }, [isLoading, session]);
 
-  // Render content based on active category
-  const renderCategoryContent = (): React.JSX.Element => {
-    const data = isEditMode ? editedData : investigation;
+  // Memoized Error State
+  const errorState = useMemo(() => {
+    if (!investigation && !isLoading) {
+      return (
+        <PageLayout session={session}>
+          <div className="flex min-h-[400px] items-center justify-center">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
+                <div className="h-6 w-6 text-white">!</div>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Fahndung nicht gefunden
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Die angeforderte Fahndung existiert nicht.
+              </p>
+              <Link
+                href="/fahndungen"
+                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Zurück zur Übersicht
+              </Link>
+            </div>
+          </div>
+        </PageLayout>
+      );
+    }
+    return null;
+  }, [investigation, isLoading, session]);
+
+  // Memoized Data Conversion
+  const convertedData = useMemo(() => {
+    if (!investigation) return null;
+
+    // Konvertiere die Datenbankdaten zu UI-Format
+    const conversion = InvestigationDataConverter.toUIFormat(investigation as unknown as Record<string, unknown>);
+    if (conversion.success) {
+      return conversion.data;
+    } else {
+      console.error("Fehler bei der Datenkonvertierung:", conversion.error);
+      // Fallback: Verwende die Rohdaten mit Standardwerten
+      return {
+        step1: {
+          title: (investigation.title) ?? "",
+          category: (investigation.category) ?? "MISSING_PERSON",
+          caseNumber: (investigation.case_number) ?? "",
+        },
+        step2: {
+          shortDescription: (investigation.short_description) ?? "",
+          description: (investigation.description) ?? "",
+          priority: (investigation.priority as string) ?? "normal",
+          tags: (investigation.tags) ?? [],
+          features: (investigation.features) ?? "",
+        },
+        step3: {
+          mainImage:
+            (investigation.images as Array<{ url: string }>)?.[0]?.url ?? null,
+          additionalImages:
+            (investigation.images as Array<{ url: string }>)
+              ?.slice(1)
+              .map((img) => img.url) ?? [],
+        },
+        step4: {
+          mainLocation: investigation.location
+            ? { address: investigation.location }
+            : null,
+        },
+        step5: {
+          contactPerson:
+            ((investigation.contact_info)?.[
+              "person"
+            ] as string) ?? "Polizei",
+          contactPhone:
+            ((investigation.contact_info)?.[
+              "phone"
+            ] as string) ?? "+49 711 8990-0",
+          contactEmail:
+            ((investigation.contact_info)?.[
+              "email"
+            ] as string) ?? "",
+          department: (investigation.station) ?? "Polizeipräsidium",
+          availableHours:
+            ((investigation.contact_info)?.[
+              "hours"
+            ] as string) ?? "24/7",
+        },
+        images:
+          (investigation.images as Array<{
+            id: string;
+            url: string;
+            alt_text?: string;
+            caption?: string;
+          }>) ?? [],
+        contact_info:
+          (investigation.contact_info!) ?? {},
+      } as UIInvestigationData;
+    }
+  }, [investigation]);
+
+  // Memoized Category Content
+  const categoryContent = useMemo(() => {
+    if (!convertedData) return null;
+
+    const data = isEditMode ? editedData : convertedData;
 
     if (!data) {
       return (
@@ -246,16 +324,20 @@ export default function FahndungCategoriesContainer({
           </div>
         );
     }
-  };
+  }, [activeCategory, convertedData, editedData, isEditMode, updateField, navigateToCategory, handleSave]);
 
-  // Category navigation
-  const categories = [
+  // Memoized Categories Array
+  const categories = useMemo(() => [
     { id: "overview", label: "Übersicht", icon: "📋" },
     { id: "description", label: "Beschreibung", icon: "📝" },
     { id: "media", label: "Medien", icon: "🖼️" },
     { id: "locations", label: "Orte", icon: "📍" },
     { id: "contact", label: "Kontakt", icon: "📞" },
-  ];
+  ], []);
+
+  // Early returns für Loading und Error States
+  if (loadingState) return loadingState;
+  if (errorState) return errorState;
 
   return (
     <InvestigationEditErrorBoundary>
@@ -280,83 +362,38 @@ export default function FahndungCategoriesContainer({
                     {isEditMode ? (
                       <div className="flex items-center gap-2">
                         <Button
-                          onClick={save}
+                          onClick={handleSave}
                           className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                         >
                           <Save className="h-4 w-4" />
                           Speichern
                         </Button>
                         <Button
-                          onClick={cancel}
+                          onClick={() => globalSync()}
                           variant="outline"
                           className="flex items-center gap-2"
                         >
-                          <X className="h-4 w-4" />
-                          Abbrechen
+                          <Eye className="h-4 w-4" />
+                          Ansicht
                         </Button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <Button
-                          onClick={startEditing}
+                          onClick={() => globalSync()}
                           className="flex items-center gap-2"
                         >
-                          <Edit3 className="h-4 w-4" />
+                          <Edit className="h-4 w-4" />
                           Bearbeiten
                         </Button>
-
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {investigation && (
-                              <>
-                                {investigationStatus === "draft" && (
-                                  <DropdownMenuItem
-                                    onClick={() => publishInvestigation()}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                    Veröffentlichen
-                                  </DropdownMenuItem>
-                                )}
-
-                                {investigationStatus === "published" && (
-                                  <DropdownMenuItem
-                                    onClick={() => unpublishInvestigation()}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <EyeOff className="h-4 w-4" />
-                                    Unveröffentlichen
-                                  </DropdownMenuItem>
-                                )}
-
-                                {investigationStatus !== "archived" && (
-                                  <DropdownMenuItem
-                                    onClick={() => archiveInvestigation()}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Archive className="h-4 w-4" />
-                                    Archivieren
-                                  </DropdownMenuItem>
-                                )}
-
-                                <DropdownMenuSeparator />
-
-                                <DropdownMenuItem
-                                  onClick={() => setIsDeleteDialogOpen(true)}
-                                  className="flex items-center gap-2 text-red-600 focus:text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Löschen
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                          onClick={handleDelete}
+                          variant="destructive"
+                          className="flex items-center gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Löschen
+                        </Button>
                       </div>
                     )}
                   </>
@@ -367,77 +404,30 @@ export default function FahndungCategoriesContainer({
 
           {/* Category Navigation */}
           <div className="mb-6">
-            <div className="flex flex-wrap gap-2">
+            <nav className="flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
               {categories.map((category) => (
-                <Button
+                <button
                   key={category.id}
-                  variant={
-                    activeCategory === category.id ? "default" : "outline"
-                  }
                   onClick={() => navigateToCategory(category.id)}
-                  className="flex items-center gap-2"
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    activeCategory === category.id
+                      ? "bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400"
+                      : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  }`}
                 >
                   <span>{category.icon}</span>
-                  {category.label}
-                </Button>
+                  <span className="hidden sm:inline">{category.label}</span>
+                </button>
               ))}
-            </div>
+            </nav>
           </div>
 
-          {/* Validation Warnings */}
-          {validationWarnings && validationWarnings.length > 0 && (
-            <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-              <h4 className="mb-2 font-medium text-yellow-800">
-                Datenqualitäts-Hinweise:
-              </h4>
-              <ul className="list-inside list-disc text-sm text-yellow-700">
-                {validationWarnings.map((warning, index) => (
-                  <li key={index}>{warning}</li>
-                ))}
-              </ul>
-              <p className="mt-2 text-xs text-yellow-600">
-                Diese Hinweise beeinträchtigen nicht die Bearbeitung, sollten
-                aber behoben werden.
-              </p>
-            </div>
-          )}
-
-          {/* Main Content */}
-          <div className="w-full">{renderCategoryContent()}</div>
+          {/* Category Content */}
+          <div className="min-h-[600px]">
+            {categoryContent}
+          </div>
         </div>
       </PageLayout>
-
-      {/* Lösch-Dialog */}
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500">
-                <div className="h-2 w-2 rounded-full bg-white"></div>
-              </div>
-              Fahndung löschen
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Sind Sie sicher, dass Sie die Fahndung &quot;
-              {investigation?.step1.title}
-              &quot; löschen möchten? Diese Aktion kann nicht rückgängig gemacht
-              werden.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Löschen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </InvestigationEditErrorBoundary>
   );
 }

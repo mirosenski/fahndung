@@ -36,6 +36,15 @@ export default function ContactCategory({
   onPrevious,
   onSave,
 }: ContactCategoryProps) {
+  // Sicherheitsmaßnahme: Stelle sicher, dass step5 existiert
+  const step5 = data.step5 ?? {
+    contactPerson: "",
+    contactPhone: "",
+    contactEmail: "",
+    department: "",
+    availableHours: "",
+  };
+
   return (
     <div className="space-y-6">
       {/* Contact Information */}
@@ -50,7 +59,7 @@ export default function ContactCategory({
             </Label>
             {isEditMode ? (
               <Input
-                value={data.step5.contactPerson}
+                value={step5.contactPerson}
                 onChange={(e) =>
                   updateField("step5", "contactPerson", e.target.value)
                 }
@@ -59,7 +68,7 @@ export default function ContactCategory({
               />
             ) : (
               <p className="mt-1 text-gray-700 dark:text-gray-300">
-                {data.step5.contactPerson || "Nicht angegeben"}
+                {step5.contactPerson || "Nicht angegeben"}
               </p>
             )}
           </div>
@@ -70,7 +79,7 @@ export default function ContactCategory({
             </Label>
             {isEditMode ? (
               <Input
-                value={data.step5.contactPhone}
+                value={step5.contactPhone}
                 onChange={(e) =>
                   updateField("step5", "contactPhone", e.target.value)
                 }
@@ -80,7 +89,7 @@ export default function ContactCategory({
               />
             ) : (
               <p className="mt-1 text-gray-700 dark:text-gray-300">
-                {data.step5.contactPhone || "Nicht angegeben"}
+                {step5.contactPhone || "Nicht angegeben"}
               </p>
             )}
           </div>
@@ -91,7 +100,7 @@ export default function ContactCategory({
             </Label>
             {isEditMode ? (
               <Input
-                value={data.step5.contactEmail ?? ""}
+                value={step5.contactEmail ?? ""}
                 onChange={(e) => {
                   const email = e.target.value.trim();
                   // Leere E-Mail oder gültige E-Mail-Adresse
@@ -103,7 +112,7 @@ export default function ContactCategory({
               />
             ) : (
               <p className="mt-1 text-gray-700 dark:text-gray-300">
-                {data.step5.contactEmail || "Nicht angegeben"}
+                {step5.contactEmail || "Nicht angegeben"}
               </p>
             )}
           </div>
@@ -114,7 +123,7 @@ export default function ContactCategory({
             </Label>
             {isEditMode ? (
               <Input
-                value={data.step5.department}
+                value={step5.department}
                 onChange={(e) =>
                   updateField("step5", "department", e.target.value)
                 }
@@ -123,7 +132,7 @@ export default function ContactCategory({
               />
             ) : (
               <p className="mt-1 text-gray-700 dark:text-gray-300">
-                {data.step5.department || "Nicht angegeben"}
+                {step5.department || "Nicht angegeben"}
               </p>
             )}
           </div>
@@ -134,7 +143,7 @@ export default function ContactCategory({
             </Label>
             {isEditMode ? (
               <Textarea
-                value={data.step5.availableHours}
+                value={step5.availableHours}
                 onChange={(e) =>
                   updateField("step5", "availableHours", e.target.value)
                 }
@@ -144,7 +153,7 @@ export default function ContactCategory({
               />
             ) : (
               <p className="mt-1 text-gray-700 dark:text-gray-300">
-                {data.step5.availableHours || "Nicht angegeben"}
+                {step5.availableHours || "Nicht angegeben"}
               </p>
             )}
           </div>
@@ -161,33 +170,33 @@ export default function ContactCategory({
             <div className="flex items-center gap-3">
               <User className="h-5 w-5 text-gray-500" />
               <span className="text-gray-700 dark:text-gray-300">
-                {data.step5.contactPerson || "Nicht angegeben"}
+                {step5.contactPerson || "Nicht angegeben"}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="h-5 w-5 text-gray-500" />
               <span className="text-gray-700 dark:text-gray-300">
-                {data.step5.contactPhone || "Nicht angegeben"}
+                {step5.contactPhone || "Nicht angegeben"}
               </span>
             </div>
-            {data.step5.contactEmail && (
+            {step5.contactEmail && (
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-gray-500" />
                 <span className="text-gray-700 dark:text-gray-300">
-                  {data.step5.contactEmail}
+                  {step5.contactEmail}
                 </span>
               </div>
             )}
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-gray-500" />
               <span className="text-gray-700 dark:text-gray-300">
-                {data.step5.department || "Nicht angegeben"}
+                {step5.department || "Nicht angegeben"}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-gray-500" />
               <span className="text-gray-700 dark:text-gray-300">
-                {data.step5.availableHours || "Nicht angegeben"}
+                {step5.availableHours || "Nicht angegeben"}
               </span>
             </div>
           </div>
@@ -249,9 +258,7 @@ export default function ContactCategory({
       )}
 
       {/* Validation Warnings */}
-      {(!data.step5.contactPerson ||
-        !data.step5.contactPhone ||
-        !data.step5.department) && (
+      {(!step5.contactPerson || !step5.contactPhone || !step5.department) && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-yellow-600" />
@@ -266,7 +273,7 @@ export default function ContactCategory({
       )}
 
       {/* Success Message */}
-      {!isEditMode && data.step5.contactPerson && data.step5.contactPhone && (
+      {!isEditMode && step5.contactPerson && step5.contactPhone && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-4">
           <div className="flex items-center gap-2">
             <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-600">

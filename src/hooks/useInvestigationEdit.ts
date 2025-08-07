@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { InvestigationDataConverter } from "~/lib/services/investigationDataConverter";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
-import { z } from "zod";
 
 export function useInvestigationEdit(investigationId: string) {
   const utils = api.useUtils();
@@ -15,405 +14,192 @@ export function useInvestigationEdit(investigationId: string) {
   } = api.post.getInvestigation.useQuery(
     { id: investigationId },
     {
-      // Sofortige Cache-Invalidierung für schnellere Updates
-      staleTime: 0, // Sofort als veraltet markieren
-      // Aktivierte Refetch-Strategien
-      refetchOnWindowFocus: true,
+      // Reduzierte Synchronisation für bessere Performance
+      staleTime: 30 * 1000, // 30 Sekunden Cache
+      refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 1000, // Jede Sekunde prüfen
+      refetchInterval: 30000, // Alle 30 Sekunden (reduziert von 1s)
     },
   );
 
-  // Update-Mutation mit verbesserter Cache-Invalidierung
+  // Update mutation hook
   const updateMutation = api.post.updateInvestigation.useMutation({
-    onMutate: async (newData) => {
-      // Optimistisches Update: Sofort UI aktualisieren
-      console.log("🚀 Optimistisches Update:", newData);
-
-      return { previousData: dbInvestigation };
-    },
-    onSuccess: (_updatedData) => {
-      toast.success("Änderungen erfolgreich gespeichert");
-
-      console.log("✅ Update erfolgreich - Cache aktualisiert");
-
-      // Sofortige Cache-Invalidierung für alle relevanten Queries
-      void utils.post.getInvestigation.invalidate({ id: investigationId });
-      void utils.post.getInvestigations.invalidate(); // Wichtig für die Fahndungsliste
-      void utils.post.getMyInvestigations.invalidate();
-
-      // Direkter Refetch ohne Verzögerung
-      void refetch();
-      void utils.post.getInvestigations.refetch();
-      void utils.post.getMyInvestigations.refetch();
-    },
-    onError: (error, _variables, _context) => {
-      toast.error(`Fehler beim Speichern: ${error.message}`);
-
-      console.error("❌ Update-Fehler:", error);
-    },
-    onSettled: () => {
-      // Finale Synchronisation
-      void refetch();
-    },
-  });
-
-  // Delete-Mutation mit verbesserter Cache-Invalidierung
-  const deleteMutation = api.post.deleteInvestigation.useMutation({
     onSuccess: () => {
-      toast.success("Fahndung erfolgreich gelöscht");
-
-      // Sofortige Cache-Invalidierung für alle relevanten Queries
-      void utils.post.getInvestigations.invalidate();
-      void utils.post.getMyInvestigations.invalidate();
-
-      // Direkter Refetch für sofortige Synchronisation
-      void utils.post.getInvestigations.refetch();
-      void utils.post.getMyInvestigations.refetch();
+      toast.success("Fahndung erfolgreich gespeichert");
+      setIsEditMode(false);
     },
     onError: (error) => {
-      toast.error(`Fehler beim Löschen: ${error.message}`);
+      console.error("Fehler beim Speichern:", error);
+      toast.error("Fehler beim Speichern der Fahndung");
     },
   });
 
-  // Publish-Mutation mit verbesserter Cache-Invalidierung
-  const publishMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: (_updatedData) => {
-      toast.success("Fahndung erfolgreich veröffentlicht");
+  const [editedData, setEditedData] = useState<UIInvestigationData | null>(
+    null,
+  );
+  const [isEditMode, setIsEditMode] = useState(false);
 
-      // Sofortige Cache-Invalidierung für alle relevanten Queries
-      void utils.post.getInvestigation.invalidate({ id: investigationId });
-      void utils.post.getInvestigations.invalidate();
-      void utils.post.getMyInvestigations.invalidate();
-
-      // Direkter Refetch für sofortige Synchronisation
-      void refetch();
-      void utils.post.getInvestigations.refetch();
-      void utils.post.getMyInvestigations.refetch();
-    },
-    onError: (error) => {
-      toast.error(`Fehler beim Veröffentlichen: ${error.message}`);
-    },
-  });
-
-  // Archive-Mutation mit verbesserter Cache-Invalidierung
-  const archiveMutation = api.post.updateInvestigation.useMutation({
-    onSuccess: (_updatedData) => {
-      toast.success("Fahndung erfolgreich archiviert");
-
-      // Sofortige Cache-Invalidierung für alle relevanten Queries
-      void utils.post.getInvestigation.invalidate({ id: investigationId });
-      void utils.post.getInvestigations.invalidate();
-      void utils.post.getMyInvestigations.invalidate();
-
-      // Direkter Refetch für sofortige Synchronisation
-      void refetch();
-      void utils.post.getInvestigations.refetch();
-      void utils.post.getMyInvestigations.refetch();
-    },
-    onError: (error) => {
-      toast.error(`Fehler beim Archivieren: ${error.message}`);
-    },
-  });
-
-  const [editState, setEditState] = useState<{
-    isEditing: boolean;
-    isDirty: boolean;
-    errors: string[];
-    validationWarnings: string[];
-    original: UIInvestigationData | null;
-    current: UIInvestigationData | null;
-  }>({
-    isEditing: false,
-    isDirty: false,
-    errors: [],
-    validationWarnings: [],
-    original: null,
-    current: null,
-  });
-
-  // Initialisiere Daten wenn geladen
+  // Update edited data when dbInvestigation changes
   useEffect(() => {
-    if (dbInvestigation && !editState.original) {
-      const converted = InvestigationDataConverter.toUIFormat(
+    if (dbInvestigation) {
+      console.log("🔍 DEBUG: Rohdaten aus DB:", dbInvestigation);
+
+      // Konvertiere die Daten mit dem InvestigationDataConverter
+      const conversion = InvestigationDataConverter.toUIFormat(
         dbInvestigation as unknown as Record<string, unknown>,
       );
-
-      if (converted.success) {
-        setEditState((prev) => ({
-          ...prev,
-          original: converted.data,
-          current: converted.data,
-        }));
-      } else {
-        // Zeige Warnungen, aber lade trotzdem die Daten
-        console.warn("Daten-Validierungswarnungen:", converted.error);
-
-        // Erstelle Fallback-Daten
-        const fallbackData = createFallbackData(
-          dbInvestigation as unknown as Record<string, unknown>,
+      if (conversion.success) {
+        console.log(
+          "✅ DEBUG: Datenkonvertierung erfolgreich:",
+          conversion.data,
         );
-        setEditState((prev) => ({
-          ...prev,
-          original: fallbackData,
-          current: fallbackData,
-          validationWarnings:
-            converted.error instanceof z.ZodError
-              ? converted.error.errors.map(
-                  (e) => `${e.path.join(".")}: ${e.message}`,
-                )
-              : [converted.error.message],
-        }));
+        setEditedData(conversion.data);
+      } else {
+        console.error(
+          "❌ DEBUG: Fehler bei der Datenkonvertierung:",
+          conversion.error,
+        );
+        // Fallback: Verwende die Rohdaten mit Standardwerten
+        const fallbackData: UIInvestigationData = {
+          step1: {
+            title: dbInvestigation.title ?? "",
+            category:
+              (dbInvestigation.category as
+                | "WANTED_PERSON"
+                | "MISSING_PERSON"
+                | "UNKNOWN_DEAD"
+                | "STOLEN_GOODS") ?? "MISSING_PERSON",
+            caseNumber: dbInvestigation.case_number ?? "",
+          },
+          step2: {
+            shortDescription: dbInvestigation.short_description ?? "",
+            description: dbInvestigation.description ?? "",
+            priority: dbInvestigation.priority ?? "normal",
+            tags: dbInvestigation.tags ?? [],
+            features: dbInvestigation.features ?? "",
+          },
+          step3: {
+            mainImage:
+              (dbInvestigation.images as Array<{ url: string }>)?.[0]?.url ??
+              null,
+            additionalImages:
+              (dbInvestigation.images as Array<{ url: string }>)
+                ?.slice(1)
+                .map((img) => img.url) ?? [],
+          },
+          step4: {
+            mainLocation: dbInvestigation.location
+              ? { address: dbInvestigation.location }
+              : null,
+          },
+          step5: {
+            contactPerson:
+              (dbInvestigation.contact_info?.["person"] as string) ?? "Polizei",
+            contactPhone:
+              (dbInvestigation.contact_info?.["phone"] as string) ??
+              "+49 711 8990-0",
+            contactEmail:
+              (dbInvestigation.contact_info?.["email"] as string) ?? "",
+            department: dbInvestigation.station ?? "Polizeipräsidium",
+            availableHours:
+              (dbInvestigation.contact_info?.["hours"] as string) ?? "24/7",
+          },
+          images:
+            (dbInvestigation.images as Array<{
+              id: string;
+              url: string;
+              alt_text?: string;
+              caption?: string;
+            }>) ?? [],
+          contact_info: dbInvestigation.contact_info! ?? {},
+        };
+        console.log("🔄 DEBUG: Fallback-Daten verwendet:", fallbackData);
+        setEditedData(fallbackData);
       }
     }
-  }, [dbInvestigation, editState.original]);
+  }, [dbInvestigation]);
 
+  // Optimierte Update-Funktion
   const updateField = useCallback(
     (step: keyof UIInvestigationData, field: string, value: unknown) => {
-      setEditState((prev) => {
-        if (!prev.current) return prev;
-
-        const updated = {
-          ...prev.current,
-          [step]: {
-            ...prev.current[step],
-            [field]: value,
-          },
-        };
+      setEditedData((prev) => {
+        if (!prev) return prev;
 
         return {
           ...prev,
-          current: updated,
-          isDirty: true,
-          errors: [], // Clear errors when user makes changes
+          [step]: {
+            ...prev[step],
+            [field]: value,
+          },
         };
       });
     },
     [],
   );
 
-  const startEditing = useCallback(() => {
-    setEditState((prev) => ({
-      ...prev,
-      isEditing: true,
-      errors: [],
-    }));
-  }, []);
-
-  const cancel = useCallback(() => {
-    setEditState((prev) => ({
-      ...prev,
-      isEditing: false,
-      current: prev.original,
-      isDirty: false,
-      errors: [],
-    }));
-  }, []);
-
+  // Optimierte Save-Funktion
   const save = useCallback(async () => {
-    console.log("🔍 DEBUG: save Funktion aufgerufen");
-    console.log("🔍 DEBUG: editState.current:", editState.current);
-    console.log("🔍 DEBUG: editState.original:", editState.original);
-    console.log("🔍 DEBUG: dbInvestigation:", dbInvestigation);
-
-    if (!editState.current || !editState.original) {
-      console.error("❌ DEBUG: Keine Daten zum Speichern verfügbar");
-      toast.error("Keine Daten zum Speichern verfügbar");
+    if (!editedData) {
+      toast.error("Keine Daten zum Speichern vorhanden");
       return;
     }
-
-    // Verwende die echte UUID aus der Datenbankabfrage
-    const realInvestigationId = dbInvestigation?.id;
-    if (!realInvestigationId) {
-      console.error("❌ DEBUG: Keine echte UUID verfügbar");
-      toast.error("Fahndung konnte nicht gefunden werden");
-      return;
-    }
-
-    console.log("🔍 DEBUG: Validiere Daten...");
-    console.log("🔍 DEBUG: editState.current:", JSON.stringify(editState.current, null, 2));
-    // Validiere nur Benutzereingaben beim Speichern
-    const validation = InvestigationDataConverter.validateForSave(
-      editState.current,
-    );
-    console.log("🔍 DEBUG: Validierungsergebnis:", validation);
-
-    if (!validation.isValid) {
-      console.error("❌ DEBUG: Validierungsfehler:", validation.errors);
-      toast.error("Bitte korrigieren Sie die Fehler vor dem Speichern");
-      setEditState((prev) => ({
-        ...prev,
-        errors: validation.errors,
-      }));
-      return;
-    }
-
-    console.log("🔍 DEBUG: Konvertiere UI-Daten zu API-Format...");
-    // Konvertiere UI-Daten in API-Format
-    const apiData = InvestigationDataConverter.toAPIFormat(editState.current);
-    console.log("🔍 DEBUG: API-Daten:", apiData);
 
     try {
-      console.log("🔍 DEBUG: Sende Update-Request...");
-      console.log("🔍 DEBUG: echte UUID:", realInvestigationId);
-      console.log("🔍 DEBUG: Vollständige Request-Daten:", {
-        id: realInvestigationId,
-        ...apiData,
-      });
+      // Validierung vor dem Speichern
+      const validation = InvestigationDataConverter.validateForSave(editedData);
+      if (!validation.isValid) {
+        toast.error("Validierungsfehler: " + validation.errors.join(", "));
+        return;
+      }
 
+      // Konvertierung zu API-Format
+      const apiData = InvestigationDataConverter.toAPIFormat(editedData);
+
+      // Speichern
       await updateMutation.mutateAsync({
-        id: realInvestigationId,
+        id: investigationId,
         ...apiData,
       });
 
-      console.log("✅ DEBUG: Update erfolgreich!");
-      // Update local state nach erfolgreichem Speichern
-      setEditState((prev) => ({
-        ...prev,
-        isEditing: false,
-        original: prev.current,
-        isDirty: false,
-        errors: [],
-      }));
+      // Cache invalidieren
+      void utils.post.getInvestigation.invalidate({ id: investigationId });
+      void utils.post.getInvestigations.invalidate();
+      void utils.post.getMyInvestigations.invalidate();
+
+      // Refetch für sofortige Updates
+      await refetch();
+
+      toast.success("Fahndung erfolgreich gespeichert");
+      setIsEditMode(false);
     } catch (error) {
-      console.error("❌ DEBUG: Save error:", error);
-      // Error wird bereits in onError behandelt
+      console.error("Fehler beim Speichern:", error);
+      toast.error("Fehler beim Speichern der Fahndung");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateMutation, dbInvestigation]);
+  }, [editedData, investigationId, refetch, utils, updateMutation]);
 
-  const deleteInvestigation = useCallback(async () => {
-    const realInvestigationId = dbInvestigation?.id;
-    if (!realInvestigationId) {
-      toast.error("Fahndung konnte nicht gefunden werden");
-      return;
-    }
+  // Optimierte Global Sync Funktion
+  const globalSync = useCallback(() => {
+    console.log(
+      "🔄 Globale Synchronisation für Investigation:",
+      investigationId,
+    );
 
-    try {
-      await deleteMutation.mutateAsync({ id: realInvestigationId });
-    } catch (error) {
-      console.error("Delete error:", error);
-      // Error wird bereits in onError behandelt
-    }
-  }, [deleteMutation, dbInvestigation]);
+    // Cache invalidieren
+    void utils.post.getInvestigation.invalidate({ id: investigationId });
+    void utils.post.getInvestigations.invalidate();
+    void utils.post.getMyInvestigations.invalidate();
 
-  const publishInvestigation = useCallback(async () => {
-    const realInvestigationId = dbInvestigation?.id;
-    if (!realInvestigationId) {
-      toast.error("Fahndung konnte nicht gefunden werden");
-      return;
-    }
-
-    try {
-      await publishMutation.mutateAsync({
-        id: realInvestigationId,
-        status: "published",
-      });
-    } catch (error) {
-      console.error("Publish error:", error);
-      // Error wird bereits in onError behandelt
-    }
-  }, [publishMutation, dbInvestigation]);
-
-  const archiveInvestigation = useCallback(async () => {
-    const realInvestigationId = dbInvestigation?.id;
-    if (!realInvestigationId) {
-      toast.error("Fahndung konnte nicht gefunden werden");
-      return;
-    }
-
-    try {
-      await archiveMutation.mutateAsync({
-        id: realInvestigationId,
-        status: "archived",
-      });
-    } catch (error) {
-      console.error("Archive error:", error);
-      // Error wird bereits in onError behandelt
-    }
-  }, [archiveMutation, dbInvestigation]);
-
-  const unpublishInvestigation = useCallback(async () => {
-    const realInvestigationId = dbInvestigation?.id;
-    if (!realInvestigationId) {
-      toast.error("Fahndung konnte nicht gefunden werden");
-      return;
-    }
-
-    try {
-      await publishMutation.mutateAsync({
-        id: realInvestigationId,
-        status: "draft",
-      });
-    } catch (error) {
-      console.error("Unpublish error:", error);
-      // Error wird bereits in onError behandelt
-    }
-  }, [publishMutation, dbInvestigation]);
+    // Refetch für sofortige Updates
+    void refetch();
+  }, [investigationId, refetch, utils]);
 
   return {
-    ...editState,
+    editedData,
+    isEditMode,
     isLoading: isLoadingData,
     updateField,
-    startEditing,
-    cancel,
     save,
-    deleteInvestigation,
-    publishInvestigation,
-    archiveInvestigation,
-    unpublishInvestigation,
-  };
-}
-
-// Hilfsfunktion für Fallback-Daten
-function createFallbackData(
-  dbData: Record<string, unknown>,
-): UIInvestigationData {
-  return {
-    step1: {
-      title: (dbData["title"] as string) ?? "Unbekannt",
-      category:
-        (dbData["category"] as
-          | "WANTED_PERSON"
-          | "MISSING_PERSON"
-          | "UNKNOWN_DEAD"
-          | "STOLEN_GOODS") ?? "MISSING_PERSON",
-      caseNumber: dbData["case_number"] as string,
-    },
-    step2: {
-      shortDescription: (dbData["short_description"] as string) ?? "",
-      description: (dbData["description"] as string) ?? "",
-      priority: (dbData["priority"] as "normal" | "urgent" | "new") ?? "normal",
-      tags: (dbData["tags"] as string[]) ?? [],
-      features: (dbData["features"] as string) ?? "",
-    },
-    step3: {
-      mainImage: (dbData["images"] as Array<{ url: string }>)?.[0]?.url ?? null,
-      additionalImages:
-        (dbData["images"] as Array<{ url: string }>)
-          ?.slice(1)
-          .map((img) => img.url) ?? [],
-    },
-    step4: {
-      mainLocation: dbData["location"]
-        ? { address: dbData["location"] as string }
-        : null,
-    },
-    step5: {
-      contactPerson: "Polizei",
-      contactPhone: "+49 711 8990-0",
-      contactEmail: "",
-      department: "Polizeipräsidium",
-      availableHours: "24/7",
-    },
-    images:
-      (dbData["images"] as Array<{
-        id: string;
-        url: string;
-        alt_text?: string;
-        caption?: string;
-      }>) ?? [],
-    contact_info: (dbData["contact_info"] as Record<string, unknown>) ?? {},
+    globalSync,
   };
 }

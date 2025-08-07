@@ -46,18 +46,18 @@ export function useGlobalSync() {
     [utils],
   );
 
-  // Automatische globale Synchronisation alle 2 Sekunden
+  // Automatische globale Synchronisation alle 30 Sekunden (reduziert von 2s)
   useEffect(() => {
     syncIntervalRef.current = setInterval(() => {
       const now = Date.now();
       const timeSinceLastSync = now - lastSyncRef.current;
 
       // Nur synchronisieren wenn keine kürzlichen Updates
-      if (timeSinceLastSync > 2000) {
+      if (timeSinceLastSync > 30000) {
         console.log("🔄 Automatische globale Synchronisation");
         globalSync();
       }
-    }, 2000);
+    }, 30000); // Reduziert von 2s auf 30s
 
     return () => {
       if (syncIntervalRef.current) {
@@ -90,7 +90,7 @@ export function useGlobalSync() {
     return () => window.removeEventListener("online", handleOnline);
   }, [globalSync]);
 
-  // Event Listener für Visibility Change (Tab-Wechsel)
+  // Event Listener für Visibility Change (Tab-Wechsel) - nur bei Bedarf
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {

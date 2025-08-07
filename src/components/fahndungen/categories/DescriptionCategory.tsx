@@ -37,7 +37,7 @@ export default function DescriptionCategory({
         </h3>
         {isEditMode ? (
           <Textarea
-            value={data.step2.description}
+            value={data.step2?.description ?? ""}
             onChange={(e) =>
               updateField("step2", "description", e.target.value)
             }
@@ -47,7 +47,7 @@ export default function DescriptionCategory({
           />
         ) : (
           <p className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300">
-            {data.step2.description ?? "Keine Beschreibung verfügbar."}
+            {data.step2?.description ?? "Keine Beschreibung verfügbar."}
           </p>
         )}
       </div>
@@ -59,7 +59,7 @@ export default function DescriptionCategory({
         </h3>
         {isEditMode ? (
           <Textarea
-            value={data.step2.features}
+            value={data.step2?.features ?? ""}
             onChange={(e) => updateField("step2", "features", e.target.value)}
             className="whitespace-pre-wrap leading-relaxed"
             rows={8}
@@ -67,7 +67,7 @@ export default function DescriptionCategory({
           />
         ) : (
           <p className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300">
-            {data.step2.features ?? "Keine besonderen Merkmale angegeben."}
+            {data.step2?.features ?? "Keine besonderen Merkmale angegeben."}
           </p>
         )}
       </div>
@@ -84,7 +84,7 @@ export default function DescriptionCategory({
                 Tags (durch Komma getrennt)
               </Label>
               <Input
-                value={data.step2.tags?.join(", ") ?? ""}
+                value={data.step2?.tags?.join(", ") ?? ""}
                 onChange={(e) => {
                   const tags = e.target.value
                     .split(",")
@@ -97,7 +97,7 @@ export default function DescriptionCategory({
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {data.step2.tags?.map((tag: string, index: number) => (
+              {data.step2?.tags?.map((tag: string, index: number) => (
                 <span
                   key={index}
                   className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
@@ -109,8 +109,8 @@ export default function DescriptionCategory({
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {data.step2.tags?.length > 0 ? (
-              data.step2.tags.map((tag: string, index: number) => (
+            {data.step2?.tags?.length > 0 ? (
+              data.step2?.tags?.map((tag: string, index: number) => (
                 <span
                   key={index}
                   className="rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900 dark:text-blue-200"
@@ -141,7 +141,7 @@ export default function DescriptionCategory({
       )}
 
       {/* Validation Warnings */}
-      {!data.step2.description && (
+      {!data.step2?.description && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-yellow-600" />

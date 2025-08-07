@@ -143,6 +143,11 @@ export const postRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       try {
+        console.log(
+          "🔍 API DEBUG: getInvestigation aufgerufen mit ID:",
+          input.id,
+        );
+
         let query = ctx.db.from("investigations").select("*");
 
         // Prüfe ob es eine UUID ist oder eine Fallnummer
@@ -163,8 +168,23 @@ export const postRouter = createTRPCRouter({
         const { data, error } = response;
 
         if (error) {
+          console.error("❌ API DEBUG: Fahndung nicht gefunden:", error);
           throw new Error(`Fahndung nicht gefunden: ${error.message}`);
         }
+
+        if (!data) {
+          console.error("❌ API DEBUG: Keine Daten zurückgegeben");
+          throw new Error("Fahndung nicht gefunden");
+        }
+
+        console.log("✅ API DEBUG: Fahndung gefunden:", {
+          id: data.id,
+          title: data.title,
+          case_number: data.case_number,
+          category: data.category,
+          priority: data.priority,
+          images_count: data.images?.length ?? 0,
+        });
 
         // Bilder sind bereits als JSON in der investigations Tabelle gespeichert
         if (data?.images && data.images.length > 0) {
@@ -210,7 +230,7 @@ export const postRouter = createTRPCRouter({
           "Bildern",
         );
 
-        return data!;
+        return data;
       } catch (error) {
         console.error("❌ Fehler beim Laden der Fahndung:", error);
         const errorMessage =
