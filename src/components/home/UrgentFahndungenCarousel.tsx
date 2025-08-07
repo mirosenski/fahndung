@@ -117,7 +117,9 @@ export default function UrgentFahndungenCarousel({
       step2: {
         shortDescription:
           investigation.short_description ??
-          investigation.description?.substring(0, 100) + "..." ??
+          (investigation.description
+            ? investigation.description.substring(0, 100) + "..."
+            : null) ??
           "",
         description: investigation.description ?? "",
         priority:

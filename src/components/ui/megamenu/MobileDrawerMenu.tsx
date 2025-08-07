@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "~/hooks/useAuth";
 
 interface MenuItem {
@@ -245,23 +244,17 @@ export function MobileDrawerMenu({
           </div>
 
           {hasSubItems && (
-            <AnimatePresence>
+            <>
               {isExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="overflow-hidden bg-gray-50 dark:bg-gray-800"
-                >
+                <div className="overflow-hidden bg-gray-50 transition-all duration-200 ease-in-out dark:bg-gray-800">
                   <div className="space-y-1 py-2">
                     {item.subItems!.map((subItem) =>
                       renderMenuItem(subItem, level + 1, currentPath),
                     )}
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </>
           )}
         </div>
       );
@@ -288,27 +281,19 @@ export function MobileDrawerMenu({
   return (
     <>
       {/* Mobile Menu Drawer */}
-      <AnimatePresence>
+      <>
         {isOpen && (
           <>
             {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            <div
+              className="fixed inset-0 z-40 bg-black/60 transition-opacity duration-200 md:hidden"
               onClick={() => onClose()}
             />
 
             {/* Drawer */}
-            <motion.div
+            <div
               ref={drawerRef}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-2xl md:hidden"
+              className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-2xl transition-transform duration-300 ease-out md:hidden"
             >
               {/* Sticky Header */}
               <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-background p-4">
@@ -427,10 +412,10 @@ export function MobileDrawerMenu({
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           </>
         )}
-      </AnimatePresence>
+      </>
     </>
   );
 }

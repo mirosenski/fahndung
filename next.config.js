@@ -8,18 +8,16 @@ const config = {
   // Temporär deaktiviert wegen doppelter Renders in React 19
   reactStrictMode: false,
 
+  // Optimierte Bundle-Splitting-Konfiguration
   experimental: {
-    // Reaktiviert für bessere Bundle-Optimierung
+    // Verbesserte Bundle-Optimierung
     optimizePackageImports: [
-      "lucide-react",
       "@radix-ui/react-alert-dialog",
       "@radix-ui/react-dropdown-menu",
       "@radix-ui/react-label",
       "@radix-ui/react-select",
       "@radix-ui/react-slot",
       "@radix-ui/react-switch",
-      "@radix-ui/themes",
-      "framer-motion",
     ],
   },
 
@@ -182,12 +180,6 @@ const config = {
           lucide: {
             test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
             name: "lucide",
-            chunks: "all",
-            priority: 20,
-          },
-          framer: {
-            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-            name: "framer-motion",
             chunks: "all",
             priority: 20,
           },

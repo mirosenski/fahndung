@@ -17,7 +17,6 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "~/hooks/useAuth";
 
 interface MenuItem {
@@ -155,26 +154,19 @@ export function DesktopOffcanvasMenu({
   );
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+          <div
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
             onClick={handleOverlayClick}
             ref={overlayRef}
           />
 
           {/* Offcanvas */}
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 z-50 h-full w-full max-w-xs bg-white shadow-2xl dark:bg-background"
+          <div
+            className="fixed right-0 top-0 z-50 h-full w-full max-w-xs bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-background"
             role="dialog"
             aria-modal="true"
             aria-labelledby="desktop-offcanvas-title"
@@ -328,9 +320,9 @@ export function DesktopOffcanvasMenu({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </>
       )}
-    </AnimatePresence>
+    </>
   );
 }

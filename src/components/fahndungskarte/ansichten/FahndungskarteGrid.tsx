@@ -67,7 +67,9 @@ const convertInvestigationToFahndungsData = (investigation: Fahndungskarte) => {
     step2: {
       shortDescription:
         investigation.short_description ??
-        investigation.description?.substring(0, 100) + "..." ??
+        (investigation.description
+          ? investigation.description.substring(0, 100) + "..."
+          : null) ??
         "",
       description: investigation.description ?? "",
       priority: investigation.priority,
@@ -160,7 +162,7 @@ const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
       className={`grid ${getGridClasses()} ${getGapClasses()} ${getPaddingClasses()} ${className} w-full`}
     >
       {investigations.map((investigation) => (
-                    <Fahndungskarte
+        <Fahndungskarte
           key={investigation.id}
           data={convertInvestigationToFahndungsData(investigation)}
           investigationId={investigation.id}
