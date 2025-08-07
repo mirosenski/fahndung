@@ -294,7 +294,13 @@ export class MediaService {
     const offset = (page - 1) * limit;
 
     try {
-      let query = this.supabase.from("media").select("*", { count: "exact" });
+      // Wähle nur die benötigten Felder aus, um die Payload zu reduzieren. `count: "exact"` bleibt erhalten.
+      let query = this.supabase
+        .from("media")
+        .select(
+          "id, original_name, file_name, file_path, file_size, mime_type, media_type, directory, uploaded_at, uploaded_by, tags, is_public, metadata",
+          { count: "exact" },
+        );
 
       // Apply filters
       if (search) {
@@ -363,9 +369,12 @@ export class MediaService {
    */
   async getMediaItem(id: string): Promise<MediaItem> {
     try {
+      // Wähle nur die benötigten Felder aus, um Transfergröße zu reduzieren.
       const result = await this.supabase
         .from("media")
-        .select("*")
+        .select(
+          "id, original_name, file_name, file_path, file_size, mime_type, media_type, directory, uploaded_at, uploaded_by, tags, is_public, metadata",
+        )
         .eq("id", id)
         .single();
 

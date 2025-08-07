@@ -67,9 +67,12 @@ export const authRouter = createTRPCRouter({
       throw new Error("Admin-Rechte erforderlich");
     }
 
+    // Wähle nur die benötigten Felder aus der Tabelle, um die Datenmenge zu minimieren.
     const usersResult = await _ctx.db
       .from("user_profiles")
-      .select("*")
+      .select(
+        "user_id, email, role, name, created_at, updated_at",
+      )
       .order("created_at", { ascending: false });
 
     const { data: users, error } = usersResult as {
