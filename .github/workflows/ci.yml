@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Set environment variables for Next.js and rate limiting
+    env:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      # Cache the SWC binary and Next.js build cache to speed up builds
+      - name: Cache SWC and Next.js cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/swc
+            .next/cache
+          key: ${{ runner.os }}-swc-next-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint --if-present
+
+      - name: Type check
+        run: pnpm run typecheck --if-present
+
+      - name: Test
+        run: pnpm run test --if-present
+
+      - name: Build
+        run: pnpm run build
+
+      # Run Lighthouse CI on a few critical pages. This uses lhci which must be installed as a dev dependency.
+      # Modify the URLs list to include up to five routes. Adjust or skip this step for larger sites.
+      - name: Run Lighthouse CI
+        if: success()
+        run: |
+          pnpm exec lhci autorun \
+            --collect.url="http://localhost:3000" \
+            --collect.numberOfRuns=1 \
+            --upload.target=filesystem \
+            --upload.outputDir=./lhci-report
