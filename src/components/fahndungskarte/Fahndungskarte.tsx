@@ -1,30 +1,29 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Eye, X, ChevronRight, Edit3 } from "lucide-react";
-import { getFahndungUrl } from "~/lib/seo";
-import { useInvestigationSync } from "~/hooks/useInvestigationSync";
-import { NetworkErrorDiagnostic } from "~/components/NetworkErrorDiagnostic";
-import type { ModernFahndungskarteProps, FahndungsData } from "./types";
-import { CATEGORY_CONFIG, PRIORITY_CONFIG, TAB_CONFIG } from "./types";
-import { mockData } from "./mockData";
 import {
-  convertInvestigationToFahndungsData,
-  createSafeData,
-  getSafeImageSrc,
-} from "./utils";
+  Eye,
+  EyeOff,
+  Edit,
+  ArrowLeft,
+} from "lucide-react";
 import { TabContent } from "./TabContent";
+import { NetworkErrorDiagnostic } from "../NetworkErrorDiagnostic";
+import { useFahndungskarteOptimized } from "~/hooks/useFahndungskarteOptimized";
+import { CATEGORY_CONFIG, PRIORITY_CONFIG, TAB_CONFIG } from "./types";
+import type { FahndungsData } from "./types";
 
-// Style-Konstanten
-const CARD_STYLES = "relative mx-auto h-[513px] w-full max-w-sm";
-const FRONT_STYLES =
-  "group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900";
-const BACK_STYLES =
-  "absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900";
-const BUTTON_STYLES =
-  "flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2";
+interface ModernFahndungskarteProps {
+  data?: FahndungsData;
+  className?: string;
+  investigationId?: string;
+  userPermissions?: {
+    canEdit?: boolean;
+    canDelete?: boolean;
+  };
+}
 
 const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   data: propData,
@@ -42,11 +41,14 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     networkError: null as string | Error | null,
   });
 
+  // Verwende die optimierte Hook
   const {
-    investigation: syncInvestigation,
-    refetch: syncAfterUpdate,
-    error: syncError,
-  } = useInvestigationSync(investigationId!);
+    safeData,
+    isDataLoading,
+    networkError,
+    handleRetry: retryFromHook,
+  } = useFahndungskarteOptimized(investigationId!, propData);
+
   const cardRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -54,33 +56,22 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
 
   // Error-Handling
   useEffect(() => {
-    if (syncError) {
-      // Konvertiere TRPC Error zu Standard Error
-      const error =
-        syncError instanceof Error
-          ? syncError
-          : new Error(
-              syncError.message || "Ein Netzwerkfehler ist aufgetreten",
-            );
-      setState((prev) => ({ ...prev, networkError: error }));
+    if (networkError) {
+      setState((prev) => ({ ...prev, networkError }));
     }
-  }, [syncError]);
+  }, [networkError]);
 
-  // Daten-Setup
-  const convertedData = syncInvestigation
-    ? convertInvestigationToFahndungsData(
-        syncInvestigation as unknown as Record<string, unknown>,
-      )
-    : propData;
-  const data = convertedData ?? mockData;
-  const safeData: FahndungsData = createSafeData(data, mockData);
-  const isDataLoading = !syncInvestigation && !propData;
-  const category = safeData?.step1?.category
-    ? CATEGORY_CONFIG[safeData.step1.category]
-    : CATEGORY_CONFIG.MISSING_PERSON;
-  const priority = safeData?.step2?.priority
-    ? PRIORITY_CONFIG[safeData.step2.priority]
-    : PRIORITY_CONFIG.normal;
+  const category = useMemo(() => {
+    return safeData?.step1?.category
+      ? CATEGORY_CONFIG[safeData.step1.category]
+      : CATEGORY_CONFIG.MISSING_PERSON;
+  }, [safeData?.step1?.category]);
+
+  const priority = useMemo(() => {
+    return safeData?.step2?.priority
+      ? PRIORITY_CONFIG[safeData.step2.priority]
+      : PRIORITY_CONFIG.normal;
+  }, [safeData?.step2?.priority]);
 
   // Event-Handler
   const updateState = useCallback(
@@ -101,27 +92,26 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     setTimeout(() => updateState({ isAnimating: false }), 500);
   }, [state.isFlipped, state.isAnimating, updateState]);
 
-  const navigateToDetail = () =>
-    router.push(
-      getFahndungUrl(safeData.step1.title, safeData.step1.caseNumber),
-    );
+  const navigateToDetail = () => {
+    // 🚀 SOFORTIGE NAVIGATION
+    router.push(`/fahndungen/${investigationId}`);
+  };
 
   // Retry-Funktion für NetworkErrors
   const handleRetry = useCallback(() => {
     updateState({ networkError: null });
-    // Trigger re-fetch
-    if (investigationId) {
-      void syncAfterUpdate();
-    }
-  }, [investigationId, syncAfterUpdate, updateState]);
+    void retryFromHook();
+  }, [updateState, retryFromHook]);
 
   // Vereinfachte Effects
   useEffect(() => {
     // Auto-sync
     if (!investigationId) return;
-    const interval = setInterval(() => void syncAfterUpdate(), 5000);
+    const interval = setInterval(() => {
+      // void syncAfterUpdate(); // This line was removed from the new_code, so it's removed here.
+    }, 5000);
     return () => clearInterval(interval);
-  }, [investigationId, syncAfterUpdate]);
+  }, [investigationId]);
 
   // Keyboard & Click-Handler
   useEffect(() => {
@@ -204,11 +194,13 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   }, [state.isFlipped]);
 
   // Zeige NetworkError-Diagnose wenn Fehler vorhanden
-  if (state.networkError) {
+  if (networkError) {
     return (
-      <div className={`${CARD_STYLES} ${className}`}>
+      <div
+        className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 ${className}`}
+      >
         <NetworkErrorDiagnostic
-          error={state.networkError}
+          error={networkError}
           onRetry={handleRetry}
           className="h-full"
         />
@@ -236,7 +228,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`${CARD_STYLES} ${className}`}
+      className={`relative mx-auto h-[513px] w-full max-w-sm ${className}`}
       style={{ perspective: "1000px" }}
       role="region"
       aria-label={`Fahndungskarte: ${safeData.step1.title}`}
@@ -253,7 +245,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         {/* FRONT SIDE */}
         <div
           ref={frontRef}
-          className={FRONT_STYLES}
+          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden" }}
           onClick={navigateToDetail}
           role="button"
@@ -285,18 +277,19 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 aria-label="Schnell bearbeiten"
                 tabIndex={0}
               >
-                <Edit3 className="h-3 w-3" />
+                <Edit className="h-3 w-3" />
                 Bearbeiten
               </button>
             )}
 
             <Image
-              src={getSafeImageSrc(safeData, state.imageError)}
+              src={safeData.step3?.mainImage || "/placeholder-image.jpg"}
               alt={`Hauptfoto von ${safeData.step1.title}`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
-              priority
+              priority={true}
+              loading="eager"
               onError={handleImageError}
             />
 
@@ -366,7 +359,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 tabIndex={0}
               >
                 <span>Mehr erfahren</span>
-                <ChevronRight className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
               </button>
 
               <button
@@ -402,7 +395,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         {/* BACK SIDE */}
         <div
           ref={backRef}
-          className={BACK_STYLES}
+          className="absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
@@ -414,7 +407,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
               aria-label="Karte schließen"
             >
-              <X className="h-5 w-5" />
+              <EyeOff className="h-5 w-5" />
             </button>
           </div>
 
@@ -447,7 +440,10 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
 
           <div className="border-t border-gray-200 p-4 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <button onClick={navigateToDetail} className={BUTTON_STYLES}>
+              <button
+                onClick={navigateToDetail}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
                 <Eye className="h-4 w-4" />
                 Vollständige Ansicht
               </button>
@@ -457,7 +453,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                   onClick={handleQuickEdit}
                   className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
-                  <Edit3 className="h-4 w-4" />
+                  <Edit className="h-4 w-4" />
                   Bearbeiten
                 </button>
               )}

@@ -151,7 +151,7 @@ export default function LocalImageGallery() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {images.map((image) => (
+              {images.map((image, index) => (
                 <Card
                   key={image.id}
                   className="overflow-hidden transition-shadow hover:shadow-lg"
@@ -162,6 +162,8 @@ export default function LocalImageGallery() {
                       alt={image.originalName}
                       fill
                       className="cursor-pointer object-cover"
+                      priority={index === 0}
+                      loading={index === 0 ? "eager" : "lazy"}
                       onClick={() => setSelectedImage(image)}
                     />
                     {!image.isPublic && (
@@ -266,6 +268,8 @@ export default function LocalImageGallery() {
                 width={800}
                 height={600}
                 className="mb-4 h-auto w-full rounded-lg"
+                priority={true}
+                loading="eager"
               />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">

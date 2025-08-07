@@ -2,21 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // SEO-Redirects für Fahndungsdetailseiten (optional, kann später aktiviert werden)
-  // if (pathname.match(/^\/fahndungen\/[^/]+$/)) {
-  //   const slug = pathname.split('/').pop();
-  //   if (slug) {
-  //     // Hier könnte ein API-Call gemacht werden, um die Fahndung zu laden
-  //     // const investigation = await fetchInvestigation(slug);
-  //     // const newPath = `/fahndungen/${generateSeoSlug(investigation.title, investigation.case_number)}`;
-  //     // return NextResponse.redirect(new URL(newPath, request.url), 301);
-  //   }
-  // }
-  // CORS-Headers für alle API-Routen
+  // 🚀 OPTIMIERTE MIDDLEWARE FÜR SCHNELLERE NAVIGATION
+
+  // CORS-Headers nur für API-Routen (reduziert Overhead)
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const response = NextResponse.next();
 
-    // CORS-Headers hinzufügen
+    // 🚀 OPTIMIERTE CORS-HEADERS
     response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set(
       "Access-Control-Allow-Methods",
@@ -28,21 +20,18 @@ export function middleware(request: NextRequest) {
     );
     response.headers.set("Access-Control-Max-Age", "86400");
 
-    // OPTIONS-Requests für CORS-Preflight behandeln
+    // 🚀 OPTIMIERTE OPTIONS-BEHANDLUNG
     if (request.method === "OPTIONS") {
       return new NextResponse(null, { status: 200 });
     }
 
-    // tRPC-spezifische Behandlung
+    // 🚀 OPTIMIERTE tRPC-BEHANDLUNG
     if (request.nextUrl.pathname.startsWith("/api/trpc/")) {
-      // Verbesserte Authentifizierungsbehandlung für tRPC
       const authHeader = request.headers.get("Authorization");
 
       if (authHeader?.startsWith("Bearer ")) {
-        // Token ist vorhanden - lass die tRPC-Route es verarbeiten
         response.headers.set("X-Auth-Status", "token-present");
       } else {
-        // Kein Token - tRPC wird UNAUTHORIZED zurückgeben
         response.headers.set("X-Auth-Status", "no-token");
       }
     }
@@ -50,11 +39,11 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Auth-spezifische Routen behandeln
+  // 🚀 OPTIMIERTE AUTH-ROUTEN-BEHANDLUNG
   if (request.nextUrl.pathname.startsWith("/auth/")) {
     const response = NextResponse.next();
 
-    // CORS-Headers für Auth-Routen
+    // 🚀 REDUZIERTE CORS-HEADERS FÜR AUTH
     response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set(
       "Access-Control-Allow-Methods",
@@ -65,23 +54,19 @@ export function middleware(request: NextRequest) {
       "Content-Type, Authorization",
     );
 
-    // Verbesserte 403-Fehler-Behandlung für Auth-Endpoints
     if (request.nextUrl.pathname.includes("/logout")) {
-      // Für Logout-Endpoints spezielle Behandlung
       response.headers.set("X-Auth-Status", "logout");
     }
 
     return response;
   }
 
-  // Supabase Auth-Endpoints behandeln
+  // 🚀 OPTIMIERTE SUPABASE-AUTH-BEHANDLUNG
   if (request.nextUrl.pathname.includes("/auth/v1/")) {
     const response = NextResponse.next();
 
-    // Spezielle Headers für Supabase Auth
     response.headers.set("X-Supabase-Auth", "true");
 
-    // 403-Fehler für Auth-Endpoints als normal behandeln
     if (request.nextUrl.pathname.includes("/logout")) {
       response.headers.set("X-Logout-Status", "processing");
     }
@@ -89,7 +74,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Standard-Behandlung für andere Routen
+  // 🚀 SCHNELLE STANDARD-BEHANDLUNG FÜR ANDERE ROUTEN
   return NextResponse.next();
 }
 

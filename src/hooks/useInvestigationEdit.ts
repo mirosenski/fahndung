@@ -1,11 +1,15 @@
-import { useState, useCallback, useEffect } from "react";
-import { toast } from "~/lib/toast";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "~/trpc/react";
 import { InvestigationDataConverter } from "~/lib/services/investigationDataConverter";
+import { isValidInvestigationId } from "~/lib/utils/validation";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
+import { toast } from "~/lib/toast";
 
 export function useInvestigationEdit(investigationId: string) {
   const utils = api.useUtils();
+
+  // Validiere investigationId
+  const isValidId = isValidInvestigationId(investigationId);
 
   const {
     data: dbInvestigation,
@@ -14,12 +18,23 @@ export function useInvestigationEdit(investigationId: string) {
   } = api.post.getInvestigation.useQuery(
     { id: investigationId },
     {
+      enabled: isValidId, // Nur ausführen wenn ID gültig ist
       // Reduzierte Synchronisation für bessere Performance
-      staleTime: 30 * 1000, // 30 Sekunden Cache
+      staleTime: 60 * 1000, // 60 Sekunden Cache (erhöht von 30s)
       refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 30000, // Alle 30 Sekunden (reduziert von 1s)
+      refetchInterval: 120000, // Alle 2 Minuten (reduziert von 30s)
+      retry: (failureCount, error) => {
+        // Retry-Logik verbessern
+        if (failureCount < 2) { // Reduziert von 3 auf 2
+          console.log(`🔄 Retry ${failureCount + 1}/2 für getInvestigation (Edit)`);
+          return true;
+        }
+        console.error("❌ Max retries erreicht für getInvestigation (Edit):", error);
+        return false;
+      },
+      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 10000), // Reduziert
     },
   );
 
@@ -43,23 +58,29 @@ export function useInvestigationEdit(investigationId: string) {
   // Update edited data when dbInvestigation changes
   useEffect(() => {
     if (dbInvestigation) {
-      console.log("🔍 DEBUG: Rohdaten aus DB:", dbInvestigation);
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔍 DEBUG: Rohdaten aus DB:", dbInvestigation);
+      }
 
       // Konvertiere die Daten mit dem InvestigationDataConverter
       const conversion = InvestigationDataConverter.toUIFormat(
-        dbInvestigation as unknown as Record<string, unknown>,
+        dbInvestigation as Record<string, unknown>,
       );
       if (conversion.success) {
-        console.log(
-          "✅ DEBUG: Datenkonvertierung erfolgreich:",
-          conversion.data,
-        );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            "✅ DEBUG: Datenkonvertierung erfolgreich:",
+            conversion.data,
+          );
+        }
         setEditedData(conversion.data);
       } else {
-        console.error(
-          "❌ DEBUG: Fehler bei der Datenkonvertierung:",
-          conversion.error,
-        );
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            "❌ DEBUG: Fehler bei der Datenkonvertierung:",
+            conversion.error,
+          );
+        }
         // Fallback: Verwende die Rohdaten mit Standardwerten
         const fallbackData: UIInvestigationData = {
           step1: {
@@ -81,40 +102,27 @@ export function useInvestigationEdit(investigationId: string) {
           },
           step3: {
             mainImage:
-              (dbInvestigation.images as Array<{ url: string }>)?.[0]?.url ??
-              null,
+              dbInvestigation.images?.[0]?.url ?? null,
             additionalImages:
-              (dbInvestigation.images as Array<{ url: string }>)
+              dbInvestigation.images
                 ?.slice(1)
                 .map((img) => img.url) ?? [],
           },
           step4: {
-            mainLocation: dbInvestigation.location
-              ? { address: dbInvestigation.location }
-              : null,
+            mainLocation: {
+              address: dbInvestigation.location ?? "",
+            },
           },
           step5: {
-            contactPerson:
-              (dbInvestigation.contact_info?.["person"] as string) ?? "Polizei",
-            contactPhone:
-              (dbInvestigation.contact_info?.["phone"] as string) ??
-              "+49 711 8990-0",
-            contactEmail:
-              (dbInvestigation.contact_info?.["email"] as string) ?? "",
-            department: dbInvestigation.station ?? "Polizeipräsidium",
-            availableHours:
-              (dbInvestigation.contact_info?.["hours"] as string) ?? "24/7",
+            contactPerson: dbInvestigation.contact_info?.["person"] as string ?? "",
+            contactPhone: dbInvestigation.contact_info?.["phone"] as string ?? "",
+            contactEmail: dbInvestigation.contact_info?.["email"] as string ?? "",
+            department: dbInvestigation.station ?? "",
+            availableHours: dbInvestigation.contact_info?.["hours"] as string ?? "",
           },
-          images:
-            (dbInvestigation.images as Array<{
-              id: string;
-              url: string;
-              alt_text?: string;
-              caption?: string;
-            }>) ?? [],
-          contact_info: dbInvestigation.contact_info! ?? {},
+          images: dbInvestigation.images ?? [],
+          contact_info: dbInvestigation.contact_info ?? {},
         };
-        console.log("🔄 DEBUG: Fallback-Daten verwendet:", fallbackData);
         setEditedData(fallbackData);
       }
     }

@@ -178,6 +178,10 @@ export function MobileDrawerMenu({
 
   const handleNavigate = useCallback(
     (href: string) => {
+      // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
+      router.prefetch(href);
+      
+      // 🚀 SOFORTIGE NAVIGATION MIT OPTIMIERTER UX
       router.push(href);
       onClose();
       setExpandedItems(new Set());

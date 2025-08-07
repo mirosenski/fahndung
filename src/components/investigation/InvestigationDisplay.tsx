@@ -200,6 +200,8 @@ const FlipCard: React.FC<{
                         alt="Hauptbild"
                         fill
                         className="object-cover"
+                        priority={true}
+                        loading="eager"
                       />
                     ) : null;
                   })()}
@@ -490,6 +492,8 @@ export default function InvestigationDisplay({
                     width={80}
                     height={80}
                     className="h-20 w-full rounded object-cover"
+                    priority={index === 0}
+                    loading={index === 0 ? "eager" : "lazy"}
                   />
                   {data.step3.mainImage &&
                     image.name === data.step3.mainImage.name && (
@@ -736,7 +740,7 @@ export default function InvestigationDisplay({
           <section>
             <h2 className="mb-4 text-2xl font-bold">Bildmaterial</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {data.step3.imagePreviews.map((image) => (
+              {data.step3.imagePreviews.map((image, index) => (
                 <div key={image.id} className="group relative">
                   <Image
                     src={image.preview}
@@ -744,6 +748,8 @@ export default function InvestigationDisplay({
                     width={300}
                     height={300}
                     className="aspect-square w-full rounded-lg object-cover shadow-md transition-transform hover:scale-105"
+                    priority={index === 0}
+                    loading={index === 0 ? "eager" : "lazy"}
                   />
                   {data.step3.mainImage &&
                     image.name === data.step3.mainImage.name && (

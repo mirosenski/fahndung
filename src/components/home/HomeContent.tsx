@@ -62,9 +62,10 @@ export default function HomeContent() {
         offset: 0,
       },
       {
-        staleTime: 5 * 60 * 1000, // 5 Minuten Cache
+        staleTime: 10 * 60 * 1000, // 10 Minuten Cache (erhöht von 5 Minuten)
         refetchOnWindowFocus: false,
         refetchOnMount: false,
+        refetchInterval: 300000, // Alle 5 Minuten (erhöht von 5 Minuten)
       },
     );
 

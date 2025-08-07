@@ -223,7 +223,7 @@ export function Breadcrumb({
                       <Link
                         href={(item as BreadcrumbItem).href}
                         className={getItemClasses(false)}
-                        prefetch={false}
+                        prefetch={true}
                         suppressHydrationWarning
                       >
                         {(item as BreadcrumbItem).label}

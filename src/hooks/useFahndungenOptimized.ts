@@ -40,11 +40,11 @@ export function useFahndungenOptimized(options: {
     },
     {
       // Reduzierte Synchronisation für bessere Performance
-      staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 30s)
+      staleTime: 10 * 60 * 1000, // 10 Minuten Cache (erhöht von 5 Minuten)
       refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 60000, // Alle 60 Sekunden als Fallback (erhöht von 30s)
+      refetchInterval: 300000, // Alle 5 Minuten als Fallback (erhöht von 60s)
     },
   );
 
@@ -57,11 +57,11 @@ export function useFahndungenOptimized(options: {
     {
       enabled: viewMode === "my" && currentUser,
       // Reduzierte Synchronisation für bessere Performance
-      staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 30s)
+      staleTime: 10 * 60 * 1000, // 10 Minuten Cache (erhöht von 5 Minuten)
       refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 60000, // Alle 60 Sekunden als Fallback (erhöht von 30s)
+      refetchInterval: 300000, // Alle 5 Minuten als Fallback (erhöht von 60s)
     },
   );
 
@@ -69,14 +69,14 @@ export function useFahndungenOptimized(options: {
   useEffect(() => {
     const syncInterval = setInterval(() => {
       const now = Date.now();
-      if (now - lastUpdateRef.current > 30000) { // Nur alle 30 Sekunden synchronisieren
+      if (now - lastUpdateRef.current > 60000) { // Nur alle 60 Sekunden synchronisieren
         lastUpdateRef.current = now;
         void refetchAll();
         if (viewMode === "my" && currentUser) {
           void refetchMy();
         }
       }
-    }, 30000); // Reduziert von 10s auf 30s
+    }, 60000); // Reduziert von 30s auf 60s
 
     return () => clearInterval(syncInterval);
   }, [refetchAll, refetchMy, viewMode, currentUser]);
@@ -85,7 +85,7 @@ export function useFahndungenOptimized(options: {
   const syncInvestigationOptimized = useCallback(
     (investigationId: string) => {
       const now = Date.now();
-      if (now - lastUpdateRef.current > 5000) { // Mindestens 5 Sekunden zwischen Syncs
+      if (now - lastUpdateRef.current > 10000) { // Mindestens 10 Sekunden zwischen Syncs
         lastUpdateRef.current = now;
         syncInvestigation(investigationId);
       }

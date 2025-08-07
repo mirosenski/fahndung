@@ -67,8 +67,8 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
       const response = await originalFetch(...args);
       const duration = performance.now() - start;
 
-      if (duration > 1000) {
-        // Reduziert von 2000ms auf 1000ms
+      if (duration > 3000) {
+        // Erhöht auf 3000ms für weniger Warnungen
         const url =
           typeof args[0] === "string"
             ? args[0]
@@ -128,7 +128,11 @@ export const subscribeToInvestigations = (
     };
   }
 
-  console.log("🔗 Erstelle Supabase Real-time Subscription für investigations");
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "🔗 Erstelle Supabase Real-time Subscription für investigations",
+    );
+  }
 
   // Verwende Postgres Changes (einfacher Ansatz)
   return supabase
@@ -141,12 +145,16 @@ export const subscribeToInvestigations = (
         table: "investigations",
       },
       (payload) => {
-        console.log("📡 Real-time Event erhalten:", payload);
+        if (process.env.NODE_ENV === "development") {
+          console.log("📡 Real-time Event erhalten:", payload);
+        }
         callback(payload);
       },
     )
     .subscribe((status) => {
-      console.log("🔗 Real-time Subscription Status:", status);
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔗 Real-time Subscription Status:", status);
+      }
     });
 };
 
@@ -166,10 +174,12 @@ export const subscribeToInvestigationsBroadcast = (
     };
   }
 
-  console.log(
-    "🔗 Erstelle Broadcast Real-time Subscription für Investigation:",
-    investigationId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "🔗 Erstelle Broadcast Real-time Subscription für Investigation:",
+      investigationId,
+    );
+  }
 
   // Verwende Broadcast (empfohlen für Skalierbarkeit)
   return supabase
@@ -177,19 +187,27 @@ export const subscribeToInvestigationsBroadcast = (
       config: { private: true }, // Private Channel für Broadcast
     })
     .on("broadcast", { event: "INSERT" }, (payload) => {
-      console.log("📡 Broadcast INSERT Event:", payload);
+      if (process.env.NODE_ENV === "development") {
+        console.log("📡 Broadcast INSERT Event:", payload);
+      }
       callback(payload);
     })
     .on("broadcast", { event: "UPDATE" }, (payload) => {
-      console.log("📡 Broadcast UPDATE Event:", payload);
+      if (process.env.NODE_ENV === "development") {
+        console.log("📡 Broadcast UPDATE Event:", payload);
+      }
       callback(payload);
     })
     .on("broadcast", { event: "DELETE" }, (payload) => {
-      console.log("📡 Broadcast DELETE Event:", payload);
+      if (process.env.NODE_ENV === "development") {
+        console.log("📡 Broadcast DELETE Event:", payload);
+      }
       callback(payload);
     })
     .subscribe((status) => {
-      console.log("🔗 Broadcast Real-time Subscription Status:", status);
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔗 Broadcast Real-time Subscription Status:", status);
+      }
     });
 };
 

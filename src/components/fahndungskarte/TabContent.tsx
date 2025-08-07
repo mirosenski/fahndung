@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { User, Phone, MessageSquare, Clock, MapPin } from "lucide-react";
 import type { FahndungsData } from "./types";
 import { CATEGORY_CONFIG } from "./types";
 import { getSafeImageSrc, getSafeAdditionalImageSrc } from "./utils";
 import dynamic from "next/dynamic";
+import { NominatimService } from "~/services/geocoding";
 
 // Dynamischer Import der InteractiveMap mit SSR deaktiviert
 const InteractiveMap = dynamic(
@@ -40,74 +41,78 @@ export const TabContent: React.FC<TabContentProps> = ({
     ? CATEGORY_CONFIG[safeData.step1.category]
     : CATEGORY_CONFIG.MISSING_PERSON;
 
-  // Echte Geocoding-API für präzise Koordinaten
+  // Echte Geocoding-API für präzise Koordinaten mit Caching
   const [geocodedCoordinates, setGeocodedCoordinates] = useState<
     [number, number] | null
   >(null);
   const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Geocoding-Funktion mit OpenStreetMap Nominatim API
-  const geocodeAddress = async (
-    address: string,
-  ): Promise<[number, number] | null> => {
-    try {
-      // URL-encode die Adresse für die API
-      const encodedAddress = encodeURIComponent(address);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&countrycodes=de&limit=1`;
+  // Optimierte Geocoding-Funktion mit Service
+  const geocodeAddress = useCallback(
+    async (address: string): Promise<[number, number] | null> => {
+      if (isGeocoding) return null; // Verhindere gleichzeitige Requests
+      setIsGeocoding(true);
 
-      // Verwende native fetch ohne Interception für Geocoding
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent": "FahndungApp/1.0",
-        },
-      });
+      try {
+        const results = await NominatimService.searchOptimized(address, {
+          limit: 1,
+          countrycodes: "de",
+        });
 
-      if (!response.ok) {
-        console.warn("⚠️ Geocoding API nicht verfügbar:", response.statusText);
-        return null;
-      }
+        if (results && results.length > 0) {
+          const result = results[0];
+          if (result?.lat && result?.lon) {
+            const coordinates: [number, number] = [
+              parseFloat(result.lat),
+              parseFloat(result.lon),
+            ];
 
-      const data = (await response.json()) as Array<{
-        lat: string;
-        lon: string;
-        display_name: string;
-      }>;
-
-      if (data && data.length > 0) {
-        const result = data[0];
-        if (result) {
-          // Speichere auch die geocodierte Adresse
-          setGeocodedAddress(result.display_name);
-          return [parseFloat(result.lat), parseFloat(result.lon)];
+            setGeocodedAddress(result.display_name);
+            setGeocodedCoordinates(coordinates);
+            return coordinates;
+          }
         }
+
+        return null;
+      } catch (error) {
+        // Spezielle Behandlung für Timeout-Fehler
+        if (error instanceof Error && error.name === "AbortError") {
+          console.warn("⚠️ Geocoding Request abgebrochen (Timeout)");
+        } else {
+          console.warn("⚠️ Geocoding fehlgeschlagen:", error);
+        }
+        return null;
+      } finally {
+        setIsGeocoding(false);
       }
+    },
+    [isGeocoding],
+  );
 
-      return null;
-    } catch (error) {
-      console.warn("⚠️ Geocoding fehlgeschlagen:", error);
-      return null;
-    }
-  };
-
-  // Geocoding beim Laden der Komponente
+  // Optimiertes Geocoding beim Laden der Komponente
   useEffect(() => {
-    if (safeData.step4.mainLocation?.address && !geocodedCoordinates) {
-      // Verzögerung für bessere Performance
+    if (
+      safeData.step4?.mainLocation?.address &&
+      !geocodedCoordinates &&
+      !isGeocoding
+    ) {
+      // Erhöhte Verzögerung für bessere Performance
       const timeoutId = setTimeout(() => {
-        void geocodeAddress(safeData.step4.mainLocation!.address).then(
+        void geocodeAddress(safeData.step4?.mainLocation?.address ?? "").then(
           (coordinates) => {
             if (coordinates) {
               setGeocodedCoordinates(coordinates);
             }
           },
         );
-      }, 1000); // 1 Sekunde Verzögerung
+      }, 3000); // Erhöht auf 3 Sekunden Verzögerung
 
       return () => clearTimeout(timeoutId);
     }
     // Explizit undefined zurückgeben für den Fall, dass die Bedingung nicht erfüllt ist
     return undefined;
-  }, [safeData.step4.mainLocation, geocodedCoordinates]);
+  }, [safeData.step4, geocodedCoordinates, isGeocoding, geocodeAddress]);
 
   // Konvertiere FahndungsData zu MapLocation für die Karte
   const convertToMapLocation = () => {
@@ -179,61 +184,67 @@ export const TabContent: React.FC<TabContentProps> = ({
             )}
 
             {/* Kontakt-Informationen */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
-                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            {safeData.step5 && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
+                      <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">
+                        {safeData.step5.contactPerson || "Nicht angegeben"}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {safeData.step5.department || "Nicht angegeben"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      {safeData.step5.contactPerson}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {safeData.step5.department}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-gray-500" />
-                  <a
-                    href={`tel:${safeData.step5.contactPhone}`}
-                    className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
-                    aria-label={`Anrufen: ${safeData.step5.contactPhone}`}
-                    tabIndex={-1}
-                  >
-                    {safeData.step5.contactPhone}
-                  </a>
-                </div>
+                  {safeData.step5.contactPhone && (
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-4 w-4 text-gray-500" />
+                      <a
+                        href={`tel:${safeData.step5.contactPhone}`}
+                        className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
+                        aria-label={`Anrufen: ${safeData.step5.contactPhone}`}
+                        tabIndex={-1}
+                      >
+                        {safeData.step5.contactPhone}
+                      </a>
+                    </div>
+                  )}
 
-                {safeData.step5.contactEmail && (
-                  <div className="flex items-center gap-3">
-                    <MessageSquare className="h-4 w-4 text-gray-500" />
-                    <a
-                      href={`mailto:${safeData.step5.contactEmail}`}
-                      className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
-                      aria-label={`E-Mail senden an: ${safeData.step5.contactEmail}`}
-                      tabIndex={-1}
-                    >
-                      {safeData.step5.contactEmail}
-                    </a>
-                  </div>
-                )}
+                  {safeData.step5.contactEmail && (
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className="h-4 w-4 text-gray-500" />
+                      <a
+                        href={`mailto:${safeData.step5.contactEmail}`}
+                        className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
+                        aria-label={`E-Mail senden an: ${safeData.step5.contactEmail}`}
+                        tabIndex={-1}
+                      >
+                        {safeData.step5.contactEmail}
+                      </a>
+                    </div>
+                  )}
 
-                <div className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-4 w-4 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      Erreichbarkeit
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {safeData.step5.availableHours}
-                    </p>
-                  </div>
+                  {safeData.step5.availableHours && (
+                    <div className="flex items-start gap-3">
+                      <Clock className="mt-0.5 h-4 w-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          Erreichbarkeit
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {safeData.step5.availableHours}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         );
 
@@ -276,7 +287,8 @@ export const TabContent: React.FC<TabContentProps> = ({
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
-                  priority
+                  priority={true}
+                  loading="eager"
                   onError={handleImageError}
                 />
               </div>

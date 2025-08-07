@@ -140,13 +140,18 @@ export const postRouter = createTRPCRouter({
 
   // Öffentlich: Einzelne Fahndung lesen (mit UUID oder Fallnummer)
   getInvestigation: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string().min(1, "ID darf nicht leer sein") }))
     .query(async ({ ctx, input }) => {
       try {
         console.log(
           "🔍 API DEBUG: getInvestigation aufgerufen mit ID:",
           input.id,
         );
+
+        // Validiere ID-Format
+        if (!input.id || input.id.trim().length === 0) {
+          throw new Error("Fahndungs-ID ist erforderlich");
+        }
 
         let query = ctx.db.from("investigations").select("*");
 
@@ -159,22 +164,46 @@ export const postRouter = createTRPCRouter({
         if (isUUID) {
           query = query.eq("id", input.id);
         } else {
+          // Suche nach Fallnummer
           query = query.eq("case_number", input.id);
         }
 
-        const response =
+        const { data, error } =
           (await query.single()) as SupabaseResponse<Investigation>;
-
-        const { data, error } = response;
 
         if (error) {
           console.error("❌ API DEBUG: Fahndung nicht gefunden:", error);
-          throw new Error(`Fahndung nicht gefunden: ${error.message}`);
+
+          // Spezifischere Fehlermeldungen
+          if (error.code === "PGRST116") {
+            throw new Error(
+              "Fahndung nicht gefunden - Die angegebene ID existiert nicht",
+            );
+          }
+
+          // Bessere Fehlermeldungen für verschiedene ID-Typen
+          const isUUID =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              input.id,
+            );
+          const isCaseNumber = /^(?:POL-)?\d{4}-[A-Z]-\d{3,6}(?:-[A-Z])?$/.test(
+            input.id,
+          );
+
+          if (isUUID) {
+            throw new Error(`Fahndung mit UUID '${input.id}' nicht gefunden`);
+          } else if (isCaseNumber) {
+            throw new Error(
+              `Fahndung mit Fallnummer '${input.id}' nicht gefunden`,
+            );
+          } else {
+            throw new Error(`Fahndung mit ID '${input.id}' nicht gefunden`);
+          }
         }
 
         if (!data) {
           console.error("❌ API DEBUG: Keine Daten zurückgegeben");
-          throw new Error("Fahndung nicht gefunden");
+          throw new Error("Fahndung nicht gefunden - Keine Daten verfügbar");
         }
 
         console.log("✅ API DEBUG: Fahndung gefunden:", {
@@ -200,7 +229,11 @@ export const postRouter = createTRPCRouter({
             .single();
 
           if (data && createdByUser?.name && createdByUser?.email) {
-            data.created_by_user = {
+            (
+              data as Investigation & {
+                created_by_user?: { name: string; email: string };
+              }
+            ).created_by_user = {
               name: String(createdByUser.name),
               email: String(createdByUser.email),
             };
@@ -215,7 +248,11 @@ export const postRouter = createTRPCRouter({
             .single();
 
           if (data && assignedToUser?.name && assignedToUser?.email) {
-            data.assigned_to_user = {
+            (
+              data as Investigation & {
+                assigned_to_user?: { name: string; email: string };
+              }
+            ).assigned_to_user = {
               name: String(assignedToUser.name),
               email: String(assignedToUser.email),
             };
@@ -259,13 +296,139 @@ export const postRouter = createTRPCRouter({
         // Importiere generateSeoSlug für Client-Side Kompatibilität
         const { generateSeoSlug } = await import("~/lib/seo");
 
-        for (const investigation of investigations ?? []) {
-          const expectedSlug = generateSeoSlug(investigation.title as string);
+        for (const investigation of (investigations ?? []) as Investigation[]) {
+          const expectedSlug = generateSeoSlug(investigation.title);
           if (expectedSlug === input.slug) {
-            return investigation.case_number as string;
+            return investigation.case_number;
           }
         }
 
+        return null;
+      } catch (error) {
+        console.error("❌ Fehler beim Suchen der Fahndung nach Slug:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new Error(`Fehler beim Suchen der Fahndung: ${errorMessage}`);
+      }
+    }),
+
+  // Öffentlich: Fahndung basierend auf Titel-Slug finden (für SEO-URLs)
+  getInvestigationBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // Debug-Log nur in Development
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            "🔍 API DEBUG: getInvestigationBySlug aufgerufen mit Slug:",
+            input.slug,
+          );
+        }
+
+        // Lade alle Fahndungen und suche nach dem passenden Titel
+        const { data: investigations, error } = await ctx.db
+          .from("investigations")
+          .select("*")
+          .limit(50);
+
+        if (error) {
+          throw new Error(
+            `Fehler beim Abrufen der Fahndungen: ${error.message}`,
+          );
+        }
+
+        // Importiere generateSeoSlug für Client-Side Kompatibilität
+        const { generateSeoSlug } = await import("~/lib/seo");
+
+        for (const investigation of (investigations ?? []) as Investigation[]) {
+          const expectedSlug = generateSeoSlug(investigation.title);
+          if (expectedSlug === input.slug) {
+            // Debug-Log nur in Development
+            if (process.env.NODE_ENV === "development") {
+              console.log("✅ API DEBUG: Fahndung gefunden für Slug:", {
+                id: investigation.id,
+                title: investigation.title,
+                case_number: investigation.case_number,
+                category: investigation.category,
+                priority: investigation.priority,
+                images_count: investigation.images?.length ?? 0,
+              });
+
+              // Bilder sind bereits als JSON in der investigations Tabelle gespeichert
+              if (investigation?.images && investigation.images.length > 0) {
+                console.log(
+                  "📸 Bilder aus JSON-Feld geladen:",
+                  investigation.images.length,
+                );
+              }
+            }
+
+            // Then get user data separately if needed
+            if (investigation?.created_by) {
+              const { data: createdByUser } = await ctx.db
+                .from("user_profiles")
+                .select("name, email")
+                .eq("id", investigation.created_by)
+                .single();
+
+              if (
+                investigation &&
+                createdByUser?.name &&
+                createdByUser?.email
+              ) {
+                (
+                  investigation as Investigation & {
+                    created_by_user?: { name: string; email: string };
+                  }
+                ).created_by_user = {
+                  name: String(createdByUser.name),
+                  email: String(createdByUser.email),
+                };
+              }
+            }
+
+            if (investigation?.assigned_to) {
+              const { data: assignedToUser } = await ctx.db
+                .from("user_profiles")
+                .select("name, email")
+                .eq("id", investigation.assigned_to)
+                .single();
+
+              if (
+                investigation &&
+                assignedToUser?.name &&
+                assignedToUser?.email
+              ) {
+                (
+                  investigation as Investigation & {
+                    assigned_to_user?: { name: string; email: string };
+                  }
+                ).assigned_to_user = {
+                  name: String(assignedToUser.name),
+                  email: String(assignedToUser.email),
+                };
+              }
+            }
+
+            // Debug-Log nur in Development
+            if (process.env.NODE_ENV === "development") {
+              console.log(
+                "✅ Fahndung erfolgreich geladen:",
+                investigation?.title,
+                "mit",
+                investigation?.images?.length ?? 0,
+                "Bildern",
+              );
+            }
+
+            return investigation;
+          }
+        }
+
+        console.log(
+          "❌ API DEBUG: Keine Fahndung gefunden für Slug:",
+          input.slug,
+        );
         return null;
       } catch (error) {
         console.error("❌ Fehler beim Suchen der Fahndung nach Slug:", error);

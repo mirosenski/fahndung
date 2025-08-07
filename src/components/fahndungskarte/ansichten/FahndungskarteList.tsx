@@ -109,7 +109,7 @@ export default function FahndungskarteList({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {investigations.map((investigation) => (
+      {investigations.map((investigation, index) => (
         <div
           key={investigation.id}
           className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
@@ -123,6 +123,8 @@ export default function FahndungskarteList({
                 fill
                 sizes="96px"
                 className="object-cover"
+                priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
                 onError={() => handleImageError(investigation.id)}
               />
 

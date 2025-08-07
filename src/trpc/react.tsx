@@ -105,6 +105,26 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           enabled: (op) =>
             process.env.NODE_ENV === "development" ||
             (op.direction === "down" && op.result instanceof Error),
+          logger: (opts) => {
+            // Verbesserte Logging für getInvestigation-Fehler - nur in Development
+            if (
+              opts.path === "post.getInvestigation" &&
+              process.env.NODE_ENV === "development"
+            ) {
+              if (opts.direction === "down" && opts.result instanceof Error) {
+                console.error("❌ getInvestigation Fehler:", {
+                  error: opts.result.message,
+                  input: opts.input,
+                  timestamp: new Date().toISOString(),
+                });
+              } else if (opts.direction === "up") {
+                console.log("🔍 getInvestigation Query:", {
+                  input: opts.input,
+                  timestamp: new Date().toISOString(),
+                });
+              }
+            }
+          },
         }),
         unstable_httpBatchStreamLink({
           url: getBaseUrl() + "/api/trpc",
@@ -123,8 +143,10 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
               // Silent error handling
             }
 
-            // 🔥 ZUSÄTZLICHE DEBUGGING-HEADER
-            headers.set("x-debug-auth", "true");
+            // Debug-Header nur in Development
+            if (process.env.NODE_ENV === "development") {
+              headers.set("x-debug-auth", "true");
+            }
 
             return headers;
           },

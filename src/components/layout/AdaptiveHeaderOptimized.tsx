@@ -175,7 +175,13 @@ const AdaptiveDesktopHeader = ({
             currentSession?.profile?.role === "super_admin") &&
             !pathname?.startsWith("/fahndungen/neu") && (
               <button
-                onClick={() => router.push("/fahndungen/neu/enhanced")}
+                onClick={() => {
+                  // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
+                  router.prefetch("/fahndungen/neu/enhanced");
+                  
+                  // 🚀 SOFORTIGE NAVIGATION
+                  router.push("/fahndungen/neu/enhanced");
+                }}
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
                 <Plus className="h-4 w-4" />

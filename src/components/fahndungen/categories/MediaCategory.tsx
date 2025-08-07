@@ -109,6 +109,8 @@ export default function MediaCategory({
                   alt={image.alt_text ?? "Fahndungsbild"}
                   fill
                   className="object-cover"
+                  priority={index === 0}
+                  loading={index === 0 ? "eager" : "lazy"}
                 />
                 {isEditMode && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">

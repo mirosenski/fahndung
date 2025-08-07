@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react";
-import { api } from "@/trpc/react";
-import type {
-  InvestigationData,
-  InvestigationImage,
-  ArticleBlock,
-} from "@/lib/services/fahndungs.service";
-import { getErrorMessage } from "@/types/errors";
+import { api } from "~/trpc/react";
+import { isValidInvestigationId } from "~/lib/utils/validation";
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Ein unbekannter Fehler ist aufgetreten";
+}
 
 export function useFahndung(id: string) {
-  const [investigation, setInvestigation] = useState<InvestigationData | null>(
-    null,
-  );
+  const [investigation, setInvestigation] =
+    useState<UIInvestigationData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Validiere ID
+  const isValidId = isValidInvestigationId(id);
 
   const {
     data: rawData,
@@ -21,7 +26,23 @@ export function useFahndung(id: string) {
   } = api.post.getInvestigation.useQuery(
     { id },
     {
-      enabled: !!id,
+      enabled: isValidId, // Nur ausführen wenn ID gültig ist
+      retry: (failureCount, error) => {
+        // Retry-Logik verbessern
+        if (failureCount < 2) {
+          // Reduziert von 3 auf 2
+          console.log(
+            `🔄 Retry ${failureCount + 1}/2 für getInvestigation (useFahndung)`,
+          );
+          return true;
+        }
+        console.error(
+          "❌ Max retries erreicht für getInvestigation (useFahndung):",
+          error,
+        );
+        return false;
+      },
+      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 10000), // Reduziert
     },
   );
 
@@ -29,29 +50,41 @@ export function useFahndung(id: string) {
   useEffect(() => {
     if (rawData) {
       console.log("🔍 Raw tRPC data:", rawData);
-      const convertedData: InvestigationData = {
-        ...rawData,
-        status:
-          (rawData.status as "draft" | "active" | "published" | "archived") ??
-          "active",
-        priority: rawData.priority ?? "normal",
-        category:
-          (rawData.category as
-            | "WANTED_PERSON"
-            | "MISSING_PERSON"
-            | "UNKNOWN_DEAD"
-            | "STOLEN_GOODS") ?? "MISSING_PERSON",
+      const convertedData: UIInvestigationData = {
+        step1: {
+          title: rawData.title ?? "",
+          category:
+            (rawData.category as
+              | "WANTED_PERSON"
+              | "MISSING_PERSON"
+              | "UNKNOWN_DEAD"
+              | "STOLEN_GOODS") ?? "MISSING_PERSON",
+          caseNumber: rawData.case_number ?? "",
+        },
+        step2: {
+          shortDescription: rawData.short_description ?? "",
+          description: rawData.description ?? "",
+          priority: rawData.priority ?? "normal",
+          tags: rawData.tags ?? [],
+          features: rawData.features ?? "",
+        },
+        step3: {
+          mainImage: rawData.images?.[0]?.url ?? null,
+          additionalImages:
+            rawData.images?.slice(1).map((img) => img.url) ?? [],
+        },
+        step4: {
+          mainLocation: rawData.location ? { address: rawData.location } : null,
+        },
+        step5: {
+          contactPerson: (rawData.contact_info?.["person"] as string) ?? "",
+          contactPhone: (rawData.contact_info?.["phone"] as string) ?? "",
+          contactEmail: (rawData.contact_info?.["email"] as string) ?? "",
+          department: rawData.station ?? "",
+          availableHours: (rawData.contact_info?.["hours"] as string) ?? "",
+        },
+        images: rawData.images ?? [],
         contact_info: rawData.contact_info ?? {},
-        created_by_user: rawData.created_by_user ?? undefined,
-        assigned_to_user: rawData.assigned_to_user ?? undefined,
-        images: (rawData.images as InvestigationImage[]) ?? [],
-        article_content: rawData.article_content
-          ? {
-              blocks:
-                (rawData.article_content.blocks as unknown as ArticleBlock[]) ??
-                [],
-            }
-          : undefined,
       };
       setInvestigation(convertedData);
     }
@@ -66,32 +99,43 @@ export function useFahndung(id: string) {
 
   const updateInvestigationMutation = api.post.updateInvestigation.useMutation({
     onSuccess: (updatedData) => {
-      const convertedData: InvestigationData = {
-        ...updatedData,
-        status:
-          (updatedData.status as
-            | "draft"
-            | "active"
-            | "published"
-            | "archived") ?? "active",
-        priority: updatedData.priority ?? "normal",
-        category:
-          (updatedData.category as
-            | "WANTED_PERSON"
-            | "MISSING_PERSON"
-            | "UNKNOWN_DEAD"
-            | "STOLEN_GOODS") ?? "MISSING_PERSON",
+      const convertedData: UIInvestigationData = {
+        step1: {
+          title: updatedData.title ?? "",
+          category:
+            (updatedData.category as
+              | "WANTED_PERSON"
+              | "MISSING_PERSON"
+              | "UNKNOWN_DEAD"
+              | "STOLEN_GOODS") ?? "MISSING_PERSON",
+          caseNumber: updatedData.case_number ?? "",
+        },
+        step2: {
+          shortDescription: updatedData.short_description ?? "",
+          description: updatedData.description ?? "",
+          priority: updatedData.priority ?? "normal",
+          tags: updatedData.tags ?? [],
+          features: updatedData.features ?? "",
+        },
+        step3: {
+          mainImage: updatedData.images?.[0]?.url ?? null,
+          additionalImages:
+            updatedData.images?.slice(1).map((img) => img.url) ?? [],
+        },
+        step4: {
+          mainLocation: updatedData.location
+            ? { address: updatedData.location }
+            : null,
+        },
+        step5: {
+          contactPerson: (updatedData.contact_info?.["person"] as string) ?? "",
+          contactPhone: (updatedData.contact_info?.["phone"] as string) ?? "",
+          contactEmail: (updatedData.contact_info?.["email"] as string) ?? "",
+          department: updatedData.station ?? "",
+          availableHours: (updatedData.contact_info?.["hours"] as string) ?? "",
+        },
+        images: updatedData.images ?? [],
         contact_info: updatedData.contact_info ?? {},
-        created_by_user: updatedData.created_by_user ?? undefined,
-        assigned_to_user: updatedData.assigned_to_user ?? undefined,
-        images: (updatedData.images as InvestigationImage[]) ?? [],
-        article_content: updatedData.article_content
-          ? {
-              blocks:
-                (updatedData.article_content
-                  .blocks as unknown as ArticleBlock[]) ?? [],
-            }
-          : undefined,
       };
       setInvestigation(convertedData);
     },
@@ -100,7 +144,7 @@ export function useFahndung(id: string) {
     },
   });
 
-  async function updateInvestigation(data: Partial<InvestigationData>) {
+  async function updateInvestigation(data: Partial<UIInvestigationData>) {
     try {
       const updated = await updateInvestigationMutation.mutateAsync({
         id,

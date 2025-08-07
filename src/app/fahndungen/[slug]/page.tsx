@@ -2,10 +2,65 @@ import { notFound } from "next/navigation";
 import { api } from "~/trpc/server";
 import {
   generateSeoSlug,
-  findInvestigationBySlug,
   validateSeoSlug,
 } from "~/lib/seo";
 import FahndungCategoriesContainer from "~/components/fahndungen/categories/FahndungCategoriesContainer";
+
+// TypeScript-Typen für die API-Responses
+interface Investigation {
+  id: string;
+  title: string;
+  case_number: string;
+  description: string;
+  short_description: string;
+  status: string;
+  priority: "normal" | "urgent" | "new";
+  category: string;
+  location: string;
+  station: string;
+  features: string;
+  date: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  assigned_to?: string;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  contact_info?: Record<string, unknown>;
+  created_by_user?: {
+    name: string;
+    email: string;
+  };
+  assigned_to_user?: {
+    name: string;
+    email: string;
+  };
+  images?: Array<{
+    id: string;
+    url: string;
+    alt_text?: string;
+    caption?: string;
+  }>;
+  published_as_article?: boolean;
+  article_slug?: string;
+  article_content?: {
+    blocks: Array<{
+      type: string;
+      content: Record<string, unknown>;
+      id?: string;
+    }>;
+  };
+  article_meta?: {
+    seo_title?: string;
+    seo_description?: string;
+    og_image?: string;
+    keywords?: string[];
+    author?: string;
+    reading_time?: number;
+  };
+  article_published_at?: string;
+  article_views?: number;
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -22,19 +77,23 @@ export default async function FahndungSlugPage({ params }: PageProps) {
     return <FahndungCategoriesContainer investigationId={slug} />;
   }
 
-  // 2. Fahndung basierend auf Titel-Slug finden
-  const caseNumber = await findInvestigationBySlug(slug, api);
-  if (!caseNumber) {
-    console.log("❌ Fahndung nicht gefunden für Slug:", slug);
-    return notFound();
+  // 2. Prüfe ob es eine UUID ist
+  const isUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      slug,
+    );
+
+  if (isUUID) {
+    // Direkte UUID - verwende die ID-Route
+    return <FahndungCategoriesContainer investigationId={slug} />;
   }
 
+  // 3. Fahndung basierend auf Titel-Slug finden
   try {
-    // 3. Fahndung per Fallnummer abrufen
-    const investigation = await api.post.getInvestigation({ id: caseNumber });
+    const investigation = await api.post.getInvestigationBySlug({ slug }) as Investigation | null;
 
     if (!investigation) {
-      console.log("❌ Fahndung nicht gefunden für Fallnummer:", caseNumber);
+      console.log("❌ Fahndung nicht gefunden für Slug:", slug);
       return notFound();
     }
 
@@ -51,7 +110,11 @@ export default async function FahndungSlugPage({ params }: PageProps) {
     }
 
     // 5. Normale Detailseite rendern
-    return <FahndungCategoriesContainer investigationId={caseNumber} />;
+    return (
+      <FahndungCategoriesContainer
+        investigationId={investigation.case_number}
+      />
+    );
   } catch (error) {
     console.error("❌ Fehler beim Abrufen der Fahndung:", error);
     return notFound();
@@ -68,7 +131,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (isCaseNumber) {
     // Direkte Fallnummer - verwende die ID-Route Metadata
     try {
-      const investigation = await api.post.getInvestigation({ id: slug });
+      const investigation = await api.post.getInvestigation({ id: slug }) as Investigation | null;
 
       if (!investigation) {
         return {
@@ -83,7 +146,7 @@ export async function generateMetadata({ params }: PageProps) {
       return {
         title: `${investigation.title} - Fahndung ${investigation.case_number}`,
         description:
-          investigation.short_description || investigation.description,
+          investigation.short_description ?? investigation.description,
         alternates: {
           canonical: `/fahndungen/${seoSlug}`,
           alternates: [
@@ -94,7 +157,55 @@ export async function generateMetadata({ params }: PageProps) {
         openGraph: {
           title: `${investigation.title} - Fahndung ${investigation.case_number}`,
           description:
-            investigation.short_description || investigation.description,
+            investigation.short_description ?? investigation.description,
+          url: `/fahndungen/${seoSlug}`,
+          type: "article",
+        },
+      };
+    } catch {
+      return {
+        title: "Fahndung nicht gefunden",
+        description: "Die angeforderte Fahndung konnte nicht gefunden werden.",
+      };
+    }
+  }
+
+  // Prüfe ob es eine UUID ist
+  const isUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      slug,
+    );
+
+  if (isUUID) {
+    // Direkte UUID - verwende die ID-Route Metadata
+    try {
+      const investigation = await api.post.getInvestigation({ id: slug }) as Investigation | null;
+
+      if (!investigation) {
+        return {
+          title: "Fahndung nicht gefunden",
+          description:
+            "Die angeforderte Fahndung konnte nicht gefunden werden.",
+        };
+      }
+
+      const seoSlug = generateSeoSlug(investigation.title);
+
+      return {
+        title: `${investigation.title} - Fahndung ${investigation.case_number}`,
+        description:
+          investigation.short_description ?? investigation.description,
+        alternates: {
+          canonical: `/fahndungen/${seoSlug}`,
+          alternates: [
+            `/fahndungen/${investigation.case_number}`,
+            `/fahndungen/${investigation.id}`,
+          ],
+        },
+        openGraph: {
+          title: `${investigation.title} - Fahndung ${investigation.case_number}`,
+          description:
+            investigation.short_description ?? investigation.description,
           url: `/fahndungen/${seoSlug}`,
           type: "article",
         },
@@ -108,17 +219,8 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   // SEO-Slug - Fahndung basierend auf Titel finden
-  const caseNumber = await findInvestigationBySlug(slug, api);
-
-  if (!caseNumber) {
-    return {
-      title: "Fahndung nicht gefunden",
-      description: "Die angeforderte Fahndung konnte nicht gefunden werden.",
-    };
-  }
-
   try {
-    const investigation = await api.post.getInvestigation({ id: caseNumber });
+    const investigation = await api.post.getInvestigationBySlug({ slug }) as Investigation | null;
 
     if (!investigation) {
       return {
@@ -129,7 +231,7 @@ export async function generateMetadata({ params }: PageProps) {
 
     return {
       title: `${investigation.title} - Fahndung ${investigation.case_number}`,
-      description: investigation.short_description || investigation.description,
+      description: investigation.short_description ?? investigation.description,
       alternates: {
         canonical: `/fahndungen/${slug}`,
         alternates: [
@@ -140,7 +242,7 @@ export async function generateMetadata({ params }: PageProps) {
       openGraph: {
         title: `${investigation.title} - Fahndung ${investigation.case_number}`,
         description:
-          investigation.short_description || investigation.description,
+          investigation.short_description ?? investigation.description,
         url: `/fahndungen/${slug}`,
         type: "article",
       },

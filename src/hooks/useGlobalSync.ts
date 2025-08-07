@@ -12,7 +12,6 @@ export function useGlobalSync() {
 
   // Globale Synchronisationsfunktion
   const globalSync = useCallback(() => {
-    console.log("🌍 Globale Synchronisation aller Fahndungen");
     lastSyncRef.current = Date.now();
 
     // Sofortige Cache-Invalidierung für alle relevanten Queries
@@ -27,10 +26,6 @@ export function useGlobalSync() {
   // Spezifische Synchronisation für eine Investigation
   const syncInvestigation = useCallback(
     (investigationId: string) => {
-      console.log(
-        "🔍 Spezifische Synchronisation für Investigation:",
-        investigationId,
-      );
       lastSyncRef.current = Date.now();
 
       // Sofortige Cache-Invalidierung für alle relevanten Queries
@@ -46,18 +41,18 @@ export function useGlobalSync() {
     [utils],
   );
 
-  // Automatische globale Synchronisation alle 30 Sekunden (reduziert von 2s)
+  // Automatische globale Synchronisation alle 5 Minuten (reduziert von 2 Minuten)
   useEffect(() => {
     syncIntervalRef.current = setInterval(() => {
       const now = Date.now();
       const timeSinceLastSync = now - lastSyncRef.current;
 
       // Nur synchronisieren wenn keine kürzlichen Updates
-      if (timeSinceLastSync > 30000) {
-        console.log("🔄 Automatische globale Synchronisation");
+      if (timeSinceLastSync > 300000) {
+        // 5 Minuten
         globalSync();
       }
-    }, 30000); // Reduziert von 2s auf 30s
+    }, 300000); // Reduziert auf 5 Minuten
 
     return () => {
       if (syncIntervalRef.current) {
@@ -69,8 +64,10 @@ export function useGlobalSync() {
   // Event Listener für Browser-Fokus (wenn Tab wieder aktiv wird)
   useEffect(() => {
     const handleFocus = () => {
-      console.log("🔄 Browser-Fokus - Globale Synchronisation");
-      globalSync();
+      const now = Date.now();
+      if (now - lastSyncRef.current > 60000) { // Nur alle 60 Sekunden
+        globalSync();
+      }
     };
 
     window.addEventListener("focus", handleFocus);
@@ -80,9 +77,6 @@ export function useGlobalSync() {
   // Event Listener für Online-Status
   useEffect(() => {
     const handleOnline = () => {
-      console.log(
-        "🔄 Online-Status wiederhergestellt - Globale Synchronisation",
-      );
       globalSync();
     };
 
@@ -94,8 +88,10 @@ export function useGlobalSync() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log("🔄 Tab wieder sichtbar - Globale Synchronisation");
-        globalSync();
+        const now = Date.now();
+        if (now - lastSyncRef.current > 60000) { // Nur alle 60 Sekunden
+          globalSync();
+        }
       }
     };
 

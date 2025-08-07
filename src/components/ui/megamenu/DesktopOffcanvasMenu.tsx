@@ -134,6 +134,10 @@ export function DesktopOffcanvasMenu({
 
   const handleItemClick = (href?: string) => {
     if (href) {
+      // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
+      router.prefetch(href);
+      
+      // 🚀 SOFORTIGE NAVIGATION
       router.push(href);
       onClose();
     }

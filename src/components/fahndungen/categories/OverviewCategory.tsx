@@ -78,16 +78,18 @@ const OverviewCategory = React.memo(function OverviewCategory({
   updateField,
   onNext,
 }: OverviewCategoryProps) {
-  // Debug-Logging
-  console.log("🔍 DEBUG: OverviewCategory erhält Daten:", {
-    hasData: !!data,
-    step1: data?.step1,
-    step2: data?.step2,
-    step3: data?.step3,
-    step4: data?.step4,
-    step5: data?.step5,
-    isEditMode,
-  });
+  // Debug-Logging nur in Development
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 DEBUG: OverviewCategory erhält Daten:", {
+      hasData: !!data,
+      step1: data?.step1,
+      step2: data?.step2,
+      step3: data?.step3,
+      step4: data?.step4,
+      step5: data?.step5,
+      isEditMode,
+    });
+  }
 
   // State Management
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -407,6 +409,8 @@ const OverviewCategory = React.memo(function OverviewCategory({
                     width={600}
                     height={400}
                     className="h-64 w-full object-cover"
+                    priority={true}
+                    loading="eager"
                     onClick={toggleFullscreen}
                     onError={(e) => {
                       console.error(
@@ -622,6 +626,8 @@ const OverviewCategory = React.memo(function OverviewCategory({
             width={800}
             height={600}
             className="max-h-[90vh] max-w-[90vw] object-contain"
+            priority={true}
+            loading="eager"
           />
         </div>
       )}

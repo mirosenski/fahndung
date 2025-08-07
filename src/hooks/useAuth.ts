@@ -21,7 +21,6 @@ export const useAuth = () => {
   // Ref für Session-Check Status um Endlosschleifen zu verhindern
   const isCheckingSession = useRef(false);
   const hasInitialized = useRef(false);
-  const authListenerSetup = useRef(false);
   const retryCount = useRef(0);
   const maxRetries = 1; // RADIKALE OPTIMIERUNG: Nur 1 Retry
 
@@ -49,7 +48,7 @@ export const useAuth = () => {
       // RADIKALE OPTIMIERUNG: Noch kürzerer Timeout
       const sessionPromise = getCurrentSession();
       const timeoutPromise = new Promise<null>(
-        (resolve) => setTimeout(() => resolve(null), 800), // Reduziert von 1500ms auf 800ms
+        (resolve) => setTimeout(() => resolve(null), 500), // Reduziert auf 500ms
       );
 
       const currentSession = await Promise.race([
@@ -110,39 +109,26 @@ export const useAuth = () => {
     }
   }, [router]);
 
-  // Initial Session prüfen - nur einmal beim Mount
+  // Initialisierung nur einmal
   useEffect(() => {
-    if (hasInitialized.current) return;
-
-    void checkSession();
+    if (!hasInitialized.current) {
+      void checkSession();
+    }
   }, [checkSession]);
 
-  // Session-Listener für Änderungen - nur einmal setup
+  // Auth State Change Listener mit reduzierten Logs
   useEffect(() => {
-    if (!supabase || authListenerSetup.current) return;
-
-    authListenerSetup.current = true;
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(
-        "🔐 Auth State Change:",
-        event,
-        session ? "Session vorhanden" : "Keine Session",
-      );
-
-      // RADIKALE OPTIMIERUNG: Sofortige Reaktion ohne Verzögerungen
+      // Reduzierte Logs - nur bei wichtigen Events
       if (event === "SIGNED_OUT") {
-        // Sofortige Reaktion für Logout
         setSession(null);
         setLoading(false);
         setInitialized(true);
         setError(null);
         retryCount.current = 0;
       } else if (event === "SIGNED_IN" && session) {
-        // Sofortige Reaktion für Login
-        // Konvertiere Supabase Session zu benutzerdefinierter Session
         const customSession = {
           user: {
             id: session.user.id,

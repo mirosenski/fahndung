@@ -125,7 +125,7 @@ export default function MediaGrid({
   }, []);
 
   const renderItem = useCallback(
-    (item: MediaItem) => {
+    (item: MediaItem, index: number) => {
       const isHovered = hoveredItem === item.id;
 
       return (
@@ -142,6 +142,7 @@ export default function MediaGrid({
           getItemIcon={getItemIcon}
           formatFileSize={formatFileSize}
           formatDate={formatDate}
+          index={index}
         />
       );
     },
@@ -186,7 +187,7 @@ export default function MediaGrid({
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {items.map(renderItem)}
+        {items.map((item, index) => renderItem(item, index))}
       </div>
 
       {/* Empty State */}
@@ -232,7 +233,8 @@ function MediaItemComponent({
   getItemIcon,
   formatFileSize,
   formatDate,
-}: MediaItemComponentProps) {
+  index,
+}: MediaItemComponentProps & { index: number }) {
   const isSelected = useIsItemSelected(item.id);
   const Icon = getItemIcon(item);
 
@@ -270,6 +272,8 @@ function MediaItemComponent({
             fill
             className="object-cover"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            priority={index === 0}
+            loading={index === 0 ? "eager" : "lazy"}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-700">

@@ -432,6 +432,8 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                       width={200}
                       height={150}
                       className="rounded-lg object-cover"
+                      priority={true}
+                      loading="eager"
                     />
                   ) : null}
                   <button

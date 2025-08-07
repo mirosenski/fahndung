@@ -142,13 +142,21 @@ export default function InvestigationActions({
   };
 
   const handleEdit = () => {
-    router.push(
-      getFahndungEditUrl(investigation.title, investigation.case_number),
-    );
+    // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
+    const targetUrl = getFahndungEditUrl(investigation.title, investigation.case_number);
+    router.prefetch(targetUrl);
+    
+    // 🚀 SOFORTIGE NAVIGATION
+    router.push(targetUrl);
   };
 
   const handleView = () => {
-    router.push(getFahndungUrl(investigation.title, investigation.case_number));
+    // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
+    const targetUrl = getFahndungUrl(investigation.title, investigation.case_number);
+    router.prefetch(targetUrl);
+    
+    // 🚀 SOFORTIGE NAVIGATION
+    router.push(targetUrl);
   };
 
   const handleCopyLink = async () => {

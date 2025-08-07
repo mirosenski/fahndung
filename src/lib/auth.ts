@@ -179,9 +179,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
   }
 
   try {
-    console.log("🔍 Prüfe Benutzer-Authentifizierung...");
-
-    // Session-Prüfung mit kürzerem Timeout
+    // Reduzierte Logs - nur bei Fehlern
     const sessionPromise = supabase.auth.getSession();
     const timeoutPromise = new Promise<{
       data: { session: null };
@@ -190,7 +188,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
       setTimeout(
         () =>
           resolve({ data: { session: null }, error: { message: "Timeout" } }),
-        3000, // Erhöht auf 3000ms für stabilere Verbindung
+        2000, // Reduziert auf 2000ms für schnellere Antwort
       ),
     );
 
@@ -216,28 +214,17 @@ export const getCurrentSession = async (): Promise<Session | null> => {
         errorMessage.includes("403") ||
         isEmptyError // Leere oder ungültige Fehlermeldung
       ) {
-        console.log("🔄 Auth Session Fehler - bereinige Session...");
         await clearAuthSession();
         return null;
       }
 
-      // 🔥 VERBESSERTE FEHLERBEHANDLUNG
-      console.log("🔄 Session-Fehler Details:", {
-        message: sessionError.message,
-        name: "name" in sessionError ? sessionError.name : undefined,
-        stack: "stack" in sessionError ? sessionError.stack : undefined,
-        isEmpty: isEmptyError,
-      });
-
       // Versuche Session-Refresh nur bei spezifischen Fehlern
       if (!isEmptyError && !errorMessage.includes("Timeout")) {
         try {
-          console.log("🔄 Versuche Session-Refresh...");
           const { data: refreshData, error: refreshError } =
             await supabase.auth.refreshSession();
 
           if (!refreshError && refreshData.session) {
-            console.log("✅ Session-Refresh erfolgreich");
             return {
               user: {
                 id: refreshData.session.user.id,
@@ -246,10 +233,6 @@ export const getCurrentSession = async (): Promise<Session | null> => {
               profile: null, // Profile wird später geladen
             };
           } else {
-            console.log(
-              "❌ Session-Refresh fehlgeschlagen:",
-              refreshError?.message,
-            );
             await clearAuthSession();
             return null;
           }
@@ -260,16 +243,12 @@ export const getCurrentSession = async (): Promise<Session | null> => {
         }
       } else {
         // Bei leeren Fehlermeldungen oder Timeout direkt Session bereinigen
-        console.log(
-          "🔄 Leere Fehlermeldung oder Timeout - bereinige Session...",
-        );
         await clearAuthSession();
         return null;
       }
     }
 
     if (!sessionData.session) {
-      console.log("❌ Keine aktive Session gefunden");
       return null;
     }
 
@@ -278,86 +257,21 @@ export const getCurrentSession = async (): Promise<Session | null> => {
     const expiresAt = sessionData.session.expires_at;
 
     if (expiresAt && now >= expiresAt) {
-      console.log("🔄 Token ist abgelaufen - bereinige Session...");
       await clearAuthSession();
       return null;
     }
 
     const user = sessionData.session.user;
-    console.log("✅ Benutzer authentifiziert:", {
-      id: user.id,
-      email: user.email,
-    });
 
     // Benutzer-Profil abrufen mit einfacher Fehlerbehandlung
-    console.log("🔍 Lade Benutzer-Profil...");
-    const profileResult = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
 
-    const { data: profile, error: profileError } = profileResult as {
-      data: UserProfile | null;
-      error: { message: string; code: string } | null;
-    };
-
-    if (profileError) {
-      console.log("⚠️ Profile Error Details:", {
-        code: profileError.code,
-        message: profileError.message ?? "Unbekannter Fehler",
-      });
-
-      if (profileError.code === "PGRST116") {
-        // Profil existiert nicht - erstelle es automatisch
-        console.log("🔄 Profil existiert nicht, erstelle es automatisch...");
-
-        try {
-          const autoProfile = await createOrUpdateProfile(
-            user.id,
-            user.email ?? "",
-            {
-              name: user.email?.split("@")[0] ?? "Benutzer",
-              role: "user",
-              department: "Allgemein",
-            },
-          );
-
-          if (autoProfile) {
-            console.log("✅ Profil erfolgreich erstellt");
-            return {
-              user: {
-                id: user.id,
-                email: user.email ?? "",
-              },
-              profile: autoProfile,
-            };
-          } else {
-            console.error("❌ Fehler beim automatischen Erstellen des Profils");
-            // Fallback: Session ohne Profil zurückgeben
-            return {
-              user: {
-                id: user.id,
-                email: user.email ?? "",
-              },
-              profile: null,
-            };
-          }
-        } catch (createProfileError) {
-          console.error(
-            "❌ Fehler beim Erstellen des Profils:",
-            createProfileError,
-          );
-          // Fallback: Session ohne Profil zurückgeben
-          return {
-            user: {
-              id: user.id,
-              email: user.email ?? "",
-            },
-            profile: null,
-          };
-        }
-      } else {
+      if (profileError) {
         console.error("❌ Fehler beim Laden des Profils:", profileError);
         // Fallback: Session ohne Profil zurückgeben
         return {
@@ -368,32 +282,29 @@ export const getCurrentSession = async (): Promise<Session | null> => {
           profile: null,
         };
       }
-    }
 
-    if (!profile) {
-      console.log("⚠️ Kein Profil gefunden, verwende Session ohne Profil");
+      if (!profile) {
+        return {
+          user: {
+            id: user.id,
+            email: user.email ?? "",
+          },
+          profile: null,
+        };
+      }
+
       return {
         user: {
           id: user.id,
           email: user.email ?? "",
         },
-        profile: null,
+        profile: profile ? (profile as unknown as UserProfile) : null,
       };
+    } catch (error) {
+      console.error("❌ Unerwarteter Fehler in getCurrentSession:", error);
+      await clearAuthSession();
+      return null;
     }
-
-    console.log("✅ Profil erfolgreich geladen:", {
-      id: profile.id,
-      name: profile.name,
-      role: profile.role,
-    });
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email ?? "",
-      },
-      profile,
-    };
   } catch (error) {
     console.error("❌ Unerwarteter Fehler in getCurrentSession:", error);
     await clearAuthSession();

@@ -7,16 +7,16 @@ export const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        // Optimierte Cache-Strategie für bessere Performance
-        staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 0)
-        // Reduzierte Refetch-Strategien für bessere Performance
-        refetchOnWindowFocus: false, // Reduziert von true
-        refetchOnMount: true,
+        // 🚀 OPTIMIERTE CACHE-STRATEGIE FÜR SCHNELLE NAVIGATION
+        staleTime: 20 * 60 * 1000, // 20 Minuten Cache (erhöht für bessere Performance)
+        // 🚀 REDUZIERTE REFETCH-STRATEGIEN FÜR SCHNELLERE NAVIGATION
+        refetchOnWindowFocus: false, // Verhindert unnötige Refetches bei Navigation
+        refetchOnMount: false, // Verhindert Refetch beim Tab-Wechsel
         refetchOnReconnect: true,
-        // Optimierte Retry-Strategie
-        retry: 2, // Reduziert von 1
-        retryDelay: 500, // Reduziert von 1000ms
-        // Reduzierte Refetch-Intervalle da Real-time Updates aktiv sind
+        // 🚀 OPTIMIERTE RETRY-STRATEGIE
+        retry: 1, // Reduziert für schnellere Fehlerbehandlung
+        retryDelay: 200, // Reduziert für schnellere Retries
+        // 🚀 INTELLIGENTE REFETCH-INTERVALLE
         refetchInterval: (query) => {
           // Spezielle Behandlung für Fahndungs-Queries
           if (
@@ -25,18 +25,22 @@ export const createQueryClient = () =>
               query.queryKey[1] === "getMyInvestigations" ||
               query.queryKey[1] === "getInvestigation")
           ) {
-            return 30000; // Alle 30 Sekunden als Fallback (erhöht von 10s)
+            return 600000; // Alle 10 Minuten als Fallback (erhöht für bessere Performance)
           }
           return false; // Kein automatisches Refetch für andere Queries
         },
-        // Performance-Optimierungen
-        gcTime: 10 * 60 * 1000, // 10 Minuten Garbage Collection
+        // 🚀 PERFORMANCE-OPTIMIERUNGEN
+        gcTime: 45 * 60 * 1000, // 45 Minuten Garbage Collection (erhöht)
         networkMode: "online",
+        // 🚀 NEUE OPTION: PREFETCH-OPTIMIERUNG
+        placeholderData: (previousData: unknown) => previousData, // Behält alte Daten während Refetch
+        // 🚀 OPTIMIERTE DEDUPLICATION
+        structuralSharing: true, // Verhindert unnötige Re-Renders
       },
       mutations: {
-        // Optimistische Updates für sofortige UI-Updates
-        retry: 1,
-        retryDelay: 500, // Reduziert von 1000ms
+        // 🚀 OPTIMIERTE MUTATION-STRATEGIE
+        retry: 1, // Reduziert für schnellere Fehlerbehandlung
+        retryDelay: 200, // Reduziert für schnellere Retries
         networkMode: "online",
       },
       dehydrate: {

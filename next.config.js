@@ -14,6 +14,22 @@ const config = {
   // Temporär deaktiviert wegen doppelter Renders in React 19
   reactStrictMode: false,
 
+  // 🚀 OPTIMIERTE NAVIGATION-KONFIGURATION
+  experimental: {
+    // Optimierte Package-Imports für schnellere Navigation
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-label",
+      "@radix-ui/react-select",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@tanstack/react-query",
+      "zustand",
+    ],
+  },
+
   // Optimierte Bilder-Konfiguration
   images: {
     formats: ["image/webp", "image/avif"],
@@ -47,7 +63,7 @@ const config = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
-  // Optimierte Headers für Caching
+  // 🚀 OPTIMIERTE HEADERS FÜR SCHNELLERE NAVIGATION
   async headers() {
     return [
       {
@@ -64,6 +80,11 @@ const config = {
           {
             key: "X-XSS-Protection",
             value: "1; mode=block",
+          },
+          // 🚀 CACHE-OPTIMIERUNGEN FÜR NAVIGATION
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, stale-while-revalidate=86400",
           },
         ],
       },
@@ -86,10 +107,29 @@ const config = {
           },
         ],
       },
+      // 🚀 NAVIGATION-SPEZIFISCHE CACHE-HEADERS
+      {
+        source: "/dashboard",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=1800, stale-while-revalidate=3600",
+          },
+        ],
+      },
+      {
+        source: "/fahndungen",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=900, stale-while-revalidate=1800",
+          },
+        ],
+      },
     ];
   },
 
-  // Optimierte Webpack-Konfiguration (nur für Production Build)
+  // 🚀 OPTIMIERTE WEBPACK-KONFIGURATION FÜR SCHNELLERE NAVIGATION
   webpack: (config, { dev, isServer }) => {
     // Verbesserte Pfad-Behandlung
     config.resolve.fallback = {
@@ -99,9 +139,9 @@ const config = {
       tls: false,
     };
 
-    // Optimierungen nur für Production
+    // 🚀 NAVIGATION-OPTIMIERUNGEN NUR FÜR PRODUCTION
     if (!dev && !isServer) {
-      // Code-Splitting optimieren
+      // Code-Splitting optimieren für schnellere Navigation
       config.optimization.splitChunks = {
         chunks: "all",
         cacheGroups: {
@@ -124,6 +164,13 @@ const config = {
             chunks: "all",
             priority: 20,
           },
+          // 🚀 NAVIGATION-SPEZIFISCHE CHUNKS
+          navigation: {
+            test: /[\\/]components[\\/](layout|navigation|ui)[\\/]/,
+            name: "navigation",
+            chunks: "all",
+            priority: 30,
+          },
         },
       };
     }
@@ -139,6 +186,14 @@ const config = {
   // Optimierte ESLint-Konfiguration
   eslint: {
     ignoreDuringBuilds: false,
+  },
+
+  // React DevTools-Warnung unterdrücken
+  compiler: {
+    // Unterdrücke React DevTools-Warnung
+    removeConsole: process.env.NODE_ENV === "production" ? {
+      exclude: ["error", "warn"],
+    } : false,
   },
 };
 

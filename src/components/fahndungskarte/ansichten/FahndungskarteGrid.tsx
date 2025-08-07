@@ -119,8 +119,6 @@ const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
   investigations,
   className = "",
   viewMode = "grid-3",
-  onAction,
-  userRole,
   userPermissions,
 }) => {
   // Grid-Klassen basierend auf viewMode
@@ -166,8 +164,6 @@ const FahndungskarteGrid: React.FC<FahndungskarteGridProps> = ({
           key={investigation.id}
           data={convertInvestigationToFahndungsData(investigation)}
           investigationId={investigation.id}
-          onAction={onAction}
-          userRole={userRole}
           userPermissions={userPermissions}
         />
       ))}

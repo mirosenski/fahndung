@@ -15,67 +15,54 @@ import { Button } from "~/components/ui/button";
 import dynamic from "next/dynamic";
 import { InvestigationDataConverter } from "~/lib/services/investigationDataConverter";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
+import { isValidInvestigationId } from "~/lib/utils/validation";
+import { InvestigationDebug } from "~/components/debug/InvestigationDebug";
 
 // Lazy Loading für bessere Performance
-const OverviewCategory = dynamic(
-  () => import("./OverviewCategory"),
-  {
-    loading: () => (
-      <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      </div>
-    ),
-    ssr: false,
-  }
-);
+const OverviewCategory = dynamic(() => import("./OverviewCategory"), {
+  loading: () => (
+    <div className="animate-pulse">
+      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  ),
+  ssr: false,
+});
 
-const DescriptionCategory = dynamic(
-  () => import("./DescriptionCategory"),
-  {
-    loading: () => (
-      <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      </div>
-    ),
-    ssr: false,
-  }
-);
+const DescriptionCategory = dynamic(() => import("./DescriptionCategory"), {
+  loading: () => (
+    <div className="animate-pulse">
+      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  ),
+  ssr: false,
+});
 
-const MediaCategory = dynamic(
-  () => import("./MediaCategory"),
-  {
-    loading: () => (
-      <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      </div>
-    ),
-    ssr: false,
-  }
-);
+const MediaCategory = dynamic(() => import("./MediaCategory"), {
+  loading: () => (
+    <div className="animate-pulse">
+      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  ),
+  ssr: false,
+});
 
-const LocationsCategory = dynamic(
-  () => import("./LocationsCategory"),
-  {
-    loading: () => (
-      <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      </div>
-    ),
-    ssr: false,
-  }
-);
+const LocationsCategory = dynamic(() => import("./LocationsCategory"), {
+  loading: () => (
+    <div className="animate-pulse">
+      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  ),
+  ssr: false,
+});
 
-const ContactCategory = dynamic(
-  () => import("./ContactCategory"),
-  {
-    loading: () => (
-      <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      </div>
-    ),
-    ssr: false,
-  }
-);
+const ContactCategory = dynamic(() => import("./ContactCategory"), {
+  loading: () => (
+    <div className="animate-pulse">
+      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  ),
+  ssr: false,
+});
 
 interface FahndungCategoriesContainerProps {
   investigationId: string;
@@ -88,15 +75,13 @@ export default function FahndungCategoriesContainer({
   const { session } = useAuth();
   const [activeCategory, setActiveCategory] = useState("overview");
 
+  // Validiere investigationId
+  const isValidId = isValidInvestigationId(investigationId);
+
   // Optimierte Hooks mit reduzierter Synchronisation
   const { investigation, isLoading } = useInvestigationSync(investigationId);
-  const {
-    editedData,
-    isEditMode,
-    save,
-    updateField,
-    globalSync,
-  } = useInvestigationEdit(investigationId);
+  const { editedData, isEditMode, save, updateField, globalSync } =
+    useInvestigationEdit(investigationId);
 
   // Delete mutation hook
   const deleteMutation = api.post.deleteInvestigation.useMutation({
@@ -132,14 +117,16 @@ export default function FahndungCategoriesContainer({
 
   // Memoized Loading State
   const loadingState = useMemo(() => {
-    if (isLoading) {
+    if (isLoading || !isValidId) {
       return (
         <PageLayout session={session}>
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
               <p className="text-gray-600 dark:text-gray-400">
-                Lade Fahndungsdaten...
+                {!isValidId
+                  ? "Ungültige Fahndungs-ID"
+                  : "Lade Fahndungsdaten..."}
               </p>
             </div>
           </div>
@@ -147,11 +134,11 @@ export default function FahndungCategoriesContainer({
       );
     }
     return null;
-  }, [isLoading, session]);
+  }, [isLoading, isValidId, session]);
 
   // Memoized Error State
   const errorState = useMemo(() => {
-    if (!investigation && !isLoading) {
+    if (!isValidId) {
       return (
         <PageLayout session={session}>
           <div className="flex min-h-[400px] items-center justify-center">
@@ -160,10 +147,10 @@ export default function FahndungCategoriesContainer({
                 <div className="h-6 w-6 text-white">!</div>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Fahndung nicht gefunden
+                Ungültige Fahndungs-ID
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Die angeforderte Fahndung existiert nicht.
+                Die angegebene Fahndungs-ID ist ungültig oder leer.
               </p>
               <Link
                 href="/fahndungen"
@@ -176,15 +163,43 @@ export default function FahndungCategoriesContainer({
         </PageLayout>
       );
     }
-    return null;
-  }, [investigation, isLoading, session]);
 
-  // Memoized Data Conversion
+    if (!investigation && !isLoading) {
+      return (
+        <PageLayout session={session}>
+          <div className="flex min-h-[400px] items-center justify-center">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
+                <div className="h-6 w-6 text-white">!</div>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Fahndung nicht gefunden
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Die angeforderte Fahndung konnte nicht gefunden werden.
+              </p>
+              <Link
+                href="/fahndungen"
+                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Zurück zur Übersicht
+              </Link>
+            </div>
+          </div>
+        </PageLayout>
+      );
+    }
+
+    return null;
+  }, [isValidId, investigation, isLoading, session]);
+
+  // Memoized Converted Data
   const convertedData = useMemo(() => {
     if (!investigation) return null;
 
-    // Konvertiere die Datenbankdaten zu UI-Format
-    const conversion = InvestigationDataConverter.toUIFormat(investigation as unknown as Record<string, unknown>);
+    const conversion = InvestigationDataConverter.toUIFormat(
+      investigation as Record<string, unknown>,
+    );
     if (conversion.success) {
       return conversion.data;
     } else {
@@ -192,24 +207,21 @@ export default function FahndungCategoriesContainer({
       // Fallback: Verwende die Rohdaten mit Standardwerten
       return {
         step1: {
-          title: (investigation.title) ?? "",
-          category: (investigation.category) ?? "MISSING_PERSON",
-          caseNumber: (investigation.case_number) ?? "",
+          title: investigation.title ?? "",
+          category: investigation.category ?? "MISSING_PERSON",
+          caseNumber: investigation.case_number ?? "",
         },
         step2: {
-          shortDescription: (investigation.short_description) ?? "",
-          description: (investigation.description) ?? "",
-          priority: (investigation.priority as string) ?? "normal",
-          tags: (investigation.tags) ?? [],
-          features: (investigation.features) ?? "",
+          shortDescription: investigation.short_description ?? "",
+          description: investigation.description ?? "",
+          priority: investigation.priority ?? "normal",
+          tags: investigation.tags ?? [],
+          features: investigation.features ?? "",
         },
         step3: {
-          mainImage:
-            (investigation.images as Array<{ url: string }>)?.[0]?.url ?? null,
+          mainImage: investigation.images?.[0]?.url ?? null,
           additionalImages:
-            (investigation.images as Array<{ url: string }>)
-              ?.slice(1)
-              .map((img) => img.url) ?? [],
+            investigation.images?.slice(1).map((img) => img.url) ?? [],
         },
         step4: {
           mainLocation: investigation.location
@@ -218,32 +230,17 @@ export default function FahndungCategoriesContainer({
         },
         step5: {
           contactPerson:
-            ((investigation.contact_info)?.[
-              "person"
-            ] as string) ?? "Polizei",
+            investigation.contact_info?.["person"] as string ?? "Polizei",
           contactPhone:
-            ((investigation.contact_info)?.[
-              "phone"
-            ] as string) ?? "+49 711 8990-0",
-          contactEmail:
-            ((investigation.contact_info)?.[
-              "email"
-            ] as string) ?? "",
-          department: (investigation.station) ?? "Polizeipräsidium",
+            investigation.contact_info?.["phone"] as string ??
+            "+49 711 8990-0",
+          contactEmail: investigation.contact_info?.["email"] as string ?? "",
+          department: investigation.station ?? "Polizeipräsidium",
           availableHours:
-            ((investigation.contact_info)?.[
-              "hours"
-            ] as string) ?? "24/7",
+            investigation.contact_info?.["hours"] as string ?? "24/7",
         },
-        images:
-          (investigation.images as Array<{
-            id: string;
-            url: string;
-            alt_text?: string;
-            caption?: string;
-          }>) ?? [],
-        contact_info:
-          (investigation.contact_info!) ?? {},
+        images: investigation.images ?? [],
+        contact_info: investigation.contact_info ?? {},
       } as UIInvestigationData;
     }
   }, [investigation]);
@@ -324,16 +321,27 @@ export default function FahndungCategoriesContainer({
           </div>
         );
     }
-  }, [activeCategory, convertedData, editedData, isEditMode, updateField, navigateToCategory, handleSave]);
+  }, [
+    activeCategory,
+    convertedData,
+    editedData,
+    isEditMode,
+    updateField,
+    navigateToCategory,
+    handleSave,
+  ]);
 
   // Memoized Categories Array
-  const categories = useMemo(() => [
-    { id: "overview", label: "Übersicht", icon: "📋" },
-    { id: "description", label: "Beschreibung", icon: "📝" },
-    { id: "media", label: "Medien", icon: "🖼️" },
-    { id: "locations", label: "Orte", icon: "📍" },
-    { id: "contact", label: "Kontakt", icon: "📞" },
-  ], []);
+  const categories = useMemo(
+    () => [
+      { id: "overview", label: "Übersicht", icon: "📋" },
+      { id: "description", label: "Beschreibung", icon: "📝" },
+      { id: "media", label: "Medien", icon: "🖼️" },
+      { id: "locations", label: "Orte", icon: "📍" },
+      { id: "contact", label: "Kontakt", icon: "📞" },
+    ],
+    [],
+  );
 
   // Early returns für Loading und Error States
   if (loadingState) return loadingState;
@@ -423,11 +431,12 @@ export default function FahndungCategoriesContainer({
           </div>
 
           {/* Category Content */}
-          <div className="min-h-[600px]">
-            {categoryContent}
-          </div>
+          <div className="min-h-[600px]">{categoryContent}</div>
         </div>
       </PageLayout>
+
+      {/* Debug-Komponente (nur in Development) */}
+      <InvestigationDebug investigationId={investigationId} />
     </InvestigationEditErrorBoundary>
   );
 }
