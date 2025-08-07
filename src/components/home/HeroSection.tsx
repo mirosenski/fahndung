@@ -65,14 +65,14 @@ export default function HeroSection({
   showUrgentFahndungen = true,
   urgentInvestigations = [],
 
-  showBackgroundSphere = true,
+  showBackgroundSphere = false,
   backgroundSphereColor = "bg-gray-100",
 }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden bg-background">
-      {/* Hintergrund-Sphäre */}
+    <section className="relative bg-transparent">
+      {/* Hintergrund-Sphäre deaktiviert für globale Kugel */}
       {showBackgroundSphere && (
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0">
           <div
             className={`absolute -right-1/2 -top-1/2 h-full w-full rounded-full opacity-20 blur-3xl ${backgroundSphereColor} dark:bg-background`}
             style={{
@@ -148,4 +148,4 @@ export default function HeroSection({
       </div>
     </section>
   );
-} 
+}

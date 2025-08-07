@@ -86,7 +86,7 @@ const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <div
       className={`
-      w-full overflow-hidden bg-[#EEEEEE] text-gray-700 transition-all duration-500
+      w-full bg-[#EEEEEE] text-gray-700 transition-all duration-500
       ease-out dark:bg-gray-900 dark:text-gray-200
       ${isVisible ? "h-8 opacity-100" : "h-0 opacity-0"}
     `}
@@ -178,7 +178,7 @@ const AdaptiveDesktopHeader = ({
                 onClick={() => {
                   // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
                   router.prefetch("/fahndungen/neu/enhanced");
-                  
+
                   // 🚀 SOFORTIGE NAVIGATION
                   router.push("/fahndungen/neu/enhanced");
                 }}
