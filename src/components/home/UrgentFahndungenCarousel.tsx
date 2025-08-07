@@ -255,6 +255,7 @@ export default function UrgentFahndungenCarousel({
     <div
       ref={carouselRef}
       className={`relative h-[525px] w-full max-w-sm ${className}`}
+      style={{ zIndex: 25 }}
       role="region"
       aria-label="Dringende Fahndungen Karussell"
       tabIndex={0}

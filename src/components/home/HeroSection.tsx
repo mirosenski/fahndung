@@ -69,7 +69,14 @@ export default function HeroSection({
   backgroundSphereColor = "bg-gray-100",
 }: HeroSectionProps) {
   return (
-    <section className="relative bg-transparent">
+    <section className="relative bg-transparent" style={{ zIndex: 20 }}>
+      {/* CSS um Sphere in diesem Bereich auszublenden */}
+      <style jsx>{`
+        .hero-section .sphere-scroll {
+          display: none !important;
+        }
+      `}</style>
+
       {/* Hintergrund-Sphäre deaktiviert für globale Kugel */}
       {showBackgroundSphere && (
         <div className="absolute inset-0">
@@ -83,7 +90,7 @@ export default function HeroSection({
         </div>
       )}
 
-      <div className="container relative mx-auto px-4 py-12 lg:py-16">
+      <div className="hero-section container relative mx-auto px-4 py-12 lg:py-16">
         {/* Hauptinhalt - Zwei separate Container */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-12">
           {/* Linker Container */}

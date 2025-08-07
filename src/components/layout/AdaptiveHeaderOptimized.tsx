@@ -234,6 +234,7 @@ const AdaptiveDesktopHeader = ({
       hidden w-full lg:block
       ${isScrolled ? "sticky top-0 z-50" : "relative"}
     `}
+      style={{ zIndex: 100 }}
     >
       {/* Meta Accessibility Bar - im normalen Zustand immer sichtbar, im Sticky-Zustand nur wenn eingeblendet */}
       {(!isScrolled || showMetaBar) && (
@@ -343,7 +344,10 @@ const ResponsiveMobileHeader = ({
   const [showMetaControls, setShowMetaControls] = useState(false);
 
   return (
-    <div className="sticky top-0 z-50 w-full rounded-xl border-b border-gray-100 bg-gray-50 shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 lg:hidden">
+    <div
+      className="sticky top-0 z-50 w-full rounded-xl border-b border-gray-100 bg-gray-50 shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 lg:hidden"
+      style={{ zIndex: 100 }}
+    >
       {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
       {showMetaControls && (
         <div className="bg-gray-200 px-4 py-2 text-gray-800 dark:bg-[#020618] dark:text-slate-200">
