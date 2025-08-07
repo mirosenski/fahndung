@@ -4,12 +4,16 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   // 🚀 OPTIMIERTE MIDDLEWARE FÜR SCHNELLERE NAVIGATION
 
+  // Bestimme erlaubte Ursprung-Domain für CORS. Fällt auf localhost zurück.
+  // Use bracket notation to satisfy TypeScript when accessing env variables
+  const allowedOrigin = process.env["NEXT_PUBLIC_APP_URL"] ?? "http://localhost:3000";
+
   // CORS-Headers nur für API-Routen (reduziert Overhead)
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const response = NextResponse.next();
 
     // 🚀 OPTIMIERTE CORS-HEADERS
-    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
     response.headers.set(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS",
@@ -44,7 +48,7 @@ export function middleware(request: NextRequest) {
     const response = NextResponse.next();
 
     // 🚀 REDUZIERTE CORS-HEADERS FÜR AUTH
-    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
     response.headers.set(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS",

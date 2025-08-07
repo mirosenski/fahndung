@@ -52,6 +52,19 @@ export const mediaRouter = createTRPCRouter({
       );
 
       try {
+        // Zulässige MIME-Typen einschränken
+        const allowedMimeTypes = [
+          "image/jpeg",
+          "image/png",
+          "video/mp4",
+        ];
+        if (!allowedMimeTypes.includes(input.contentType)) {
+          console.error("❌ Unsupported MIME type:", input.contentType);
+          throw new TRPCError({
+            code: "UNSUPPORTED_MEDIA_TYPE",
+            message: `Dateityp nicht unterstützt. Erlaubte Typen: ${allowedMimeTypes.join(", ")}`,
+          });
+        }
         console.log("🚀 Upload startet für:", input.filename, {
           fileLength: input.file.length,
           contentType: input.contentType,
