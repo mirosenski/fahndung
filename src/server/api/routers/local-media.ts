@@ -40,6 +40,20 @@ export const localMediaRouter = createTRPCRouter({
         // Decode base64 to buffer
         const buffer = Buffer.from(input.file, "base64");
 
+        // Zulässige MIME-Typen einschränken
+        const allowedMimeTypes = [
+          "image/jpeg",
+          "image/png",
+          "video/mp4",
+        ];
+        if (!allowedMimeTypes.includes(input.contentType)) {
+          console.error("❌ Unsupported MIME type:", input.contentType);
+          throw new TRPCError({
+            code: "UNSUPPORTED_MEDIA_TYPE",
+            message: `Dateityp nicht unterstützt. Erlaubte Typen: ${allowedMimeTypes.join(", ")}`,
+          });
+        }
+
         // Prüfe Dateigröße (max 8MB nach Base64-Kodierung)
         const maxSize = 8 * 1024 * 1024; // 8MB
         if (buffer.length > maxSize) {

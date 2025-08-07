@@ -7,6 +7,9 @@
  * need to use are documented accordingly near the end.
  */
 import { initTRPC, TRPCError } from "@trpc/server";
+// Rate limit and Redis for per-IP request limiting
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 import { ZodError } from "zod";
 import { createClient } from "@supabase/supabase-js";
 
@@ -38,6 +41,12 @@ interface TRPCContext {
   db: typeof supabase;
   session: Session | null;
   user: TRPCUser | null;
+  /**
+   * Optional IP address extracted from the incoming request headers. Used for
+   * rate limiting and logging. Defaults to "unknown" when no header is
+   * available.
+   */
+  ip?: string;
 }
 
 /**
@@ -58,6 +67,14 @@ export const createTRPCContext = async (opts: {
   // Session aus Headers extrahieren
   const session: Session | null = null;
   let user: TRPCUser | null = null;
+  // Extract client IP from common proxy headers. When multiple values are
+  // present (comma separated), take the first one. Fallback to x-real-ip
+  // or "unknown" if nothing is provided.
+  const forwarded = opts.headers.get("x-forwarded-for");
+  const ipCandidate = forwarded
+    ? forwarded.split(",")[0]?.trim()
+    : opts.headers.get("x-real-ip");
+  const ip = ipCandidate ?? "unknown";
   const debugHeader = opts.headers.get("x-debug-auth");
 
   try {
@@ -155,6 +172,7 @@ export const createTRPCContext = async (opts: {
                         db: supabase,
                         session: null,
                         user: null,
+                        ip,
                       };
                     }
 
@@ -239,6 +257,7 @@ export const createTRPCContext = async (opts: {
     db: supabase,
     session,
     user,
+    ip,
   };
 };
 
@@ -263,6 +282,59 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 });
 
 /**
+ * Rate limiting middleware using Upstash.
+ *
+ * Limits each IP to 100 requests per minute using a sliding window algorithm.
+ * When the limit is exceeded, a TOOMANYREQUESTS error is thrown. The Redis
+ * credentials are picked up from the environment via `UPSTASH_REDIS_REST_URL`
+ * and `UPSTASH_REDIS_REST_TOKEN`. See https://github.com/upstash/ratelimit for
+ * details.
+ */
+// Initialize a rate limit instance only if Upstash credentials are present. When
+// credentials are missing, rate limiting is disabled and a no-op middleware is
+// used instead. This avoids noisy log messages during build when the env
+// variables are not provided.
+let ratelimit: Ratelimit | null = null;
+try {
+  const redis = Redis.fromEnv();
+  ratelimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(100, "1 m"),
+  });
+} catch (err) {
+  if (process.env.NODE_ENV === "development") {
+    console.warn(
+      "Upstash credentials missing. Rate limiting is disabled.",
+      err,
+    );
+  }
+}
+
+const rateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
+  if (!ratelimit) {
+    // Rate limiting disabled; proceed without limiting
+    return next();
+  }
+  // Determine client IP (set in createTRPCContext). Unknown IPs share the same bucket.
+  const ip = ctx.ip ?? "unknown";
+  try {
+    const { success } = await ratelimit.limit(ip);
+    if (!success) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: "Zu viele Anfragen – bitte später erneut versuchen.",
+      });
+    }
+  } catch (err) {
+    // If the rate limit check fails, do not block the request but log an error in development
+    if (process.env.NODE_ENV === "development") {
+      console.error("Rate limit check failed", err);
+    }
+  }
+  return next();
+});
+
+/**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
  *
  * These are the pieces you use to build your tRPC API. You should import these a lot in the
@@ -283,7 +355,8 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure;
+// Public procedures are rate-limited but do not require authentication.
+export const publicProcedure = t.procedure.use(rateLimitMiddleware);
 
 /**
  * Middleware for timing
@@ -291,14 +364,20 @@ export const publicProcedure = t.procedure;
 const timingMiddleware = t.middleware(async ({ path, next }) => {
   const start = Date.now();
 
-  // artificial delay in dev
-  const waitMs = Math.floor(Math.random() * 400) + 100;
-  await new Promise((resolve) => setTimeout(resolve, waitMs));
-  const result = await next();
+  /**
+   * Introduce an artificial delay only during local development to make
+   * profiling easier. In production the middleware returns immediately
+   * to avoid unnecessary latency.
+   */
+  if (process.env.NODE_ENV === "development") {
+    const waitMs = Math.floor(Math.random() * 400) + 100;
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
 
+  const result = await next();
   const end = Date.now();
 
-  // Nur in Development loggen
+  // Log execution time only in development for debugging purposes
   if (process.env.NODE_ENV === "development") {
     console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
   }
@@ -353,6 +432,7 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
   });
 });
 
+
 /**
  * Protected (authenticated) procedure
  *
@@ -362,6 +442,7 @@ const adminMiddleware = t.middleware(async ({ ctx, next }) => {
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure
+  .use(rateLimitMiddleware)
   .use(timingMiddleware)
   .use(authMiddleware);
 
@@ -371,6 +452,7 @@ export const protectedProcedure = t.procedure
  * This is for procedures that require admin privileges.
  */
 export const adminProcedure = t.procedure
+  .use(rateLimitMiddleware)
   .use(timingMiddleware)
   .use(adminMiddleware);
 
