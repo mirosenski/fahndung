@@ -136,7 +136,7 @@ export function DesktopOffcanvasMenu({
     if (href) {
       // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
       router.prefetch(href);
-      
+
       // 🚀 SOFORTIGE NAVIGATION
       router.push(href);
       onClose();
@@ -163,14 +163,14 @@ export function DesktopOffcanvasMenu({
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+            className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm transition-opacity duration-300"
             onClick={handleOverlayClick}
             ref={overlayRef}
           />
 
           {/* Offcanvas */}
           <div
-            className="fixed right-0 top-0 z-50 h-full w-full max-w-xs bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-background"
+            className="fixed right-0 top-0 z-[9999] h-full w-full max-w-xs bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-background"
             role="dialog"
             aria-modal="true"
             aria-labelledby="desktop-offcanvas-title"

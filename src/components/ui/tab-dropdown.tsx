@@ -89,7 +89,7 @@ export function TabDropdown({
         <div
           ref={dropdownRef}
           className={cn(
-            "absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+            "absolute z-[9999] min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
             align === "start" && "left-0",
             align === "center" && "left-1/2 -translate-x-1/2 transform",
             align === "end" && "right-0",

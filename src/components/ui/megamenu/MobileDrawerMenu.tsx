@@ -180,7 +180,7 @@ export function MobileDrawerMenu({
     (href: string) => {
       // 🚀 PREFETCH FÜR SCHNELLERE NAVIGATION
       router.prefetch(href);
-      
+
       // 🚀 SOFORTIGE NAVIGATION MIT OPTIMIERTER UX
       router.push(href);
       onClose();
@@ -290,14 +290,14 @@ export function MobileDrawerMenu({
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 z-40 bg-black/60 transition-opacity duration-200 md:hidden"
+              className="fixed inset-0 z-[9999] bg-black/60 transition-opacity duration-200 md:hidden"
               onClick={() => onClose()}
             />
 
             {/* Drawer */}
             <div
               ref={drawerRef}
-              className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-2xl transition-transform duration-300 ease-out md:hidden"
+              className="fixed right-0 top-0 z-[9999] flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-2xl transition-transform duration-300 ease-out md:hidden"
             >
               {/* Sticky Header */}
               <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-background p-4">
