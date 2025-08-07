@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { immer } from "zustand/middleware/immer";
+// Immer entfernt - verwende Standard Zustand
 import type {
   MediaItem,
   MediaFilters,
@@ -77,122 +77,146 @@ const initialState: MediaState = {
   sortOrder: "desc",
 };
 
-export const useMediaStore = create<MediaStore>()(
-  immer((set) => ({
-    ...initialState,
+export const useMediaStore = create<MediaStore>()((set) => ({
+  ...initialState,
 
-    setItems: (items) =>
-      set((state) => {
-        state.items = items;
-      }),
+  setItems: (items) =>
+    set((state) => ({
+      ...state,
+      items,
+    })),
 
-    addItem: (item) =>
-      set((state) => {
-        state.items.unshift(item);
-      }),
+  addItem: (item) =>
+    set((state) => ({
+      ...state,
+      items: [item, ...state.items],
+    })),
 
-    removeItem: (id) =>
-      set((state) => {
-        state.items = state.items.filter((item) => item.id !== id);
-        state.selectedItems.delete(id);
-      }),
+  removeItem: (id) =>
+    set((state) => ({
+      ...state,
+      items: state.items.filter((item) => item.id !== id),
+      selectedItems: new Set(
+        [...state.selectedItems].filter((itemId) => itemId !== id),
+      ),
+    })),
 
-    updateItem: (id, updates) =>
-      set((state) => {
-        const index = state.items.findIndex((item) => item.id === id);
-        if (index !== -1) {
-          state.items[index] = {
-            ...state.items[index],
-            ...updates,
-          } as MediaItem;
-        }
-      }),
-
-    setSelectedItems: (ids) =>
-      set((state) => {
-        state.selectedItems = new Set(ids);
-      }),
-
-    toggleSelection: (id) =>
-      set((state) => {
-        if (state.selectedItems.has(id)) {
-          state.selectedItems.delete(id);
-        } else {
-          state.selectedItems.add(id);
-        }
-      }),
-
-    clearSelection: () =>
-      set((state) => {
-        state.selectedItems.clear();
-      }),
-
-    setFilters: (filters) =>
-      set((state) => {
-        state.filters = { ...state.filters, ...filters };
-        state.currentPage = 1; // Reset to first page when filters change
-      }),
-
-    resetFilters: () =>
-      set((state) => {
-        state.filters = {
-          search: "",
-          mediaType: "",
-          directory: "",
-          tags: [],
-          dateRange: {},
+  updateItem: (id, updates) =>
+    set((state) => {
+      const index = state.items.findIndex((item) => item.id === id);
+      if (index !== -1) {
+        const updatedItems = [...state.items];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          ...updates,
+        } as MediaItem;
+        return {
+          ...state,
+          items: updatedItems,
         };
-        state.currentPage = 1;
-      }),
+      }
+      return state;
+    }),
 
-    setLoading: (loading) =>
-      set((state) => {
-        state.isLoading = loading;
-      }),
+  setSelectedItems: (ids) =>
+    set((state) => ({
+      ...state,
+      selectedItems: new Set(ids),
+    })),
 
-    setUploading: (uploading) =>
-      set((state) => {
-        state.isUploading = uploading;
-        if (!uploading) {
-          state.uploadProgress = null;
-        }
-      }),
+  toggleSelection: (id) =>
+    set((state) => {
+      const newSelectedItems = new Set(state.selectedItems);
+      if (newSelectedItems.has(id)) {
+        newSelectedItems.delete(id);
+      } else {
+        newSelectedItems.add(id);
+      }
+      return {
+        ...state,
+        selectedItems: newSelectedItems,
+      };
+    }),
 
-    setUploadProgress: (progress) =>
-      set((state) => {
-        state.uploadProgress = progress;
-      }),
+  clearSelection: () =>
+    set((state) => ({
+      ...state,
+      selectedItems: new Set<string>(),
+    })),
 
-    setPagination: (page, hasMore, total) =>
-      set((state) => {
-        state.currentPage = page;
-        state.hasMore = hasMore;
-        state.total = total;
-      }),
+  setFilters: (filters) =>
+    set((state) => ({
+      ...state,
+      filters: { ...state.filters, ...filters },
+      currentPage: 1, // Reset to first page when filters change
+    })),
 
-    setViewMode: (mode) =>
-      set((state) => {
-        state.viewMode = mode;
-      }),
+  resetFilters: () =>
+    set((state) => ({
+      ...state,
+      filters: {
+        search: "",
+        mediaType: "",
+        directory: "",
+        tags: [],
+        dateRange: {},
+      },
+      currentPage: 1,
+    })),
 
-    setSortBy: (sortBy) =>
-      set((state) => {
-        state.sortBy = sortBy;
-      }),
+  setLoading: (loading) =>
+    set((state) => ({
+      ...state,
+      isLoading: loading,
+    })),
 
-    setSortOrder: (order) =>
-      set((state) => {
-        state.sortOrder = order;
-      }),
+  setUploading: (uploading) =>
+    set((state) => ({
+      ...state,
+      isUploading: uploading,
+      uploadProgress: uploading ? state.uploadProgress : null,
+    })),
 
-    reset: () =>
-      set((state) => {
-        Object.assign(state, initialState);
-      }),
-  })),
-);
+  setUploadProgress: (progress) =>
+    set((state) => ({
+      ...state,
+      uploadProgress: progress,
+    })),
 
-// Selectors for better performance
+  setPagination: (page, hasMore, total) =>
+    set((state) => ({
+      ...state,
+      currentPage: page,
+      hasMore,
+      total,
+    })),
+
+  setViewMode: (mode) =>
+    set((state) => ({
+      ...state,
+      viewMode: mode,
+    })),
+
+  setSortBy: (sortBy) =>
+    set((state) => ({
+      ...state,
+      sortBy,
+    })),
+
+  setSortOrder: (order) =>
+    set((state) => ({
+      ...state,
+      sortOrder: order,
+    })),
+
+  reset: () =>
+    set(() => ({
+      ...initialState,
+    })),
+}));
+
+// Convenience hooks
+export const useItems = () => useMediaStore((state) => state.items);
 export const useSelectedItems = () =>
   useMediaStore((state) => state.selectedItems);
 export const useSelectedItemsCount = () =>
@@ -205,4 +229,19 @@ export const useSorting = () =>
   useMediaStore((state) => ({
     sortBy: state.sortBy,
     sortOrder: state.sortOrder,
+  }));
+export const usePagination = () =>
+  useMediaStore((state) => ({
+    currentPage: state.currentPage,
+    hasMore: state.hasMore,
+    total: state.total,
+  }));
+export const useUploadState = () =>
+  useMediaStore((state) => ({
+    isUploading: state.isUploading,
+    uploadProgress: state.uploadProgress,
+  }));
+export const useLoadingState = () =>
+  useMediaStore((state) => ({
+    isLoading: state.isLoading,
   }));

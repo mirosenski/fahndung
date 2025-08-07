@@ -3,7 +3,7 @@ import { Upload, Cloud, HardDrive, Loader2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
-import { toast } from "sonner";
+import { toast } from "~/lib/toast";
 import type { LocalImageMetadata } from "~/lib/services/local-storage.service";
 
 interface DualStorageUploadProps {

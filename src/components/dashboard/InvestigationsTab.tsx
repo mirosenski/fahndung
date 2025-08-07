@@ -35,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { toast } from "sonner";
+import { toast } from "~/lib/toast";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

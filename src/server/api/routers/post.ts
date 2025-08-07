@@ -650,6 +650,26 @@ export const postRouter = createTRPCRouter({
           throw new Error("Fahndung nicht gefunden");
         }
 
+        // Lösche zuerst die zugehörigen Bilder
+        const imagesResponse = await ctx.db
+          .from("investigation_images")
+          .select("file_path")
+          .eq("investigation_id", input.id);
+
+        if (imagesResponse.data && imagesResponse.data.length > 0) {
+          // Lösche Bilder aus dem Storage
+          const filePaths = imagesResponse.data.map(
+            (img: { file_path: string }) => img.file_path,
+          );
+          await ctx.db.storage.from("investigation-images").remove(filePaths);
+
+          // Lösche Bild-Metadaten aus der Datenbank
+          await ctx.db
+            .from("investigation_images")
+            .delete()
+            .eq("investigation_id", input.id);
+        }
+
         // Lösche die Fahndung
         const deleteResponse = (await ctx.db
           .from("investigations")

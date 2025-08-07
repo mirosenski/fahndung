@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
-import { toast } from "sonner";
+import { toast } from "~/lib/toast";
 import { getFahndungUrl, getFahndungEditUrl } from "~/lib/seo";
 
 // Interface für tRPC Investigation

@@ -117,23 +117,6 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
 
   // Vereinfachte Effects
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const loadLeaflet = async () => {
-      try {
-        const L = await import("leaflet");
-        delete (L.default.Icon.Default.prototype as { _getIconUrl?: string })
-          ._getIconUrl;
-        L.default.Icon.Default.mergeOptions({
-          iconRetinaUrl: "/leaflet/marker-icon-2x.png",
-          iconUrl: "/leaflet/marker-icon.png",
-          shadowUrl: "/leaflet/marker-shadow.png",
-        });
-      } catch (error) {
-        console.warn("Leaflet konnte nicht geladen werden:", error);
-      }
-    };
-    void loadLeaflet();
-
     // Auto-sync
     if (!investigationId) return;
     const interval = setInterval(() => void syncAfterUpdate(), 5000);

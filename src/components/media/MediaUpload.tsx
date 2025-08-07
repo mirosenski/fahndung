@@ -9,7 +9,7 @@ import {
 import { api } from "~/trpc/react";
 import { useAuth } from "~/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "~/lib/toast";
 import {
   compressImage,
   shouldCompressImage,

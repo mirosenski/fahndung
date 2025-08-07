@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "~/styles/globals.css";
 import "~/styles/fonts.css";
-import "leaflet/dist/leaflet.css";
 import { TRPCReactProvider } from "~/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionManager } from "~/components/SessionManager";

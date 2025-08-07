@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "~/lib/toast";
 import { api } from "~/trpc/react";
 import { InvestigationDataConverter } from "~/lib/services/investigationDataConverter";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";

@@ -3,51 +3,16 @@
  * for Docker builds.
  */
 
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
 /** @type {import('next').NextConfig} */
 const config = {
   // Temporär deaktiviert wegen doppelter Renders in React 19
   reactStrictMode: false,
-
-  // Optimierte Bundle-Splitting-Konfiguration
-  experimental: {
-    // Verbesserte Bundle-Optimierung
-    optimizePackageImports: [
-      "@radix-ui/react-alert-dialog",
-      "@radix-ui/react-dropdown-menu",
-      "@radix-ui/react-label",
-      "@radix-ui/react-select",
-      "@radix-ui/react-slot",
-      "@radix-ui/react-switch",
-    ],
-  },
-
-  // Turbopack-Konfiguration (stabil in Next.js 15)
-  turbopack: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
-      },
-    },
-  },
-
-  // Neue serverExternalPackages-Konfiguration (statt experimental.serverComponentsExternalPackages)
-  serverExternalPackages: [],
-
-  // Performance-Optimierungen
-  compress: true,
-  poweredByHeader: false,
-
-  // API body size limits are now handled in API route handlers
-  // using config export in individual API files
-
-  // Verbesserte Dateisystem-Behandlung mit HMR-Optimierungen
-  onDemandEntries: {
-    // Längere TTL für bessere Performance
-    maxInactiveAge: 25 * 1000,
-    // Mehr Seiten im Speicher halten
-    pagesBufferLength: 2,
-  },
 
   // Optimierte Bilder-Konfiguration
   images: {
@@ -56,7 +21,7 @@ const config = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Verbesserte Pfad-Behandlung
-    domains: ["rgbxdxrhwrszidbnsmuy.supabase.co", "via.placeholder.com"],
+    domains: ["rgbxdxrhwrszidbnsmuy.supabase.co", "via.placeholder.com", "staticmap.openstreetmap.de"],
     remotePatterns: [
       {
         protocol: "https",
@@ -67,6 +32,12 @@ const config = {
       {
         protocol: "https",
         hostname: "via.placeholder.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "staticmap.openstreetmap.de",
         port: "",
         pathname: "/**",
       },
@@ -115,20 +86,6 @@ const config = {
           },
         ],
       },
-      // Neue Performance-Headers
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-        ],
-      },
     ];
   },
 
@@ -141,22 +98,6 @@ const config = {
       net: false,
       tls: false,
     };
-
-    // HMR-Optimierungen für Development
-    if (dev) {
-      config.watchOptions = {
-        poll: 1000,
-        aggregateTimeout: 300,
-        ignored: /node_modules/,
-      };
-
-      // Verbesserte HMR-Konfiguration für Next.js 15
-      config.devServer = {
-        ...config.devServer,
-        hot: true,
-        liveReload: false,
-      };
-    }
 
     // Optimierungen nur für Production
     if (!dev && !isServer) {
@@ -199,15 +140,6 @@ const config = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-
-  // Verbesserte Trailing Slash-Behandlung
-  trailingSlash: false,
-
-  // Optimierte Base Path-Konfiguration
-  basePath: "",
-
-  // Verbesserte Asset-Prefix-Konfiguration
-  assetPrefix: "",
 };
 
-export default config;
+export default withBundleAnalyzer(config);
