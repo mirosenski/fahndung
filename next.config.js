@@ -9,7 +9,18 @@ const config = {
   reactStrictMode: false,
 
   experimental: {
-    // optimizePackageImports: ["lucide-react"], // Temporär deaktiviert wegen HMR Problem
+    // Reaktiviert für bessere Bundle-Optimierung
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-label",
+      "@radix-ui/react-select",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@radix-ui/themes",
+      "framer-motion",
+    ],
   },
 
   // Turbopack-Konfiguration (stabil in Next.js 15)
@@ -62,6 +73,9 @@ const config = {
         pathname: "/**",
       },
     ],
+    // Performance-Optimierungen für Bilder
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   // Optimierte Headers für Caching
@@ -100,6 +114,20 @@ const config = {
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Neue Performance-Headers
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
       },
@@ -142,6 +170,26 @@ const config = {
             test: /[\\/]node_modules[\\/]/,
             name: "vendors",
             chunks: "all",
+            priority: 10,
+          },
+          // Separate Chunks für große Libraries
+          radix: {
+            test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+            name: "radix-ui",
+            chunks: "all",
+            priority: 20,
+          },
+          lucide: {
+            test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+            name: "lucide",
+            chunks: "all",
+            priority: 20,
+          },
+          framer: {
+            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+            name: "framer-motion",
+            chunks: "all",
+            priority: 20,
           },
         },
       };

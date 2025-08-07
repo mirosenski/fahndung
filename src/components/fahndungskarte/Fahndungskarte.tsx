@@ -44,7 +44,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
 
   const {
     investigation: syncInvestigation,
-    syncAfterUpdate,
+    refetch: syncAfterUpdate,
     error: syncError,
   } = useInvestigationSync(investigationId!);
   const cardRef = useRef<HTMLDivElement>(null);

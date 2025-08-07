@@ -3,7 +3,7 @@ import { api } from "~/trpc/react";
 import { useGlobalSync } from "./useGlobalSync";
 
 /**
- * Optimierte Hook für Fahndungen mit aggressiver Synchronisation
+ * Optimierte Hook für Fahndungen mit reduzierter Synchronisation
  * Stellt sicher, dass Änderungen sofort in allen Komponenten sichtbar sind
  */
 export function useFahndungenOptimized(options: {
@@ -23,7 +23,6 @@ export function useFahndungenOptimized(options: {
     currentUser = false,
   } = options;
 
-  const utils = api.useUtils();
   const lastUpdateRef = useRef<number>(0);
   const { globalSync, syncInvestigation } = useGlobalSync();
 
@@ -41,11 +40,11 @@ export function useFahndungenOptimized(options: {
     },
     {
       // Reduzierte Synchronisation für bessere Performance
-      staleTime: 30 * 1000, // 30 Sekunden Cache
+      staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 30s)
       refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 30000, // Alle 30 Sekunden als Fallback (reduziert von 10s)
+      refetchInterval: 60000, // Alle 60 Sekunden als Fallback (erhöht von 30s)
     },
   );
 
@@ -58,109 +57,47 @@ export function useFahndungenOptimized(options: {
     {
       enabled: viewMode === "my" && currentUser,
       // Reduzierte Synchronisation für bessere Performance
-      staleTime: 30 * 1000, // 30 Sekunden Cache
+      staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 30s)
       refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 30000, // Alle 30 Sekunden als Fallback (reduziert von 10s)
+      refetchInterval: 60000, // Alle 60 Sekunden als Fallback (erhöht von 30s)
     },
   );
 
-  // Aktuelle Daten basierend auf View Mode
-  const currentInvestigations =
-    viewMode === "my" ? myInvestigations : investigations;
-  const isLoading = viewMode === "my" ? isLoadingMy : isLoadingAll;
+  // Optimierte Synchronisation mit reduzierter Frequenz
+  useEffect(() => {
+    const syncInterval = setInterval(() => {
+      const now = Date.now();
+      if (now - lastUpdateRef.current > 30000) { // Nur alle 30 Sekunden synchronisieren
+        lastUpdateRef.current = now;
+        void refetchAll();
+        if (viewMode === "my" && currentUser) {
+          void refetchMy();
+        }
+      }
+    }, 30000); // Reduziert von 10s auf 30s
 
-  // Manuelle Refetch-Funktion mit verbesserter Cache-Invalidierung
-  const manualRefetch = useCallback(async () => {
-    console.log("🔄 Manueller Refetch für Fahndungen");
-    lastUpdateRef.current = Date.now();
+    return () => clearInterval(syncInterval);
+  }, [refetchAll, refetchMy, viewMode, currentUser]);
 
-    // Sofortige Cache-Invalidierung für alle relevanten Queries
-    void utils.post.getInvestigations.invalidate();
-    void utils.post.getMyInvestigations.invalidate();
-
-    // Manueller Refetch
-    if (viewMode === "my") {
-      await refetchMy();
-    } else {
-      await refetchAll();
-    }
-  }, [viewMode, refetchMy, refetchAll, utils]);
-
-  // Sofortige Synchronisation nach Änderungen
-  const syncAfterUpdate = useCallback(() => {
-    console.log("⚡ Sofortige Synchronisation nach Update");
-    lastUpdateRef.current = Date.now();
-
-    // Globale Synchronisation
-    globalSync();
-  }, [globalSync]);
-
-  // Spezifische Synchronisation für eine Investigation
-  const syncSpecificInvestigation = useCallback(
+  // Optimierte Synchronisation für spezifische Investigation
+  const syncInvestigationOptimized = useCallback(
     (investigationId: string) => {
-      console.log(
-        "🔍 Spezifische Synchronisation für Investigation:",
-        investigationId,
-      );
-      lastUpdateRef.current = Date.now();
-
-      // Spezifische Synchronisation
-      syncInvestigation(investigationId);
+      const now = Date.now();
+      if (now - lastUpdateRef.current > 5000) { // Mindestens 5 Sekunden zwischen Syncs
+        lastUpdateRef.current = now;
+        syncInvestigation(investigationId);
+      }
     },
     [syncInvestigation],
   );
 
-  // Automatische Synchronisation alle 30 Sekunden (reduziert von 10s)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const timeSinceLastUpdate = now - lastUpdateRef.current;
-
-      // Nur refetchen wenn keine kürzlichen Updates
-      if (timeSinceLastUpdate > 30000) {
-        console.log(
-          "🔄 Automatische Synchronisation der Fahndungen (Fallback)",
-        );
-        void manualRefetch();
-      }
-    }, 30000); // Reduziert von 10s auf 30s
-
-    return () => clearInterval(interval);
-  }, [manualRefetch]);
-
-  // Event Listener für Browser-Fokus (wenn Tab wieder aktiv wird)
-  useEffect(() => {
-    const handleFocus = () => {
-      console.log("🔄 Browser-Fokus - Synchronisiere Fahndungen");
-      void manualRefetch();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [manualRefetch]);
-
-  // Event Listener für Visibility Change (Tab-Wechsel) - nur bei Bedarf
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("🔄 Tab wieder sichtbar - Synchronisiere Fahndungen");
-        void manualRefetch();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [manualRefetch]);
-
   return {
-    investigations: currentInvestigations,
-    isLoading,
-    refetch: manualRefetch,
-    syncAfterUpdate,
-    syncSpecificInvestigation,
-    lastUpdateTime: lastUpdateRef.current,
+    investigations: viewMode === "my" ? myInvestigations : investigations,
+    isLoading: viewMode === "my" ? isLoadingMy : isLoadingAll,
+    refetch: viewMode === "my" ? refetchMy : refetchAll,
+    syncInvestigation: syncInvestigationOptimized,
+    globalSync,
   };
 }

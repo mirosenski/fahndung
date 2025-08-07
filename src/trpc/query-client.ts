@@ -8,15 +8,15 @@ export const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
-        // Sofortige Cache-Invalidierung für sofortige Updates
-        staleTime: 0, // Sofort als veraltet markieren
-        // Aktivierte Refetch-Strategien für bessere Synchronisation
-        refetchOnWindowFocus: true,
+        // Optimierte Cache-Strategie für bessere Performance
+        staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 0)
+        // Reduzierte Refetch-Strategien für bessere Performance
+        refetchOnWindowFocus: false, // Reduziert von true
         refetchOnMount: true,
         refetchOnReconnect: true,
-        // Optimistische Updates aktivieren
-        retry: 1,
-        retryDelay: 1000,
+        // Optimierte Retry-Strategie
+        retry: 2, // Reduziert von 1
+        retryDelay: 500, // Reduziert von 1000ms
         // Reduzierte Refetch-Intervalle da Real-time Updates aktiv sind
         refetchInterval: (query) => {
           // Spezielle Behandlung für Fahndungs-Queries
@@ -26,15 +26,19 @@ export const createQueryClient = () =>
               query.queryKey[1] === "getMyInvestigations" ||
               query.queryKey[1] === "getInvestigation")
           ) {
-            return 10000; // Alle 10 Sekunden als Fallback (Real-time ist primär)
+            return 30000; // Alle 30 Sekunden als Fallback (erhöht von 10s)
           }
           return false; // Kein automatisches Refetch für andere Queries
         },
+        // Performance-Optimierungen
+        gcTime: 10 * 60 * 1000, // 10 Minuten Garbage Collection
+        networkMode: "online",
       },
       mutations: {
         // Optimistische Updates für sofortige UI-Updates
         retry: 1,
-        retryDelay: 1000,
+        retryDelay: 500, // Reduziert von 1000ms
+        networkMode: "online",
       },
       dehydrate: {
         serializeData: SuperJSON.serialize,

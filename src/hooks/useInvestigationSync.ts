@@ -25,11 +25,11 @@ export function useInvestigationSync(investigationId: string) {
     { id: investigationId },
     {
       enabled: !!investigationId,
-      staleTime: 30 * 1000, // 30 Sekunden Cache für bessere Performance
+      staleTime: 5 * 60 * 1000, // 5 Minuten Cache (erhöht von 30s)
       refetchOnWindowFocus: false, // Verhindert unnötige Refetches
       refetchOnMount: true,
       refetchOnReconnect: true,
-      refetchInterval: 30000, // Alle 30 Sekunden als Fallback (reduziert von 10s)
+      refetchInterval: 60000, // Alle 60 Sekunden als Fallback (erhöht von 30s)
     },
   );
 
@@ -55,116 +55,54 @@ export function useInvestigationSync(investigationId: string) {
     console.error("❌ DEBUG: Query-Fehler:", error);
   }
 
-  // Globale Synchronisationsfunktion
-  const globalSync = useCallback(() => {
-    if (investigationId) {
-      console.log(
-        "🌍 Globale Synchronisation für Investigation:",
-        investigationId,
-      );
-      lastUpdateRef.current = Date.now();
-
-      // Sofortige Cache-Invalidierung für alle relevanten Queries
+  // Optimierte Cache-Invalidierung mit reduzierter Frequenz
+  const invalidateCache = useCallback(() => {
+    const now = Date.now();
+    if (now - lastUpdateRef.current > 5000) { // Mindestens 5 Sekunden zwischen Invalidierungen
+      lastUpdateRef.current = now;
+      console.log("🔄 Cache-Invalidierung für Investigation:", investigationId);
       void utils.post.getInvestigation.invalidate({ id: investigationId });
-      void utils.post.getInvestigations.invalidate();
-      void utils.post.getMyInvestigations.invalidate();
-
-      // Manueller Refetch für alle Queries
-      void refetch();
-      void utils.post.getInvestigations.refetch();
-      void utils.post.getMyInvestigations.refetch();
     }
-  }, [investigationId, refetch, utils]);
+  }, [investigationId, utils]);
 
-  // Manuelle Refetch-Funktion mit verbesserter Cache-Invalidierung
-  const manualRefetch = useCallback(() => {
-    if (investigationId) {
-      console.log("🔄 Manueller Refetch für Investigation:", investigationId);
-      lastUpdateRef.current = Date.now();
-
-      // Sofortige Cache-Invalidierung für alle relevanten Queries
-      void utils.post.getInvestigation.invalidate({ id: investigationId });
-      void utils.post.getInvestigations.invalidate();
-      void utils.post.getMyInvestigations.invalidate();
-
-      // Manueller Refetch
-      void refetch();
-    }
-  }, [investigationId, refetch, utils]);
-
-  // Sofortige Synchronisation nach Änderungen
-  const syncAfterUpdate = useCallback(() => {
-    console.log("⚡ Sofortige Synchronisation nach Update");
-
-    // Globale Synchronisation
-    globalSync();
-  }, [globalSync]);
-
-  // Automatische Synchronisation alle 30 Sekunden (reduziert von 10s)
+  // Optimierte Synchronisation mit reduzierter Frequenz
   useEffect(() => {
     if (!investigationId) return;
 
+    // Reduzierte Synchronisation alle 60 Sekunden
     syncIntervalRef.current = setInterval(() => {
       const now = Date.now();
-      const timeSinceLastUpdate = now - lastUpdateRef.current;
-
-      // Nur refetchen wenn keine kürzlichen Updates
-      if (timeSinceLastUpdate > 30000) {
-        console.log("🔄 Automatische Synchronisation (Fallback)");
-        manualRefetch();
+      if (now - lastUpdateRef.current > 60000) { // Nur alle 60 Sekunden synchronisieren
+        lastUpdateRef.current = now;
+        console.log("🔄 Automatische Synchronisation für Investigation:", investigationId);
+        void refetch();
       }
-    }, 30000); // Reduziert von 10s auf 30s
+    }, 60000); // Reduziert von 30s auf 60s
 
     return () => {
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
       }
     };
-  }, [investigationId, manualRefetch]);
+  }, [investigationId, refetch]);
 
-  // Event Listener für Browser-Fokus (wenn Tab wieder aktiv wird)
-  useEffect(() => {
-    const handleFocus = () => {
-      console.log("🔄 Browser-Fokus - Synchronisiere Daten");
-      globalSync();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [globalSync]);
-
-  // Event Listener für Online-Status
-  useEffect(() => {
-    const handleOnline = () => {
-      console.log("🔄 Online-Status wiederhergestellt - Synchronisiere Daten");
-      globalSync();
-    };
-
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
-  }, [globalSync]);
-
-  // Event Listener für Visibility Change (Tab-Wechsel) - nur bei Bedarf
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("🔄 Tab wieder sichtbar - Synchronisiere Daten");
-        globalSync();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [globalSync]);
+  // Optimierte manuelle Synchronisation
+  const manualSync = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastUpdateRef.current > 5000) { // Mindestens 5 Sekunden zwischen Syncs
+      lastUpdateRef.current = now;
+      console.log("🔄 Manuelle Synchronisation für Investigation:", investigationId);
+      await refetch();
+    }
+  }, [investigationId, refetch]);
 
   return {
     investigation,
     isLoading,
     error,
-    refetch: manualRefetch,
-    syncAfterUpdate,
-    globalSync,
+    refetch: manualSync,
+    invalidateCache,
     lastUpdateTime: lastUpdateRef.current,
   };
 }

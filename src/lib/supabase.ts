@@ -40,9 +40,10 @@ const getSupabaseInstance = () => {
     },
     realtime: {
       params: {
-        eventsPerSecond: 50, // Erhöht für bessere Performance
-        heartbeatIntervalMs: 1000, // Häufigere Heartbeats
-        reconnectAfterMs: 1000, // Schnellere Reconnection
+        eventsPerSecond: 100, // Erhöht für bessere Performance
+        heartbeatIntervalMs: 500, // Häufigere Heartbeats
+        reconnectAfterMs: 500, // Schnellere Reconnection
+        maxRetries: 5, // Mehr Reconnection-Versuche
       },
     },
     global: {
@@ -54,60 +55,8 @@ const getSupabaseInstance = () => {
   return supabaseInstance;
 };
 
+// Exportiere die Supabase-Instanz
 export const supabase = getSupabaseInstance();
-
-// Hilfsfunktion für MessagePort-Fehler (häufig bei Auth-Listenern)
-const handleMessagePortError = (error: unknown): boolean => {
-  if (
-    error instanceof Error &&
-    (error.message.includes("MessagePort") ||
-      error.message.includes("port") ||
-      error.message.includes("disconnected"))
-  ) {
-    return true;
-  }
-  return false;
-};
-
-// Verbesserte Auth-Listener-Behandlung
-export const setupAuthListener = (
-  callback: (event: string, session: unknown) => void,
-) => {
-  if (!supabase) return null;
-
-  try {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      try {
-        callback(event, session);
-      } catch (error) {
-        if (handleMessagePortError(error)) {
-        } else {
-          console.error("❌ Auth-Listener Fehler:", error);
-        }
-      }
-    });
-
-    return subscription;
-  } catch (error) {
-    if (handleMessagePortError(error)) {
-      return null;
-    }
-    console.error("❌ Auth-Listener Setup Fehler:", error);
-    return null;
-  }
-};
-
-// Remote Supabase spezifische Konfiguration
-export const REMOTE_SUPABASE_CONFIG = {
-  url: supabaseUrl,
-  projectId: supabaseUrl.replace("https://", "").replace(".supabase.co", ""),
-  isRemote: true,
-  storageBucket: "media-gallery",
-  authTimeout: 30000,
-  retryAttempts: 3,
-} as const;
 
 // Performance-Monitoring (nur in Development)
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -118,7 +67,8 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
       const response = await originalFetch(...args);
       const duration = performance.now() - start;
 
-      if (duration > 2000) {
+      if (duration > 1000) {
+        // Reduziert von 2000ms auf 1000ms
         const url =
           typeof args[0] === "string"
             ? args[0]
@@ -143,21 +93,25 @@ export const getSupabaseClient = () => {
   connectionPool ??= Promise.resolve(supabase).catch((error) => {
     if (handleMessagePortError(error)) {
       // Bei Message Port Fehlern neu initialisieren
-
-      return supabase;
+      supabaseInstance = null;
+      return getSupabaseInstance();
     }
     throw error;
   });
   return connectionPool;
 };
 
-// Cleanup-Funktion für bessere Memory-Management
-export const cleanupSupabase = () => {
-  if (supabase.realtime) {
-    supabase.realtime.disconnect();
+// Hilfsfunktion für Message Port Fehler
+function handleMessagePortError(error: unknown): boolean {
+  if (error instanceof Error) {
+    return (
+      error.message.includes("MessagePort") ||
+      error.message.includes("port") ||
+      error.message.includes("connection")
+    );
   }
-  connectionPool = null;
-};
+  return false;
+}
 
 // Real-time subscription für Fahndungen mit optimierter Konfiguration
 export const subscribeToInvestigations = (
@@ -212,7 +166,10 @@ export const subscribeToInvestigationsBroadcast = (
     };
   }
 
-  console.log("🔗 Erstelle Broadcast Real-time Subscription für Investigation:", investigationId);
+  console.log(
+    "🔗 Erstelle Broadcast Real-time Subscription für Investigation:",
+    investigationId,
+  );
 
   // Verwende Broadcast (empfohlen für Skalierbarkeit)
   return supabase
