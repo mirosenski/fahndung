@@ -15,10 +15,12 @@ export const GlobalBackground: React.FC<GlobalBackgroundProps> = ({
           "radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%)",
       }}
     >
-      {/* Zentrale Kugel im gesamten Hintergrund */}
+      {/* Kugel Balu mit angepasstem Gradient - oben verschwindet */}
       <div
-        className="absolute h-[1470px] w-[1470px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-300/30"
+        className="absolute h-[1470px] w-[1470px] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
+          background:
+            "linear-gradient(to bottom, rgba(59, 130, 246, 0.055) 0%, rgba(59, 130, 246, 0.037) 20%, rgba(59, 130, 246, 0.018) 40%, transparent 60%, rgba(59, 130, 246, 0.018) 70%, rgba(59, 130, 246, 0.037) 80%, rgba(59, 130, 246, 0.055) 90%, rgba(59, 130, 246, 0.074) 100%)",
           animation: "float 8s ease-in-out infinite",
           left: "78%",
           top: "63%",
