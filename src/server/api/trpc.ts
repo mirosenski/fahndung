@@ -293,19 +293,25 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 // Initialize a rate limit instance only if Upstash credentials are present. When
 // credentials are missing, rate limiting is disabled and a no-op middleware is
 // used instead. This avoids noisy log messages during build when the env
-// variables are not provided.
+// variables are not provided. We avoid calling `Redis.fromEnv()` unless
+// credentials exist, because that helper logs warnings when variables are
+// missing. See https://docs.upstash.com/redis/sdks/nodejs for details.
 let ratelimit: Ratelimit | null = null;
-try {
-  const redis = Redis.fromEnv();
+const upstashUrl = process.env["UPSTASH_REDIS_REST_URL"];
+const upstashToken = process.env["UPSTASH_REDIS_REST_TOKEN"];
+if (upstashUrl && upstashToken) {
+  // Instantiate Redis client manually to avoid the `fromEnv` helper which
+  // logs warnings when variables are missing. Only create the client when
+  // both the URL and token are provided.
+  const redis = new Redis({ url: upstashUrl, token: upstashToken });
   ratelimit = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(100, "1 m"),
   });
-} catch (err) {
+} else {
   if (process.env.NODE_ENV === "development") {
     console.warn(
       "Upstash credentials missing. Rate limiting is disabled.",
-      err,
     );
   }
 }
