@@ -50,8 +50,9 @@ interface ContactCategoryProps {
     field: string,
     value: unknown,
   ) => void;
-  onPrevious: () => void;
-  onSave: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  onSave?: () => void;
 }
 
 interface Step5Data {
