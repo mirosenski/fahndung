@@ -71,7 +71,8 @@ export function useFahndung(id: string) {
         step3: {
           mainImage: rawData.images?.[0]?.url ?? null,
           additionalImages:
-            rawData.images?.slice(1).map((img) => img.url) ?? [],
+            rawData.images?.slice(1).map((img: { url: string }) => img.url) ??
+            [],
         },
         step4: {
           mainLocation: rawData.location ? { address: rawData.location } : null,
@@ -82,6 +83,31 @@ export function useFahndung(id: string) {
           contactEmail: (rawData.contact_info?.["email"] as string) ?? "",
           department: rawData.station ?? "",
           availableHours: (rawData.contact_info?.["hours"] as string) ?? "",
+          publishStatus: "draft" as const,
+          urgencyLevel: "medium" as const,
+          requiresApproval: false,
+          visibility: {
+            internal: true,
+            regional: false,
+            national: false,
+            international: false,
+          },
+          notifications: {
+            emailAlerts: false,
+            smsAlerts: false,
+            appNotifications: false,
+            pressRelease: false,
+          },
+          articlePublishing: {
+            publishAsArticle: false,
+            generateSeoUrl: false,
+            customSlug: "",
+            seoTitle: "",
+            seoDescription: "",
+            keywords: [],
+            author: "",
+            readingTime: 0,
+          },
         },
         images: rawData.images ?? [],
         contact_info: rawData.contact_info ?? {},
@@ -120,7 +146,9 @@ export function useFahndung(id: string) {
         step3: {
           mainImage: updatedData.images?.[0]?.url ?? null,
           additionalImages:
-            updatedData.images?.slice(1).map((img) => img.url) ?? [],
+            updatedData.images
+              ?.slice(1)
+              .map((img: { url: string }) => img.url) ?? [],
         },
         step4: {
           mainLocation: updatedData.location
@@ -133,6 +161,31 @@ export function useFahndung(id: string) {
           contactEmail: (updatedData.contact_info?.["email"] as string) ?? "",
           department: updatedData.station ?? "",
           availableHours: (updatedData.contact_info?.["hours"] as string) ?? "",
+          publishStatus: "draft" as const,
+          urgencyLevel: "medium" as const,
+          requiresApproval: false,
+          visibility: {
+            internal: true,
+            regional: false,
+            national: false,
+            international: false,
+          },
+          notifications: {
+            emailAlerts: false,
+            smsAlerts: false,
+            appNotifications: false,
+            pressRelease: false,
+          },
+          articlePublishing: {
+            publishAsArticle: false,
+            generateSeoUrl: false,
+            customSlug: "",
+            seoTitle: "",
+            seoDescription: "",
+            keywords: [],
+            author: "",
+            readingTime: 0,
+          },
         },
         images: updatedData.images ?? [],
         contact_info: updatedData.contact_info ?? {},

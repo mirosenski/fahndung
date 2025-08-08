@@ -39,6 +39,65 @@ export const UIInvestigationInputSchema = z.object({
       ),
     department: z.string(),
     availableHours: z.string(),
+    publishStatus: z
+      .enum(["draft", "review", "scheduled", "immediate"])
+      .optional()
+      .default("draft"),
+    urgencyLevel: z
+      .enum(["low", "medium", "high", "critical"])
+      .optional()
+      .default("medium"),
+    requiresApproval: z.boolean().optional().default(false),
+    visibility: z
+      .object({
+        internal: z.boolean().optional().default(true),
+        regional: z.boolean().optional().default(false),
+        national: z.boolean().optional().default(false),
+        international: z.boolean().optional().default(false),
+      })
+      .optional()
+      .default({
+        internal: true,
+        regional: false,
+        national: false,
+        international: false,
+      }),
+    notifications: z
+      .object({
+        emailAlerts: z.boolean().optional().default(false),
+        smsAlerts: z.boolean().optional().default(false),
+        appNotifications: z.boolean().optional().default(false),
+        pressRelease: z.boolean().optional().default(false),
+      })
+      .optional()
+      .default({
+        emailAlerts: false,
+        smsAlerts: false,
+        appNotifications: false,
+        pressRelease: false,
+      }),
+    articlePublishing: z
+      .object({
+        publishAsArticle: z.boolean().optional().default(false),
+        generateSeoUrl: z.boolean().optional().default(false),
+        customSlug: z.string().optional().default(""),
+        seoTitle: z.string().optional().default(""),
+        seoDescription: z.string().optional().default(""),
+        keywords: z.array(z.string()).optional().default([]),
+        author: z.string().optional().default(""),
+        readingTime: z.number().optional().default(0),
+      })
+      .optional()
+      .default({
+        publishAsArticle: false,
+        generateSeoUrl: false,
+        customSlug: "",
+        seoTitle: "",
+        seoDescription: "",
+        keywords: [],
+        author: "",
+        readingTime: 0,
+      }),
   }),
 });
 
@@ -74,6 +133,50 @@ export const UIInvestigationEditSchema = z.object({
     contactEmail: z.string().optional().default(""),
     department: z.string(),
     availableHours: z.string(),
+    publishStatus: z.enum(["draft", "review", "scheduled", "immediate"]).optional().default("draft"),
+    urgencyLevel: z.enum(["low", "medium", "high", "critical"]).optional().default("medium"),
+    requiresApproval: z.boolean().optional().default(false),
+    visibility: z.object({
+      internal: z.boolean().optional().default(true),
+      regional: z.boolean().optional().default(false),
+      national: z.boolean().optional().default(false),
+      international: z.boolean().optional().default(false),
+    }).optional().default({
+      internal: true,
+      regional: false,
+      national: false,
+      international: false,
+    }),
+    notifications: z.object({
+      emailAlerts: z.boolean().optional().default(false),
+      smsAlerts: z.boolean().optional().default(false),
+      appNotifications: z.boolean().optional().default(false),
+      pressRelease: z.boolean().optional().default(false),
+    }).optional().default({
+      emailAlerts: false,
+      smsAlerts: false,
+      appNotifications: false,
+      pressRelease: false,
+    }),
+    articlePublishing: z.object({
+      publishAsArticle: z.boolean().optional().default(false),
+      generateSeoUrl: z.boolean().optional().default(false),
+      customSlug: z.string().optional().default(""),
+      seoTitle: z.string().optional().default(""),
+      seoDescription: z.string().optional().default(""),
+      keywords: z.array(z.string()).optional().default([]),
+      author: z.string().optional().default(""),
+      readingTime: z.number().optional().default(0),
+    }).optional().default({
+      publishAsArticle: false,
+      generateSeoUrl: false,
+      customSlug: "",
+      seoTitle: "",
+      seoDescription: "",
+      keywords: [],
+      author: "",
+      readingTime: 0,
+    }),
   }),
 });
 
@@ -107,6 +210,65 @@ export const UIInvestigationDBSchema = z.object({
     contactEmail: z.string().optional().default(""), // Keine Email-Validierung für DB-Daten
     department: z.string().optional().default(""),
     availableHours: z.string().optional().default(""),
+    publishStatus: z
+      .enum(["draft", "review", "scheduled", "immediate"])
+      .optional()
+      .default("draft"),
+    urgencyLevel: z
+      .enum(["low", "medium", "high", "critical"])
+      .optional()
+      .default("medium"),
+    requiresApproval: z.boolean().optional().default(false),
+    visibility: z
+      .object({
+        internal: z.boolean().optional().default(true),
+        regional: z.boolean().optional().default(false),
+        national: z.boolean().optional().default(false),
+        international: z.boolean().optional().default(false),
+      })
+      .optional()
+      .default({
+        internal: true,
+        regional: false,
+        national: false,
+        international: false,
+      }),
+    notifications: z
+      .object({
+        emailAlerts: z.boolean().optional().default(false),
+        smsAlerts: z.boolean().optional().default(false),
+        appNotifications: z.boolean().optional().default(false),
+        pressRelease: z.boolean().optional().default(false),
+      })
+      .optional()
+      .default({
+        emailAlerts: false,
+        smsAlerts: false,
+        appNotifications: false,
+        pressRelease: false,
+      }),
+    articlePublishing: z
+      .object({
+        publishAsArticle: z.boolean().optional().default(false),
+        generateSeoUrl: z.boolean().optional().default(false),
+        customSlug: z.string().optional().default(""),
+        seoTitle: z.string().optional().default(""),
+        seoDescription: z.string().optional().default(""),
+        keywords: z.array(z.string()).optional().default([]),
+        author: z.string().optional().default(""),
+        readingTime: z.number().optional().default(0),
+      })
+      .optional()
+      .default({
+        publishAsArticle: false,
+        generateSeoUrl: false,
+        customSlug: "",
+        seoTitle: "",
+        seoDescription: "",
+        keywords: [],
+        author: "",
+        readingTime: 0,
+      }),
   }),
   // Zusätzliche Felder für DB
   images: z
