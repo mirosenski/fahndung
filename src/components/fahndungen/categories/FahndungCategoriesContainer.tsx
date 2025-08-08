@@ -47,7 +47,7 @@ const MediaCategory = dynamic(() => import("./ModernMediaCategory"), {
   ssr: false,
 });
 
-const LocationsCategory = dynamic(() => import("./LocationsCategory"), {
+const LocationsCategory = dynamic(() => import("./ModernLocationsCategory"), {
   loading: () => (
     <div className="animate-pulse">
       <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
