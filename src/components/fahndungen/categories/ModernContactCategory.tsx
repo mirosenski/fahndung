@@ -17,6 +17,11 @@ import {
   MailCheck as MailCheckIcon,
   CalendarClock as CalendarClockIcon,
   Camera as CameraIcon,
+  Copy as CopyIcon,
+  FileText as FileTextIcon,
+  FileSpreadsheet as FileSpreadsheetIcon,
+  Share2 as Share2Icon,
+  Check as CheckIcon,
 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -49,6 +54,7 @@ export default function ModernContactCategory({
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string>("");
   const [contactPhoto, setContactPhoto] = useState<string | null>(null);
+  const [copiedAction, setCopiedAction] = useState<string | null>(null);
 
   const step5 = data.step5 ?? {
     contactPerson: "",
@@ -87,16 +93,258 @@ export default function ModernContactCategory({
     }
   };
 
+  const copyToClipboard = async (text: string, action: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAction(action);
+      setTimeout(() => setCopiedAction(null), 2000);
+    } catch (err) {
+      console.error("Fehler beim Kopieren:", err);
+    }
+  };
+
+  const generateCSV = () => {
+    const csvContent = `Name,Abteilung,Telefon,E-Mail,Erreichbarkeit\n"${step5.contactPerson}","${step5.department}","${step5.contactPhone}","${step5.contactEmail || ""}","${step5.availableHours || ""}"`;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "kontakt.csv";
+    link.click();
+  };
+
+  const generateExcel = () => {
+    // Einfache Excel-ähnliche Datei als HTML-Tabelle
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <table>
+            <tr><th>Name</th><th>Abteilung</th><th>Telefon</th><th>E-Mail</th><th>Erreichbarkeit</th></tr>
+            <tr><td>${step5.contactPerson}</td><td>${step5.department}</td><td>${step5.contactPhone}</td><td>${step5.contactEmail || ""}</td><td>${step5.availableHours || ""}</td></tr>
+          </table>
+        </body>
+      </html>
+    `;
+    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "kontakt.xls";
+    link.click();
+  };
+
+  const shareContact = async () => {
+    const contactText = `Kontakt: ${step5.contactPerson}\nAbteilung: ${step5.department}\nTelefon: ${step5.contactPhone}${step5.contactEmail ? `\nE-Mail: ${step5.contactEmail}` : ""}${step5.availableHours ? `\nErreichbarkeit: ${step5.availableHours}` : ""}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Kontaktinformationen",
+          text: contactText,
+        });
+      } catch (err) {
+        console.error("Fehler beim Teilen:", err);
+      }
+    } else {
+      // Fallback: Kopieren in Zwischenablage
+      await copyToClipboard(contactText, "share");
+    }
+  };
+
+  if (!isEditMode) {
+    // Kontaktkarten-Ansicht
+    return (
+      <div className="w-full space-y-6">
+        {/* Kontaktkarte */}
+        <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+          {/* Header mit Foto - Moderneres Design */}
+          <div className="mb-8">
+            <div className="flex items-center gap-6">
+              {/* Profilbild mit verbessertem Design */}
+              <div className="relative">
+                <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-lg ring-4 ring-white dark:ring-gray-800">
+                  {contactPhoto ? (
+                    <Image
+                      src={contactPhoto}
+                      alt="Kontaktperson"
+                      width={112}
+                      height={112}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="h-14 w-14 text-white" />
+                  )}
+                </div>
+                {/* Status-Indikator */}
+                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-lg">
+                  <div className="h-3 w-3 rounded-full bg-white"></div>
+                </div>
+              </div>
+
+              {/* Kontakt-Info mit verbesserter Typografie */}
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {step5.contactPerson || "Kontaktperson"}
+                </h2>
+                <p className="mt-1 text-lg font-medium text-blue-600 dark:text-blue-400">
+                  {step5.department || "Abteilung"}
+                </p>
+                <div className="mt-3 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <ShieldIcon className="h-4 w-4" />
+                    Verifiziert
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <ClockIcon className="h-4 w-4" />
+                    Verfügbar
+                  </span>
+                </div>
+              </div>
+
+              {/* Schnell-Aktionen */}
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const contactText = `${step5.contactPerson}\n${step5.department}\n${step5.contactPhone}${step5.contactEmail ? `\n${step5.contactEmail}` : ""}`;
+                    await copyToClipboard(contactText, "copy");
+                  }}
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                  {copiedAction === "copy" ? (
+                    <CheckIcon className="h-4 w-4" />
+                  ) : (
+                    <CopyIcon className="h-4 w-4" />
+                  )}
+                  {copiedAction === "copy" ? "Kopiert!" : "Kopieren"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await shareContact();
+                  }}
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                  <Share2Icon className="h-4 w-4" />
+                  Teilen
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Kontaktdaten in Karten */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* Telefon */}
+            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-blue-400 dark:hover:bg-blue-900/20">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900">
+                  <PhoneIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Telefon
+                  </p>
+                  <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                    {step5.contactPhone || "Nicht angegeben"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* E-Mail */}
+            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-green-300 hover:bg-green-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-green-400 dark:hover:bg-green-900/20">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900">
+                  <MailIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    E-Mail
+                  </p>
+                  <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                    {step5.contactEmail || "Nicht angegeben"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Abteilung */}
+            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-purple-300 hover:bg-purple-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-purple-400 dark:hover:bg-purple-900/20">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900">
+                  <Building2Icon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Abteilung
+                  </p>
+                  <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                    {step5.department || "Nicht angegeben"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Erreichbarkeit */}
+            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-orange-300 hover:bg-orange-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-orange-400 dark:hover:bg-orange-900/20">
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900">
+                  <ClockIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Erreichbarkeit
+                  </p>
+                  <p className="mt-1 whitespace-pre-wrap font-semibold text-gray-900 dark:text-white">
+                    {step5.availableHours || "Nicht angegeben"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Export-Buttons */}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateCSV}
+              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            >
+              <FileTextIcon className="h-4 w-4" />
+              Als CSV exportieren
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateExcel}
+              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            >
+              <FileSpreadsheetIcon className="h-4 w-4" />
+              Als Excel exportieren
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Edit-Mode (ursprüngliche Formular-Ansicht)
   return (
     <div className="w-full space-y-4 px-4 pb-20 sm:space-y-6 sm:px-6 lg:px-8">
       {/* Kompakter Header */}
       <div className="rounded-lg bg-white p-4 dark:bg-gray-800">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-              Kontaktinformationen
-            </h1>
-          </div>
+          <div></div>
         </div>
       </div>
 

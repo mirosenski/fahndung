@@ -124,10 +124,6 @@ export default function ModernLocationsCategory({
     <div className="w-full space-y-6">
       {/* Location Details */}
       <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
-        <h3 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
-          Standort Details
-        </h3>
-
         {/* Tab Navigation */}
         <div className="mb-6 flex gap-2 border-b border-gray-200 dark:border-gray-700">
           {(

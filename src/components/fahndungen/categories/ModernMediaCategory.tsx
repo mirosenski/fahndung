@@ -27,6 +27,10 @@ import {
   Sparkles as SparklesIcon,
   Wand2 as Wand2Icon,
   Shield as ShieldIcon,
+  Image as ImageIcon,
+  SquareStack as SquareStackIcon,
+  Play as PlayIcon,
+  X as XIcon,
 } from "lucide-react";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
@@ -54,6 +58,297 @@ interface MediaItem {
   status: "verified" | "pending";
 }
 
+// Galerie-Komponenten
+function FeaturedImageGallery({
+  images,
+  isEditMode,
+  onImageClick,
+  onEditImage,
+  onDeleteImage,
+}: {
+  images: MediaItem[];
+  isEditMode: boolean;
+  onImageClick: (index: number) => void;
+  onEditImage: (index: number) => void;
+  onDeleteImage: (index: number) => void;
+}) {
+  const [activeImage, setActiveImage] = useState(0);
+
+  return (
+    <div className="grid gap-4">
+      <div className="relative">
+        <Image
+          src={images[activeImage]?.url ?? ""}
+          alt={images[activeImage]?.alt_text ?? ""}
+          width={800}
+          height={600}
+          className="h-auto w-full max-w-full rounded-lg object-cover object-center md:h-[480px]"
+          onClick={() => onImageClick(activeImage)}
+        />
+        {/* Bearbeitungs-Buttons für Hauptbild */}
+        {isEditMode ? (
+          <div className="absolute right-4 top-4 flex gap-2">
+            <button
+              onClick={() => onEditImage(activeImage)}
+              className="rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm hover:bg-white/30"
+              title="Bearbeiten"
+            >
+              <Edit3Icon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => onDeleteImage(activeImage)}
+              className="rounded-lg bg-red-500/80 p-2 text-white backdrop-blur-sm hover:bg-red-600/80"
+              title="Löschen"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="absolute right-4 top-4">
+            <button
+              onClick={() => onImageClick(activeImage)}
+              className="rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
+              title="Schließen"
+            >
+              <XIcon className="h-6 w-6" />
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="grid grid-cols-5 gap-4">
+        {images.map((image, index) => (
+          <div key={image.id} className="group relative">
+            <Image
+              onClick={() => setActiveImage(index)}
+              src={image.url}
+              alt={image.alt_text}
+              width={200}
+              height={150}
+              className="h-20 max-w-full cursor-pointer rounded-lg object-cover object-center transition-all hover:opacity-80"
+            />
+            {/* Bearbeitungs-Buttons für Thumbnails */}
+            {isEditMode ? (
+              <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditImage(index);
+                    }}
+                    className="rounded-lg bg-white/20 p-1 text-white backdrop-blur-sm hover:bg-white/30"
+                    title="Bearbeiten"
+                  >
+                    <Edit3Icon className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteImage(index);
+                    }}
+                    className="rounded-lg bg-red-500/80 p-1 text-white backdrop-blur-sm hover:bg-red-600/80"
+                    title="Löschen"
+                  >
+                    <Trash2Icon className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onImageClick(index);
+                    }}
+                    className="rounded-lg bg-white/20 p-1 text-white backdrop-blur-sm hover:bg-white/30"
+                    title="Vergrößern"
+                  >
+                    <Maximize2Icon className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function QuadGallery({
+  images,
+  isEditMode,
+  onImageClick,
+  onEditImage,
+  onDeleteImage,
+}: {
+  images: MediaItem[];
+  isEditMode: boolean;
+  onImageClick: (index: number) => void;
+  onEditImage: (index: number) => void;
+  onDeleteImage: (index: number) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {images.slice(0, 4).map((image, index) => (
+        <div
+          key={image.id}
+          className="group relative overflow-hidden rounded-2xl bg-gray-100 transition-all hover:shadow-xl dark:bg-gray-700"
+        >
+          <div className="h-40 md:h-60">
+            <Image
+              src={image.url}
+              alt={image.alt_text}
+              fill
+              className="h-40 max-w-full rounded-lg object-cover object-center md:h-60"
+              onClick={() => onImageClick(index)}
+            />
+          </div>
+          {/* Bearbeitungs-Buttons */}
+          {isEditMode ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditImage(index);
+                  }}
+                  className="rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm hover:bg-white/30"
+                  title="Bearbeiten"
+                >
+                  <Edit3Icon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteImage(index);
+                  }}
+                  className="rounded-lg bg-red-500/80 p-2 text-white backdrop-blur-sm hover:bg-red-600/80"
+                  title="Löschen"
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onImageClick(index);
+                  }}
+                  className="rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm hover:bg-white/30"
+                  title="Vergrößern"
+                >
+                  <Maximize2Icon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GalleryWithCarousel({
+  images,
+  isEditMode,
+  onImageClick,
+  onEditImage,
+  onDeleteImage,
+}: {
+  images: MediaItem[];
+  isEditMode: boolean;
+  onImageClick: (index: number) => void;
+  onEditImage: (index: number) => void;
+  onDeleteImage: (index: number) => void;
+}) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  return (
+    <div className="relative">
+      <div className="relative h-96 overflow-hidden rounded-xl">
+        <Image
+          src={images[currentSlide]?.url ?? ""}
+          alt={images[currentSlide]?.alt_text ?? ""}
+          fill
+          className="h-full w-full object-cover object-center"
+          onClick={() => onImageClick(currentSlide)}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        <div className="absolute bottom-4 left-4 text-white">
+          <h3 className="text-lg font-semibold">
+            {images[currentSlide]?.caption}
+          </h3>
+          <p className="text-sm opacity-90">{images[currentSlide]?.alt_text}</p>
+        </div>
+        {/* Bearbeitungs-Buttons für Carousel */}
+        {isEditMode ? (
+          <div className="absolute right-4 top-4 flex gap-2">
+            <button
+              onClick={() => onEditImage(currentSlide)}
+              className="rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm hover:bg-white/30"
+              title="Bearbeiten"
+            >
+              <Edit3Icon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => onDeleteImage(currentSlide)}
+              className="rounded-lg bg-red-500/80 p-2 text-white backdrop-blur-sm hover:bg-red-600/80"
+              title="Löschen"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="absolute right-4 top-4">
+            <button
+              onClick={() => onImageClick(currentSlide)}
+              className="rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
+              title="Vergrößern"
+            >
+              <Maximize2Icon className="h-6 w-6" />
+            </button>
+          </div>
+        )}
+      </div>
+      <button
+        onClick={() =>
+          setCurrentSlide(
+            currentSlide > 0 ? currentSlide - 1 : images.length - 1,
+          )
+        }
+        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-md hover:bg-white/30"
+      >
+        <ChevronLeftIcon className="h-6 w-6" />
+      </button>
+      <button
+        onClick={() =>
+          setCurrentSlide(
+            currentSlide < images.length - 1 ? currentSlide + 1 : 0,
+          )
+        }
+        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-md hover:bg-white/30"
+      >
+        <ChevronRightIcon className="h-6 w-6" />
+      </button>
+      <div className="mt-4 flex justify-center gap-2">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`h-2 w-2 rounded-full transition-all ${
+              index === currentSlide ? "bg-purple-600" : "bg-gray-300"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * ModernMediaCategory
  *
@@ -68,13 +363,9 @@ export default function ModernMediaCategory({
   data,
   isEditMode,
   updateField,
-  onNext,
-  onPrevious,
 }: MediaCategoryProps) {
   // Verhindert Lint-/TS-Fehler für ungenutzte Prop, bis Integration benötigt wird
   void updateField;
-  // Zustand für Ansichtsmodus (grid, list, masonry)
-  const [viewMode] = useState<"grid" | "list" | "masonry">("grid");
   // Auswahl von Bildern für Bulk‑Aktionen
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isBulkMode, setIsBulkMode] = useState(false);
@@ -91,6 +382,8 @@ export default function ModernMediaCategory({
   const [rotation, setRotation] = useState(0);
   // Upload Input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Galerie-Tab State
+  const [activeGalleryTab, setActiveGalleryTab] = useState("featured");
 
   // Lese Bilder aus Daten oder nutze Fallback (nur wenn Array)
   const defaultImages: MediaItem[] = [
@@ -127,6 +420,39 @@ export default function ModernMediaCategory({
       tags: ["evidence", "indoor"],
       status: "verified",
     },
+    {
+      id: 4,
+      url: "https://images.unsplash.com/photo-1499696010180-025ef6e1a8f9?w=800",
+      alt_text: "Fahndungsbild 4",
+      caption: "Übersichtsaufnahme",
+      size: "2.8 MB",
+      dimensions: "1920x1080",
+      date: "2024-01-12",
+      tags: ["overview", "landscape"],
+      status: "verified",
+    },
+    {
+      id: 5,
+      url: "https://images.unsplash.com/photo-1432462770865-65b70566d673?w=800",
+      alt_text: "Fahndungsbild 5",
+      caption: "Nahaufnahme",
+      size: "1.9 MB",
+      dimensions: "1920x1080",
+      date: "2024-01-11",
+      tags: ["closeup", "detail"],
+      status: "pending",
+    },
+    {
+      id: 6,
+      url: "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=800",
+      alt_text: "Fahndungsbild 6",
+      caption: "Weitwinkel",
+      size: "3.3 MB",
+      dimensions: "1920x1080",
+      date: "2024-01-10",
+      tags: ["wide", "panorama"],
+      status: "verified",
+    },
   ];
   const images: MediaItem[] =
     Array.isArray(data?.images) &&
@@ -136,6 +462,28 @@ export default function ModernMediaCategory({
 
   const currentImage =
     selectedImage !== null ? images[selectedImage] : undefined;
+
+  // Galerie-Tabs
+  const galleryTabs = [
+    {
+      id: "featured",
+      label: "Featured",
+      icon: <ImageIcon className="h-4 w-4" />,
+      component: FeaturedImageGallery,
+    },
+    {
+      id: "quad",
+      label: "Quad",
+      icon: <SquareStackIcon className="h-4 w-4" />,
+      component: QuadGallery,
+    },
+    {
+      id: "carousel",
+      label: "Carousel",
+      icon: <PlayIcon className="h-4 w-4" />,
+      component: GalleryWithCarousel,
+    },
+  ];
 
   // Presets für Filter
   const filters = [
@@ -206,15 +554,6 @@ export default function ModernMediaCategory({
     setTimeout(() => setUploadProgress(0), 800);
   };
 
-  // Toggle Auswahl eines Bildes
-  const toggleImageSelection = (imageId: string) => {
-    setSelectedImages((prev) =>
-      prev.includes(imageId)
-        ? prev.filter((id) => id !== imageId)
-        : [...prev, imageId],
-    );
-  };
-
   // Alle Bilder auswählen oder abwählen
   const selectAllImages = () => {
     if (selectedImages.length === images.length) {
@@ -236,38 +575,31 @@ export default function ModernMediaCategory({
     setSelectedFilter(filterName);
   };
 
+  // Bild-Klick Handler
+  const handleImageClick = (index: number) => {
+    setSelectedImage(index);
+    setIsFullscreen(true);
+  };
+
+  // Bearbeitungs-Handler
+  const handleEditImage = (index: number) => {
+    setSelectedImage(index);
+    setIsEditorOpen(true);
+  };
+
+  const handleDeleteImage = (index: number) => {
+    // Hier würde die tatsächliche Lösch-Logik implementiert
+    console.log(`Bild ${index} löschen`);
+    // TODO: Implementiere tatsächliche Lösch-Logik
+  };
+
+  // Aktive Galerie-Komponente
+  const ActiveGalleryComponent =
+    galleryTabs.find((tab) => tab.id === activeGalleryTab)?.component ??
+    FeaturedImageGallery;
+
   return (
     <div className="w-full space-y-6">
-      {/* Kategorie Header - ohne Hero-Bild */}
-      <div className="rounded-3xl bg-gradient-to-r from-purple-50 to-pink-50 p-6 dark:from-purple-950 dark:to-pink-950">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white md:text-4xl">
-              Medien & Bildbearbeitung
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
-              {images.length} Dateien •{" "}
-              {Number(
-                images.reduce(
-                  (acc: number, img: MediaItem) =>
-                    acc + parseFloat(img.size) || 0,
-                  0,
-                ),
-              ).toFixed(1)}{" "}
-              MB gesamt
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <span className="flex items-center gap-1 rounded-full bg-red-500/80 px-3 py-1 text-xs font-medium text-white">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-white" />{" "}
-              LIVE
-            </span>
-            <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-gray-700 backdrop-blur dark:text-gray-300">
-              🖼️ Medien
-            </span>
-          </div>
-        </div>
-      </div>
       {/* Aktionsleiste */}
       {isEditMode && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-lg dark:bg-gray-800">
@@ -325,321 +657,95 @@ export default function ModernMediaCategory({
       )}
       {/* Hauptinhalte */}
       <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
-        {/* Drag & Drop */}
-        <div
-          className={`mb-6 rounded-2xl border-2 border-dashed transition-all ${
-            isDragging
-              ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950"
-              : "border-gray-300 dark:border-gray-700"
-          }`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            void handleFileUpload(e.dataTransfer.files);
-          }}
-        >
-          {isDragging ? (
-            <div className="py-12 text-center">
-              <UploadIcon className="mx-auto mb-4 h-12 w-12 text-purple-600 dark:text-purple-400" />
-              <p className="text-lg font-medium text-purple-600 dark:text-purple-400">
-                Dateien hier ablegen
-              </p>
-            </div>
-          ) : (
-            <div className="py-8 text-center">
-              <CameraIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <p className="mb-2 text-gray-600 dark:text-gray-400">
-                Ziehen Sie Dateien hierher oder
-              </p>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="rounded-xl bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
-              >
-                Dateien auswählen
-              </button>
-              <p className="mt-2 text-xs text-gray-500">
-                JPG, PNG, GIF, MP4, PDF (max. 50MB)
-              </p>
-            </div>
-          )}
-        </div>
-        {/* Grid View */}
-        {viewMode === "grid" && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {images.filter(Boolean).map((image: MediaItem, index: number) => (
-              <div
-                key={image.id}
-                className={`group relative overflow-hidden rounded-2xl bg-gray-100 transition-all hover:shadow-xl dark:bg-gray-700 ${
-                  selectedImages.includes(String(image.id))
-                    ? "ring-2 ring-purple-600"
-                    : ""
-                }`}
-              >
-                {/* Checkbox bei Bulk‑Mode */}
-                {isBulkMode && (
-                  <div className="absolute left-3 top-3 z-10">
-                    <button
-                      onClick={() => toggleImageSelection(String(image.id))}
-                      className={`rounded-lg p-2 transition-all ${
-                        selectedImages.includes(String(image.id))
-                          ? "bg-purple-600 text-white"
-                          : "bg-white/80 backdrop-blur-sm dark:bg-gray-800/80"
-                      }`}
-                    >
-                      {selectedImages.includes(String(image.id)) ? (
-                        <CheckIcon className="h-4 w-4" />
-                      ) : (
-                        <SquareIcon className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                )}
-                {/* Status Badge */}
-                <div className="absolute right-3 top-3 z-10">
-                  <div
-                    className={`rounded-full px-2 py-1 text-xs font-medium backdrop-blur-sm ${
-                      image.status === "verified"
-                        ? "bg-green-500/90 text-white"
-                        : "bg-yellow-500/90 text-white"
-                    }`}
-                  >
-                    {image.status === "verified" ? "Verifiziert" : "Ausstehend"}
-                  </div>
-                </div>
-                {/* Bild selbst */}
-                <div className="aspect-square">
-                  <Image
-                    src={image.url}
-                    alt={image.alt_text}
-                    fill
-                    className="object-cover transition-transform group-hover:scale-110"
-                  />
-                </div>
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <p className="mb-2 text-sm font-medium text-white">
-                      {image.caption}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-white/80">
-                      <span>{image.dimensions}</span>
-                      <span>{image.size}</span>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedImage(index);
-                          setIsEditorOpen(true);
-                        }}
-                        className="flex-1 rounded-lg bg-white/20 py-1.5 text-xs text-white backdrop-blur-sm transition-all hover:bg-white/30"
-                      >
-                        <Edit3Icon className="mx-auto h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedImage(index);
-                          setIsFullscreen(true);
-                        }}
-                        className="flex-1 rounded-lg bg-white/20 py-1.5 text-xs text-white backdrop-blur-sm transition-all hover:bg-white/30"
-                      >
-                        <Maximize2Icon className="mx-auto h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          // Download functionality
-                        }}
-                        className="flex-1 rounded-lg bg-white/20 py-1.5 text-xs text-white backdrop-blur-sm transition-all hover:bg-white/30"
-                      >
-                        <DownloadIcon className="mx-auto h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          // Delete functionality
-                        }}
-                        className="flex-1 rounded-lg bg-white/20 py-1.5 text-xs text-white backdrop-blur-sm transition-all hover:bg-white/30"
-                      >
-                        <Trash2Icon className="mx-auto h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                {/* Tags */}
-                <div className="absolute left-4 top-12 flex flex-wrap gap-1">
-                  {Array.isArray(image?.tags) &&
-                    image.tags.map((tag: string, tagIndex: number) => (
-                      <span
-                        key={tagIndex}
-                        className="rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                </div>
+        {/* Drag & Drop - nur im Edit Mode */}
+        {isEditMode && (
+          <div
+            className={`mb-6 rounded-2xl border-2 border-dashed transition-all ${
+              isDragging
+                ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950"
+                : "border-gray-300 dark:border-gray-700"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              void handleFileUpload(e.dataTransfer.files);
+            }}
+          >
+            {isDragging ? (
+              <div className="py-12 text-center">
+                <UploadIcon className="mx-auto mb-4 h-12 w-12 text-purple-600 dark:text-purple-400" />
+                <p className="text-lg font-medium text-purple-600 dark:text-purple-400">
+                  Dateien hier ablegen
+                </p>
               </div>
-            ))}
-            {/* Hinzufügen */}
-            {isEditMode && (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 transition-all hover:border-purple-500 hover:bg-purple-50 dark:border-gray-600 dark:bg-gray-900 dark:hover:border-purple-500 dark:hover:bg-purple-950"
-              >
-                <div className="text-center">
-                  <PlusIcon className="mx-auto mb-2 h-8 w-8 text-gray-400" />
-                  <p className="text-sm text-gray-500">Hinzufügen</p>
-                </div>
-              </button>
+            ) : (
+              <div className="py-8 text-center">
+                <CameraIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <p className="mb-2 text-gray-600 dark:text-gray-400">
+                  Ziehen Sie Dateien hierher oder
+                </p>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-xl bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+                >
+                  Dateien auswählen
+                </button>
+                <p className="mt-2 text-xs text-gray-500">
+                  JPG, PNG, GIF, MP4, PDF (max. 50MB)
+                </p>
+              </div>
             )}
           </div>
         )}
-        {/* Listenansicht */}
-        {viewMode === "list" && (
-          <div className="space-y-3">
-            {images.filter(Boolean).map((image: MediaItem, index: number) => (
-              <div
-                key={image.id}
-                className={`flex items-center gap-4 rounded-2xl bg-gray-50 p-4 transition-all hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 ${
-                  selectedImages.includes(String(image.id))
-                    ? "ring-2 ring-purple-600"
-                    : ""
+
+        {/* Galerie-Tabs */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            {galleryTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveGalleryTab(tab.id)}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
+                  activeGalleryTab === tab.id
+                    ? "bg-purple-600 text-white shadow-lg"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 }`}
               >
-                {isBulkMode && (
-                  <button
-                    onClick={() => toggleImageSelection(String(image.id))}
-                    className={`rounded-lg p-2 ${
-                      selectedImages.includes(String(image.id))
-                        ? "bg-purple-600 text-white"
-                        : "bg-white dark:bg-gray-800"
-                    }`}
-                  >
-                    {selectedImages.includes(String(image.id)) ? (
-                      <CheckIcon className="h-4 w-4" />
-                    ) : (
-                      <SquareIcon className="h-4 w-4" />
-                    )}
-                  </button>
-                )}
-                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
-                  <Image
-                    src={image.url}
-                    alt={image.alt_text}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {image.caption}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {image.alt_text}
-                      </p>
-                      <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
-                        <span>{image.dimensions}</span>
-                        <span>•</span>
-                        <span>{image.size}</span>
-                        <span>•</span>
-                        <span>{image.date}</span>
-                      </div>
-                    </div>
-                    <div
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        image.status === "verified"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                      }`}
-                    >
-                      {image.status === "verified"
-                        ? "Verifiziert"
-                        : "Ausstehend"}
-                    </div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {Array.isArray(image?.tags) &&
-                      image.tags.map((tag: string, tagIndex: number) => (
-                        <span
-                          key={tagIndex}
-                          className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedImage(index);
-                      setIsEditorOpen(true);
-                    }}
-                    className="rounded-lg bg-white p-2 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                  >
-                    <Edit3Icon className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Download functionality
-                    }}
-                    className="rounded-lg bg-white p-2 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                  >
-                    <DownloadIcon className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Delete functionality
-                    }}
-                    className="rounded-lg bg-white p-2 text-red-600 hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-950"
-                  >
-                    <Trash2Icon className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
+                {tab.icon}
+                {tab.label}
+              </button>
             ))}
           </div>
-        )}
-        {/* Masonry */}
-        {viewMode === "masonry" && (
-          <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
-            {images.filter(Boolean).map((image: MediaItem) => (
-              <div
-                key={image.id}
-                className={`mb-4 break-inside-avoid overflow-hidden rounded-2xl bg-gray-100 transition-all hover:shadow-xl dark:bg-gray-700 ${
-                  selectedImages.includes(String(image.id))
-                    ? "ring-2 ring-purple-600"
-                    : ""
-                }`}
-              >
-                <div
-                  className="relative w-full"
-                  style={{
-                    height: `${200 + Math.random() * 200}px`,
-                  }}
-                >
-                  <Image
-                    src={image.url}
-                    alt={image.alt_text}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-3">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {image.caption}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {image.size} • {image.date}
-                  </p>
-                </div>
-              </div>
-            ))}
+        </div>
+
+        {/* Galerie-Inhalt */}
+        <div className="mb-6">
+          <ActiveGalleryComponent
+            images={images}
+            isEditMode={isEditMode}
+            onImageClick={handleImageClick}
+            onEditImage={handleEditImage}
+            onDeleteImage={handleDeleteImage}
+          />
+        </div>
+
+        {/* Hinzufügen Button für Edit Mode */}
+        {isEditMode && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-4 transition-all hover:border-purple-500 hover:bg-purple-50 dark:border-gray-600 dark:bg-gray-900 dark:hover:border-purple-500 dark:hover:bg-purple-950"
+            >
+              <PlusIcon className="h-6 w-6 text-gray-400" />
+              <span className="text-gray-500">Weitere Dateien hinzufügen</span>
+            </button>
           </div>
         )}
+
         {/* Datei‑Input */}
         <input
           ref={fileInputRef}
@@ -789,14 +895,14 @@ export default function ModernMediaCategory({
       {/* Fullscreen Viewer */}
       {isFullscreen && selectedImage !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95"
           onClick={() => setIsFullscreen(false)}
         >
           <button
             onClick={() => setIsFullscreen(false)}
             className="absolute right-4 top-4 rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
           >
-            <Trash2Icon className="h-6 w-6" />
+            <XIcon className="h-6 w-6" />
           </button>
           <Image
             src={currentImage?.url ?? ""}
@@ -846,21 +952,7 @@ export default function ModernMediaCategory({
           </div>
         </div>
       )}
-      {/* Navigation */}
-      <div className="flex justify-between">
-        <button
-          onClick={onPrevious}
-          className="flex items-center gap-2 rounded-2xl bg-gray-100 px-6 py-3 font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-        >
-          Zurück zur Beschreibung
-        </button>
-        <button
-          onClick={onNext}
-          className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 font-medium text-white hover:shadow-lg"
-        >
-          Weiter zu Orten
-        </button>
-      </div>
+
       {/* Validierung */}
       {images.length === 0 && (
         <div className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
