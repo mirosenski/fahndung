@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+// Import the shared logger to control console output based on the
+// environment. In production, log messages will be suppressed.
+import { log, warn } from "~/lib/logger";
 import { usePathname } from "next/navigation";
 
 // Chrome-spezifische Memory API Typen
@@ -29,7 +32,7 @@ export function PerformanceMonitor() {
     if (lastPathnameRef.current && lastPathnameRef.current !== pathname) {
       const navigationTime = currentTime - navigationStartRef.current;
 
-      console.log("🚀 Navigation Performance:", {
+      log("🚀 Navigation Performance:", {
         from: lastPathnameRef.current,
         to: pathname,
         time: `${navigationTime.toFixed(2)}ms`,
@@ -38,7 +41,7 @@ export function PerformanceMonitor() {
 
       // 🚀 PERFORMANCE-OPTIMIERUNGEN BASIEREND AUF ZEIT
       if (navigationTime > 1000) {
-        console.warn("⚠️ Langsame Navigation erkannt:", {
+        warn("⚠️ Langsame Navigation erkannt:", {
           pathname,
           time: navigationTime,
         });
@@ -46,7 +49,7 @@ export function PerformanceMonitor() {
         // Automatische Optimierungen für langsame Navigationen
         if (navigationTime > 2000) {
           // Aggressive Prefetching für sehr langsame Navigationen
-          console.log("🚀 Aktiviere aggressives Prefetching...");
+          log("🚀 Aktiviere aggressives Prefetching...");
         }
       }
     }
@@ -77,7 +80,7 @@ export function PerformanceMonitor() {
           const url = new URL(link.href);
           if (url.origin === window.location.origin) {
             // Intelligentes Prefetching nur für interne Links
-            console.log("🚀 Prefetching:", url.pathname);
+            log("🚀 Prefetching:", url.pathname);
           }
         }
       }
@@ -114,7 +117,7 @@ export function PerformanceMonitor() {
           const usedMB = memoryUsage.usedJSHeapSize / 1024 / 1024;
 
           if (usedMB > 100) {
-            console.log("🚀 Memory-Optimierung:", {
+            log("🚀 Memory-Optimierung:", {
               used: `${usedMB.toFixed(2)}MB`,
               limit: `${(memoryUsage.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`,
             });

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { supabase } from "~/lib/supabase";
+// Use the shared logger to suppress logging in production builds. Avoid
+// using console directly in components.
+import { log, error as logError } from "~/lib/logger";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -17,7 +20,7 @@ export const LoginForm = () => {
     setMessage(null);
 
     try {
-      console.log("🔐 Login: Versuche Anmeldung für:", email);
+        log("🔐 Login: Versuche Anmeldung für:", email);
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -25,16 +28,16 @@ export const LoginForm = () => {
       });
 
       if (error) {
-        console.error("❌ Login: Anmeldung fehlgeschlagen:", error.message);
+            logError("❌ Login: Anmeldung fehlgeschlagen:", error.message);
         setError(error.message);
       } else {
-        console.log("✅ Login: Anmeldung erfolgreich für:", data.user?.email);
+            log("✅ Login: Anmeldung erfolgreich für:", data.user?.email);
         setMessage("Anmeldung erfolgreich!");
         setEmail("");
         setPassword("");
       }
     } catch (err) {
-      console.error("❌ Login: Unerwarteter Fehler:", err);
+          logError("❌ Login: Unerwarteter Fehler:", err);
       setError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setLoading(false);
@@ -48,7 +51,7 @@ export const LoginForm = () => {
     setMessage(null);
 
     try {
-      console.log("📝 SignUp: Versuche Registrierung für:", email);
+        log("📝 SignUp: Versuche Registrierung für:", email);
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -56,13 +59,13 @@ export const LoginForm = () => {
       });
 
       if (error) {
-        console.error(
+            logError(
           "❌ SignUp: Registrierung fehlgeschlagen:",
           error.message,
         );
         setError(error.message);
       } else {
-        console.log(
+            log(
           "✅ SignUp: Registrierung erfolgreich für:",
           data.user?.email,
         );
@@ -71,7 +74,7 @@ export const LoginForm = () => {
         setPassword("");
       }
     } catch (err) {
-      console.error("❌ SignUp: Unerwarteter Fehler:", err);
+          logError("❌ SignUp: Unerwarteter Fehler:", err);
       setError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setLoading(false);
@@ -84,14 +87,14 @@ export const LoginForm = () => {
       const { error } = await supabase.auth.signOut();
 
       if (error) {
-        console.error("❌ Logout: Abmeldung fehlgeschlagen:", error.message);
+      logError("❌ Logout: Abmeldung fehlgeschlagen:", error.message);
         setError(error.message);
       } else {
-        console.log("✅ Logout: Abmeldung erfolgreich");
+      log("✅ Logout: Abmeldung erfolgreich");
         setMessage("Abmeldung erfolgreich!");
       }
     } catch (err) {
-      console.error("❌ Logout: Unerwarteter Fehler:", err);
+      logError("❌ Logout: Unerwarteter Fehler:", err);
       setError(err instanceof Error ? err.message : "Unbekannter Fehler");
     } finally {
       setLoading(false);
