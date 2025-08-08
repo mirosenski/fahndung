@@ -19,9 +19,6 @@ import {
   Filter as FilterIcon,
   ZoomIn as ZoomInIcon,
   ZoomOut as ZoomOutIcon,
-  Grid3X3 as Grid3x3Icon,
-  List as ListIcon,
-  FileImage as FileImageIcon,
   Square as SquareIcon,
   Check as CheckIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -77,7 +74,7 @@ export default function ModernMediaCategory({
   // Verhindert Lint-/TS-Fehler für ungenutzte Prop, bis Integration benötigt wird
   void updateField;
   // Zustand für Ansichtsmodus (grid, list, masonry)
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "masonry">("grid");
+  const [viewMode] = useState<"grid" | "list" | "masonry">("grid");
   // Auswahl von Bildern für Bulk‑Aktionen
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isBulkMode, setIsBulkMode] = useState(false);
@@ -241,62 +238,33 @@ export default function ModernMediaCategory({
 
   return (
     <div className="w-full space-y-6">
-      {/* Kopfbereich */}
-      <div className="rounded-3xl bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6 dark:from-purple-950 dark:via-pink-950 dark:to-orange-950">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-              <CameraIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Medien & Bildbearbeitung
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {images.length} Dateien •{" "}
-                {Number(
-                  images.reduce(
-                    (acc: number, img: MediaItem) =>
-                      acc + parseFloat(img.size) || 0,
-                    0,
-                  ),
-                ).toFixed(1)}
-                MB gesamt
-              </p>
-            </div>
+      {/* Kategorie Header - ohne Hero-Bild */}
+      <div className="rounded-3xl bg-gradient-to-r from-purple-50 to-pink-50 p-6 dark:from-purple-950 dark:to-pink-950">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white md:text-4xl">
+              Medien & Bildbearbeitung
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              {images.length} Dateien •{" "}
+              {Number(
+                images.reduce(
+                  (acc: number, img: MediaItem) =>
+                    acc + parseFloat(img.size) || 0,
+                  0,
+                ),
+              ).toFixed(1)}{" "}
+              MB gesamt
+            </p>
           </div>
-          {/* Ansichtsmodi */}
-          <div className="flex items-center gap-2 rounded-xl bg-white/50 p-1 backdrop-blur-sm dark:bg-white/10">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === "grid"
-                  ? "bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              <Grid3x3Icon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === "list"
-                  ? "bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              <ListIcon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("masonry")}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === "masonry"
-                  ? "bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              <FileImageIcon className="h-4 w-4" />
-            </button>
+          <div className="flex gap-2">
+            <span className="flex items-center gap-1 rounded-full bg-red-500/80 px-3 py-1 text-xs font-medium text-white">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-white" />{" "}
+              LIVE
+            </span>
+            <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-gray-700 backdrop-blur dark:text-gray-300">
+              🖼️ Medien
+            </span>
           </div>
         </div>
       </div>

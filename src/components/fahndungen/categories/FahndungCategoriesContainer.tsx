@@ -17,6 +17,7 @@ import { InvestigationDataConverter } from "~/lib/services/investigationDataConv
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
 import { isValidInvestigationId } from "~/lib/utils/validation";
 import { InvestigationDebug } from "~/components/debug/InvestigationDebug";
+import CategoryLayout from "./CategoryLayout";
 
 // Lazy Loading für bessere Performance
 // Nutze die modernisierte Overview‑Kategorie mit optimierter Performance
@@ -29,14 +30,17 @@ const OverviewCategory = dynamic(() => import("./ModernOverviewCategory"), {
   ssr: false,
 });
 
-const DescriptionCategory = dynamic(() => import("./ModernDescriptionCategory"), {
-  loading: () => (
-    <div className="animate-pulse">
-      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-    </div>
-  ),
-  ssr: false,
-});
+const DescriptionCategory = dynamic(
+  () => import("./ModernDescriptionCategory"),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+    ),
+    ssr: false,
+  },
+);
 
 const MediaCategory = dynamic(() => import("./ModernMediaCategory"), {
   loading: () => (
@@ -231,14 +235,14 @@ export default function FahndungCategoriesContainer({
         },
         step5: {
           contactPerson:
-            investigation.contact_info?.["person"] as string ?? "Polizei",
+            (investigation.contact_info?.["person"] as string) ?? "Polizei",
           contactPhone:
-            investigation.contact_info?.["phone"] as string ??
+            (investigation.contact_info?.["phone"] as string) ??
             "+49 711 8990-0",
-          contactEmail: investigation.contact_info?.["email"] as string ?? "",
+          contactEmail: (investigation.contact_info?.["email"] as string) ?? "",
           department: investigation.station ?? "Polizeipräsidium",
           availableHours:
-            investigation.contact_info?.["hours"] as string ?? "24/7",
+            (investigation.contact_info?.["hours"] as string) ?? "24/7",
         },
         images: investigation.images ?? [],
         contact_info: investigation.contact_info ?? {},
@@ -271,46 +275,76 @@ export default function FahndungCategoriesContainer({
     switch (activeCategory) {
       case "overview":
         return (
-          <OverviewCategory
-            {...commonProps}
-            onNext={() => navigateToCategory("description")}
-          />
+          <CategoryLayout
+            data={data}
+            activeCategory={activeCategory}
+            onCategoryChange={navigateToCategory}
+          >
+            <OverviewCategory
+              data={data}
+              onNext={() => navigateToCategory("description")}
+            />
+          </CategoryLayout>
         );
 
       case "description":
         return (
-          <DescriptionCategory
-            {...commonProps}
-            onNext={() => navigateToCategory("media")}
-            onPrevious={() => navigateToCategory("overview")}
-          />
+          <CategoryLayout
+            data={data}
+            activeCategory={activeCategory}
+            onCategoryChange={navigateToCategory}
+          >
+            <DescriptionCategory
+              {...commonProps}
+              onNext={() => navigateToCategory("media")}
+              onPrevious={() => navigateToCategory("overview")}
+            />
+          </CategoryLayout>
         );
 
       case "media":
         return (
-          <MediaCategory
-            {...commonProps}
-            onNext={() => navigateToCategory("locations")}
-            onPrevious={() => navigateToCategory("description")}
-          />
+          <CategoryLayout
+            data={data}
+            activeCategory={activeCategory}
+            onCategoryChange={navigateToCategory}
+          >
+            <MediaCategory
+              {...commonProps}
+              onNext={() => navigateToCategory("locations")}
+              onPrevious={() => navigateToCategory("description")}
+            />
+          </CategoryLayout>
         );
 
       case "locations":
         return (
-          <LocationsCategory
-            {...commonProps}
-            onNext={() => navigateToCategory("contact")}
-            onPrevious={() => navigateToCategory("media")}
-          />
+          <CategoryLayout
+            data={data}
+            activeCategory={activeCategory}
+            onCategoryChange={navigateToCategory}
+          >
+            <LocationsCategory
+              {...commonProps}
+              onNext={() => navigateToCategory("contact")}
+              onPrevious={() => navigateToCategory("media")}
+            />
+          </CategoryLayout>
         );
 
       case "contact":
         return (
-          <ContactCategory
-            {...commonProps}
-            onPrevious={() => navigateToCategory("locations")}
-            onSave={handleSave}
-          />
+          <CategoryLayout
+            data={data}
+            activeCategory={activeCategory}
+            onCategoryChange={navigateToCategory}
+          >
+            <ContactCategory
+              {...commonProps}
+              onPrevious={() => navigateToCategory("locations")}
+              onSave={handleSave}
+            />
+          </CategoryLayout>
         );
 
       default:
@@ -331,18 +365,6 @@ export default function FahndungCategoriesContainer({
     navigateToCategory,
     handleSave,
   ]);
-
-  // Memoized Categories Array
-  const categories = useMemo(
-    () => [
-      { id: "overview", label: "Übersicht", icon: "📋" },
-      { id: "description", label: "Beschreibung", icon: "📝" },
-      { id: "media", label: "Medien", icon: "🖼️" },
-      { id: "locations", label: "Orte", icon: "📍" },
-      { id: "contact", label: "Kontakt", icon: "📞" },
-    ],
-    [],
-  );
 
   // Early returns für Loading und Error States
   if (loadingState) return loadingState;
@@ -409,26 +431,6 @@ export default function FahndungCategoriesContainer({
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Category Navigation */}
-          <div className="mb-6">
-            <nav className="flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => navigateToCategory(category.id)}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    activeCategory === category.id
-                      ? "bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400"
-                      : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }`}
-                >
-                  <span>{category.icon}</span>
-                  <span className="hidden sm:inline">{category.label}</span>
-                </button>
-              ))}
-            </nav>
           </div>
 
           {/* Category Content */}

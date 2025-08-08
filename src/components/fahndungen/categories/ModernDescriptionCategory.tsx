@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
-  FileText as FileTextIcon,
   AlertCircle as AlertCircleIcon,
   Bold as BoldIcon,
   Italic as ItalicIcon,
@@ -63,9 +62,7 @@ export default function ModernDescriptionCategory({
   const [showToolbar, setShowToolbar] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [charCount, setCharCount] = useState(0);
-  const [readingTime, setReadingTime] = useState(0);
+
   const [selectedTags, setSelectedTags] = useState<string[]>(
     data.step2?.tags ?? [],
   );
@@ -114,15 +111,6 @@ export default function ModernDescriptionCategory({
     "Hinweise bitte an...",
     "Vorsicht ist geboten, da...",
   ];
-
-  // Aktualisiere Wort‑ und Zeichenanzahl sowie Lesezeit, sobald sich der Text ändert
-  useEffect(() => {
-    const text: string = data.step2?.description ?? "";
-    const words = text.split(/\s+/).filter((word) => word.length > 0);
-    setWordCount(words.length);
-    setCharCount(text.length);
-    setReadingTime(Math.ceil(words.length / 200));
-  }, [data?.step2?.description]);
 
   // Selektion für Toolbar ermitteln
   const handleTextSelection = () => {
@@ -201,49 +189,7 @@ export default function ModernDescriptionCategory({
   };
 
   return (
-    <div className="w-full space-y-6">
-      {/* Kopfbereich mit Statistiken */}
-      <div className="rounded-3xl bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-              <FileTextIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Detaillierte Beschreibung
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Erstellen Sie eine umfassende Fallbeschreibung
-              </p>
-            </div>
-          </div>
-          {/* Statistikanzeigen */}
-          <div className="flex items-center gap-4 text-sm">
-            <div className="rounded-xl bg-white/50 px-3 py-2 backdrop-blur-sm dark:bg-white/10">
-              <span className="text-gray-600 dark:text-gray-400">Wörter:</span>
-              <span className="ml-1 font-semibold text-gray-900 dark:text-white">
-                {wordCount}
-              </span>
-            </div>
-            <div className="rounded-xl bg-white/50 px-3 py-2 backdrop-blur-sm dark:bg-white/10">
-              <span className="text-gray-600 dark:text-gray-400">Zeichen:</span>
-              <span className="ml-1 font-semibold text-gray-900 dark:text-white">
-                {charCount}
-              </span>
-            </div>
-            <div className="rounded-xl bg-white/50 px-3 py-2 backdrop-blur-sm dark:bg-white/10">
-              <span className="text-gray-600 dark:text-gray-400">
-                Lesezeit:
-              </span>
-              <span className="ml-1 font-semibold text-gray-900 dark:text-white">
-                ~{readingTime} Min
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <>
       {/* Haupteditor */}
       <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
         {isEditMode ? (
@@ -671,6 +617,6 @@ export default function ModernDescriptionCategory({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

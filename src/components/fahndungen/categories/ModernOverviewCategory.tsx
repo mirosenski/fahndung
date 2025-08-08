@@ -1,18 +1,10 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
-import Image from "next/image";
+import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
 // Importiere Lucide-Icons korrekt als Named-Imports
-import {
-  User as UserIcon,
-  AlertTriangle as AlertTriangleIcon,
-  Shield as ShieldIcon,
-  Zap as ZapIcon,
-  Calendar as CalendarIcon,
-  MapPin as MapPinIcon,
-} from "lucide-react";
+import { MapPin as MapPinIcon } from "lucide-react";
 
 // Optional: Dynamische Karte wird nur geladen, wenn der Nutzer sie anzeigen möchte.
 const MapPreview = dynamic(() => import("../../map/MapPreview"), {
@@ -30,18 +22,6 @@ interface ModernOverviewCategoryProps {
    * Die Datenstruktur wird hier nicht strikt typisiert, um flexibel zu bleiben.
    */
   data: UIInvestigationData;
-  /**
-   * Schaltet den Edit‑Modus ein. Im Edit‑Modus können Felder inline bearbeitet werden.
-   */
-  isEditMode: boolean;
-  /**
-   * Callback zum Aktualisieren eines Feldes im übergeordneten Wizard.
-   */
-  updateField: (
-    step: keyof UIInvestigationData,
-    field: string,
-    value: unknown,
-  ) => void;
   onNext?: () => void;
 }
 
@@ -56,161 +36,16 @@ interface ModernOverviewCategoryProps {
  */
 export default function ModernOverviewCategory({
   data,
-  isEditMode,
-  updateField,
 }: ModernOverviewCategoryProps) {
-  // Aktueller Index für die Bildgalerie (nicht automatisch gedreht, um CPU zu schonen)
-  const [selectedImageIndex] = useState(0);
   // Steuert, ob die Karte angezeigt wird
   const [showMap, setShowMap] = useState(false);
 
-  // Erzeuge die Bildliste (Hauptbild + weitere Bilder). Fallback auf Unsplash‑Bilder.
-  const images: string[] = useMemo(() => {
-    const list: string[] = [];
-    if (data.step3?.mainImage) list.push(data.step3.mainImage);
-    if (Array.isArray(data.step3?.additionalImages)) {
-      list.push(...data.step3.additionalImages.filter((s): s is string => !!s));
-    }
-    if (list.length === 0) {
-      return [
-        "https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800",
-        "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=800",
-        "https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=800",
-      ];
-    }
-    return list;
-  }, [data]);
-
-  // Hilfsfunktionen zur Formatierung
-  const priorityColor = useCallback((priority?: string) => {
-    switch (priority) {
-      case "urgent":
-        return "bg-gradient-to-r from-red-500 to-orange-500";
-      case "new":
-        return "bg-gradient-to-r from-green-500 to-emerald-500";
-      default:
-        return "bg-gradient-to-r from-blue-500 to-indigo-500";
-    }
-  }, []);
-
-  const categoryIcon = useCallback((category?: string) => {
-    switch (category) {
-      case "MISSING_PERSON":
-        return <UserIcon className="h-4 w-4" />;
-      case "WANTED_PERSON":
-        return <AlertTriangleIcon className="h-4 w-4" />;
-      default:
-        return <ShieldIcon className="h-4 w-4" />;
-    }
-  }, []);
-
   // Daten aus dem Wizard auslesen
-  const title = data.step1?.title ?? "Unbekannte Fahndung";
-  const caseNumber = data.step1?.caseNumber ?? "–";
-  const category = data.step1?.category ?? "UNKNOWN";
-  const priority = data.step2?.priority ?? "normal";
-  const shortDescription =
-    data.step2?.shortDescription ?? "Keine Beschreibung verfügbar";
   const address = data.step4?.mainLocation?.address ?? "";
 
   // Main render
   return (
-    <section className="space-y-8">
-      {/* Hero Section */}
-      <div className="relative h-[60vh] min-h-[400px] overflow-hidden rounded-3xl bg-gray-200 dark:bg-gray-800">
-        {/* Hauptbild */}
-        {/** Sicherstellen, dass immer eine gültige Bild-URL vorhanden ist */}
-        {(() => {
-          const currentImage =
-            images[selectedImageIndex] ??
-            "https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800";
-          return (
-            <Image
-              src={currentImage}
-              alt="Fahndungsbild"
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 60vw"
-            />
-          );
-        })()}
-        {/* Gradient Overlays zur besseren Lesbarkeit */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
-
-        {/* Badges */}
-        <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
-          <span className="flex items-center gap-1 rounded-full bg-red-500/80 px-3 py-1 text-xs font-medium text-white">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-white" />{" "}
-            LIVE
-          </span>
-          <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-            {categoryIcon(category)}
-            {category === "MISSING_PERSON" ? "Vermisste Person" : category}
-          </span>
-          <span
-            className={`relative flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-white backdrop-blur ${priorityColor(
-              priority,
-            )}`}
-          >
-            <ZapIcon className="h-3.5 w-3.5" />
-            {priority === "urgent" ? "DRINGEND" : priority.toUpperCase()}
-          </span>
-        </div>
-
-        {/* Case Number & Date */}
-        <div className="absolute right-4 top-4 z-10 rounded-xl bg-black/40 px-3 py-2 text-right text-xs text-white backdrop-blur">
-          <div>Fallnummer</div>
-          <div className="font-mono text-lg font-semibold">#{caseNumber}</div>
-          <div className="mt-1 flex items-center justify-end gap-1">
-            <CalendarIcon className="h-3 w-3" />
-            <span>{new Date().toLocaleString("de-DE")}</span>
-          </div>
-        </div>
-
-        {/* Title & Description */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 p-6">
-          {isEditMode ? (
-            <input
-              value={title}
-              onChange={(e) => updateField("step1", "title", e.target.value)}
-              className="mb-2 w-full bg-transparent text-3xl font-bold text-white placeholder-gray-200 outline-none"
-              placeholder="Titel eingeben…"
-            />
-          ) : (
-            <h1 className="mb-2 text-3xl font-bold text-white md:text-5xl">
-              {title}
-            </h1>
-          )}
-          <p className="max-w-2xl text-sm text-white/90 md:text-base">
-            {shortDescription}
-          </p>
-        </div>
-      </div>
-
-      {/* Quick Info Cards */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Status</p>
-          <p className="text-base font-semibold text-foreground">Aktiv</p>
-        </div>
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Priorität</p>
-          <p className="text-base font-semibold capitalize text-foreground">
-            {priority}
-          </p>
-        </div>
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Kategorie</p>
-          <p className="text-base font-semibold text-foreground">{category}</p>
-        </div>
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Bereich</p>
-          <p className="text-base font-semibold text-foreground">Bundesweit</p>
-        </div>
-      </div>
-
+    <>
       {/* Karte & Adresse */}
       <div className="space-y-4">
         {address && (
@@ -282,6 +117,6 @@ export default function ModernOverviewCategory({
           </div>
         </div>
       </div>
-    </section>
+    </>
   );
 }

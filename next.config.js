@@ -37,7 +37,12 @@ const config = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Verbesserte Pfad-Behandlung
-    domains: ["rgbxdxrhwrszidbnsmuy.supabase.co", "via.placeholder.com", "staticmap.openstreetmap.de"],
+    domains: [
+      "rgbxdxrhwrszidbnsmuy.supabase.co",
+      "via.placeholder.com",
+      "staticmap.openstreetmap.de",
+      "images.unsplash.com",
+    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -54,6 +59,12 @@ const config = {
       {
         protocol: "https",
         hostname: "staticmap.openstreetmap.de",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         port: "",
         pathname: "/**",
       },
@@ -191,9 +202,12 @@ const config = {
   // React DevTools-Warnung unterdrücken
   compiler: {
     // Unterdrücke React DevTools-Warnung
-    removeConsole: process.env.NODE_ENV === "production" ? {
-      exclude: ["error", "warn"],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? {
+            exclude: ["error", "warn"],
+          }
+        : false,
   },
 };
 
