@@ -3,12 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  Eye,
-  EyeOff,
-  Edit,
-  ArrowLeft,
-} from "lucide-react";
+import { Eye, EyeOff, Edit, ArrowLeft } from "lucide-react";
 import { TabContent } from "./TabContent";
 import { NetworkErrorDiagnostic } from "../NetworkErrorDiagnostic";
 import { useFahndungskarteOptimized } from "~/hooks/useFahndungskarteOptimized";
@@ -71,7 +66,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   } = useFahndungskarteOptimized(
     // Wenn Navigation deaktiviert ist oder keine ID vorliegt, übergebe einen
     // leeren String, damit die Hook keinen Backend‑Request auslöst
-    disableNavigation || !investigationId ? "" : investigationId!,
+    disableNavigation || !investigationId ? "" : investigationId,
     propData,
   );
 
@@ -235,7 +230,8 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
     );
   }
 
-  if (isDataLoading) {
+  // Zeige Loading nur wenn wirklich Daten geladen werden (nicht im Preview-Modus)
+  if (isDataLoading && investigationId && !disableNavigation) {
     return (
       <div
         className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 ${className}`}
@@ -274,14 +270,24 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           ref={frontRef}
           className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
           style={{ backfaceVisibility: "hidden" }}
-          onClick={disableNavigation || !investigationId ? undefined : navigateToDetail}
-          role={disableNavigation || !investigationId ? undefined : "button"}
-          aria-label={disableNavigation || !investigationId ? undefined : `Zur Detailseite von ${safeData.step1.title} navigieren`}
+          onClick={
+            disableNavigation || !investigationId ? flipCard : navigateToDetail
+          }
+          role="button"
+          aria-label={
+            disableNavigation || !investigationId
+              ? `Fahndungskarte umdrehen`
+              : `Zur Detailseite von ${safeData.step1.title} navigieren`
+          }
           tabIndex={state.isFlipped ? -1 : 0}
           onKeyDown={(e) => {
-            if ((e.key === "Enter" || e.key === " ") && !(disableNavigation || !investigationId)) {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              navigateToDetail();
+              if (disableNavigation || !investigationId) {
+                flipCard();
+              } else {
+                navigateToDetail();
+              }
             }
           }}
         >
@@ -290,24 +296,26 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800"
             style={{ height: "60%" }}
           >
-            {!disableEdit && userPermissions?.canEdit && state.showQuickEdit && (
-              <button
-                onClick={handleQuickEdit}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleQuickEdit(e);
-                  }
-                }}
-                className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                aria-label="Schnell bearbeiten"
-                tabIndex={0}
-              >
-                <Edit className="h-3 w-3" />
-                Bearbeiten
-              </button>
-            )}
+            {!disableEdit &&
+              userPermissions?.canEdit &&
+              state.showQuickEdit && (
+                <button
+                  onClick={handleQuickEdit}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleQuickEdit(e);
+                    }
+                  }}
+                  className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  aria-label="Schnell bearbeiten"
+                  tabIndex={0}
+                >
+                  <Edit className="h-3 w-3" />
+                  Bearbeiten
+                </button>
+              )}
 
             <Image
               src={safeData.step3?.mainImage || "/placeholder-image.jpg"}
@@ -369,31 +377,34 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             </div>
 
             <div className="mt-auto flex items-center justify-between">
-              {!disableNavigation && investigationId && (
-                <button
-                  className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigateToDetail();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
+              <div className="flex-1">
+                {!disableNavigation && investigationId && (
+                  <button
+                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                    onClick={(e) => {
                       e.stopPropagation();
                       navigateToDetail();
-                    }
-                  }}
-                  aria-label="Mehr erfahren"
-                  tabIndex={0}
-                >
-                  <span>Mehr erfahren</span>
-                  <ArrowLeft className="h-4 w-4" />
-                </button>
-              )}
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigateToDetail();
+                      }
+                    }}
+                    aria-label="Mehr erfahren"
+                    tabIndex={0}
+                  >
+                    <span>Mehr erfahren</span>
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
 
+              {/* Details Button - immer sichtbar, auch im Preview-Modus */}
               <button
                 ref={detailsButtonRef}
-                className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-300"
+                className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   flipCard();
@@ -405,17 +416,10 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     flipCard();
                   }
                 }}
-                aria-label="Karte umdrehen"
+                aria-label="Details anzeigen"
                 tabIndex={0}
               >
-                <div className="flex flex-col gap-1.5">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-1.5 w-1.5 rounded-full bg-current"
-                    ></div>
-                  ))}
-                </div>
+                <span>Details</span>
               </button>
             </div>
           </div>

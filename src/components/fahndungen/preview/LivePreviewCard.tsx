@@ -25,7 +25,7 @@ const LivePreviewCard: React.FC<LivePreviewCardProps> = ({ data }) => {
     () => ({
       step1: {
         title: data.step1?.title ?? "Titel der Fahndung",
-        category: (data.step1?.category as FahndungsData["step1"]["category"]) ?? "MISSING_PERSON",
+        category: data.step1?.category ?? "MISSING_PERSON",
         caseNumber: data.step1?.caseNumber ?? "",
       },
       step2: {
@@ -33,7 +33,7 @@ const LivePreviewCard: React.FC<LivePreviewCardProps> = ({ data }) => {
           data.step2?.shortDescription ??
           "Kurzbeschreibung wird hier angezeigt...",
         description: data.step2?.description ?? "",
-        priority: (data.step2?.priority as FahndungsData["step2"]["priority"]) ?? "normal",
+        priority: data.step2?.priority ?? "normal",
         tags: data.step2?.tags ?? [],
         features: data.step2?.features ?? "",
       },
@@ -51,11 +51,9 @@ const LivePreviewCard: React.FC<LivePreviewCardProps> = ({ data }) => {
           data.step3?.additionalImageUrls &&
           data.step3.additionalImageUrls.length > 0
             ? data.step3.additionalImageUrls
-            : (
-                data.step3?.additionalImages?.map((img) =>
-                  img instanceof File ? URL.createObjectURL(img) : img,
-                ) ?? []
-              ),
+            : (data.step3?.additionalImages?.map((img) =>
+                img instanceof File ? URL.createObjectURL(img) : img,
+              ) ?? []),
         additionalImageUrls: data.step3?.additionalImageUrls,
       },
       step4: {
@@ -78,12 +76,17 @@ const LivePreviewCard: React.FC<LivePreviewCardProps> = ({ data }) => {
   useEffect(() => {
     return () => {
       if (data.step3?.mainImage instanceof File) {
-        URL.revokeObjectURL(fahndungsData.step3.mainImage);
+        const mainImageUrl = fahndungsData.step3.mainImage;
+        if (mainImageUrl && typeof mainImageUrl === "string") {
+          URL.revokeObjectURL(mainImageUrl);
+        }
       }
       data.step3?.additionalImages?.forEach((img, idx) => {
         if (img instanceof File) {
           const url = fahndungsData.step3.additionalImages[idx];
-          URL.revokeObjectURL(url);
+          if (url && typeof url === "string") {
+            URL.revokeObjectURL(url);
+          }
         }
       });
     };
