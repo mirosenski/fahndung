@@ -4,6 +4,19 @@ import { useState, useTransition } from "react";
 import { supabase } from "~/lib/supabase";
 import { log, error as logError } from "~/lib/logger";
 
+// Helper to enforce a timeout on an async operation. If the wrapped
+// promise does not settle within the specified milliseconds, the returned
+// promise rejects with a timeout error. This prevents hanging network
+// requests from blocking the UI indefinitely.
+async function raceWithTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return await Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Request timed out after ${ms} ms`)), ms),
+    ),
+  ]);
+}
+
 /**
  * Encapsulated supabase authentication actions.  This hook uses
  * `useTransition` to ensure that the UI remains responsive while
@@ -27,10 +40,13 @@ export function useSupabaseAuthActions() {
     startTransition(async () => {
       try {
         log("🔐 Login: Versuche Anmeldung für:", email);
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data, error } = await raceWithTimeout(
+          supabase.auth.signInWithPassword({
+            email,
+            password,
+          }),
+          10000,
+        );
         if (error) {
           logError("❌ Login: Anmeldung fehlgeschlagen:", error.message);
           setErrorMsg(error.message);
@@ -54,7 +70,10 @@ export function useSupabaseAuthActions() {
     startTransition(async () => {
       try {
         log("📝 SignUp: Versuche Registrierung für:", email);
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await raceWithTimeout(
+          supabase.auth.signUp({ email, password }),
+          10000,
+        );
         if (error) {
           logError("❌ SignUp: Registrierung fehlgeschlagen:", error.message);
           setErrorMsg(error.message);
@@ -79,7 +98,10 @@ export function useSupabaseAuthActions() {
     setSuccessMsg(null);
     startTransition(async () => {
       try {
-        const { error } = await supabase.auth.signOut();
+        const { error } = await raceWithTimeout(
+          supabase.auth.signOut(),
+          5000,
+        );
         if (error) {
           logError("❌ Logout: Abmeldung fehlgeschlagen:", error.message);
           setErrorMsg(error.message);
