@@ -56,7 +56,7 @@ const LocationsCategory = dynamic(() => import("./ModernLocationsCategory"), {
   ssr: false,
 });
 
-const ContactCategory = dynamic(() => import("./ContactCategory"), {
+const ContactCategory = dynamic(() => import("./ModernContactCategory"), {
   loading: () => (
     <div className="animate-pulse">
       <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
