@@ -1,123 +1,43 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "~/lib/supabase";
-// Use the shared logger to suppress logging in production builds. Avoid
-// using console directly in components.
-import { log, error as logError } from "~/lib/logger";
+// Use actions from our custom authentication hook instead of directly
+// calling supabase in this component. The hook handles logging and
+// loading/error states.
+import { useSupabaseAuthActions } from "~/hooks/useSupabaseAuthActions";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    try {
-        log("🔐 Login: Versuche Anmeldung für:", email);
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-            logError("❌ Login: Anmeldung fehlgeschlagen:", error.message);
-        setError(error.message);
-      } else {
-            log("✅ Login: Anmeldung erfolgreich für:", data.user?.email);
-        setMessage("Anmeldung erfolgreich!");
-        setEmail("");
-        setPassword("");
-      }
-    } catch (err) {
-          logError("❌ Login: Unerwarteter Fehler:", err);
-      setError(err instanceof Error ? err.message : "Unbekannter Fehler");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    try {
-        log("📝 SignUp: Versuche Registrierung für:", email);
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-            logError(
-          "❌ SignUp: Registrierung fehlgeschlagen:",
-          error.message,
-        );
-        setError(error.message);
-      } else {
-            log(
-          "✅ SignUp: Registrierung erfolgreich für:",
-          data.user?.email,
-        );
-        setMessage("Registrierung erfolgreich! Bitte bestätige deine E-Mail.");
-        setEmail("");
-        setPassword("");
-      }
-    } catch (err) {
-          logError("❌ SignUp: Unerwarteter Fehler:", err);
-      setError(err instanceof Error ? err.message : "Unbekannter Fehler");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-      logError("❌ Logout: Abmeldung fehlgeschlagen:", error.message);
-        setError(error.message);
-      } else {
-      log("✅ Logout: Abmeldung erfolgreich");
-        setMessage("Abmeldung erfolgreich!");
-      }
-    } catch (err) {
-      logError("❌ Logout: Unerwarteter Fehler:", err);
-      setError(err instanceof Error ? err.message : "Unbekannter Fehler");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use the Supabase auth actions hook to perform sign in, sign up and sign out.
+  const { signIn, signUp, signOut, pending, errorMsg, successMsg } =
+    useSupabaseAuthActions();
 
   return (
     <div className="rounded-lg bg-white p-6 shadow-sm">
       <h3 className="mb-4 text-lg font-semibold">🔐 Supabase Login</h3>
 
-      {error && (
+      {errorMsg && (
         <div className="mb-4 rounded border border-red-400 bg-red-100 p-3 text-red-700">
-          ❌ {error}
+          ❌ {errorMsg}
         </div>
       )}
 
-      {message && (
+      {successMsg && (
         <div className="mb-4 rounded border border-green-400 bg-green-100 p-3 text-green-700">
-          ✅ {message}
+          ✅ {successMsg}
         </div>
       )}
 
-      <form onSubmit={handleSignIn} className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          // Invoke the signIn action with current credentials.  The hook
+          // handles pending state and error handling.
+          signIn(email, password);
+        }}
+        className="space-y-4"
+      >
         <div>
           <label className="mb-1 block text-sm font-medium">E-Mail:</label>
           <input
@@ -145,27 +65,27 @@ export const LoginForm = () => {
         <div className="flex space-x-2">
           <button
             type="submit"
-            disabled={loading}
+            disabled={pending}
             className="flex-1 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:opacity-50"
           >
-            {loading ? "⏳ Anmelden..." : "🔐 Anmelden"}
+            {pending ? "⏳ Anmelden..." : "🔐 Anmelden"}
           </button>
 
           <button
             type="button"
-            onClick={handleSignUp}
-            disabled={loading}
+            onClick={() => signUp(email, password)}
+            disabled={pending}
             className="flex-1 rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600 disabled:opacity-50"
           >
-            {loading ? "⏳ Registrieren..." : "📝 Registrieren"}
+            {pending ? "⏳ Registrieren..." : "📝 Registrieren"}
           </button>
         </div>
       </form>
 
       <div className="mt-4 border-t pt-4">
         <button
-          onClick={handleSignOut}
-          disabled={loading}
+          onClick={() => signOut()}
+          disabled={pending}
           className="w-full rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 disabled:opacity-50"
         >
           🚪 Abmelden
