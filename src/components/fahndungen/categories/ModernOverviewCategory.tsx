@@ -3,15 +3,16 @@
 import React, { useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-// Import nur die benötigten Icons, damit Tree‑Shaking wirkt. Bei Bedarf weitere Icons ergänzen.
-import UserIcon from "@lucide-react/user";
-import AlertTriangleIcon from "@lucide-react/alert-triangle";
-import ShieldIcon from "@lucide-react/shield";
-import ZapIcon from "@lucide-react/zap";
-import CalendarIcon from "@lucide-react/calendar";
-import EyeIcon from "@lucide-react/eye";
-import UsersIcon from "@lucide-react/users";
-import MapPinIcon from "@lucide-react/map-pin";
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
+// Importiere Lucide-Icons korrekt als Named-Imports
+import {
+  User as UserIcon,
+  AlertTriangle as AlertTriangleIcon,
+  Shield as ShieldIcon,
+  Zap as ZapIcon,
+  Calendar as CalendarIcon,
+  MapPin as MapPinIcon,
+} from "lucide-react";
 
 // Optional: Dynamische Karte wird nur geladen, wenn der Nutzer sie anzeigen möchte.
 const MapPreview = dynamic(() => import("../../map/MapPreview"), {
@@ -28,7 +29,7 @@ interface ModernOverviewCategoryProps {
    * Strukturierte Daten der Fahndung (mehrstufiges Wizard‑Objekt).
    * Die Datenstruktur wird hier nicht strikt typisiert, um flexibel zu bleiben.
    */
-  data: any;
+  data: UIInvestigationData;
   /**
    * Schaltet den Edit‑Modus ein. Im Edit‑Modus können Felder inline bearbeitet werden.
    */
@@ -36,7 +37,12 @@ interface ModernOverviewCategoryProps {
   /**
    * Callback zum Aktualisieren eines Feldes im übergeordneten Wizard.
    */
-  updateField: (step: string, field: string, value: unknown) => void;
+  updateField: (
+    step: keyof UIInvestigationData,
+    field: string,
+    value: unknown,
+  ) => void;
+  onNext?: () => void;
 }
 
 /**
@@ -54,18 +60,17 @@ export default function ModernOverviewCategory({
   updateField,
 }: ModernOverviewCategoryProps) {
   // Aktueller Index für die Bildgalerie (nicht automatisch gedreht, um CPU zu schonen)
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedImageIndex] = useState(0);
   // Steuert, ob die Karte angezeigt wird
   const [showMap, setShowMap] = useState(false);
 
   // Erzeuge die Bildliste (Hauptbild + weitere Bilder). Fallback auf Unsplash‑Bilder.
   const images: string[] = useMemo(() => {
     const list: string[] = [];
-    if (data?.step3?.mainImage) list.push(data.step3.mainImage);
-    if (Array.isArray(data?.step3?.additionalImages)) {
-      list.push(...data.step3.additionalImages.filter(Boolean));
+    if (data.step3?.mainImage) list.push(data.step3.mainImage);
+    if (Array.isArray(data.step3?.additionalImages)) {
+      list.push(...data.step3.additionalImages.filter((s): s is string => !!s));
     }
-    // Fallback‑Bilder, falls keine Bilder vorhanden sind
     if (list.length === 0) {
       return [
         "https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800",
@@ -100,12 +105,13 @@ export default function ModernOverviewCategory({
   }, []);
 
   // Daten aus dem Wizard auslesen
-  const title = data?.step1?.title || "Unbekannte Fahndung";
-  const caseNumber = data?.step1?.caseNumber || "–";
-  const category = data?.step1?.category || "UNKNOWN";
-  const priority = data?.step2?.priority || "normal";
-  const shortDescription = data?.step2?.shortDescription || "Keine Beschreibung verfügbar";
-  const address = data?.step4?.mainLocation?.address || "";
+  const title = data.step1?.title ?? "Unbekannte Fahndung";
+  const caseNumber = data.step1?.caseNumber ?? "–";
+  const category = data.step1?.category ?? "UNKNOWN";
+  const priority = data.step2?.priority ?? "normal";
+  const shortDescription =
+    data.step2?.shortDescription ?? "Keine Beschreibung verfügbar";
+  const address = data.step4?.mainLocation?.address ?? "";
 
   // Main render
   return (
@@ -113,14 +119,22 @@ export default function ModernOverviewCategory({
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[400px] overflow-hidden rounded-3xl bg-gray-200 dark:bg-gray-800">
         {/* Hauptbild */}
-        <Image
-          src={images[selectedImageIndex]}
-          alt="Fahndungsbild"
-          fill
-          priority
-          className="object-cover"
-          sizes="(max-width: 1024px) 100vw, 60vw"
-        />
+        {/** Sicherstellen, dass immer eine gültige Bild-URL vorhanden ist */}
+        {(() => {
+          const currentImage =
+            images[selectedImageIndex] ??
+            "https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800";
+          return (
+            <Image
+              src={currentImage}
+              alt="Fahndungsbild"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 60vw"
+            />
+          );
+        })()}
         {/* Gradient Overlays zur besseren Lesbarkeit */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
@@ -128,7 +142,8 @@ export default function ModernOverviewCategory({
         {/* Badges */}
         <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
           <span className="flex items-center gap-1 rounded-full bg-red-500/80 px-3 py-1 text-xs font-medium text-white">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-white" /> LIVE
+            <span className="h-2 w-2 animate-pulse rounded-full bg-white" />{" "}
+            LIVE
           </span>
           <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur">
             {categoryIcon(category)}
@@ -164,9 +179,13 @@ export default function ModernOverviewCategory({
               placeholder="Titel eingeben…"
             />
           ) : (
-            <h1 className="mb-2 text-3xl font-bold text-white md:text-5xl">{title}</h1>
+            <h1 className="mb-2 text-3xl font-bold text-white md:text-5xl">
+              {title}
+            </h1>
           )}
-          <p className="max-w-2xl text-sm text-white/90 md:text-base">{shortDescription}</p>
+          <p className="max-w-2xl text-sm text-white/90 md:text-base">
+            {shortDescription}
+          </p>
         </div>
       </div>
 
@@ -178,7 +197,9 @@ export default function ModernOverviewCategory({
         </div>
         <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
           <p className="mb-1 text-xs text-muted-foreground">Priorität</p>
-          <p className="text-base font-semibold capitalize text-foreground">{priority}</p>
+          <p className="text-base font-semibold capitalize text-foreground">
+            {priority}
+          </p>
         </div>
         <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
           <p className="mb-1 text-xs text-muted-foreground">Kategorie</p>
@@ -215,16 +236,21 @@ export default function ModernOverviewCategory({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Kontaktkarte */}
         <div className="rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 p-4 dark:from-purple-900/20 dark:to-pink-900/20">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">Kontakt</h2>
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
+            Kontakt
+          </h2>
           <div className="space-y-2 text-sm">
             <div>
-              <span className="font-medium">Ansprechpartner:</span> {data?.step5?.contactPerson || "Kriminalpolizei Stuttgart"}
+              <span className="font-medium">Ansprechpartner:</span>{" "}
+              {data?.step5?.contactPerson || "Kriminalpolizei Stuttgart"}
             </div>
             <div>
-              <span className="font-medium">Telefon:</span> {data?.step5?.contactPhone || "0711 8990-1234"}
+              <span className="font-medium">Telefon:</span>{" "}
+              {data?.step5?.contactPhone || "0711 8990-1234"}
             </div>
             <div>
-              <span className="font-medium">E‑Mail:</span> {data?.step5?.contactEmail || "fahndung@polizei-bw.de"}
+              <span className="font-medium">E‑Mail:</span>{" "}
+              {data?.step5?.contactEmail || "fahndung@polizei-bw.de"}
             </div>
           </div>
           <button className="mt-3 w-full rounded-md bg-gradient-to-r from-purple-600 to-pink-600 py-2 text-sm font-medium text-white transition-colors hover:shadow-md">
@@ -233,7 +259,9 @@ export default function ModernOverviewCategory({
         </div>
         {/* Statistik */}
         <div className="rounded-xl bg-gradient-to-br from-orange-50 to-red-50 p-4 dark:from-orange-900/20 dark:to-red-900/20">
-          <h2 className="mb-3 text-lg font-semibold text-foreground">Statistiken</h2>
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
+            Statistiken
+          </h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Aufrufe heute</span>

@@ -1,65 +1,38 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-// Importiere alle benötigten Icons einzeln, um Tree‑Shaking zu ermöglichen
-import MapPin from "@lucide-react/map-pin";
-import Navigation from "@lucide-react/navigation";
-import Search from "@lucide-react/search";
-import Plus from "@lucide-react/plus";
-import Minus from "@lucide-react/minus";
-import Layers from "@lucide-react/layers";
-import Route from "@lucide-react/route";
-import Clock from "@lucide-react/clock";
-import Calendar from "@lucide-react/calendar";
-import TrendingUp from "@lucide-react/trending-up";
-import AlertCircle from "@lucide-react/alert-circle";
-import ChevronRight from "@lucide-react/chevron-right";
-import ChevronLeft from "@lucide-react/chevron-left";
-import Maximize2 from "@lucide-react/maximize-2";
-import Download from "@lucide-react/download";
-import Share2 from "@lucide-react/share-2";
-import Filter from "@lucide-react/filter";
-import Eye from "@lucide-react/eye";
-import EyeOff from "@lucide-react/eye-off";
-import Navigation2 from "@lucide-react/navigation-2";
-import Compass from "@lucide-react/compass";
-import Map from "@lucide-react/map";
-import Globe from "@lucide-react/globe";
-import Home from "@lucide-react/home";
-import Building from "@lucide-react/building";
-import Car from "@lucide-react/car";
-import Users from "@lucide-react/users";
-import AlertTriangle from "@lucide-react/alert-triangle";
-import Info from "@lucide-react/info";
-import Check from "@lucide-react/check";
-import X from "@lucide-react/x";
-import Edit3 from "@lucide-react/edit-3";
-import Trash2 from "@lucide-react/trash-2";
-import Copy from "@lucide-react/copy";
-import ExternalLink from "@lucide-react/external-link";
-import Smartphone from "@lucide-react/smartphone";
-import Monitor from "@lucide-react/monitor";
-import Target from "@lucide-react/target";
-import Activity from "@lucide-react/activity";
-import BarChart3 from "@lucide-react/bar-chart-3";
-import PinOff from "@lucide-react/pin-off";
-import Crosshair from "@lucide-react/crosshair";
-import Zap from "@lucide-react/zap";
-import Shield from "@lucide-react/shield";
-import Bell from "@lucide-react/bell";
-import Settings from "@lucide-react/settings";
-import Database from "@lucide-react/database";
-import Cloud from "@lucide-react/cloud";
-import Wifi from "@lucide-react/wifi";
-import WifiOff from "@lucide-react/wifi-off";
-import Battery from "@lucide-react/battery";
-import Signal from "@lucide-react/signal";
-import Satellite from "@lucide-react/satellite";
+// Importiere alle benötigten Icons aus lucide-react
+import {
+  MapPin,
+  Search,
+  Plus,
+  Minus,
+  Route,
+  Clock,
+  AlertCircle,
+  ChevronRight,
+  ChevronLeft,
+  Download,
+  Navigation2,
+  Map,
+  Globe,
+  Target,
+  Activity,
+  Shield,
+  Bell,
+  Wifi,
+  WifiOff,
+  Satellite,
+  Check,
+  X,
+} from "lucide-react";
+
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
 interface LocationsCategoryProps {
-  data: any;
+  data: UIInvestigationData;
   isEditMode: boolean;
-  updateField: (step: string, field: string, value: any) => void;
+  updateField: (step: keyof UIInvestigationData, field: string, value: unknown) => void;
   onNext: () => void;
   onPrevious: () => void;
 }
@@ -92,7 +65,7 @@ interface Location {
 export default function ModernLocationsCategory({
   data,
   isEditMode,
-  updateField,
+  updateField: _updateField,
   onNext,
   onPrevious,
 }: LocationsCategoryProps) {
@@ -100,7 +73,8 @@ export default function ModernLocationsCategory({
     {
       id: "1",
       type: "main",
-      address: data?.step4?.mainLocation?.address || "Königstraße 28, 70173 Stuttgart",
+      address:
+        (data?.step4?.mainLocation as { address?: string } | null)?.address ?? "Königstraße 28, 70173 Stuttgart",
       coordinates: { lat: 48.7758, lng: 9.1829 },
       timestamp: new Date(),
       description: "Letzter bekannter Aufenthaltsort",
@@ -113,7 +87,7 @@ export default function ModernLocationsCategory({
       id: "2",
       type: "sighting",
       address: "Schlossplatz, 70173 Stuttgart",
-      coordinates: { lat: 48.7785, lng: 9.1800 },
+      coordinates: { lat: 48.7785, lng: 9.18 },
       timestamp: new Date(Date.now() - 3600000),
       description: "Mögliche Sichtung",
       confidence: 60,
@@ -122,27 +96,32 @@ export default function ModernLocationsCategory({
     {
       id: "3",
       type: "residence",
-      address: "Marienplatz 1, 70178 Stuttgart",
-      coordinates: { lat: 48.7636, lng: 9.1680 },
+      address: "Marienplatz 1, 70178 Stuttgart",
+      coordinates: { lat: 48.7636, lng: 9.168 },
       timestamp: new Date(Date.now() - 86400000),
       description: "Wohnadresse",
       verified: true,
     },
   ]);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(locations[0]);
-  const [mapView, setMapView] = useState<"street" | "satellite" | "terrain" | "hybrid">("street");
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    locations[0] ?? null,
+  );
+  const [mapView, setMapView] = useState<
+    "street" | "satellite" | "terrain" | "hybrid"
+  >("street");
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showRadius, setShowRadius] = useState(true);
   const [showRoute, setShowRoute] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [zoom, setZoom] = useState(13);
   const [center, setCenter] = useState({ lat: 48.7758, lng: 9.1829 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGeofence, setShowGeofence] = useState(false);
   const [tracking, setTracking] = useState(false);
-  const [liveLocation, setLiveLocation] = useState<GeolocationPosition | null>(null);
+  const [liveLocation, setLiveLocation] = useState<GeolocationPosition | null>(
+    null,
+  );
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState("24h");
@@ -173,13 +152,17 @@ export default function ModernLocationsCategory({
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
           setLiveLocation(position);
-          setCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
+          setCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
         },
         (error) => console.error("Geolocation error:", error),
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
       );
       return () => navigator.geolocation.clearWatch(watchId);
     }
+    return undefined;
   }, [tracking]);
 
   // Geocoding per Nominatim
@@ -188,8 +171,12 @@ export default function ModernLocationsCategory({
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
       );
-      const result = await response.json();
-      if (result && result[0]) {
+      const result = await response.json() as Array<{
+        lat: string;
+        lon: string;
+        display_name: string;
+      }>;
+      if (result?.[0]) {
         return {
           lat: parseFloat(result[0].lat),
           lng: parseFloat(result[0].lon),
@@ -222,7 +209,6 @@ export default function ModernLocationsCategory({
       setSelectedLocation(newLoc);
       setCenter({ lat: geocoded.lat, lng: geocoded.lng });
       setSearchQuery("");
-      setIsAddingLocation(false);
     }
   };
 
@@ -264,7 +250,7 @@ export default function ModernLocationsCategory({
 
   // Externe Karten öffnen
   const openInMaps = (platform: "google" | "apple" | "osm") => {
-    const loc = selectedLocation || locations[0];
+    const loc = selectedLocation ?? locations[0];
     if (!loc) return;
     const urls = {
       google: `https://www.google.com/maps/search/?api=1&query=${loc.coordinates.lat},${loc.coordinates.lng}`,
@@ -284,9 +270,11 @@ export default function ModernLocationsCategory({
               <MapPin className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Standorte & Karte</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Standorte & Karte
+              </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {locations.length} Markierungen • {selectedTimeRange} Zeitraum
+                {locations.length} Markierungen • {selectedTimeRange} Zeitraum
               </p>
             </div>
           </div>
@@ -330,7 +318,7 @@ export default function ModernLocationsCategory({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === "Enter") addLocation();
+                      if (e.key === "Enter") void addLocation();
                     }}
                     placeholder="Adresse suchen..."
                     className="w-64 rounded-xl bg-white/90 px-4 py-2 pl-10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800/90"
@@ -339,7 +327,7 @@ export default function ModernLocationsCategory({
                 </div>
                 {isEditMode && (
                   <button
-                    onClick={addLocation}
+                    onClick={() => void addLocation()}
                     className="rounded-xl bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
                   >
                     <Plus className="h-5 w-5" />
@@ -429,7 +417,7 @@ export default function ModernLocationsCategory({
                 onClick={() => setIsFullscreen(!isFullscreen)}
                 className="rounded-lg bg-white/90 p-2 backdrop-blur-sm hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-700"
               >
-                <Maximize2 className="h-5 w-5" />
+                <Map className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setZoom(Math.min(20, zoom + 1))}
@@ -457,7 +445,9 @@ export default function ModernLocationsCategory({
                     : "bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 }`}
               >
-                <Navigation2 className={`h-5 w-5 ${tracking ? "animate-pulse" : ""}`} />
+                <Navigation2
+                  className={`h-5 w-5 ${tracking ? "animate-pulse" : ""}`}
+                />
               </button>
             </div>
             {/* Map Display */}
@@ -473,15 +463,23 @@ export default function ModernLocationsCategory({
                     className="absolute inset-0"
                   />
                   {/* Overlay */}
-                  <div className="absolute inset-0 pointer-events-none">
+                  <div className="pointer-events-none absolute inset-0">
                     {locations.map((loc) => {
-                      const x = ((loc.coordinates.lng - center.lng + 0.01) / 0.02) * 100;
-                      const y = ((center.lat + 0.01 - loc.coordinates.lat) / 0.02) * 100;
+                      const x =
+                        ((loc.coordinates.lng - center.lng + 0.01) / 0.02) *
+                        100;
+                      const y =
+                        ((center.lat + 0.01 - loc.coordinates.lat) / 0.02) *
+                        100;
                       return (
                         <div
                           key={loc.id}
-                          className="absolute pointer-events-auto"
-                          style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
+                          className="pointer-events-auto absolute"
+                          style={{
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            transform: "translate(-50%, -50%)",
+                          }}
                         >
                           <button
                             onClick={() => setSelectedLocation(loc)}
@@ -499,7 +497,11 @@ export default function ModernLocationsCategory({
                                 }}
                               />
                             )}
-                            <div className={`text-3xl ${selectedLocation?.id === loc.id ? "animate-bounce" : ""}`}>${locationTypes[loc.type].icon}</div>
+                            <div
+                              className={`text-3xl ${selectedLocation?.id === loc.id ? "animate-bounce" : ""}`}
+                            >
+                              {locationTypes[loc.type].icon}
+                            </div>
                             {selectedLocation?.id === loc.id && (
                               <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-lg bg-white px-2 py-1 text-xs shadow-lg dark:bg-gray-800">
                                 {loc.description}
@@ -532,7 +534,9 @@ export default function ModernLocationsCategory({
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center">
                     <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
-                    <p className="text-gray-600 dark:text-gray-400">Karte wird geladen...</p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Karte wird geladen...
+                    </p>
                   </div>
                 </div>
               )}
@@ -557,7 +561,7 @@ export default function ModernLocationsCategory({
                         <button
                           key={loc.id}
                           onClick={() => setSelectedLocation(loc)}
-                          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/4 rounded-full bg-emerald-600 hover:scale-125"
+                          className="absolute h-4 w-4 -translate-x-1/4 -translate-y-1/4 rounded-full bg-emerald-600 hover:scale-125"
                           style={{ left: `${position}%` }}
                         />
                       );
@@ -573,7 +577,9 @@ export default function ModernLocationsCategory({
           {/* Location List */}
           <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Markierungen</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                Markierungen
+              </h3>
               <button
                 onClick={() => setShowTimeline(!showTimeline)}
                 className={`rounded-lg p-2 ${
@@ -601,15 +607,21 @@ export default function ModernLocationsCategory({
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex gap-3">
-                      <div className="text-2xl">{locationTypes[loc.type].icon}</div>
+                      <div className="text-2xl">
+                        {locationTypes[loc.type].icon}
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold text-gray-900 dark:text-white">
                             {locationTypes[loc.type].label}
                           </h4>
-                          {loc.verified && <Check className="h-4 w-4 text-green-600 dark:text-green-400" />}
+                          {loc.verified && (
+                            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          )}
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{loc.address}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {loc.address}
+                        </p>
                         {loc.description && (
                           <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
                             {loc.description}
@@ -623,7 +635,7 @@ export default function ModernLocationsCategory({
                           )}
                           {loc.witnesses && (
                             <span className="rounded-full bg-purple-100 px-2 py-0.5 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                              {loc.witnesses} Zeugen
+                              {loc.witnesses} Zeugen
                             </span>
                           )}
                           <span className="text-gray-500">
@@ -640,7 +652,7 @@ export default function ModernLocationsCategory({
                         }}
                         className="rounded-lg p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <X className="h-4 w-4" />
                       </button>
                     )}
                   </div>
@@ -648,7 +660,7 @@ export default function ModernLocationsCategory({
               ))}
               {isEditMode && (
                 <button
-                  onClick={() => setIsAddingLocation(true)}
+                  onClick={() => void addLocation()}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 p-4 text-gray-600 hover:border-emerald-500 hover:text-emerald-600 dark:border-gray-600 dark:text-gray-400 dark:hover:border-emerald-500 dark:hover:text-emerald-400"
                 >
                   <Plus className="h-5 w-5" /> Standort hinzufügen
@@ -659,30 +671,42 @@ export default function ModernLocationsCategory({
           {/* Details des ausgewählten Standorts */}
           {selectedLocation && (
             <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 p-6 dark:from-blue-950 dark:to-indigo-950">
-              <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">Standort‑Details</h3>
+              <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
+                Standort‑Details
+              </h3>
               <div className="space-y-3">
                 <div className="rounded-xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Koordinaten</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    Koordinaten
+                  </p>
                   <p className="font-mono text-sm font-semibold">
-                    {selectedLocation.coordinates.lat.toFixed(6)}, {selectedLocation.coordinates.lng.toFixed(6)}
+                    {selectedLocation.coordinates.lat.toFixed(6)},{" "}
+                    {selectedLocation.coordinates.lng.toFixed(6)}
                   </p>
                 </div>
                 {selectedLocation.radius && (
                   <div className="rounded-xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Suchradius</p>
-                    <p className="font-semibold">{selectedLocation.radius} Meter</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      Suchradius
+                    </p>
+                    <p className="font-semibold">
+                      {selectedLocation.radius} Meter
+                    </p>
                   </div>
                 )}
                 {locations.length > 1 && (
                   <div className="rounded-xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Entfernung zum Hauptstandort</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      Entfernung zum Hauptstandort
+                    </p>
                     <p className="font-semibold">
                       {calculateDistance(
                         selectedLocation.coordinates.lat,
                         selectedLocation.coordinates.lng,
-                        locations[0].coordinates.lat,
-                        locations[0].coordinates.lng,
-                      )} km
+                        locations[0]?.coordinates.lat ?? 0,
+                        locations[0]?.coordinates.lng ?? 0,
+                      )}
+                      km
                     </p>
                   </div>
                 )}
@@ -691,13 +715,13 @@ export default function ModernLocationsCategory({
                     onClick={() => openInMaps("google")}
                     className="flex-1 rounded-lg bg-white/50 py-2 text-xs font-medium backdrop-blur-sm hover:bg-white dark:bg-white/10 dark:hover:bg-white/20"
                   >
-                    Google Maps
+                    Google Maps
                   </button>
                   <button
                     onClick={() => openInMaps("apple")}
                     className="flex-1 rounded-lg bg-white/50 py-2 text-xs font-medium backdrop-blur-sm hover:bg-white dark:bg-white/10 dark:hover:bg-white/20"
                   >
-                    Apple Maps
+                    Apple Maps
                   </button>
                   <button
                     onClick={() => openInMaps("osm")}
@@ -712,23 +736,35 @@ export default function ModernLocationsCategory({
           {/* Analyse */}
           {showAnalytics && (
             <div className="rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 p-6 dark:from-purple-950 dark:to-pink-950">
-              <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">Standort‑Analyse</h3>
+              <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
+                Standort‑Analyse
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Bewegungsradius</span>
-                  <span className="font-semibold">~2.5 km</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Bewegungsradius
+                  </span>
+                  <span className="font-semibold">~2.5 km</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Häufigster Bereich</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Häufigster Bereich
+                  </span>
                   <span className="font-semibold">Stadtmitte</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Aktivste Zeit</span>
-                  <span className="font-semibold">14:00 – 18:00</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Aktivste Zeit
+                  </span>
+                  <span className="font-semibold">14:00 – 18:00</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Muster erkannt</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Ja</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Muster erkannt
+                  </span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    Ja
+                  </span>
                 </div>
               </div>
               <button className="mt-4 w-full rounded-xl bg-purple-600 py-2 text-white hover:bg-purple-700">
@@ -749,13 +785,13 @@ export default function ModernLocationsCategory({
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             }`}
           >
-            <BarChart3 className="h-4 w-4" /> Analyse
+            <Activity className="h-4 w-4" /> Analyse
           </button>
           <button className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
             <Download className="h-4 w-4" /> KML Export
           </button>
           <button className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-            <Share2 className="h-4 w-4" /> Teilen
+            <Download className="h-4 w-4" /> Teilen
           </button>
           <button className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
             <Bell className="h-4 w-4" /> Benachrichtigungen
@@ -790,12 +826,14 @@ export default function ModernLocationsCategory({
         </button>
       </div>
       {/* Validation */}
-      {!data?.step4?.mainLocation?.address && (
+      {!(data?.step4?.mainLocation as { address?: string } | null)?.address && (
         <div className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
           <div className="flex items-center gap-3">
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             <div>
-              <p className="font-medium text-yellow-800 dark:text-yellow-200">Hauptstandort fehlt</p>
+              <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                Hauptstandort fehlt
+              </p>
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
                 Ein Hauptstandort ist wichtig für die Fahndung.
               </p>

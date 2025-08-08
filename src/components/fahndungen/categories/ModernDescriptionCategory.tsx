@@ -1,36 +1,42 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-// Importiere nur benötigte Icons einzeln, um Tree‑Shaking zu ermöglichen
-import FileTextIcon from "@lucide-react/file-text";
-import AlertCircleIcon from "@lucide-react/alert-circle";
-import BoldIcon from "@lucide-react/bold";
-import ItalicIcon from "@lucide-react/italic";
-import UnderlineIcon from "@lucide-react/underline";
-import ListIcon from "@lucide-react/list";
-import ListOrderedIcon from "@lucide-react/list-ordered";
-import QuoteIcon from "@lucide-react/quote";
-import LinkIcon from "@lucide-react/link";
-import ImageIcon from "@lucide-react/image";
-import CodeIcon from "@lucide-react/code";
-import Heading1Icon from "@lucide-react/heading-1";
-import Heading2Icon from "@lucide-react/heading-2";
-import EyeIcon from "@lucide-react/eye";
-import Edit3Icon from "@lucide-react/edit-3";
-import HashIcon from "@lucide-react/hash";
-import SmileIcon from "@lucide-react/smile";
-import SparklesIcon from "@lucide-react/sparkles";
-import Wand2Icon from "@lucide-react/wand-2";
-import LanguagesIcon from "@lucide-react/languages";
-import CheckCircleIcon from "@lucide-react/check-circle";
-import XIcon from "@lucide-react/x";
-import PlusIcon from "@lucide-react/plus";
-import MinusIcon from "@lucide-react/minus";
+import {
+  FileText as FileTextIcon,
+  AlertCircle as AlertCircleIcon,
+  Bold as BoldIcon,
+  Italic as ItalicIcon,
+  Underline as UnderlineIcon,
+  List as ListIcon,
+  ListOrdered as ListOrderedIcon,
+  Quote as QuoteIcon,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Code as CodeIcon,
+  Heading1 as Heading1Icon,
+  Heading2 as Heading2Icon,
+  Eye as EyeIcon,
+  Edit3 as Edit3Icon,
+  Hash as HashIcon,
+  Smile as SmileIcon,
+  Sparkles as SparklesIcon,
+  Wand2 as Wand2Icon,
+  Languages as LanguagesIcon,
+  CheckCircle as CheckCircleIcon,
+  X as XIcon,
+  Plus as PlusIcon,
+  Minus as MinusIcon,
+} from "lucide-react";
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
 interface DescriptionCategoryProps {
-  data: any;
+  data: UIInvestigationData;
   isEditMode: boolean;
-  updateField: (step: string, field: string, value: any) => void;
+  updateField: (
+    step: keyof UIInvestigationData,
+    field: string,
+    value: unknown,
+  ) => void;
   onNext: () => void;
   onPrevious: () => void;
 }
@@ -61,13 +67,13 @@ export default function ModernDescriptionCategory({
   const [charCount, setCharCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    data?.step2?.tags || [],
+    data.step2?.tags ?? [],
   );
   const [tagInput, setTagInput] = useState("");
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(16);
-  const [lineHeight, setLineHeight] = useState(1.6);
+  const [lineHeight] = useState(1.6);
 
   // Vorschläge für Tags, Emojis und AI‑Text
   const suggestedTags = [
@@ -111,7 +117,7 @@ export default function ModernDescriptionCategory({
 
   // Aktualisiere Wort‑ und Zeichenanzahl sowie Lesezeit, sobald sich der Text ändert
   useEffect(() => {
-    const text: string = data?.step2?.description || "";
+    const text: string = data.step2?.description ?? "";
     const words = text.split(/\s+/).filter((word) => word.length > 0);
     setWordCount(words.length);
     setCharCount(text.length);
@@ -131,23 +137,32 @@ export default function ModernDescriptionCategory({
 
   // Formatierung anwenden
   const applyFormat = (format: string) => {
-    const currentText: string = data?.step2?.description || "";
+    const currentText: string = data.step2?.description ?? "";
     let formattedText = currentText;
     switch (format) {
       case "bold":
-        formattedText = currentText.replace(selectedText, `**${selectedText}**`);
+        formattedText = currentText.replace(
+          selectedText,
+          `**${selectedText}**`,
+        );
         break;
       case "italic":
         formattedText = currentText.replace(selectedText, `*${selectedText}*`);
         break;
       case "underline":
-        formattedText = currentText.replace(selectedText, `<u>${selectedText}</u>`);
+        formattedText = currentText.replace(
+          selectedText,
+          `<u>${selectedText}</u>`,
+        );
         break;
       case "quote":
         formattedText = currentText.replace(selectedText, `> ${selectedText}`);
         break;
       case "code":
-        formattedText = currentText.replace(selectedText, `\`${selectedText}\``);
+        formattedText = currentText.replace(
+          selectedText,
+          `\`${selectedText}\``,
+        );
         break;
     }
     updateField("step2", "description", formattedText);
@@ -173,14 +188,14 @@ export default function ModernDescriptionCategory({
 
   // AI‑Vorschlag einfügen
   const insertAISuggestion = (suggestion: string) => {
-    const currentText: string = data?.step2?.description || "";
+    const currentText: string = data.step2?.description ?? "";
     updateField("step2", "description", currentText + "\n\n" + suggestion);
     setShowAISuggestions(false);
   };
 
   // Emoji einfügen
   const insertEmoji = (emoji: string) => {
-    const currentText: string = data?.step2?.description || "";
+    const currentText: string = data.step2?.description ?? "";
     updateField("step2", "description", currentText + emoji);
     setShowEmojiPicker(false);
   };
@@ -207,15 +222,23 @@ export default function ModernDescriptionCategory({
           <div className="flex items-center gap-4 text-sm">
             <div className="rounded-xl bg-white/50 px-3 py-2 backdrop-blur-sm dark:bg-white/10">
               <span className="text-gray-600 dark:text-gray-400">Wörter:</span>
-              <span className="ml-1 font-semibold text-gray-900 dark:text-white">{wordCount}</span>
+              <span className="ml-1 font-semibold text-gray-900 dark:text-white">
+                {wordCount}
+              </span>
             </div>
             <div className="rounded-xl bg-white/50 px-3 py-2 backdrop-blur-sm dark:bg-white/10">
               <span className="text-gray-600 dark:text-gray-400">Zeichen:</span>
-              <span className="ml-1 font-semibold text-gray-900 dark:text-white">{charCount}</span>
+              <span className="ml-1 font-semibold text-gray-900 dark:text-white">
+                {charCount}
+              </span>
             </div>
             <div className="rounded-xl bg-white/50 px-3 py-2 backdrop-blur-sm dark:bg-white/10">
-              <span className="text-gray-600 dark:text-gray-400">Lesezeit:</span>
-              <span className="ml-1 font-semibold text-gray-900 dark:text-white">~{readingTime} Min</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                Lesezeit:
+              </span>
+              <span className="ml-1 font-semibold text-gray-900 dark:text-white">
+                ~{readingTime} Min
+              </span>
             </div>
           </div>
         </div>
@@ -257,7 +280,9 @@ export default function ModernDescriptionCategory({
                 >
                   <MinusIcon className="h-4 w-4" />
                 </button>
-                <span className="text-sm text-gray-600 dark:text-gray-400">{fontSize}px</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {fontSize}px
+                </span>
                 <button
                   onClick={() => setFontSize((prev) => Math.min(24, prev + 1))}
                   className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
@@ -354,7 +379,9 @@ export default function ModernDescriptionCategory({
               <div className="mb-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:from-purple-950 dark:to-pink-950">
                 <div className="mb-3 flex items-center gap-2">
                   <Wand2Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">AI Schreibvorschläge</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    AI Schreibvorschläge
+                  </h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {aiSuggestions.map((suggestion, index) => (
@@ -377,8 +404,10 @@ export default function ModernDescriptionCategory({
                 onMouseUp={handleTextSelection}
               >
                 <textarea
-                  value={data?.step2?.description || ""}
-                  onChange={(e) => updateField("step2", "description", e.target.value)}
+                  value={data.step2?.description ?? ""}
+                  onChange={(e) =>
+                    updateField("step2", "description", e.target.value)
+                  }
                   className="min-h-[400px] w-full rounded-xl border-2 border-gray-200 p-4 text-gray-900 transition-all focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-indigo-400"
                   placeholder={
                     "Beginnen Sie mit der Beschreibung des Falls...\n\n" +
@@ -412,18 +441,20 @@ export default function ModernDescriptionCategory({
                 )}
               </div>
             ) : (
-              <div className="prose prose-lg max-w-none rounded-xl bg-gray-50 p-6 dark:bg-gray-900 dark:prose-invert">
+              <div className="prose prose-lg dark:prose-invert max-w-none rounded-xl bg-gray-50 p-6 dark:bg-gray-900">
                 <div
                   className="whitespace-pre-wrap"
                   style={{ fontSize: `${fontSize}px`, lineHeight }}
                   dangerouslySetInnerHTML={{
-                    __html: (data?.step2?.description || "Keine Beschreibung vorhanden")
+                    __html: (
+                      data.step2?.description ?? "Keine Beschreibung vorhanden"
+                    )
                       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                       .replace(/\*(.*?)\*/g, "<em>$1</em>")
                       .replace(/`(.*?)`/g, "<code>$1</code>")
                       .replace(/^> (.*)$/gm, "<blockquote>$1</blockquote>")
                       // Unterstreichungen generieren
-                      .replace(/<u>(.*?)<\/u>/g, "<u>$1</u>")
+                      .replace(/<u>(.*?)<\/u>/g, "<u>$1</u>"),
                   }}
                 />
               </div>
@@ -443,11 +474,13 @@ export default function ModernDescriptionCategory({
           <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
             <SparklesIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Besondere Merkmale</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            Besondere Merkmale
+          </h3>
         </div>
         {isEditMode ? (
           <textarea
-            value={data?.step2?.features || ""}
+            value={data.step2?.features ?? ""}
             onChange={(e) => updateField("step2", "features", e.target.value)}
             className="min-h-[200px] w-full rounded-xl border-2 border-blue-200 bg-white/50 p-4 backdrop-blur-sm transition-all focus:border-blue-500 focus:outline-none dark:border-blue-800 dark:bg-gray-900/50 dark:focus:border-blue-400"
             placeholder="Besondere Kennzeichen, Auffälligkeiten, Verhaltensweisen..."
@@ -455,7 +488,7 @@ export default function ModernDescriptionCategory({
         ) : (
           <div className="rounded-xl bg-white/50 p-4 backdrop-blur-sm dark:bg-gray-900/50">
             <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-              {data?.step2?.features || "Keine besonderen Merkmale angegeben."}
+              {data.step2?.features ?? "Keine besonderen Merkmale angegeben."}
             </p>
           </div>
         )}
@@ -466,7 +499,9 @@ export default function ModernDescriptionCategory({
           <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
             <HashIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Tags & Kategorien</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            Tags & Kategorien
+          </h3>
         </div>
         {isEditMode ? (
           <div className="space-y-4">
@@ -499,7 +534,9 @@ export default function ModernDescriptionCategory({
               {showTagSuggestions && (
                 <div className="absolute top-full z-10 mt-2 w-full rounded-xl bg-white p-2 shadow-xl dark:bg-gray-800">
                   {suggestedTags
-                    .filter((tag) => tag.toLowerCase().includes(tagInput.toLowerCase()))
+                    .filter((tag) =>
+                      tag.toLowerCase().includes(tagInput.toLowerCase()),
+                    )
                     .slice(0, 5)
                     .map((tag, index) => (
                       <button
@@ -534,7 +571,9 @@ export default function ModernDescriptionCategory({
             </div>
             {/* Schnellauswahl */}
             <div className="flex flex-wrap gap-2 pt-2">
-              <p className="w-full text-xs text-gray-600 dark:text-gray-400">Schnellauswahl:</p>
+              <p className="w-full text-xs text-gray-600 dark:text-gray-400">
+                Schnellauswahl:
+              </p>
               {suggestedTags.slice(0, 8).map((tag, index) => (
                 <button
                   key={index}
@@ -559,7 +598,9 @@ export default function ModernDescriptionCategory({
                 </span>
               ))
             ) : (
-              <p className="text-gray-500 dark:text-gray-400">Keine Tags angegeben.</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                Keine Tags angegeben.
+              </p>
             )}
           </div>
         )}
@@ -572,19 +613,27 @@ export default function ModernDescriptionCategory({
               <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1">
-              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Qualitätsprüfung</h3>
+              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
+                Qualitätsprüfung
+              </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">Rechtschreibung geprüft</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Rechtschreibung geprüft
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">Grammatik korrekt</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Grammatik korrekt
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <LanguagesIcon className="h-4 w-4 text-blue-500" />
-                  <span className="text-gray-700 dark:text-gray-300">Sprache: Deutsch</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Sprache: Deutsch
+                  </span>
                 </div>
               </div>
             </div>
@@ -607,13 +656,17 @@ export default function ModernDescriptionCategory({
         </button>
       </div>
       {/* Validierungswarnung */}
-      {!data?.step2?.description && (
+      {!data.step2?.description && (
         <div className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
           <div className="flex items-center gap-3">
             <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             <div>
-              <p className="font-medium text-yellow-800 dark:text-yellow-200">Beschreibung fehlt</p>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">Eine detaillierte Beschreibung ist wichtig für die Fahndung.</p>
+              <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                Beschreibung fehlt
+              </p>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                Eine detaillierte Beschreibung ist wichtig für die Fahndung.
+              </p>
             </div>
           </div>
         </div>

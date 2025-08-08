@@ -3,7 +3,8 @@
 import React from "react";
 // Verwenden Sie die vorhandene SimpleMap‑Komponente als leichten Kartenersatz.
 // SimpleMap erstellt eine statische OpenStreetMap‑Karte mit Markern ohne schwere JS‑Bibliotheken.
-import SimpleMap, { MapLocation } from "~/components/shared/SimpleMap";
+import SimpleMap from "~/components/shared/SimpleMap";
+import type { MapLocation } from "~/components/shared/SimpleMap";
 
 interface MapPreviewProps {
   /**

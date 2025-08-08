@@ -1,28 +1,30 @@
 "use client";
 
 import React, { useState } from "react";
-// Icons einzeln importieren für Tree‑Shaking
-import PhoneIcon from "@lucide-react/phone";
-import MailIcon from "@lucide-react/mail";
-import UserIcon from "@lucide-react/user";
-import ShieldIcon from "@lucide-react/shield";
-import ClockIcon from "@lucide-react/clock";
-import AlertCircleIcon from "@lucide-react/alert-circle";
-import SaveIcon from "@lucide-react/save";
-import ChevronLeftIcon from "@lucide-react/chevron-left";
-import MapPinIcon from "@lucide-react/map-pin";
-import MessageCircleIcon from "@lucide-react/message-circle";
-import BellIcon from "@lucide-react/bell";
-import GlobeIcon from "@lucide-react/globe";
-import CheckCircle2Icon from "@lucide-react/check-circle-2";
-import SparklesIcon from "@lucide-react/sparkles";
-import Building2Icon from "@lucide-react/building-2";
-import UserCheckIcon from "@lucide-react/user-check";
-import PhoneCallIcon from "@lucide-react/phone-call";
-import MailCheckIcon from "@lucide-react/mail-check";
-import CalendarClockIcon from "@lucide-react/calendar-clock";
-import HeadphonesIcon from "@lucide-react/headphones";
-import InfoIcon from "@lucide-react/info";
+// Icons aus lucide-react importieren
+import {
+  Phone as PhoneIcon,
+  Mail as MailIcon,
+  User as UserIcon,
+  Shield as ShieldIcon,
+  Clock as ClockIcon,
+  AlertCircle as AlertCircleIcon,
+  Save as SaveIcon,
+  ChevronLeft as ChevronLeftIcon,
+  MapPin as MapPinIcon,
+  MessageCircle as MessageCircleIcon,
+  Bell as BellIcon,
+  Globe as GlobeIcon,
+  CheckCircle2 as CheckCircle2Icon,
+  Sparkles as SparklesIcon,
+  Building2 as Building2Icon,
+  UserCheck as UserCheckIcon,
+  PhoneCall as PhoneCallIcon,
+  MailCheck as MailCheckIcon,
+  CalendarClock as CalendarClockIcon,
+  Headphones as HeadphonesIcon,
+  Info as InfoIcon,
+} from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";

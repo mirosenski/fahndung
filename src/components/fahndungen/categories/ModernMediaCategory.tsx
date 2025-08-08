@@ -1,40 +1,60 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-// Lucide‑Icons einzeln importieren, um Baum‑Shaking zu ermöglichen
-import CameraIcon from "@lucide-react/camera";
-import UploadIcon from "@lucide-react/upload";
-import Trash2Icon from "@lucide-react/trash-2";
-import PlusIcon from "@lucide-react/plus";
-import AlertCircleIcon from "@lucide-react/alert-circle";
-import DownloadIcon from "@lucide-react/download";
-import Edit3Icon from "@lucide-react/edit-3";
-import CropIcon from "@lucide-react/crop";
-import RotateCwIcon from "@lucide-react/rotate-cw";
-import SunIcon from "@lucide-react/sun";
-import ContrastIcon from "@lucide-react/contrast";
-import DropletsIcon from "@lucide-react/droplets";
-import FilterIcon from "@lucide-react/filter";
-import ZoomInIcon from "@lucide-react/zoom-in";
-import ZoomOutIcon from "@lucide-react/zoom-out";
-import Grid3x3Icon from "@lucide-react/grid-3x3";
-import ListIcon from "@lucide-react/list";
-import FileImageIcon from "@lucide-react/file-image";
-import SquareIcon from "@lucide-react/square";
-import CheckIcon from "@lucide-react/check";
-import ChevronLeftIcon from "@lucide-react/chevron-left";
-import ChevronRightIcon from "@lucide-react/chevron-right";
-import Maximize2Icon from "@lucide-react/maximize-2";
-import SparklesIcon from "@lucide-react/sparkles";
-import Wand2Icon from "@lucide-react/wand-2";
-import ShieldIcon from "@lucide-react/shield";
+import Image from "next/image";
+// Lucide‑Icons als Named Exports importieren (tree‑shakable)
+import {
+  Camera as CameraIcon,
+  Upload as UploadIcon,
+  Trash2 as Trash2Icon,
+  Plus as PlusIcon,
+  AlertCircle as AlertCircleIcon,
+  Download as DownloadIcon,
+  Edit3 as Edit3Icon,
+  Crop as CropIcon,
+  RotateCw as RotateCwIcon,
+  Sun as SunIcon,
+  Contrast as ContrastIcon,
+  Droplets as DropletsIcon,
+  Filter as FilterIcon,
+  ZoomIn as ZoomInIcon,
+  ZoomOut as ZoomOutIcon,
+  Grid3X3 as Grid3x3Icon,
+  List as ListIcon,
+  FileImage as FileImageIcon,
+  Square as SquareIcon,
+  Check as CheckIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Maximize2 as Maximize2Icon,
+  Sparkles as SparklesIcon,
+  Wand2 as Wand2Icon,
+  Shield as ShieldIcon,
+} from "lucide-react";
+import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
 interface MediaCategoryProps {
-  data: any;
+  data: UIInvestigationData;
   isEditMode: boolean;
-  updateField: (step: string, field: string, value: any) => void;
+  updateField: (
+    step: keyof UIInvestigationData,
+    field: string,
+    value: unknown,
+  ) => void;
   onNext: () => void;
   onPrevious: () => void;
+}
+
+interface MediaItem {
+  id: number;
+  url: string;
+  alt_text: string;
+  caption: string;
+  size: string;
+  dimensions: string;
+  date: string;
+  tags: string[];
+  status: "verified" | "pending";
 }
 
 /**
@@ -54,10 +74,12 @@ export default function ModernMediaCategory({
   onNext,
   onPrevious,
 }: MediaCategoryProps) {
+  // Verhindert Lint-/TS-Fehler für ungenutzte Prop, bis Integration benötigt wird
+  void updateField;
   // Zustand für Ansichtsmodus (grid, list, masonry)
   const [viewMode, setViewMode] = useState<"grid" | "list" | "masonry">("grid");
   // Auswahl von Bildern für Bulk‑Aktionen
-  const [selectedImages, setSelectedImages] = useState<number[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isBulkMode, setIsBulkMode] = useState(false);
   // Upload‑Fortschritt
   const [isDragging, setIsDragging] = useState(false);
@@ -73,14 +95,14 @@ export default function ModernMediaCategory({
   // Upload Input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Lese Bilder aus Daten oder nutze Fallback
-  const images = data?.images || [
+  // Lese Bilder aus Daten oder nutze Fallback (nur wenn Array)
+  const defaultImages: MediaItem[] = [
     {
       id: 1,
       url: "https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=800",
-      alt_text: "Fahndungsbild 1",
+      alt_text: "Fahndungsbild 1",
       caption: "Hauptansicht",
-      size: "2.4 MB",
+      size: "2.4 MB",
       dimensions: "1920x1080",
       date: "2024-01-15",
       tags: ["person", "outdoor"],
@@ -89,9 +111,9 @@ export default function ModernMediaCategory({
     {
       id: 2,
       url: "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?w=800",
-      alt_text: "Fahndungsbild 2",
+      alt_text: "Fahndungsbild 2",
       caption: "Seitenansicht",
-      size: "1.8 MB",
+      size: "1.8 MB",
       dimensions: "1920x1080",
       date: "2024-01-14",
       tags: ["vehicle", "street"],
@@ -100,35 +122,79 @@ export default function ModernMediaCategory({
     {
       id: 3,
       url: "https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=800",
-      alt_text: "Fahndungsbild 3",
+      alt_text: "Fahndungsbild 3",
       caption: "Detailaufnahme",
-      size: "3.1 MB",
+      size: "3.1 MB",
       dimensions: "1920x1080",
       date: "2024-01-13",
       tags: ["evidence", "indoor"],
       status: "verified",
     },
   ];
+  const images: MediaItem[] =
+    Array.isArray(data?.images) &&
+    (data?.images as unknown as MediaItem[]).length > 0
+      ? (data?.images as unknown as MediaItem[]).filter(Boolean)
+      : defaultImages;
+
+  const currentImage =
+    selectedImage !== null ? images[selectedImage] : undefined;
 
   // Presets für Filter
   const filters = [
     { name: "none", label: "Original", style: "" },
     { name: "grayscale", label: "Schwarz/Weiß", style: "grayscale(100%)" },
     { name: "sepia", label: "Sepia", style: "sepia(100%)" },
-    { name: "vintage", label: "Vintage", style: "sepia(50%) contrast(120%) brightness(90%)" },
+    {
+      name: "vintage",
+      label: "Vintage",
+      style: "sepia(50%) contrast(120%) brightness(90%)",
+    },
     { name: "cold", label: "Kalt", style: "hue-rotate(180deg) saturate(120%)" },
     { name: "warm", label: "Warm", style: "hue-rotate(-30deg) saturate(130%)" },
-    { name: "dramatic", label: "Dramatisch", style: "contrast(150%) brightness(90%)" },
-    { name: "fade", label: "Verblasst", style: "opacity(80%) brightness(110%)" },
+    {
+      name: "dramatic",
+      label: "Dramatisch",
+      style: "contrast(150%) brightness(90%)",
+    },
+    {
+      name: "fade",
+      label: "Verblasst",
+      style: "opacity(80%) brightness(110%)",
+    },
   ];
   // AI‑Verbesserungen
   const aiEnhancements = [
-    { name: "face-blur", label: "Gesichter unkenntlich", icon: <ShieldIcon className="h-4 w-4" /> },
-    { name: "license-blur", label: "Kennzeichen unkenntlich", icon: <ShieldIcon className="h-4 w-4" /> },
-    { name: "enhance", label: "Qualität verbessern", icon: <SparklesIcon className="h-4 w-4" /> },
-    { name: "sharpen", label: "Schärfen", icon: <Wand2Icon className="h-4 w-4" /> },
-    { name: "denoise", label: "Rauschen entfernen", icon: <Wand2Icon className="h-4 w-4" /> },
-    { name: "upscale", label: "Auflösung erhöhen", icon: <ZoomInIcon className="h-4 w-4" /> },
+    {
+      name: "face-blur",
+      label: "Gesichter unkenntlich",
+      icon: <ShieldIcon className="h-4 w-4" />,
+    },
+    {
+      name: "license-blur",
+      label: "Kennzeichen unkenntlich",
+      icon: <ShieldIcon className="h-4 w-4" />,
+    },
+    {
+      name: "enhance",
+      label: "Qualität verbessern",
+      icon: <SparklesIcon className="h-4 w-4" />,
+    },
+    {
+      name: "sharpen",
+      label: "Schärfen",
+      icon: <Wand2Icon className="h-4 w-4" />,
+    },
+    {
+      name: "denoise",
+      label: "Rauschen entfernen",
+      icon: <Wand2Icon className="h-4 w-4" />,
+    },
+    {
+      name: "upscale",
+      label: "Auflösung erhöhen",
+      icon: <ZoomInIcon className="h-4 w-4" />,
+    },
   ];
 
   // Simulierter Upload
@@ -144,9 +210,11 @@ export default function ModernMediaCategory({
   };
 
   // Toggle Auswahl eines Bildes
-  const toggleImageSelection = (imageId: number) => {
+  const toggleImageSelection = (imageId: string) => {
     setSelectedImages((prev) =>
-      prev.includes(imageId) ? prev.filter((id) => id !== imageId) : [...prev, imageId],
+      prev.includes(imageId)
+        ? prev.filter((id) => id !== imageId)
+        : [...prev, imageId],
     );
   };
 
@@ -155,7 +223,7 @@ export default function ModernMediaCategory({
     if (selectedImages.length === images.length) {
       setSelectedImages([]);
     } else {
-      setSelectedImages(images.map((img) => img.id));
+      setSelectedImages(images.map((img) => String(img.id)));
     }
   };
 
@@ -182,16 +250,18 @@ export default function ModernMediaCategory({
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Medien & Bildbearbeitung
+                Medien & Bildbearbeitung
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {images.length} Dateien •{' '}
+                {images.length} Dateien •{" "}
                 {Number(
                   images.reduce(
-                    (acc: number, img: any) => acc + parseFloat(img.size) || 0,
+                    (acc: number, img: MediaItem) =>
+                      acc + parseFloat(img.size) || 0,
                     0,
                   ),
-                ).toFixed(1)} MB gesamt
+                ).toFixed(1)}
+                MB gesamt
               </p>
             </div>
           </div>
@@ -201,8 +271,8 @@ export default function ModernMediaCategory({
               onClick={() => setViewMode("grid")}
               className={`rounded-lg p-2 transition-all ${
                 viewMode === "grid"
-                  ? 'bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  ? "bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400"
+                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
               <Grid3x3Icon className="h-4 w-4" />
@@ -211,8 +281,8 @@ export default function ModernMediaCategory({
               onClick={() => setViewMode("list")}
               className={`rounded-lg p-2 transition-all ${
                 viewMode === "list"
-                  ? 'bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  ? "bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400"
+                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
               <ListIcon className="h-4 w-4" />
@@ -221,8 +291,8 @@ export default function ModernMediaCategory({
               onClick={() => setViewMode("masonry")}
               className={`rounded-lg p-2 transition-all ${
                 viewMode === "masonry"
-                  ? 'bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                  ? "bg-white text-purple-600 shadow-sm dark:bg-gray-800 dark:text-purple-400"
+                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
               <FileImageIcon className="h-4 w-4" />
@@ -244,8 +314,8 @@ export default function ModernMediaCategory({
               onClick={() => setIsBulkMode(!isBulkMode)}
               className={
                 isBulkMode
-                  ? 'flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-white'
-                  : 'flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                  ? "flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-white"
+                  : "flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               }
             >
               <SquareIcon className="h-4 w-4" /> Mehrfachauswahl
@@ -256,10 +326,13 @@ export default function ModernMediaCategory({
                   onClick={deleteSelectedImages}
                   className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-white hover:bg-red-700"
                 >
-                  <Trash2Icon className="h-4 w-4" /> Löschen ({selectedImages.length})
+                  <Trash2Icon className="h-4 w-4" /> Löschen (
+                  {selectedImages.length})
                 </button>
                 <button
-                  onClick={() => {}}
+                  onClick={() => {
+                    // Download functionality
+                  }}
                   className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   <DownloadIcon className="h-4 w-4" /> Herunterladen
@@ -274,7 +347,9 @@ export default function ModernMediaCategory({
                 onClick={selectAllImages}
                 className="rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               >
-                {selectedImages.length === images.length ? 'Keine auswählen' : 'Alle auswählen'}
+                {selectedImages.length === images.length
+                  ? "Keine auswählen"
+                  : "Alle auswählen"}
               </button>
             )}
           </div>
@@ -286,8 +361,8 @@ export default function ModernMediaCategory({
         <div
           className={`mb-6 rounded-2xl border-2 border-dashed transition-all ${
             isDragging
-              ? 'border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950'
-              : 'border-gray-300 dark:border-gray-700'
+              ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950"
+              : "border-gray-300 dark:border-gray-700"
           }`}
           onDragOver={(e) => {
             e.preventDefault();
@@ -296,50 +371,58 @@ export default function ModernMediaCategory({
           onDragLeave={() => setIsDragging(false)}
           onDrop={(e) => {
             e.preventDefault();
-            handleFileUpload(e.dataTransfer.files);
+            void handleFileUpload(e.dataTransfer.files);
           }}
         >
           {isDragging ? (
             <div className="py-12 text-center">
               <UploadIcon className="mx-auto mb-4 h-12 w-12 text-purple-600 dark:text-purple-400" />
-              <p className="text-lg font-medium text-purple-600 dark:text-purple-400">Dateien hier ablegen</p>
+              <p className="text-lg font-medium text-purple-600 dark:text-purple-400">
+                Dateien hier ablegen
+              </p>
             </div>
           ) : (
             <div className="py-8 text-center">
               <CameraIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <p className="mb-2 text-gray-600 dark:text-gray-400">Ziehen Sie Dateien hierher oder</p>
+              <p className="mb-2 text-gray-600 dark:text-gray-400">
+                Ziehen Sie Dateien hierher oder
+              </p>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="rounded-xl bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
               >
                 Dateien auswählen
               </button>
-              <p className="mt-2 text-xs text-gray-500">JPG, PNG, GIF, MP4, PDF (max. 50MB)</p>
+              <p className="mt-2 text-xs text-gray-500">
+                JPG, PNG, GIF, MP4, PDF (max. 50MB)
+              </p>
             </div>
           )}
         </div>
         {/* Grid View */}
-        {viewMode === 'grid' && (
+        {viewMode === "grid" && (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {images.map((image: any, index: number) => (
+            {images.filter(Boolean).map((image: MediaItem, index: number) => (
               <div
                 key={image.id}
                 className={`group relative overflow-hidden rounded-2xl bg-gray-100 transition-all hover:shadow-xl dark:bg-gray-700 ${
-                  selectedImages.includes(image.id) ? 'ring-2 ring-purple-600' : ''
+                  selectedImages.includes(String(image.id))
+                    ? "ring-2 ring-purple-600"
+                    : ""
                 }`}
               >
                 {/* Checkbox bei Bulk‑Mode */}
                 {isBulkMode && (
                   <div className="absolute left-3 top-3 z-10">
                     <button
-                      onClick={() => toggleImageSelection(image.id)}
+                      onClick={() => toggleImageSelection(String(image.id))}
                       className={`rounded-lg p-2 transition-all ${
-                        selectedImages.includes(image.id)
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-white/80 backdrop-blur-sm dark:bg-gray-800/80'
+                        selectedImages.includes(String(image.id))
+                          ? "bg-purple-600 text-white"
+                          : "bg-white/80 backdrop-blur-sm dark:bg-gray-800/80"
                       }`}
                     >
-                      {selectedImages.includes(image.id) ? (
+                      {selectedImages.includes(String(image.id)) ? (
                         <CheckIcon className="h-4 w-4" />
                       ) : (
                         <SquareIcon className="h-4 w-4" />
@@ -351,26 +434,29 @@ export default function ModernMediaCategory({
                 <div className="absolute right-3 top-3 z-10">
                   <div
                     className={`rounded-full px-2 py-1 text-xs font-medium backdrop-blur-sm ${
-                      image.status === 'verified'
-                        ? 'bg-green-500/90 text-white'
-                        : 'bg-yellow-500/90 text-white'
+                      image.status === "verified"
+                        ? "bg-green-500/90 text-white"
+                        : "bg-yellow-500/90 text-white"
                     }`}
                   >
-                    {image.status === 'verified' ? 'Verifiziert' : 'Ausstehend'}
+                    {image.status === "verified" ? "Verifiziert" : "Ausstehend"}
                   </div>
                 </div>
                 {/* Bild selbst */}
                 <div className="aspect-square">
-                  <img
+                  <Image
                     src={image.url}
                     alt={image.alt_text}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform group-hover:scale-110"
                   />
                 </div>
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <p className="mb-2 text-sm font-medium text-white">{image.caption}</p>
+                    <p className="mb-2 text-sm font-medium text-white">
+                      {image.caption}
+                    </p>
                     <div className="flex items-center justify-between text-xs text-white/80">
                       <span>{image.dimensions}</span>
                       <span>{image.size}</span>
@@ -395,13 +481,17 @@ export default function ModernMediaCategory({
                         <Maximize2Icon className="mx-auto h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => {}}
+                        onClick={() => {
+                          // Download functionality
+                        }}
                         className="flex-1 rounded-lg bg-white/20 py-1.5 text-xs text-white backdrop-blur-sm transition-all hover:bg-white/30"
                       >
                         <DownloadIcon className="mx-auto h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => {}}
+                        onClick={() => {
+                          // Delete functionality
+                        }}
                         className="flex-1 rounded-lg bg-white/20 py-1.5 text-xs text-white backdrop-blur-sm transition-all hover:bg-white/30"
                       >
                         <Trash2Icon className="mx-auto h-4 w-4" />
@@ -411,14 +501,15 @@ export default function ModernMediaCategory({
                 </div>
                 {/* Tags */}
                 <div className="absolute left-4 top-12 flex flex-wrap gap-1">
-                  {image.tags.map((tag: string, tagIndex: number) => (
-                    <span
-                      key={tagIndex}
-                      className="rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
+                  {Array.isArray(image?.tags) &&
+                    image.tags.map((tag: string, tagIndex: number) => (
+                      <span
+                        key={tagIndex}
+                        className="rounded-full bg-white/20 px-2 py-0.5 text-xs text-white backdrop-blur-sm"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
                 </div>
               </div>
             ))}
@@ -437,39 +528,50 @@ export default function ModernMediaCategory({
           </div>
         )}
         {/* Listenansicht */}
-        {viewMode === 'list' && (
+        {viewMode === "list" && (
           <div className="space-y-3">
-            {images.map((image: any, index: number) => (
+            {images.filter(Boolean).map((image: MediaItem, index: number) => (
               <div
                 key={image.id}
                 className={`flex items-center gap-4 rounded-2xl bg-gray-50 p-4 transition-all hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 ${
-                  selectedImages.includes(image.id) ? 'ring-2 ring-purple-600' : ''
+                  selectedImages.includes(String(image.id))
+                    ? "ring-2 ring-purple-600"
+                    : ""
                 }`}
               >
                 {isBulkMode && (
                   <button
-                    onClick={() => toggleImageSelection(image.id)}
+                    onClick={() => toggleImageSelection(String(image.id))}
                     className={`rounded-lg p-2 ${
-                      selectedImages.includes(image.id)
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-white dark:bg-gray-800'
+                      selectedImages.includes(String(image.id))
+                        ? "bg-purple-600 text-white"
+                        : "bg-white dark:bg-gray-800"
                     }`}
                   >
-                    {selectedImages.includes(image.id) ? (
+                    {selectedImages.includes(String(image.id)) ? (
                       <CheckIcon className="h-4 w-4" />
                     ) : (
                       <SquareIcon className="h-4 w-4" />
                     )}
                   </button>
                 )}
-                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
-                  <img src={image.url} alt={image.alt_text} className="h-full w-full object-cover" />
+                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
+                  <Image
+                    src={image.url}
+                    alt={image.alt_text}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{image.caption}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{image.alt_text}</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {image.caption}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {image.alt_text}
+                      </p>
                       <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
                         <span>{image.dimensions}</span>
                         <span>•</span>
@@ -480,23 +582,26 @@ export default function ModernMediaCategory({
                     </div>
                     <div
                       className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        image.status === 'verified'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+                        image.status === "verified"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
                       }`}
                     >
-                      {image.status === 'verified' ? 'Verifiziert' : 'Ausstehend'}
+                      {image.status === "verified"
+                        ? "Verifiziert"
+                        : "Ausstehend"}
                     </div>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {image.tags.map((tag: string, tagIndex: number) => (
-                      <span
-                        key={tagIndex}
-                        className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
+                    {Array.isArray(image?.tags) &&
+                      image.tags.map((tag: string, tagIndex: number) => (
+                        <span
+                          key={tagIndex}
+                          className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -510,13 +615,17 @@ export default function ModernMediaCategory({
                     <Edit3Icon className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => {}}
+                    onClick={() => {
+                      // Download functionality
+                    }}
                     className="rounded-lg bg-white p-2 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
                     <DownloadIcon className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => {}}
+                    onClick={() => {
+                      // Delete functionality
+                    }}
                     className="rounded-lg bg-white p-2 text-red-600 hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-950"
                   >
                     <Trash2Icon className="h-4 w-4" />
@@ -527,23 +636,34 @@ export default function ModernMediaCategory({
           </div>
         )}
         {/* Masonry */}
-        {viewMode === 'masonry' && (
+        {viewMode === "masonry" && (
           <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
-            {images.map((image: any, index: number) => (
+            {images.filter(Boolean).map((image: MediaItem) => (
               <div
                 key={image.id}
                 className={`mb-4 break-inside-avoid overflow-hidden rounded-2xl bg-gray-100 transition-all hover:shadow-xl dark:bg-gray-700 ${
-                  selectedImages.includes(image.id) ? 'ring-2 ring-purple-600' : ''
+                  selectedImages.includes(String(image.id))
+                    ? "ring-2 ring-purple-600"
+                    : ""
                 }`}
               >
-                <img
-                  src={image.url}
-                  alt={image.alt_text}
-                  className="w-full"
-                  style={{ height: `${200 + Math.random() * 200}px`, objectFit: 'cover' }}
-                />
+                <div
+                  className="relative w-full"
+                  style={{
+                    height: `${200 + Math.random() * 200}px`,
+                  }}
+                >
+                  <Image
+                    src={image.url}
+                    alt={image.alt_text}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <div className="p-3">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{image.caption}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {image.caption}
+                  </p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
                     {image.size} • {image.date}
                   </p>
@@ -558,7 +678,9 @@ export default function ModernMediaCategory({
           type="file"
           multiple
           accept="image/*,video/*,.pdf"
-          onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+          onChange={(e) =>
+            e.target.files && void handleFileUpload(e.target.files)
+          }
           className="hidden"
         />
       </div>
@@ -569,7 +691,9 @@ export default function ModernMediaCategory({
             <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
               <SparklesIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">AI‑Bildverbesserung</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              AI‑Bildverbesserung
+            </h3>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {aiEnhancements.map((enhancement, index) => (
@@ -578,7 +702,7 @@ export default function ModernMediaCategory({
                 className="flex flex-col items-center gap-2 rounded-xl bg-white/50 p-4 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:bg-white/10 dark:hover:bg-white/20"
               >
                 {enhancement.icon}
-                <span className="text-xs text-center">{enhancement.label}</span>
+                <span className="text-center text-xs">{enhancement.label}</span>
               </button>
             ))}
           </div>
@@ -655,8 +779,8 @@ export default function ModernMediaCategory({
                       onClick={() => applyFilter(filter.name)}
                       className={`w-full rounded-lg p-2 text-left text-sm transition-all ${
                         selectedFilter === filter.name
-                          ? 'bg-purple-600 text-white'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          ? "bg-purple-600 text-white"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
                       }`}
                     >
                       {filter.label}
@@ -669,20 +793,26 @@ export default function ModernMediaCategory({
                 <div
                   style={{
                     transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
-                    filter: filters.find((f) => f.name === selectedFilter)?.style || '',
+                    filter:
+                      filters.find((f) => f.name === selectedFilter)?.style ??
+                      "",
                   }}
                 >
-                  <img
-                    src={images[selectedImage].url}
-                    alt="Editor"
-                    className="max-h-[600px] max-w-full"
+                  <Image
+                    src={currentImage?.url ?? ""}
+                    alt={currentImage?.alt_text ?? "Editor"}
+                    width={800}
+                    height={600}
+                    className="max-h-[600px] max-w-full object-contain"
                   />
                 </div>
               </div>
               {/* Placeholder für weitere Einstellungen */}
               <div className="w-64 border-l border-gray-200 p-4 dark:border-gray-700">
                 <h4 className="mb-3 font-semibold">Anpassungen</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Helligkeit, Kontrast, Sättigung etc.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Helligkeit, Kontrast, Sättigung etc.
+                </p>
               </div>
             </div>
           </div>
@@ -700,15 +830,19 @@ export default function ModernMediaCategory({
           >
             <Trash2Icon className="h-6 w-6" />
           </button>
-          <img
-            src={images[selectedImage].url}
-            alt="Fullscreen"
+          <Image
+            src={currentImage?.url ?? ""}
+            alt={currentImage?.alt_text ?? "Fullscreen"}
+            width={1200}
+            height={800}
             className="max-h-[90vh] max-w-[90vw] object-contain"
           />
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedImage(selectedImage > 0 ? selectedImage - 1 : images.length - 1);
+              setSelectedImage(
+                selectedImage > 0 ? selectedImage - 1 : images.length - 1,
+              );
             }}
             className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
           >
@@ -717,7 +851,9 @@ export default function ModernMediaCategory({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedImage(selectedImage < images.length - 1 ? selectedImage + 1 : 0);
+              setSelectedImage(
+                selectedImage < images.length - 1 ? selectedImage + 1 : 0,
+              );
             }}
             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
           >
@@ -763,8 +899,12 @@ export default function ModernMediaCategory({
           <div className="flex items-center gap-3">
             <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             <div>
-              <p className="font-medium text-yellow-800 dark:text-yellow-200">Keine Medien vorhanden</p>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">Bilder oder Dokumente können die Fahndung unterstützen.</p>
+              <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                Keine Medien vorhanden
+              </p>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                Bilder oder Dokumente können die Fahndung unterstützen.
+              </p>
             </div>
           </div>
         </div>

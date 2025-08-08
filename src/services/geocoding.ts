@@ -65,7 +65,10 @@ export class NominatimService {
 
     // Reduzierter Timeout für schnellere Fehlerbehandlung
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(
+      () => controller.abort(new DOMException("Timeout", "AbortError")),
+      3000,
+    );
 
     try {
       const response = await fetch(`${this.BASE_URL}/search?${params}`, {
@@ -144,7 +147,10 @@ export class NominatimService {
 
     // Reduzierter Timeout für schnellere Fehlerbehandlung
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(
+      () => controller.abort(new DOMException("Timeout", "AbortError")),
+      3000,
+    );
 
     try {
       const response = await fetch(`${this.BASE_URL}/reverse?${params}`, {
@@ -211,7 +217,10 @@ export class NominatimService {
           return await this.search(simplifiedQuery, options);
         } catch (fallbackError) {
           // Auch hier AbortError behandeln
-          if (fallbackError instanceof Error && fallbackError.name === "AbortError") {
+          if (
+            fallbackError instanceof Error &&
+            fallbackError.name === "AbortError"
+          ) {
             console.warn("⚠️ Fallback Geocoding Request abgebrochen (Timeout)");
             return [];
           }
