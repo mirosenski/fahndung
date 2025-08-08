@@ -11,7 +11,8 @@ RUN corepack enable && corepack prepare pnpm@8.15.3 --activate
 COPY . .
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm \
+    pnpm install --frozen-lockfile
 
 # Build the Next.js application
 ENV NODE_ENV=production
@@ -27,7 +28,9 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 
 # Only install production dependencies
-RUN corepack enable && corepack prepare pnpm@8.15.3 --activate && pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm \
+    corepack enable && corepack prepare pnpm@8.15.3 --activate && \
+    pnpm install --prod --frozen-lockfile
 
 # Copy the built application
 COPY --from=builder /app/.next ./.next

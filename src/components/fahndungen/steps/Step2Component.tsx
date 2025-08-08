@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useDebounce } from "~/hooks/useDebounce";
 import { X } from "lucide-react";
 import type { Step2Data } from "../types/WizardTypes";
 
@@ -19,6 +20,13 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
   const [localDescription, setLocalDescription] = useState(data.description);
   const [localFeatures, setLocalFeatures] = useState(data.features);
 
+  // Debounced values to reduce frequent state updates while typing. When the
+  // user stops typing for the specified delay, these values change and
+  // propagate to the parent wizard via onChange.
+  const debouncedShortDescription = useDebounce(localShortDescription, 300);
+  const debouncedDescription = useDebounce(localDescription, 300);
+  const debouncedFeatures = useDebounce(localFeatures, 300);
+
   // Synchronisiere mit externen Änderungen
   useEffect(() => {
     setLocalShortDescription(data.shortDescription);
@@ -32,7 +40,27 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
     setLocalFeatures(data.features);
   }, [data.features]);
 
-  // Commit-Funktionen
+  // Propagate debounced field values to the wizard state. Only update when
+  // there is a change to avoid unnecessary renders.
+  useEffect(() => {
+    if (
+      debouncedShortDescription !== data.shortDescription ||
+      debouncedDescription !== data.description ||
+      debouncedFeatures !== data.features
+    ) {
+      onChange({
+        ...data,
+        shortDescription: debouncedShortDescription,
+        description: debouncedDescription,
+        features: debouncedFeatures,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedShortDescription, debouncedDescription, debouncedFeatures]);
+
+  // Commit-Funktionen (veraltet): Der Wizard erhält seine Daten jetzt
+  // automatisch über die debounced States. Diese Funktion bleibt als
+  // Fallback bestehen, falls andere Komponenten sie aufrufen.
   const commitChanges = () => {
     onChange({
       ...data,

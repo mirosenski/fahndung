@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
+// Import the shared logger. All diagnostic output should go through
+// this module so that logs are suppressed in production builds. See
+// `src/lib/logger.ts` for implementation details.
+import { log, error as logError } from "~/lib/logger";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,9 +26,24 @@ import Step3Component from "./steps/Step3Component";
 import Step4Component from "./steps/Step4Component";
 import Step5Component from "./steps/Step5Component";
 import Step6Summary from "./steps/Step6Summary";
-import LivePreviewCard from "./preview/LivePreviewCard";
-import StatsOverview from "./preview/StatsOverview";
-import DetailPagePreview from "./preview/DetailPagePreview";
+
+// Dynamically import preview components to split chunks and avoid
+// loading heavy components (e.g. cards with maps) upfront. Server‑side
+// rendering is disabled for these components since they rely on
+// browser APIs.
+import dynamic from "next/dynamic";
+const LivePreviewCard = dynamic(
+  () => import("./preview/LivePreviewCard"),
+  { ssr: false },
+);
+const StatsOverview = dynamic(
+  () => import("./preview/StatsOverview"),
+  { ssr: false },
+);
+const DetailPagePreview = dynamic(
+  () => import("./preview/DetailPagePreview"),
+  { ssr: false },
+);
 
 // Import Types
 import type { WizardData, PreviewMode } from "./types/WizardTypes";
@@ -119,11 +138,13 @@ const FahndungWizardContainer = ({
   // DEBUG: Render Counter
   const renderCount = useRef(0);
   renderCount.current += 1;
-  console.log(`🔴 CONTAINER RENDER #${renderCount.current}`);
+  // Log render counts only in development to avoid spamming the
+  // production console. Use our logger instead of console.log.
+  log(`🔴 CONTAINER RENDER #${renderCount.current}`);
 
   // DEBUG: State Changes
   useEffect(() => {
-    console.log("🟡 wizardData changed:", wizardData);
+    log("🟡 wizardData changed:", wizardData);
   }, [wizardData]);
 
   // Setze caseNumber nur auf dem Client, wenn noch nicht gesetzt
@@ -148,7 +169,7 @@ const FahndungWizardContainer = ({
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
     onSuccess: (data) => {
-      console.log("✅ Fahndung erfolgreich erstellt:", data);
+      log("✅ Fahndung erfolgreich erstellt:", data);
       if (wizardData.step5?.publishStatus === "immediate") {
         // Verwende die case_number statt der internen id für die URL
         router.push(`/fahndungen/${data.case_number}`);
@@ -157,7 +178,7 @@ const FahndungWizardContainer = ({
       }
     },
     onError: (error) => {
-      console.error("❌ Fehler beim Erstellen der Fahndung:", error);
+      logError("❌ Fehler beim Erstellen der Fahndung:", error);
     },
   });
 
@@ -289,15 +310,14 @@ const FahndungWizardContainer = ({
 
   const updateStepData = useCallback(
     (step: keyof WizardData, data: WizardData[keyof WizardData]) => {
-      console.log(`🔵 UPDATE CALLED: ${step}`, data);
+      log(`🔵 UPDATE CALLED: ${step}`, data);
 
-      // WICHTIG: Prüfe ob sich wirklich was geändert hat
+      // Aktualisiere den Wizard-State. Der vorherige Vergleich mittels
+      // JSON.stringify führte zu Performance-Problemen bei großen Objekten und
+      // wurde entfernt. Wir lassen React diffen, um unnötige Renders zu
+      // vermeiden.
       setWizardData((prev) => {
-        if (JSON.stringify(prev[step]) === JSON.stringify(data)) {
-          console.log("⚪ NO CHANGE - skipping update");
-          return prev; // Keine Änderung!
-        }
-        console.log("🟢 UPDATING STATE");
+        log("🟢 UPDATING STATE");
         return {
           ...prev,
           [step]: data,
@@ -369,7 +389,7 @@ const FahndungWizardContainer = ({
         //   mainImageUrl: wizardData.step3?.mainImageUrl ?? undefined,
         //   additionalImageUrls: wizardData.step3?.additionalImageUrls ?? undefined,
         // });
-        console.log("📝 Edit mode - updateInvestigation not yet implemented");
+        log("📝 Edit mode - updateInvestigation not yet implemented");
       } else {
         await createInvestigation.mutateAsync({
           title: wizardData.step1?.title ?? "",
@@ -396,7 +416,8 @@ const FahndungWizardContainer = ({
         });
       }
     } catch (error) {
-      console.error("Error submitting:", error);
+      logError("Error submitting:", error);
+      // Inform the user via alert. Logging is handled via our logger.
       alert("Fehler beim Speichern der Fahndung");
     } finally {
       setIsSubmitting(false);

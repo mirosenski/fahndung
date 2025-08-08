@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+// Import the shared warn function. In production builds this will no-op,
+// preventing console noise.
+import { warn } from "~/lib/logger";
 import { usePathname } from "next/navigation";
 import { useNavigationOptimizer } from "~/hooks/useNavigationOptimizer";
 import { api } from "~/trpc/react";
@@ -25,12 +28,12 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
         // Auf Homepage: Prefetch Dashboard und Fahndungen
         utils.post.getInvestigations
           .prefetch({ limit: 20, offset: 0 })
-          .catch(console.error);
+          .catch((error) => warn(error));
       } else if (pathname === "/fahndungen") {
         // Auf Fahndungen-Seite: Prefetch Detailseiten für erste Ergebnisse
         utils.post.getInvestigations
           .prefetch({ limit: 10, offset: 0 })
-          .catch(console.error);
+          .catch((error) => warn(error));
       } else if (
         pathname.startsWith("/fahndungen/") &&
         !pathname.includes("/neu")
@@ -38,16 +41,16 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
         // Auf Detailseite: Prefetch verwandte Fahndungen
         utils.post.getInvestigations
           .prefetch({ limit: 5, offset: 0 })
-          .catch(console.error);
+          .catch((error) => warn(error));
       } else if (pathname === "/dashboard") {
         // Auf Dashboard: Prefetch Benutzer-spezifische Daten
         utils.post.getMyInvestigations
           .prefetch({ limit: 10, offset: 0 })
-          .catch(console.error);
+          .catch((error) => warn(error));
       }
     } catch (error) {
       // Fehler beim Prefetching sind nicht kritisch - nur loggen
-      console.warn("⚠️ Prefetch-Fehler (nicht kritisch):", error);
+      warn("⚠️ Prefetch-Fehler (nicht kritisch):", error);
     }
   }, [pathname, prefetchCommonRoutes, utils]);
 
@@ -66,7 +69,7 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
               .prefetch({ id: investigationId })
               .catch((error) => {
                 // Nur warnen, nicht als kritischen Fehler behandeln
-                console.warn(
+                warn(
                   "⚠️ Investigation Prefetch-Fehler (nicht kritisch):",
                   error,
                 );
@@ -76,7 +79,7 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       // Fehler beim Prefetching sind nicht kritisch - nur loggen
-      console.warn("⚠️ Investigation Prefetch-Fehler (nicht kritisch):", error);
+      warn("⚠️ Investigation Prefetch-Fehler (nicht kritisch):", error);
     }
   }, [pathname, utils]);
 

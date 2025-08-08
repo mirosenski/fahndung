@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useDebounce } from "~/hooks/useDebounce";
 import { FileText } from "lucide-react";
 import { getCategoryOptions } from "@/types/categories";
 import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
@@ -15,10 +16,25 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
   // Lokaler State für den Titel
   const [localTitle, setLocalTitle] = useState(data.title);
 
+  // Debounced version of the title to reduce frequent state updates. When the
+  // user stops typing for the specified delay, the debounced value changes
+  // and we propagate it to the parent via onChange.
+  const debouncedTitle = useDebounce(localTitle, 300);
+
   // Synchronisiere lokalen State mit data.title wenn sich data ändert
   useEffect(() => {
     setLocalTitle(data.title);
   }, [data.title]);
+
+  // Propagate debounced title changes to the parent wizard. Only update
+  // when the debounced value differs from the current data.title to
+  // prevent unnecessary updates.
+  useEffect(() => {
+    if (debouncedTitle !== data.title) {
+      onChange({ ...data, title: debouncedTitle });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedTitle]);
 
   const generateCaseNumber = (category: string): string => {
     return generateNewCaseNumber(category as Step1Data["category"], "draft");
@@ -52,7 +68,6 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
             type="text"
             value={localTitle}
             onChange={(e) => setLocalTitle(e.target.value)}
-            onBlur={() => onChange({ ...data, title: localTitle })}
             className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             placeholder="z.B. Vermisste - Maria Schmidt"
             required

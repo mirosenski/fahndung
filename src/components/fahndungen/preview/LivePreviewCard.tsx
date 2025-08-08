@@ -3,7 +3,13 @@
 import React, { useMemo, useEffect } from "react";
 import type { WizardData } from "../types/WizardTypes";
 import type { FahndungsData } from "~/components/fahndungskarte/types";
-import Fahndungskarte from "~/components/fahndungskarte/Fahndungskarte";
+// Dynamically import the Fahndungskarte to split the bundle and avoid
+// loading the heavy map logic until this preview is actually used.
+import dynamic from "next/dynamic";
+const Fahndungskarte = dynamic(
+  () => import("~/components/fahndungskarte/Fahndungskarte"),
+  { ssr: false },
+);
 
 /**
  * Wrapper‑Komponente für die Live‑Vorschau einer Fahndungskarte im Wizard.
