@@ -16,16 +16,18 @@ import {
   Heading2 as Heading2Icon,
   Eye as EyeIcon,
   Edit3 as Edit3Icon,
-  Hash as HashIcon,
   Smile as SmileIcon,
   Sparkles as SparklesIcon,
   Wand2 as Wand2Icon,
-  Languages as LanguagesIcon,
-  CheckCircle as CheckCircleIcon,
-  X as XIcon,
   Plus as PlusIcon,
   Minus as MinusIcon,
+  FileText as FileTextIcon,
 } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
+import { Textarea } from "~/components/ui/textarea";
+import { Card, CardContent } from "~/components/ui/card";
+
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
 
 interface DescriptionCategoryProps {
@@ -36,8 +38,6 @@ interface DescriptionCategoryProps {
     field: string,
     value: unknown,
   ) => void;
-  onNext: () => void;
-  onPrevious: () => void;
 }
 
 /**
@@ -47,50 +47,32 @@ interface DescriptionCategoryProps {
  * für die Fahndungsbeschreibung. Sie unterstützt grundlegende Formatierung
  * über Markdown‑Syntax (fett, kursiv, Unterstreichung, Zitat, Code) und
  * erlaubt das Hinzufügen von Tags. Ein Vorschaumodus rendert das Ergebnis
- * serverlos, indem einfache Reguläre Ausdrücke eingesetzt werden. Die
- * Import‑Icons werden einzeln geladen, um den Bundle zu verkleinern.
+ * serverlos, indem einfache Reguläre Ausdrücke eingesetzt werden.
  */
 export default function ModernDescriptionCategory({
   data,
   isEditMode,
   updateField,
-  onNext,
-  onPrevious,
 }: DescriptionCategoryProps) {
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
   const [selectedText, setSelectedText] = useState("");
   const [showToolbar, setShowToolbar] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    data.step2?.tags ?? [],
-  );
-  const [tagInput, setTagInput] = useState("");
-  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
   const editorRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(16);
   const [lineHeight] = useState(1.6);
 
-  // Vorschläge für Tags, Emojis und AI‑Text
-  const suggestedTags = [
-    "dringend",
-    "vermisst",
-    "gesucht",
-    "gefährlich",
-    "bewaffnet",
-    "jugendlich",
-    "erwachsen",
-    "männlich",
-    "weiblich",
-    "fahrzeug",
-    "diebstahl",
-    "betrug",
-    "gewalt",
-    "bundesweit",
-    "regional",
-  ];
+  const step2 = data.step2 ?? {
+    description: "",
+    features: "",
+    tags: [],
+  };
 
+  // Vorschläge für Tags, Emojis und AI‑Text
   const quickEmojis = [
     "⚠️",
     "🚨",
@@ -125,7 +107,7 @@ export default function ModernDescriptionCategory({
 
   // Formatierung anwenden
   const applyFormat = (format: string) => {
-    const currentText: string = data.step2?.description ?? "";
+    const currentText: string = step2.description ?? "";
     let formattedText = currentText;
     switch (format) {
       case "bold":
@@ -157,191 +139,206 @@ export default function ModernDescriptionCategory({
     setShowToolbar(false);
   };
 
-  // Tag hinzufügen
-  const addTag = (tag: string) => {
-    if (!tag || selectedTags.includes(tag)) return;
-    const newTags = [...selectedTags, tag];
-    setSelectedTags(newTags);
-    updateField("step2", "tags", newTags);
-    setTagInput("");
-    setShowTagSuggestions(false);
-  };
-
-  // Tag entfernen
-  const removeTag = (tagToRemove: string) => {
-    const newTags = selectedTags.filter((tag) => tag !== tagToRemove);
-    setSelectedTags(newTags);
-    updateField("step2", "tags", newTags);
-  };
-
   // AI‑Vorschlag einfügen
   const insertAISuggestion = (suggestion: string) => {
-    const currentText: string = data.step2?.description ?? "";
+    const currentText: string = step2.description ?? "";
     updateField("step2", "description", currentText + "\n\n" + suggestion);
     setShowAISuggestions(false);
   };
 
   // Emoji einfügen
   const insertEmoji = (emoji: string) => {
-    const currentText: string = data.step2?.description ?? "";
+    const currentText: string = step2.description ?? "";
     updateField("step2", "description", currentText + emoji);
     setShowEmojiPicker(false);
   };
 
   return (
-    <>
-      {/* Haupteditor */}
-      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+    <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+      {/* Hauptbeschreibung */}
+      <div className="mb-6">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            Beschreibung
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Detaillierte Beschreibung des Falls
+          </p>
+        </div>
         {isEditMode ? (
-          <>
+          <div className="space-y-4">
             {/* Tabs */}
-            <div className="mb-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
               <div className="flex gap-1">
-                <button
+                <Button
+                  variant={activeTab === "write" ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => setActiveTab("write")}
-                  className={
-                    activeTab === "write"
-                      ? "flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2 font-medium text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                      : "flex items-center gap-2 px-4 py-2 font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }
+                  className="flex items-center gap-2"
                 >
-                  <Edit3Icon className="h-4 w-4" /> Schreiben
-                </button>
-                <button
+                  <Edit3Icon className="h-4 w-4" />
+                  Schreiben
+                </Button>
+                <Button
+                  variant={activeTab === "preview" ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => setActiveTab("preview")}
-                  className={
-                    activeTab === "preview"
-                      ? "flex items-center gap-2 border-b-2 border-indigo-600 px-4 py-2 font-medium text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                      : "flex items-center gap-2 px-4 py-2 font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                  }
+                  className="flex items-center gap-2"
                 >
-                  <EyeIcon className="h-4 w-4" /> Vorschau
-                </button>
+                  <EyeIcon className="h-4 w-4" />
+                  Vorschau
+                </Button>
               </div>
               {/* Text‑Größensteuerung */}
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setFontSize((prev) => Math.max(12, prev - 1))}
-                  className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
                 >
                   <MinusIcon className="h-4 w-4" />
-                </button>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                </Button>
+                <span className="min-w-[40px] text-center text-sm text-gray-600 dark:text-gray-400">
                   {fontSize}px
                 </span>
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setFontSize((prev) => Math.min(24, prev + 1))}
-                  className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
                 >
                   <PlusIcon className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
+
             {/* Formatierungsleiste */}
             {activeTab === "write" && (
-              <div className="mb-4 flex flex-wrap items-center gap-1 rounded-xl bg-gray-50 p-2 dark:bg-gray-900">
-                <button
+              <div className="flex flex-wrap items-center gap-1 rounded-xl bg-gray-50 p-2 dark:bg-gray-900">
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => applyFormat("bold")}
-                  className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="h-8 w-8 p-0"
                 >
                   <BoldIcon className="h-4 w-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => applyFormat("italic")}
-                  className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="h-8 w-8 p-0"
                 >
                   <ItalicIcon className="h-4 w-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => applyFormat("underline")}
-                  className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="h-8 w-8 p-0"
                 >
                   <UnderlineIcon className="h-4 w-4" />
-                </button>
+                </Button>
                 <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
-                <button className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Heading1Icon className="h-4 w-4" />
-                </button>
-                <button className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800">
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Heading2Icon className="h-4 w-4" />
-                </button>
+                </Button>
                 <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
-                <button className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <ListIcon className="h-4 w-4" />
-                </button>
-                <button className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800">
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <ListOrderedIcon className="h-4 w-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => applyFormat("quote")}
-                  className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="h-8 w-8 p-0"
                 >
                   <QuoteIcon className="h-4 w-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => applyFormat("code")}
-                  className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="h-8 w-8 p-0"
                 >
                   <CodeIcon className="h-4 w-4" />
-                </button>
+                </Button>
                 <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
-                <button className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <LinkIcon className="h-4 w-4" />
-                </button>
-                <button className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800">
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <ImageIcon className="h-4 w-4" />
-                </button>
+                </Button>
                 <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="rounded-lg p-2 text-gray-700 hover:bg-white hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="h-8 w-8 p-0"
                 >
                   <SmileIcon className="h-4 w-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
                   onClick={() => setShowAISuggestions(!showAISuggestions)}
-                  className="rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 p-2 text-white hover:shadow-lg"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
                   <SparklesIcon className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             )}
+
             {/* Emoji‑Picker */}
             {showEmojiPicker && (
-              <div className="mb-4 flex flex-wrap gap-2 rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
+              <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
                 {quickEmojis.map((emoji, index) => (
-                  <button
+                  <Button
                     key={index}
+                    variant="ghost"
+                    size="sm"
                     onClick={() => insertEmoji(emoji)}
-                    className="rounded-lg p-2 text-2xl hover:bg-white hover:shadow-sm dark:hover:bg-gray-800"
+                    className="h-10 w-10 p-0 text-2xl hover:bg-white hover:shadow-sm dark:hover:bg-gray-800"
                   >
                     {emoji}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
+
             {/* AI‑Vorschläge */}
             {showAISuggestions && (
-              <div className="mb-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 p-4 dark:from-purple-950 dark:to-pink-950">
-                <div className="mb-3 flex items-center gap-2">
-                  <Wand2Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    AI Schreibvorschläge
-                  </h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {aiSuggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => insertAISuggestion(suggestion)}
-                      className="rounded-xl bg-white/50 px-3 py-2 text-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:bg-white/10 dark:hover:bg-white/20"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
+                <CardContent className="p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Wand2Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      AI Schreibvorschläge
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {aiSuggestions.map((suggestion, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertAISuggestion(suggestion)}
+                        className="bg-white/50 backdrop-blur-sm hover:bg-white hover:shadow-md dark:bg-white/10 dark:hover:bg-white/20"
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
+
             {/* Haupt‑Textfeld oder Vorschau */}
             {activeTab === "write" ? (
               <div
@@ -349,12 +346,18 @@ export default function ModernDescriptionCategory({
                 className="relative"
                 onMouseUp={handleTextSelection}
               >
-                <textarea
-                  value={data.step2?.description ?? ""}
+                <Textarea
+                  value={step2.description ?? ""}
                   onChange={(e) =>
                     updateField("step2", "description", e.target.value)
                   }
-                  className="min-h-[400px] w-full rounded-xl border-2 border-gray-200 p-4 text-gray-900 transition-all focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-indigo-400"
+                  onFocus={() => setFocusedField("description")}
+                  onBlur={() => setFocusedField(null)}
+                  className={`min-h-[400px] resize-none border-2 transition-all ${
+                    focusedField === "description"
+                      ? "border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800"
+                      : "border-gray-200 dark:border-gray-700"
+                  }`}
                   placeholder={
                     "Beginnen Sie mit der Beschreibung des Falls...\n\n" +
                     "/ für Befehle\n@ für Personen\n# für Tags"
@@ -364,24 +367,30 @@ export default function ModernDescriptionCategory({
                 {showToolbar && selectedText && (
                   <div className="absolute left-1/2 top-20 z-10 -translate-x-1/2 rounded-xl bg-gray-900 p-2 shadow-2xl dark:bg-gray-700">
                     <div className="flex items-center gap-1">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => applyFormat("bold")}
-                        className="rounded p-2 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
+                        className="h-8 w-8 p-0 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
                       >
                         <BoldIcon className="h-4 w-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => applyFormat("italic")}
-                        className="rounded p-2 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
+                        className="h-8 w-8 p-0 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
                       >
                         <ItalicIcon className="h-4 w-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => applyFormat("underline")}
-                        className="rounded p-2 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
+                        className="h-8 w-8 p-0 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
                       >
                         <UnderlineIcon className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -393,230 +402,161 @@ export default function ModernDescriptionCategory({
                   style={{ fontSize: `${fontSize}px`, lineHeight }}
                   dangerouslySetInnerHTML={{
                     __html: (
-                      data.step2?.description ?? "Keine Beschreibung vorhanden"
+                      step2.description ?? "Keine Beschreibung vorhanden"
                     )
                       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                       .replace(/\*(.*?)\*/g, "<em>$1</em>")
                       .replace(/`(.*?)`/g, "<code>$1</code>")
                       .replace(/^> (.*)$/gm, "<blockquote>$1</blockquote>")
-                      // Unterstreichungen generieren
                       .replace(/<u>(.*?)<\/u>/g, "<u>$1</u>"),
                   }}
                 />
               </div>
             )}
-          </>
+          </div>
         ) : (
           <div className="prose prose-lg max-w-none">
             <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-              {data?.step2?.description || "Keine Beschreibung verfügbar."}
+              {step2.description || "Keine Beschreibung verfügbar."}
             </div>
           </div>
         )}
       </div>
-      {/* Merkmale Section */}
-      <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 p-6 dark:from-blue-950 dark:to-cyan-950">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-            <SparklesIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          </div>
+
+      {/* Kurzbeschreibung */}
+      <div className="mb-6">
+        <div className="mb-4">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-            Besondere Merkmale
+            Kurzbeschreibung
           </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Wichtige Merkmale und Kennzeichen
+          </p>
         </div>
         {isEditMode ? (
-          <textarea
-            value={data.step2?.features ?? ""}
+          <Textarea
+            value={step2.features ?? ""}
             onChange={(e) => updateField("step2", "features", e.target.value)}
-            className="min-h-[200px] w-full rounded-xl border-2 border-blue-200 bg-white/50 p-4 backdrop-blur-sm transition-all focus:border-blue-500 focus:outline-none dark:border-blue-800 dark:bg-gray-900/50 dark:focus:border-blue-400"
-            placeholder="Besondere Kennzeichen, Auffälligkeiten, Verhaltensweisen..."
+            onFocus={() => setFocusedField("features")}
+            onBlur={() => setFocusedField(null)}
+            className={`min-h-[120px] resize-none border-2 transition-all ${
+              focusedField === "features"
+                ? "border-orange-500 ring-2 ring-orange-200 dark:ring-orange-800"
+                : "border-gray-200 dark:border-gray-700"
+            }`}
+            placeholder="Wichtige Merkmale, Kennzeichen, Auffälligkeiten..."
           />
         ) : (
-          <div className="rounded-xl bg-white/50 p-4 backdrop-blur-sm dark:bg-gray-900/50">
+          <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900">
             <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-              {data.step2?.features ?? "Keine besonderen Merkmale angegeben."}
+              {step2.features ?? "Keine Kurzbeschreibung angegeben."}
             </p>
           </div>
         )}
       </div>
-      {/* Tags & Kategorien */}
-      <div className="rounded-3xl bg-gradient-to-br from-green-50 to-emerald-50 p-6 dark:from-green-950 dark:to-emerald-950">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-            <HashIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-          </div>
+
+      {/* Besondere Merkmale */}
+      <div className="mb-6">
+        <div className="mb-4">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-            Tags & Kategorien
+            Besondere Merkmale
           </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Narben, Tattoos, besondere Kleidung, Auffälligkeiten
+          </p>
         </div>
         {isEditMode ? (
-          <div className="space-y-4">
-            {/* Tag‑Eingabe */}
-            <div className="relative">
-              <div className="flex items-center gap-2">
-                <input
-                  value={tagInput}
-                  onChange={(e) => {
-                    setTagInput(e.target.value);
-                    setShowTagSuggestions(e.target.value.length > 0);
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addTag(tagInput);
-                    }
-                  }}
-                  className="flex-1 rounded-xl border-2 border-green-200 bg-white/50 px-4 py-2 backdrop-blur-sm transition-all focus:border-green-500 focus:outline-none dark:border-green-800 dark:bg-gray-900/50 dark:focus:border-green-400"
-                  placeholder="Tag hinzufügen..."
-                />
-                <button
-                  onClick={() => addTag(tagInput)}
-                  className="rounded-xl bg-green-600 p-2 text-white hover:bg-green-700"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                </button>
-              </div>
-              {/* Vorschläge */}
-              {showTagSuggestions && (
-                <div className="absolute top-full z-10 mt-2 w-full rounded-xl bg-white p-2 shadow-xl dark:bg-gray-800">
-                  {suggestedTags
-                    .filter((tag) =>
-                      tag.toLowerCase().includes(tagInput.toLowerCase()),
-                    )
-                    .slice(0, 5)
-                    .map((tag, index) => (
-                      <button
-                        key={index}
-                        onClick={() => addTag(tag)}
-                        className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <HashIcon className="mr-2 inline h-3 w-3" />
-                        {tag}
-                      </button>
-                    ))}
-                </div>
-              )}
-            </div>
-            {/* Ausgewählte Tags */}
-            <div className="flex flex-wrap gap-2">
-              {selectedTags.map((tag, index) => (
-                <div
-                  key={index}
-                  className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 text-white"
-                >
-                  <HashIcon className="h-3 w-3" />
-                  <span className="text-sm font-medium">{tag}</span>
-                  <button
-                    onClick={() => removeTag(tag)}
-                    className="ml-1 opacity-70 transition-opacity hover:opacity-100"
-                  >
-                    <XIcon className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            {/* Schnellauswahl */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              <p className="w-full text-xs text-gray-600 dark:text-gray-400">
-                Schnellauswahl:
-              </p>
-              {suggestedTags.slice(0, 8).map((tag, index) => (
-                <button
-                  key={index}
-                  onClick={() => addTag(tag)}
-                  className="rounded-xl bg-white/50 px-3 py-1 text-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:bg-white/10 dark:hover:bg-white/20"
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Textarea
+            value={step2.features ?? ""}
+            onChange={(e) => updateField("step2", "features", e.target.value)}
+            onFocus={() => setFocusedField("features")}
+            onBlur={() => setFocusedField(null)}
+            className={`min-h-[120px] resize-none border-2 transition-all ${
+              focusedField === "features"
+                ? "border-cyan-500 ring-2 ring-cyan-200 dark:ring-cyan-800"
+                : "border-gray-200 dark:border-gray-700"
+            }`}
+            placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
+          />
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {selectedTags.length > 0 ? (
-              selectedTags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="flex items-center gap-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 text-white"
-                >
-                  <HashIcon className="h-3 w-3" />
-                  <span className="text-sm font-medium">{tag}</span>
-                </span>
-              ))
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400">
-                Keine Tags angegeben.
-              </p>
-            )}
+          <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900">
+            <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+              {step2.features ?? "Keine besonderen Merkmale angegeben."}
+            </p>
           </div>
         )}
       </div>
-      {/* Rechtschreibprüfung */}
-      {isEditMode && (
-        <div className="rounded-3xl bg-gradient-to-br from-yellow-50 to-orange-50 p-6 dark:from-yellow-950 dark:to-orange-950">
-          <div className="flex items-start gap-4">
-            <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
-              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-                Qualitätsprüfung
+
+      {/* Zusätzliche Dokumente */}
+      <div className="mb-6">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            Zusätzliche Dokumente
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            PDF, Word, Bilder und andere Dateien
+          </p>
+        </div>
+        {isEditMode ? (
+          <div className="space-y-4">
+            {/* Datei-Upload */}
+            <div className="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+                <FileTextIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                Dateien hochladen
               </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Rechtschreibung geprüft
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Grammatik korrekt
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <LanguagesIcon className="h-4 w-4 text-blue-500" />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Sprache: Deutsch
-                  </span>
-                </div>
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                Ziehen Sie Dateien hierher oder klicken Sie zum Auswählen
+              </p>
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                <FileTextIcon className="mr-2 h-4 w-4" />
+                Dateien auswählen
+              </Button>
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                PDF, Word, Excel, Bilder (max. 10MB pro Datei)
+              </p>
+            </div>
+            {/* Hochgeladene Dateien */}
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 dark:text-white">
+                Hochgeladene Dateien:
+              </h4>
+              <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Noch keine Dateien hochgeladen
+                </p>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      {/* Navigation */}
-      <div className="flex justify-between">
-        <button
-          onClick={onPrevious}
-          className="flex items-center gap-2 rounded-2xl bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-        >
-          Zurück zur Übersicht
-        </button>
-        <button
-          onClick={onNext}
-          className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-medium text-white transition-all hover:shadow-lg"
-        >
-          Weiter zu Medien
-        </button>
-      </div>
-      {/* Validierungswarnung */}
-      {!data.step2?.description && (
-        <div className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
-          <div className="flex items-center gap-3">
-            <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-            <div>
-              <p className="font-medium text-yellow-800 dark:text-yellow-200">
-                Beschreibung fehlt
-              </p>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                Eine detaillierte Beschreibung ist wichtig für die Fahndung.
-              </p>
-            </div>
+        ) : (
+          <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900">
+            <p className="text-gray-500 dark:text-gray-400">
+              Keine zusätzlichen Dokumente verfügbar.
+            </p>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Validierungswarnung */}
+      {!step2.description && (
+        <Card className="border-2 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <div>
+                <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                  Beschreibung fehlt
+                </p>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Eine detaillierte Beschreibung ist wichtig für die Fahndung.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
-    </>
+    </div>
   );
 }

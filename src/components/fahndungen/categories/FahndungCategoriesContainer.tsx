@@ -296,8 +296,6 @@ export default function FahndungCategoriesContainer({
           >
             <DescriptionCategory
               {...commonProps}
-              onNext={() => navigateToCategory("media")}
-              onPrevious={() => navigateToCategory("overview")}
             />
           </CategoryLayout>
         );

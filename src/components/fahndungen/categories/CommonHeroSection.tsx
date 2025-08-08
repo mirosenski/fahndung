@@ -79,28 +79,6 @@ export default function CommonHeroSection({ data }: CommonHeroSectionProps) {
           </p>
         </div>
       </div>
-
-      {/* Quick Info Cards */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Status</p>
-          <p className="text-base font-semibold text-foreground">Aktiv</p>
-        </div>
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Priorität</p>
-          <p className="text-base font-semibold capitalize text-foreground">
-            {priority}
-          </p>
-        </div>
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Kategorie</p>
-          <p className="text-base font-semibold text-foreground">{category}</p>
-        </div>
-        <div className="rounded-xl bg-muted/20 p-4 dark:bg-muted/10">
-          <p className="mb-1 text-xs text-muted-foreground">Bereich</p>
-          <p className="text-base font-semibold text-foreground">Bundesweit</p>
-        </div>
-      </div>
     </>
   );
 }
