@@ -8,8 +8,6 @@ import {
   User,
   Shield,
   Clock,
-  Save,
-  ChevronLeft,
   CheckCircle2,
   Building2,
   UserCheck,
@@ -18,7 +16,6 @@ import {
   CalendarClock,
   Copy,
   FileText,
-  FileSpreadsheet,
   Share2,
   Check,
   AlertCircle,
@@ -94,8 +91,6 @@ export default function ModernContactCategory({
   data,
   isEditMode,
   updateField,
-  onPrevious,
-  onSave,
 }: ContactCategoryProps) {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string>("");
@@ -104,25 +99,103 @@ export default function ModernContactCategory({
   const [keywordInput, setKeywordInput] = useState("");
 
   const step5Data = (data.step5 ?? {}) as Step5Data;
+  // Hilfsfunktionen für deutsche Labels
+  const getCategoryLabel = (category?: string) => {
+    switch (category) {
+      case "WANTED_PERSON":
+        return "Straftäter";
+      case "MISSING_PERSON":
+        return "Vermisste Person";
+      case "UNKNOWN_DEAD":
+        return "Unbekannte Tote";
+      case "STOLEN_ITEMS":
+        return "Gestohlene Sachen";
+      default:
+        return "Fahndung";
+    }
+  };
+
+  const getStatusLabel = (priority?: string) => {
+    switch (priority) {
+      case "new":
+        return "NEU";
+      case "urgent":
+        return "DRINGEND";
+      case "normal":
+        return "AKTIV";
+      case "expired":
+        return "ABGELAUFEN";
+      default:
+        return "AKTIV";
+    }
+  };
+
+  const getPublishStatusLabel = (status?: string) => {
+    switch (status) {
+      case "draft":
+        return "Entwurf";
+      case "review":
+        return "Zur Überprüfung";
+      case "scheduled":
+        return "Geplant";
+      case "published":
+        return "Veröffentlicht";
+      case "immediate":
+        return "Sofort veröffentlichen";
+      default:
+        return "Veröffentlicht";
+    }
+  };
+
+  const getVisibilityLabel = (visibility?: string) => {
+    switch (visibility) {
+      case "internal":
+        return "Intern";
+      case "regional":
+        return "Regional";
+      case "national":
+        return "National";
+      case "international":
+        return "International";
+      default:
+        return "Intern";
+    }
+  };
+
+  const getNotificationLabel = (notification?: string) => {
+    switch (notification) {
+      case "emailAlerts":
+        return "E-Mail";
+      case "smsAlerts":
+        return "SMS";
+      case "appNotifications":
+        return "App";
+      case "pressRelease":
+        return "Presse";
+      default:
+        return "E-Mail";
+    }
+  };
+
   const step5 = {
     contactPerson: step5Data.contactPerson ?? "",
     contactPhone: step5Data.contactPhone ?? "",
     contactEmail: step5Data.contactEmail ?? "",
     department: step5Data.department ?? "",
     availableHours: step5Data.availableHours ?? "",
-    publishStatus: step5Data.publishStatus ?? "draft",
-    urgencyLevel: step5Data.urgencyLevel ?? "medium",
+    publishStatus: step5Data.publishStatus ?? "published",
+    urgencyLevel: step5Data.urgencyLevel ?? "urgent",
     requiresApproval: step5Data.requiresApproval ?? false,
     visibility: {
       internal: step5Data.visibility?.internal ?? true,
-      regional: step5Data.visibility?.regional ?? false,
+      regional: step5Data.visibility?.regional ?? true,
       national: step5Data.visibility?.national ?? false,
       international: step5Data.visibility?.international ?? false,
     },
     notifications: {
-      emailAlerts: step5Data.notifications?.emailAlerts ?? false,
+      emailAlerts: step5Data.notifications?.emailAlerts ?? true,
       smsAlerts: step5Data.notifications?.smsAlerts ?? false,
-      appNotifications: step5Data.notifications?.appNotifications ?? false,
+      appNotifications: step5Data.notifications?.appNotifications ?? true,
       pressRelease: step5Data.notifications?.pressRelease ?? false,
     },
     articlePublishing: {
@@ -136,10 +209,6 @@ export default function ModernContactCategory({
       readingTime: step5Data.articlePublishing?.readingTime ?? 0,
     },
   };
-
-  const isComplete = Boolean(
-    step5.contactPerson && step5.contactPhone && step5.department,
-  );
 
   const validateEmail = (email: string) => {
     if (!email) {
@@ -163,24 +232,6 @@ export default function ModernContactCategory({
     } catch (err) {
       console.error("Fehler beim Kopieren:", err);
     }
-  };
-
-  const generateCSV = () => {
-    const csvContent = `Name,Abteilung,Telefon,E-Mail,Erreichbarkeit\n"${step5.contactPerson}","${step5.department}","${step5.contactPhone}","${step5.contactEmail ?? ""}","${step5.availableHours ?? ""}"`;
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "kontakt.csv";
-    link.click();
-  };
-
-  const generateExcel = () => {
-    const htmlContent = `<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background-color:#f2f2f2}</style></head><body><table><tr><th>Name</th><th>Abteilung</th><th>Telefon</th><th>E-Mail</th><th>Erreichbarkeit</th></tr><tr><td>${step5.contactPerson}</td><td>${step5.department}</td><td>${step5.contactPhone}</td><td>${step5.contactEmail ?? ""}</td><td>${step5.availableHours ?? ""}</td></tr></table></body></html>`;
-    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "kontakt.xls";
-    link.click();
   };
 
   const shareContact = async () => {
@@ -239,8 +290,205 @@ export default function ModernContactCategory({
   };
 
   const renderContactCard = () => (
-    <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
-      <div className="mb-8">
+    <div className="space-y-6">
+      {/* Mittlere Karte: Fall-Informationen */}
+      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+        <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">
+          Fall-Informationen
+        </h3>
+
+        {/* Fahndungs-Header mit Hauptbild */}
+        <div className="mb-6 flex items-center gap-6">
+          <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-pink-600 shadow-lg ring-4 ring-white dark:ring-gray-800">
+            {data.step3?.mainImage ? (
+              <Image
+                src={data.step3.mainImage}
+                alt="Fahndungsbild"
+                width={112}
+                height={112}
+                className="h-full w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 60vw"
+                onError={(e) => {
+                  // Fallback zu einem lokalen Platzhalterbild
+                  const target = e.target as HTMLImageElement;
+                  target.src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23374151'/%3E%3Ctext x='400' y='300' font-family='Arial' font-size='48' fill='white' text-anchor='middle' dominant-baseline='middle'%3EFahndungsbild%3C/text%3E%3C/svg%3E";
+                }}
+              />
+            ) : (
+              <FileText className="h-14 w-14 text-white" />
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="mb-2 flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+              >
+                {getCategoryLabel(data.step1?.category)}
+              </Badge>
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              >
+                {getStatusLabel(data.step2?.priority)}
+              </Badge>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {data.step1?.title ?? "Fahndung"}
+            </h2>
+          </div>
+        </div>
+
+        {/* Fallnummer und Datum */}
+        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Fallnummer:
+                </span>
+                <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white">
+                  {data.step1?.caseNumber ?? "POL-2025-K-767297-A"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Datum:
+                </span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {new Date().toLocaleDateString("de-DE")}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Kurze Beschreibung was passiert ist */}
+        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Was ist passiert:
+              </span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                {data.step2?.shortDescription ?? "Keine Beschreibung verfügbar"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Adresse/Ort wo es passiert ist */}
+        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Ort/Adresse:
+              </span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                {data.step4?.mainLocation?.address ??
+                  "Reutlingen, Landkreis Reutlingen, Baden-Württemberg, Deutschland"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Status-Informationen */}
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Veröffentlichungsstatus */}
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900">
+                <FileEdit className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Veröffentlichungsstatus
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                  {getPublishStatusLabel(
+                    data.step5?.publishStatus ?? "published",
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Dringlichkeitsstufe */}
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900">
+                <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Dringlichkeitsstufe
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                  {getStatusLabel(data.step2?.priority)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Sichtbarkeit */}
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900">
+                <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Sichtbarkeit
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {Object.entries(step5.visibility).map(([key, value]) =>
+                    value ? (
+                      <Badge key={key} variant="outline" className="text-xs">
+                        {getVisibilityLabel(key)}
+                      </Badge>
+                    ) : null,
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Benachrichtigungen */}
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900">
+                <Bell className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Benachrichtigungen
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {Object.entries(step5.notifications).map(([key, value]) =>
+                    value ? (
+                      <Badge
+                        key={key}
+                        variant="outline"
+                        className="bg-green-50 text-xs text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                      >
+                        {getNotificationLabel(key)}
+                      </Badge>
+                    ) : null,
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Untere Karte: Kontakt und Kontaktperson */}
+      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+        <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">
+          Kontakt
+        </h3>
+
         <div className="flex items-center gap-6">
           <div className="relative">
             <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-lg ring-4 ring-white dark:ring-gray-800">
@@ -331,193 +579,59 @@ export default function ModernContactCategory({
             </Button>
           </div>
         </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            icon: Phone,
-            label: "Telefon",
-            value: step5.contactPhone,
-            color: "blue",
-          },
-          {
-            icon: Mail,
-            label: "E-Mail",
-            value: step5.contactEmail,
-            color: "green",
-          },
-          {
-            icon: Building2,
-            label: "Abteilung",
-            value: step5.department,
-            color: "purple",
-          },
-          {
-            icon: Clock,
-            label: "Erreichbarkeit",
-            value: step5.availableHours,
-            color: "orange",
-          },
-        ].map(({ icon: Icon, label, value, color }) => (
-          <div
-            key={label}
-            className={`group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-${color}-300 hover:bg-${color}-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-${color}-400 dark:hover:bg-${color}-900/20`}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-100 dark:bg-${color}-900`}
-              >
-                <Icon
-                  className={`h-6 w-6 text-${color}-600 dark:text-${color}-400`}
-                />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  {label}
-                </p>
-                <p className="mt-1 font-semibold text-gray-900 dark:text-white">
-                  {value ?? "Nicht angegeben"}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={generateCSV}
-          className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-        >
-          <FileText className="h-4 w-4" />
-          Als CSV exportieren
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={generateExcel}
-          className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-        >
-          <FileSpreadsheet className="h-4 w-4" />
-          Als Excel exportieren
-        </Button>
-      </div>
-    </div>
-  );
 
-  const renderStatusCards = () => (
-    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-      {[
-        {
-          icon: FileEdit,
-          label: "Veröffentlichungsstatus",
-          value: step5.publishStatus,
-          color: "purple",
-          options: {
-            draft: "Entwurf",
-            review: "Zur Überprüfung",
-            scheduled: "Geplant",
-            immediate: "Sofort veröffentlichen",
-          },
-        },
-        {
-          icon: AlertCircle,
-          label: "Dringlichkeitsstufe",
-          value: step5.urgencyLevel,
-          color: "red",
-          options: {
-            low: "Niedrig",
-            medium: "Mittel",
-            high: "Hoch",
-            critical: "Kritisch",
-          },
-        },
-      ].map(({ icon: Icon, label, value, color, options }) => (
-        <div
-          key={label}
-          className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800"
-        >
-          <div className="flex items-center gap-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              icon: Phone,
+              label: "Telefon",
+              value: step5.contactPhone,
+              color: "blue",
+            },
+            {
+              icon: Mail,
+              label: "E-Mail",
+              value: step5.contactEmail,
+              color: "green",
+            },
+            {
+              icon: Building2,
+              label: "Abteilung",
+              value: step5.department,
+              color: "purple",
+            },
+            {
+              icon: Clock,
+              label: "Erreichbarkeit",
+              value: step5.availableHours,
+              color: "orange",
+            },
+          ].map(({ icon: Icon, label, value, color }) => (
             <div
-              className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-100 dark:bg-${color}-900`}
+              key={label}
+              className={`group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-${color}-300 hover:bg-${color}-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-${color}-400 dark:hover:bg-${color}-900/20`}
             >
-              <Icon
-                className={`h-6 w-6 text-${color}-600 dark:text-${color}-400`}
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                {label}
-              </p>
-              <p className="mt-1 font-semibold text-gray-900 dark:text-white">
-                {options[value as keyof typeof options]}
-              </p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderVisibilityNotifications = () => (
-    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-      {[
-        {
-          icon: Globe,
-          label: "Sichtbarkeit",
-          data: step5.visibility,
-          color: "blue",
-          options: {
-            internal: "Intern",
-            regional: "Regional",
-            national: "National",
-            international: "International",
-          },
-        },
-        {
-          icon: Bell,
-          label: "Benachrichtigungen",
-          data: step5.notifications,
-          color: "green",
-          options: {
-            emailAlerts: "E-Mail",
-            smsAlerts: "SMS",
-            appNotifications: "App",
-            pressRelease: "Presse",
-          },
-        },
-      ].map(({ icon: Icon, label, data, color, options }) => (
-        <div
-          key={label}
-          className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800"
-        >
-          <div className="flex items-start gap-3">
-            <div
-              className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-100 dark:bg-${color}-900`}
-            >
-              <Icon
-                className={`h-6 w-6 text-${color}-600 dark:text-${color}-400`}
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                {label}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {Object.entries(data).map(
-                  ([key, value]) =>
-                    value && (
-                      <Badge key={key} variant="secondary" className="text-xs">
-                        {options[key as keyof typeof options]}
-                      </Badge>
-                    ),
-                )}
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-100 dark:bg-${color}-900`}
+                >
+                  <Icon
+                    className={`h-6 w-6 text-${color}-600 dark:text-${color}-400`}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    {label}
+                  </p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {value || "Nicht angegeben"}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 
@@ -567,8 +681,7 @@ export default function ModernContactCategory({
     return (
       <div className="w-full space-y-6">
         {renderContactCard()}
-        {renderStatusCards()}
-        {renderVisibilityNotifications()}
+
         {renderArticlePublishing()}
       </div>
     );
@@ -986,42 +1099,6 @@ export default function ModernContactCategory({
               </div>
             </CardContent>
           </Card>
-        </div>
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-blue-500" />
-            <div className="text-sm">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100">
-                Veröffentlichungshinweise
-              </h4>
-              <ul className="mt-2 space-y-1 text-blue-800 dark:text-blue-200">
-                <li>• Entwurf: Nur für interne Bearbeitung sichtbar</li>
-                <li>• Zur Überprüfung: Wartet auf Freigabe</li>
-                <li>
-                  • Geplant: Wird zu einem bestimmten Zeitpunkt veröffentlicht
-                </li>
-                <li>• Sofort: Wird sofort öffentlich verfügbar</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 sm:relative sm:border-0 sm:bg-transparent sm:p-0 sm:dark:bg-transparent">
-        <div className="flex gap-3">
-          <Button
-            onClick={onPrevious}
-            variant="outline"
-            className="flex-1 sm:flex-none"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" /> Zurück
-          </Button>
-          <Button
-            onClick={onSave}
-            disabled={!isComplete}
-            className={`flex-1 sm:flex-none ${isComplete ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700" : ""}`}
-          >
-            <Save className="mr-2 h-4 w-4" /> Speichern
-          </Button>
         </div>
       </div>
     </div>

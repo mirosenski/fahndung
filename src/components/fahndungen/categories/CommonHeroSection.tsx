@@ -12,9 +12,6 @@ export default function CommonHeroSection({ data }: CommonHeroSectionProps) {
   const title = data.step1?.title ?? "Fahndung";
   const shortDescription =
     data.step2?.shortDescription ?? "Keine Beschreibung verfügbar";
-  const caseNumber = data.step1?.caseNumber ?? "UNKNOWN";
-  const category = data.step1?.category ?? "UNKNOWN";
-  const priority = data.step2?.priority ?? "normal";
 
   // Verwende das originale Hauptbild der Fahndung
   const mainImageUrl =
@@ -43,31 +40,6 @@ export default function CommonHeroSection({ data }: CommonHeroSectionProps) {
         {/* Gradient Overlays zur besseren Lesbarkeit */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
-
-        {/* Badges */}
-        <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
-          <span className="flex items-center gap-1 rounded-full bg-red-500/80 px-3 py-1 text-xs font-medium text-white">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-white" />{" "}
-            LIVE
-          </span>
-          <span className="flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-            📝 {category}
-          </span>
-          {priority === "urgent" && (
-            <span className="relative flex items-center gap-1 rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              ⚡ DRINGEND
-            </span>
-          )}
-        </div>
-
-        {/* Fallnummer */}
-        <div className="absolute right-4 top-4 z-10 rounded-xl bg-black/40 px-3 py-2 text-right text-xs text-white backdrop-blur">
-          <div>Fallnummer</div>
-          <div className="font-mono text-lg font-semibold">{caseNumber}</div>
-          <div className="mt-1 flex items-center justify-end gap-1">
-            📅 {new Date().toLocaleDateString("de-DE")}
-          </div>
-        </div>
 
         {/* Title & Description */}
         <div className="absolute bottom-0 left-0 right-0 z-10 p-6">

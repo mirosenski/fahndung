@@ -12,11 +12,10 @@ export default function CategoryNavigation({
   onCategoryChange,
 }: CategoryNavigationProps) {
   const categories = [
-    { id: "overview", label: "Übersicht", icon: "📋" },
+    { id: "contact", label: "Übersicht", icon: "📋" },
     { id: "description", label: "Beschreibung", icon: "📝" },
     { id: "media", label: "Medien", icon: "🖼️" },
     { id: "locations", label: "Orte", icon: "📍" },
-    { id: "contact", label: "Kontakt", icon: "📞" },
   ];
 
   return (

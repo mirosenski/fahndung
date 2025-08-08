@@ -103,17 +103,7 @@ function FeaturedImageGallery({
               <Trash2Icon className="h-4 w-4" />
             </button>
           </div>
-        ) : (
-          <div className="absolute right-4 top-4">
-            <button
-              onClick={() => onImageClick(activeImage)}
-              className="rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
-              title="Schließen"
-            >
-              <XIcon className="h-6 w-6" />
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
       <div className="grid grid-cols-5 gap-4">
         {images.map((image, index) => (
@@ -302,17 +292,7 @@ function GalleryWithCarousel({
               <Trash2Icon className="h-4 w-4" />
             </button>
           </div>
-        ) : (
-          <div className="absolute right-4 top-4">
-            <button
-              onClick={() => onImageClick(currentSlide)}
-              className="rounded-full bg-white/10 p-3 text-white backdrop-blur-md hover:bg-white/20"
-              title="Vergrößern"
-            >
-              <Maximize2Icon className="h-6 w-6" />
-            </button>
-          </div>
-        )}
+        ) : null}
       </div>
       <button
         onClick={() =>

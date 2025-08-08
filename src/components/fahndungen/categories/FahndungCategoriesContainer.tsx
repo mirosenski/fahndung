@@ -16,19 +16,11 @@ import dynamic from "next/dynamic";
 import { InvestigationDataConverter } from "~/lib/services/investigationDataConverter";
 import type { UIInvestigationData } from "~/lib/types/investigation.types";
 import { isValidInvestigationId } from "~/lib/utils/validation";
-import { InvestigationDebug } from "~/components/debug/InvestigationDebug";
+
 import CategoryLayout from "./CategoryLayout";
 
 // Lazy Loading für bessere Performance
 // Nutze die modernisierte Overview‑Kategorie mit optimierter Performance
-const OverviewCategory = dynamic(() => import("./ModernOverviewCategory"), {
-  loading: () => (
-    <div className="animate-pulse">
-      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
-    </div>
-  ),
-  ssr: false,
-});
 
 const DescriptionCategory = dynamic(
   () => import("./ModernDescriptionCategory"),
@@ -78,7 +70,7 @@ export default function FahndungCategoriesContainer({
 }: FahndungCategoriesContainerProps) {
   const router = useRouter();
   const { session } = useAuth();
-  const [activeCategory, setActiveCategory] = useState("overview");
+  const [activeCategory, setActiveCategory] = useState("contact");
 
   // Validiere investigationId
   const isValidId = isValidInvestigationId(investigationId);
@@ -273,20 +265,6 @@ export default function FahndungCategoriesContainer({
     };
 
     switch (activeCategory) {
-      case "overview":
-        return (
-          <CategoryLayout
-            data={data}
-            activeCategory={activeCategory}
-            onCategoryChange={navigateToCategory}
-          >
-            <OverviewCategory
-              data={data}
-              onNext={() => navigateToCategory("description")}
-            />
-          </CategoryLayout>
-        );
-
       case "description":
         return (
           <CategoryLayout
@@ -294,9 +272,7 @@ export default function FahndungCategoriesContainer({
             activeCategory={activeCategory}
             onCategoryChange={navigateToCategory}
           >
-            <DescriptionCategory
-              {...commonProps}
-            />
+            <DescriptionCategory {...commonProps} />
           </CategoryLayout>
         );
 
@@ -339,7 +315,7 @@ export default function FahndungCategoriesContainer({
           >
             <ContactCategory
               {...commonProps}
-              onPrevious={() => navigateToCategory("locations")}
+              onNext={() => navigateToCategory("description")}
               onSave={handleSave}
             />
           </CategoryLayout>
@@ -435,9 +411,6 @@ export default function FahndungCategoriesContainer({
           <div className="min-h-[600px]">{categoryContent}</div>
         </div>
       </PageLayout>
-
-      {/* Debug-Komponente (nur in Development) */}
-      <InvestigationDebug investigationId={investigationId} />
     </InvestigationEditErrorBoundary>
   );
 }
