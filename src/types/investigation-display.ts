@@ -40,18 +40,18 @@ export const getCategoryStyles = (category: string): string => {
     MISSING_PERSON:
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
     UNKNOWN_DEAD:
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",
+      "bg-muted text-muted-foreground dark:bg-muted/30 dark:text-muted-foreground",
     STOLEN_GOODS:
       "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
   };
-  return styles[category] ?? "bg-gray-100 text-gray-800";
+  return styles[category] ?? "bg-muted text-muted-foreground";
 };
 
 export const getPriorityStyles = (priority: keyof typeof priorityLabels) => {
   const styles = {
     urgent: "bg-red-100 text-red-800",
     new: "bg-blue-100 text-blue-800",
-    normal: "bg-gray-100 text-gray-800",
+    normal: "bg-muted text-muted-foreground",
   };
   return styles[priority];
 };
@@ -61,7 +61,7 @@ export const getUrgencyStyles = (urgency: keyof typeof urgencyLabels) => {
     critical: "text-red-600 font-bold",
     high: "text-orange-600 font-semibold",
     medium: "text-yellow-600 font-medium",
-    low: "text-gray-600",
+    low: "text-muted-foreground",
   };
   return styles[urgency];
 };

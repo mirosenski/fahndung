@@ -143,7 +143,7 @@ const CustomDropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden overflow-y-auto rounded-lg border border-border bg-popover shadow-sm">
           {options.map((option) => (
             <button
               key={option}
@@ -224,7 +224,7 @@ const RegionMultiSelect = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-sm">
           <div className="border-b border-border p-2">
             <button
               onClick={() => onChange([])}
@@ -345,11 +345,11 @@ export const CompactFilter: React.FC<CompactFilterProps> = ({
     <div className={`compact-filter ${className}`}>
       {/* Desktop Layout */}
       <div className="hidden md:block">
-        <div className="rounded-xl border-2 border-border bg-card p-4">
+        <div className="rounded-lg border-2 border-border bg-card p-4">
           {/* Suchleiste */}
           <div className="mb-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 ref={searchRef}
                 type="search"

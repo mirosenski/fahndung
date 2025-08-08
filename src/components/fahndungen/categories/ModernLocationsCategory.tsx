@@ -123,9 +123,9 @@ export default function ModernLocationsCategory({
   return (
     <div className="w-full space-y-6">
       {/* Location Details */}
-      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+      <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
         {/* Tab Navigation */}
-        <div className="mb-6 flex gap-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="mb-6 flex gap-2 border-b border-border dark:border-border">
           {(
             [
               {
@@ -168,7 +168,7 @@ export default function ModernLocationsCategory({
               className={`flex items-center gap-2 rounded-t-lg px-4 py-2 font-medium transition-colors ${
                 selectedTab === key
                   ? "bg-emerald-600 text-white"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                  : "text-muted-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
               }`}
             >
               <Icon className="h-4 w-4" /> {label} ({count})
@@ -187,13 +187,13 @@ export default function ModernLocationsCategory({
                 })}
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h4 className="text-lg font-semibold text-muted-foreground dark:text-white">
                   {selectedLocation.address}
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                   {selectedLocation.description}
                 </p>
-                <div className="mt-1 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground dark:text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />{" "}
                     {selectedLocation.timestamp.toLocaleString("de-DE")}
@@ -209,7 +209,7 @@ export default function ModernLocationsCategory({
             </div>
 
             {/* Map */}
-            <div className="h-80 overflow-hidden rounded-xl">
+            <div className="h-80 overflow-hidden rounded-lg">
               <iframe
                 src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedLocation.coordinates.lng - 0.005},${selectedLocation.coordinates.lat - 0.005},${selectedLocation.coordinates.lng + 0.005},${selectedLocation.coordinates.lat + 0.005}&layer=mapnik&marker=${selectedLocation.coordinates.lat},${selectedLocation.coordinates.lng}`}
                 className="h-full w-full border-0"
@@ -219,7 +219,7 @@ export default function ModernLocationsCategory({
             </div>
 
             {/* Compact Action Bar */}
-            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-2 dark:bg-gray-800">
+            <div className="flex items-center justify-between rounded-lg bg-muted p-2 dark:bg-muted">
               {/* Maps Buttons - Links */}
               <div className="flex gap-1">
                 <button
@@ -230,7 +230,7 @@ export default function ModernLocationsCategory({
                 </button>
                 <button
                   onClick={() => openInMaps("apple")}
-                  className="flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                  className="flex items-center gap-1 rounded bg-muted px-2 py-1 text-xs text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                 >
                   <Navigation2 className="h-3 w-3" /> Apple
                 </button>
@@ -270,7 +270,7 @@ export default function ModernLocationsCategory({
 
       {/* Validation */}
       {!(data?.step4?.mainLocation as { address?: string } | null)?.address && (
-        <div className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
+        <div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
           <div className="flex items-center gap-3">
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             <div>

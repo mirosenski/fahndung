@@ -37,16 +37,16 @@ export default function ViewToggle({
 
   return (
     <div
-      className={`flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800 ${className}`}
+      className={`flex items-center gap-1 rounded-lg bg-muted p-1 dark:bg-muted ${className}`}
     >
       {viewOptions.map(({ mode, icon: Icon, label, description }) => (
         <button
           key={mode}
           onClick={() => onViewChange(mode)}
-          className={`flex items-center gap-1 rounded-md px-2 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 sm:gap-2 sm:px-3 ${
+          className={`flex items-center gap-1 rounded-lg px-2 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 sm:gap-2 sm:px-3 ${
             currentView === mode
-              ? "bg-white text-blue-700 shadow-sm dark:bg-gray-700 dark:text-blue-300"
-              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+              ? "bg-white text-blue-700 shadow-sm dark:bg-muted dark:text-blue-300"
+              : "text-muted-foreground hover:bg-muted hover:text-muted-foreground dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
           }`}
           title={description}
           aria-label={description}

@@ -99,7 +99,7 @@ export default function MediaTab({
             <>
               {/* Custom Tabs */}
               <div className="mb-6">
-                <div className="border-b border-gray-200 dark:border-gray-700">
+                <div className="border-b border-border dark:border-border">
                   <nav className="flex space-x-8">
                     {tabs.map((tab) => {
                       const Icon = tab.icon;
@@ -110,7 +110,7 @@ export default function MediaTab({
                           className={`flex cursor-pointer items-center space-x-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
                             activeTab === tab.id
                               ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                              : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                              : "border-transparent text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
                           }`}
                         >
                           <Icon className="h-4 w-4" />

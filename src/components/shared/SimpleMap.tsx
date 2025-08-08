@@ -61,9 +61,9 @@ const SimpleMap: React.FC<SimpleMapProps> = ({
       wohnort: "bg-green-500",
       arbeitsplatz: "bg-yellow-500",
       sichtung: "bg-orange-500",
-      sonstiges: "bg-gray-500",
+      sonstiges: "bg-muted",
     };
-    return colors[type] ?? "bg-gray-500";
+    return colors[type] ?? "bg-muted";
   };
 
   const mainLocation = locations.find((loc) => loc.type === "main");
@@ -81,7 +81,7 @@ const SimpleMap: React.FC<SimpleMapProps> = ({
   return (
     <div className="relative" style={{ height }}>
       {/* Statische Karte */}
-      <div className="relative h-full w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
+      <div className="relative h-full w-full overflow-hidden rounded-lg border border-border bg-muted dark:border-border dark:bg-muted">
         <Image src={createMapUrl()} alt="Karte" fill className="object-cover" />
 
         {/* Overlay für Markierungen */}
@@ -97,7 +97,7 @@ const SimpleMap: React.FC<SimpleMapProps> = ({
               onClick={() => onLocationClick?.(location)}
             >
               <div
-                className={`relative ${getLocationTypeColor(location.type)} rounded-full p-2 text-white shadow-lg`}
+                className={`relative ${getLocationTypeColor(location.type)} rounded-full p-2 text-white shadow-sm`}
               >
                 <MapPin className="h-4 w-4" />
                 <div className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 transform rounded bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -124,7 +124,7 @@ const SimpleMap: React.FC<SimpleMapProps> = ({
       </div>
 
       {/* Legende */}
-      <div className="mt-2 rounded-lg bg-white p-3 shadow-lg dark:bg-gray-800">
+      <div className="mt-2 rounded-lg bg-white p-3 shadow-sm dark:bg-muted">
         <h4 className="mb-2 text-sm font-medium">Standorte</h4>
         <div className="grid grid-cols-2 gap-2 text-xs">
           {locations.map((location) => (

@@ -27,15 +27,15 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
   const isMobileView = isMobile ?? responsiveIsMobile;
 
   const BottomNavigation = () => (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white dark:border-border dark:bg-muted">
       <div className="flex items-center justify-between p-4">
         <button
           onClick={onPrevious}
           disabled={currentStep === 1}
           className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
             currentStep === 1
-              ? "cursor-not-allowed bg-gray-100 text-gray-400"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300"
+              ? "cursor-not-allowed bg-muted text-muted-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground"
           }`}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -43,13 +43,13 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
         </button>
 
         <div className="mx-4 flex-1">
-          <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-muted">
             <div
               className="h-full bg-blue-500 transition-all duration-300"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             />
           </div>
-          <p className="mt-1 text-center text-xs text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-center text-xs text-muted-foreground dark:text-muted-foreground">
             Schritt {currentStep} von {totalSteps}
           </p>
         </div>
@@ -60,7 +60,7 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
           className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
             canProceed
               ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "cursor-not-allowed bg-gray-300 text-gray-500"
+              : "cursor-not-allowed bg-muted text-muted-foreground"
           }`}
         >
           {!isMobileView && <span className="mr-2">Weiter</span>}
@@ -73,7 +73,7 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
   const DesktopLayout = () => (
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
       <div className="xl:col-span-2">
-        <div className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
+        <div className="rounded-lg bg-white p-8 shadow-sm dark:bg-muted">
           {children}
         </div>
       </div>
@@ -83,7 +83,7 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
   const MobileLayout = () => (
     <div className="flex min-h-screen flex-col">
       <div className="flex-1 p-4 pb-32">
-        <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
           {children}
         </div>
       </div>

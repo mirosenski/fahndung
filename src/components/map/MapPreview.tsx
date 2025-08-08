@@ -40,7 +40,7 @@ const MapPreview: React.FC<MapPreviewProps> = ({ longitude, latitude }) => {
   ];
 
   return (
-    <div className="relative h-64 w-full rounded-xl overflow-hidden">
+    <div className="relative h-64 w-full rounded-lg overflow-hidden">
       <SimpleMap
         locations={locations}
         center={[latitude, longitude]}

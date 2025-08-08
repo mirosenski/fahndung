@@ -81,7 +81,7 @@ const PageLayout = memo(function PageLayout({
 
       {/* Breadcrumb */}
       {showBreadcrumb && (
-        <div className="border-b border-gray-200 bg-white px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+        <div className="border-b border-border bg-white px-4 py-2 dark:border-border dark:bg-muted">
           {/* Breadcrumb Component würde hier eingefügt */}
         </div>
       )}

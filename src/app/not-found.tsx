@@ -10,7 +10,7 @@ export default function NotFound() {
         <div className="text-center">
           <div className="mb-8 text-8xl">404</div>
           <h1 className="mb-4 text-2xl font-bold">Seite nicht gefunden</h1>
-          <p className="mb-8 text-gray-600 dark:text-gray-400">
+          <p className="mb-8 text-muted-foreground dark:text-muted-foreground">
             Die angeforderte Seite existiert nicht oder wurde verschoben.
           </p>
           <div className="flex justify-center space-x-4">
@@ -23,7 +23,7 @@ export default function NotFound() {
             </Link>
             <button
               onClick={() => window.history.back()}
-              className="flex items-center space-x-2 rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
+              className="flex items-center space-x-2 rounded-lg bg-muted px-4 py-2 text-white transition-colors hover:bg-muted"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Zurück</span>

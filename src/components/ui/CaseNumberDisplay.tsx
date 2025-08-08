@@ -17,7 +17,7 @@ export default function CaseNumberDisplay({
 
   if (!info) {
     return (
-      <div className={`font-mono text-sm text-gray-500 ${className}`}>
+      <div className={`font-mono text-sm text-muted-foreground ${className}`}>
         {caseNumber}
       </div>
     );
@@ -25,12 +25,12 @@ export default function CaseNumberDisplay({
 
   return (
     <div className={`space-y-1 ${className}`}>
-      <div className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+      <div className="font-mono text-sm font-medium text-muted-foreground dark:text-white">
         {caseNumber}
       </div>
 
       {showDetails && (
-        <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="font-medium">Behörde:</span>
             {info.authority}
@@ -70,15 +70,15 @@ export function CaseNumberDetailed({ caseNumber }: { caseNumber: string }) {
   const info = getCaseNumberInfo(caseNumber);
 
   if (!info) {
-    return <div className="font-mono text-sm text-gray-500">{caseNumber}</div>;
+    return <div className="font-mono text-sm text-muted-foreground">{caseNumber}</div>;
   }
 
   return (
     <div className="space-y-1">
-      <div className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+      <div className="font-mono text-sm font-medium text-muted-foreground dark:text-white">
         {caseNumber}
       </div>
-      <div className="text-xs text-gray-500 dark:text-gray-400">
+      <div className="text-xs text-muted-foreground dark:text-muted-foreground">
         {info.authority} • {info.year} • {info.subjectLabel} • #{info.sequence}{" "}
         • {info.statusLabel}
       </div>

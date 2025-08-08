@@ -11,9 +11,9 @@ const DetailPagePreview: React.FC<DetailPagePreviewProps> = ({ data }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b pb-4 dark:border-gray-700">
+      <div className="border-b pb-4 dark:border-border">
         <h1 className="text-2xl font-bold">{data.step1?.title ?? "Titel"}</h1>
-        <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+        <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground dark:text-muted-foreground">
           <span>Fall #{data.step1?.caseNumber}</span>
           <span>•</span>
           <span>{data.step1?.category}</span>
@@ -24,7 +24,7 @@ const DetailPagePreview: React.FC<DetailPagePreviewProps> = ({ data }) => {
       <div className="space-y-4">
         <section>
           <h2 className="text-lg font-semibold">Beschreibung</h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted-foreground dark:text-muted-foreground">
             {data.step2?.description ?? "Keine Beschreibung verfügbar"}
           </p>
         </section>

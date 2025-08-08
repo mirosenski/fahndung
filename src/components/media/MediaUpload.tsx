@@ -359,7 +359,7 @@ export default function MediaUpload({
       )}
 
       {/* Upload Area */}
-      <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600">
+      <div className="rounded-lg border-2 border-dashed border-border p-6 text-center dark:border-border">
         <input
           ref={fileInputRef}
           type="file"
@@ -370,30 +370,30 @@ export default function MediaUpload({
         />
 
         <div className="space-y-4">
-          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+          <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
           <div>
-            <p className="text-lg font-medium text-gray-900 dark:text-white">
+            <p className="text-lg font-medium text-muted-foreground dark:text-white">
               Dateien hochladen
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               Ziehen Sie Dateien hierher oder klicken Sie zum Auswählen
             </p>
           </div>
           <button
             onClick={handleClick}
             disabled={uploading}
-            className="focus:outline-hidden rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-800"
+            className="focus:outline-hidden rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-800"
           >
             {uploading ? "Upload läuft..." : "Dateien auswählen"}
           </button>
         </div>
 
         <div
-          className="mt-4 min-h-[100px] rounded-lg border-2 border-dashed border-gray-300 p-4 dark:border-gray-600"
+          className="mt-4 min-h-[100px] rounded-lg border-2 border-dashed border-border p-4 dark:border-border"
           onDrop={handleDrop}
           onDragOver={handleDragOver}
         >
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">
             Hier Dateien ablegen
           </p>
         </div>

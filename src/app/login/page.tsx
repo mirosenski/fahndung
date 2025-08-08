@@ -70,12 +70,12 @@ export default function Login() {
       <AutoSetup />
       <div className="flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <div className="rounded-lg border border-border bg-white p-8 shadow-sm dark:border-border dark:bg-muted">
             <div className="mb-8 text-center">
-              <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="mb-2 text-3xl font-bold text-muted-foreground dark:text-white">
                 Fahndung
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 Anmelden oder Registrieren
               </p>
             </div>
@@ -90,10 +90,10 @@ export default function Login() {
 
               <div>
                 <div className="mb-2 flex items-center space-x-2">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-muted-foreground" />
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
                   >
                     E-Mail
                   </label>
@@ -113,10 +113,10 @@ export default function Login() {
 
               <div>
                 <div className="mb-2 flex items-center space-x-2">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-muted-foreground" />
                   <label
                     htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
                   >
                     Passwort
                   </label>
@@ -134,7 +134,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-muted-foreground dark:hover:text-muted-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function Login() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Durch die Anmeldung stimmen Sie unseren{" "}
                 <a
                   href="#"

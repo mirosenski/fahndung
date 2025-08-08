@@ -112,7 +112,7 @@ export default function FahndungFilter({
       <div className="flex items-center space-x-4">
         <button
           onClick={() => setShowFilterPanel(!showFilterPanel)}
-          className="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 shadow-sm hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+          className="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-muted"
         >
           <Filter className="h-4 w-4" />
           <span className="text-sm font-medium">Filter</span>
@@ -130,12 +130,12 @@ export default function FahndungFilter({
             placeholder="Fahndungen durchsuchen..."
             value={activeFilters.searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 pl-10 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="w-full rounded-lg border border-border px-4 py-2 pl-10 focus:border-blue-500 focus:outline-none dark:border-border dark:bg-muted dark:text-white"
           />
           {activeFilters.searchTerm && (
             <button
               onClick={() => setSearchTerm("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
             >
               <X className="h-4 w-4" />
             </button>
@@ -155,7 +155,7 @@ export default function FahndungFilter({
 
       {/* Filter Panel */}
       {showFilterPanel && (
-        <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="mt-4 rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Status Filter */}
             <div>

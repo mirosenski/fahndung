@@ -142,7 +142,7 @@ export const CATEGORY_CONFIG: Record<
     label: "UNBEKANNTE TOTE",
     icon: FileText,
     gradient: "from-gray-500 to-gray-600",
-    bg: "bg-gray-50 border-gray-200 dark:bg-gray-950 dark:border-gray-800",
+    bg: "bg-muted border-border dark:bg-gray-950 dark:border-border",
   },
   STOLEN_GOODS: {
     label: "SACHEN",
@@ -162,7 +162,7 @@ export const PRIORITY_CONFIG: Record<
 > = {
   urgent: { label: "DRINGEND", color: "bg-red-600", pulse: true },
   new: { label: "NEU", color: "bg-blue-600", pulse: false },
-  normal: { label: "STANDARD", color: "bg-gray-500", pulse: false },
+  normal: { label: "STANDARD", color: "bg-muted", pulse: false },
 };
 
 export const TAB_CONFIG = [

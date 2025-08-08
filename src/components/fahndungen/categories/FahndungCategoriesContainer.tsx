@@ -27,7 +27,7 @@ const DescriptionCategory = dynamic(
   {
     loading: () => (
       <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+        <div className="h-64 rounded-lg bg-muted dark:bg-muted" />
       </div>
     ),
     ssr: false,
@@ -37,7 +37,7 @@ const DescriptionCategory = dynamic(
 const MediaCategory = dynamic(() => import("./ModernMediaCategory"), {
   loading: () => (
     <div className="animate-pulse">
-      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-64 rounded-lg bg-muted dark:bg-muted" />
     </div>
   ),
   ssr: false,
@@ -46,7 +46,7 @@ const MediaCategory = dynamic(() => import("./ModernMediaCategory"), {
 const LocationsCategory = dynamic(() => import("./ModernLocationsCategory"), {
   loading: () => (
     <div className="animate-pulse">
-      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-64 rounded-lg bg-muted dark:bg-muted" />
     </div>
   ),
   ssr: false,
@@ -55,7 +55,7 @@ const LocationsCategory = dynamic(() => import("./ModernLocationsCategory"), {
 const ContactCategory = dynamic(() => import("./ModernContactCategory"), {
   loading: () => (
     <div className="animate-pulse">
-      <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-64 rounded-lg bg-muted dark:bg-muted" />
     </div>
   ),
   ssr: false,
@@ -120,7 +120,7 @@ export default function FahndungCategoriesContainer({
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 {!isValidId
                   ? "Ungültige Fahndungs-ID"
                   : "Lade Fahndungsdaten..."}
@@ -143,10 +143,10 @@ export default function FahndungCategoriesContainer({
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
                 <div className="h-6 w-6 text-white">!</div>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-muted-foreground dark:text-white">
                 Ungültige Fahndungs-ID
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 Die angegebene Fahndungs-ID ist ungültig oder leer.
               </p>
               <Link
@@ -169,10 +169,10 @@ export default function FahndungCategoriesContainer({
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
                 <div className="h-6 w-6 text-white">!</div>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-muted-foreground dark:text-white">
                 Fahndung nicht gefunden
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 Die angeforderte Fahndung konnte nicht gefunden werden.
               </p>
               <Link
@@ -250,8 +250,8 @@ export default function FahndungCategoriesContainer({
 
     if (!data) {
       return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-          <p className="text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
+          <p className="text-muted-foreground dark:text-muted-foreground">
             Keine Daten verfügbar.
           </p>
         </div>
@@ -323,8 +323,8 @@ export default function FahndungCategoriesContainer({
 
       default:
         return (
-          <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               Kategorie nicht verfügbar.
             </p>
           </div>
@@ -354,7 +354,7 @@ export default function FahndungCategoriesContainer({
               <div className="flex items-center gap-4">
                 <Link
                   href="/fahndungen"
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-white"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Zurück zu allen Fahndungen

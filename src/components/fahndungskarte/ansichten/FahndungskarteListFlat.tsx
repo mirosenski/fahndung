@@ -58,7 +58,7 @@ export default function FahndungskarteListFlat({
     const config = {
       urgent: { label: "DRINGEND", color: "bg-red-600", pulse: true },
       new: { label: "NEU", color: "bg-blue-600", pulse: false },
-      normal: { label: "STANDARD", color: "bg-gray-500", pulse: false },
+      normal: { label: "STANDARD", color: "bg-muted", pulse: false },
     };
 
     const priorityConfig =
@@ -86,7 +86,7 @@ export default function FahndungskarteListFlat({
       },
       UNKNOWN_DEAD: {
         label: "UNBEKANNTE TOTE",
-        color: "bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+        color: "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
       },
       STOLEN_GOODS: {
         label: "SACHEN",
@@ -112,11 +112,11 @@ export default function FahndungskarteListFlat({
       {investigations.map((investigation, index) => (
         <div
           key={investigation.id}
-          className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+          className="group relative overflow-hidden rounded-lg border border-border bg-white shadow-sm transition-all duration-200 hover:shadow-sm dark:border-border dark:bg-muted"
         >
           <div className="flex items-center">
             {/* Bild-Sektion - kleiner auf großen Bildschirmen */}
-            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-700 sm:h-20 sm:w-20 lg:h-12 lg:w-12">
+            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden bg-muted dark:bg-muted sm:h-20 sm:w-20 lg:h-12 lg:w-12">
               <Image
                 src={getSafeImageSrc(investigation)}
                 alt={`Hauptfoto von ${investigation.title}`}
@@ -143,7 +143,7 @@ export default function FahndungskarteListFlat({
                 {/* Titel und Badges */}
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-white lg:text-xs">
+                    <h3 className="truncate text-sm font-semibold text-muted-foreground dark:text-white lg:text-xs">
                       {investigation.title}
                     </h3>
                     {getCategoryBadge(investigation.category)}
@@ -152,7 +152,7 @@ export default function FahndungskarteListFlat({
                     <CaseNumberBadge caseNumber={investigation.case_number} />
                     {/* Standort - nur auf größeren Bildschirmen */}
                     {investigation.location && (
-                      <div className="hidden items-center gap-1 text-xs text-gray-500 dark:text-gray-400 md:flex">
+                      <div className="hidden items-center gap-1 text-xs text-muted-foreground dark:text-muted-foreground md:flex">
                         <MapPin className="h-3 w-3" />
                         <span className="max-w-24 truncate">
                           {investigation.location.split(",")[0]}
@@ -164,7 +164,7 @@ export default function FahndungskarteListFlat({
 
                 {/* Beschreibung - nur auf mittleren Bildschirmen */}
                 <div className="hidden max-w-xs flex-1 lg:block">
-                  <p className="line-clamp-1 text-xs text-gray-600 dark:text-gray-400">
+                  <p className="line-clamp-1 text-xs text-muted-foreground dark:text-muted-foreground">
                     {investigation.short_description ||
                       investigation.description?.substring(0, 80) + "..."}
                   </p>
@@ -182,7 +182,7 @@ export default function FahndungskarteListFlat({
                       </span>
                     ))}
                     {investigation.tags.length > 2 && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                         +{investigation.tags.length - 2}
                       </span>
                     )}
@@ -193,7 +193,7 @@ export default function FahndungskarteListFlat({
               {/* Rechte Seite - Metadaten und Actions */}
               <div className="ml-3 flex items-center gap-2">
                 {/* Erstellungsdatum - nur auf größeren Bildschirmen */}
-                <div className="hidden items-center gap-1 text-xs text-gray-500 dark:text-gray-400 sm:flex">
+                <div className="hidden items-center gap-1 text-xs text-muted-foreground dark:text-muted-foreground sm:flex">
                   <Clock className="h-3 w-3" />
                   <span>
                     {new Date(investigation.created_at).toLocaleDateString(
@@ -209,7 +209,7 @@ export default function FahndungskarteListFlat({
                       e.stopPropagation();
                       router.push(`/fahndungen/${investigation.id}?edit=true`);
                     }}
-                    className="flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group-hover:opacity-100"
+                    className="flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group-hover:opacity-100"
                     aria-label="Schnell bearbeiten"
                   >
                     <Edit3 className="h-3 w-3" />
@@ -227,7 +227,7 @@ export default function FahndungskarteListFlat({
                       ),
                     )
                   }
-                  className="flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  className="flex items-center gap-1 rounded-lg bg-muted px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                 >
                   <Eye className="h-3 w-3" />
                   <span className="hidden sm:inline">Details</span>

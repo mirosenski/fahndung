@@ -155,7 +155,7 @@ export const themeClasses = {
   modal: {
     overlay: "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm",
     content:
-      "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg",
+      "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-sm duration-200 sm:rounded-lg",
     header: "flex flex-col space-y-1.5 text-center sm:text-left",
     footer: "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
     title: "text-lg font-semibold leading-none tracking-tight",
@@ -164,14 +164,14 @@ export const themeClasses = {
   // Dropdown
   dropdown: {
     content:
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-background p-1 shadow-md",
-    item: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "z-50 min-w-[8rem] overflow-hidden rounded-lg border bg-background p-1 shadow-sm",
+    item: "relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-hidden transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
     separator: "my-1 h-px bg-border",
   },
   // Tooltip
   tooltip: {
     content:
-      "z-50 overflow-hidden rounded-md border bg-background px-3 py-1.5 text-sm text-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 overflow-hidden rounded-lg border bg-background px-3 py-1.5 text-sm text-foreground shadow-sm animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
   },
   // Progress
   progress: {
@@ -180,7 +180,7 @@ export const themeClasses = {
     indicator: "h-full w-full flex-1 bg-primary transition-all",
   },
   // Skeleton
-  skeleton: "animate-pulse rounded-md bg-background-secondary",
+  skeleton: "animate-pulse rounded-lg bg-background-secondary",
   // Divider
   divider: "border-t border-border",
   // Scrollbar

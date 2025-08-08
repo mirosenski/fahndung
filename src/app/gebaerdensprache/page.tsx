@@ -38,74 +38,74 @@ export default function GebaerdensprachePage() {
                 Videos in Gebärdensprache
               </h2>
               <div className="grid gap-6 md:grid-cols-2">
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Video className="h-6 w-6 text-blue-600" />
                     <h3 className="text-xl font-semibold">Über das LKA</h3>
                   </div>
-                  <p className="mb-4 text-gray-600 dark:text-gray-400">
+                  <p className="mb-4 text-muted-foreground dark:text-muted-foreground">
                     Einführung in die Arbeit des Landeskriminalamts
                     Baden-Württemberg
                   </p>
-                  <div className="rounded-lg bg-gray-200 p-4 text-center dark:bg-gray-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="rounded-lg bg-muted p-4 text-center dark:bg-muted">
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                       Video wird geladen...
                     </p>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                    <p className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">
                       Dauer: ca. 3 Minuten
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Video className="h-6 w-6 text-green-600" />
                     <h3 className="text-xl font-semibold">Kontakt</h3>
                   </div>
-                  <p className="mb-4 text-gray-600 dark:text-gray-400">
+                  <p className="mb-4 text-muted-foreground dark:text-muted-foreground">
                     Wie Sie uns erreichen können
                   </p>
-                  <div className="rounded-lg bg-gray-200 p-4 text-center dark:bg-gray-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="rounded-lg bg-muted p-4 text-center dark:bg-muted">
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                       Video wird geladen...
                     </p>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                    <p className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">
                       Dauer: ca. 2 Minuten
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Video className="h-6 w-6 text-purple-600" />
                     <h3 className="text-xl font-semibold">Notruf</h3>
                   </div>
-                  <p className="mb-4 text-gray-600 dark:text-gray-400">
+                  <p className="mb-4 text-muted-foreground dark:text-muted-foreground">
                     Wichtige Informationen zum Notruf
                   </p>
-                  <div className="rounded-lg bg-gray-200 p-4 text-center dark:bg-gray-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="rounded-lg bg-muted p-4 text-center dark:bg-muted">
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                       Video wird geladen...
                     </p>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                    <p className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">
                       Dauer: ca. 1 Minute
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Video className="h-6 w-6 text-red-600" />
                     <h3 className="text-xl font-semibold">Fahndung</h3>
                   </div>
-                  <p className="mb-4 text-gray-600 dark:text-gray-400">
+                  <p className="mb-4 text-muted-foreground dark:text-muted-foreground">
                     Informationen zur Fahndungsarbeit
                   </p>
-                  <div className="rounded-lg bg-gray-200 p-4 text-center dark:bg-gray-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="rounded-lg bg-muted p-4 text-center dark:bg-muted">
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                       Video wird geladen...
                     </p>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                    <p className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">
                       Dauer: ca. 4 Minuten
                     </p>
                   </div>
@@ -118,20 +118,20 @@ export default function GebaerdensprachePage() {
               <h2 className="mb-4 text-2xl font-semibold">Kontakt</h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <Mail className="mt-1 h-5 w-5 text-gray-600" />
+                  <Mail className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">E-Mail</p>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       poststelle@lka.polizei.bwl.de
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <Phone className="mt-1 h-5 w-5 text-gray-600" />
+                  <Phone className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Telefon</p>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       +49 711 5401-0
                     </p>
                   </div>

@@ -242,10 +242,10 @@ export default function MediaUploadRobust({
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg">
+    <div className="mx-auto w-full max-w-2xl rounded-lg bg-white p-6 shadow-sm">
       <div className="mb-6">
         <h3 className="mb-2 text-xl font-semibold">📁 Medien Upload</h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Laden Sie Bilder, Videos oder Dokumente hoch (max. 10MB)
         </p>
       </div>
@@ -277,18 +277,18 @@ export default function MediaUploadRobust({
       <div className="mb-6">
         <label className="block w-full">
           <div
-            className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-gray-400"
+            className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border transition-colors hover:border-border"
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <FileImage className="mb-2 h-10 w-10 text-gray-400" />
-            <span className="text-sm text-gray-600">
+            <FileImage className="mb-2 h-10 w-10 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
               {selectedFile
                 ? selectedFile.name
                 : "Klicken Sie hier oder ziehen Sie eine Datei herein"}
             </span>
-            <span className="mt-1 text-xs text-gray-500">
+            <span className="mt-1 text-xs text-muted-foreground">
               Unterstützt: Bilder, Videos, PDF, Dokumente
             </span>
           </div>
@@ -305,13 +305,13 @@ export default function MediaUploadRobust({
       {/* Preview */}
       {preview && (
         <div className="mb-6">
-          <h4 className="mb-2 text-sm font-medium text-gray-700">Vorschau:</h4>
+          <h4 className="mb-2 text-sm font-medium text-muted-foreground">Vorschau:</h4>
           <Image
             src={preview}
             alt="Vorschau"
             width={192}
             height={192}
-            className="max-h-48 rounded-lg shadow-md"
+            className="max-h-48 rounded-lg shadow-sm"
           />
         </div>
       )}
@@ -320,10 +320,10 @@ export default function MediaUploadRobust({
       {isUploading && (
         <div className="mb-6">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm text-gray-700">Upload läuft...</span>
-            <span className="text-sm text-gray-700">{progress}%</span>
+            <span className="text-sm text-muted-foreground">Upload läuft...</span>
+            <span className="text-sm text-muted-foreground">{progress}%</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-gray-200">
+          <div className="h-2 w-full rounded-full bg-muted">
             <div
               className="h-2 rounded-full bg-blue-600 transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -381,7 +381,7 @@ export default function MediaUploadRobust({
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isUploading || !session}
-          className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+          className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-muted"
         >
           {isUploading ? (
             <>
@@ -404,7 +404,7 @@ export default function MediaUploadRobust({
               setError(null);
               setUploadResult(null);
             }}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+            className="rounded-lg border border-border px-4 py-2 text-muted-foreground transition-colors hover:bg-muted"
           >
             <X className="mr-2 inline-block h-4 w-4" />
             Abbrechen

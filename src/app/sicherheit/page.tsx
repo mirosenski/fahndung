@@ -17,7 +17,7 @@ export default function SicherheitPage() {
       <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Fahndungen */}
         <Link href="/fahndungen" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2 text-primary">
                 <FileText className="h-6 w-6" />
@@ -34,7 +34,7 @@ export default function SicherheitPage() {
 
         {/* Statistiken */}
         <Link href="/statistiken" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
                 <TrendingUp className="h-6 w-6" />
@@ -52,7 +52,7 @@ export default function SicherheitPage() {
 
         {/* Hinweise */}
         <Link href="/hinweise" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-orange-500/10 p-2 text-orange-500">
                 <AlertTriangle className="h-6 w-6" />

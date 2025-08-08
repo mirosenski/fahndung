@@ -183,7 +183,7 @@ function QuadGallery({
       {images.slice(0, 4).map((image, index) => (
         <div
           key={image.id}
-          className="group relative overflow-hidden rounded-2xl bg-gray-100 transition-all hover:shadow-xl dark:bg-gray-700"
+          className="group relative overflow-hidden rounded-lg bg-muted transition-all hover:shadow-sm dark:bg-muted"
         >
           <div className="h-40 md:h-60">
             <Image
@@ -259,7 +259,7 @@ function GalleryWithCarousel({
 
   return (
     <div className="relative">
-      <div className="relative h-96 overflow-hidden rounded-xl">
+      <div className="relative h-96 overflow-hidden rounded-lg">
         <Image
           src={images[currentSlide]?.url ?? ""}
           alt={images[currentSlide]?.alt_text ?? ""}
@@ -320,7 +320,7 @@ function GalleryWithCarousel({
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`h-2 w-2 rounded-full transition-all ${
-              index === currentSlide ? "bg-purple-600" : "bg-gray-300"
+              index === currentSlide ? "bg-purple-600" : "bg-muted"
             }`}
           />
         ))}
@@ -582,11 +582,11 @@ export default function ModernMediaCategory({
     <div className="w-full space-y-6">
       {/* Aktionsleiste */}
       {isEditMode && (
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-4 shadow-lg dark:bg-gray-800">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white p-4 shadow-sm dark:bg-muted">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-white transition-all hover:shadow-lg"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-white transition-all hover:shadow-sm"
             >
               <UploadIcon className="h-4 w-4" /> Dateien auswählen
             </button>
@@ -594,8 +594,8 @@ export default function ModernMediaCategory({
               onClick={() => setIsBulkMode(!isBulkMode)}
               className={
                 isBulkMode
-                  ? "flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-white"
-                  : "flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  ? "flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white"
+                  : "flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
               }
             >
               <SquareIcon className="h-4 w-4" /> Mehrfachauswahl
@@ -604,7 +604,7 @@ export default function ModernMediaCategory({
               <>
                 <button
                   onClick={deleteSelectedImages}
-                  className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                  className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
                 >
                   <Trash2Icon className="h-4 w-4" /> Löschen (
                   {selectedImages.length})
@@ -613,7 +613,7 @@ export default function ModernMediaCategory({
                   onClick={() => {
                     // Download functionality
                   }}
-                  className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                 >
                   <DownloadIcon className="h-4 w-4" /> Herunterladen
                 </button>
@@ -625,7 +625,7 @@ export default function ModernMediaCategory({
             {isBulkMode && (
               <button
                 onClick={selectAllImages}
-                className="rounded-xl bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                className="rounded-lg bg-muted px-4 py-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
               >
                 {selectedImages.length === images.length
                   ? "Keine auswählen"
@@ -636,14 +636,14 @@ export default function ModernMediaCategory({
         </div>
       )}
       {/* Hauptinhalte */}
-      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+      <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
         {/* Drag & Drop - nur im Edit Mode */}
         {isEditMode && (
           <div
-            className={`mb-6 rounded-2xl border-2 border-dashed transition-all ${
+            className={`mb-6 rounded-lg border-2 border-dashed transition-all ${
               isDragging
                 ? "border-purple-500 bg-purple-50 dark:border-purple-400 dark:bg-purple-950"
-                : "border-gray-300 dark:border-gray-700"
+                : "border-border dark:border-border"
             }`}
             onDragOver={(e) => {
               e.preventDefault();
@@ -664,17 +664,17 @@ export default function ModernMediaCategory({
               </div>
             ) : (
               <div className="py-8 text-center">
-                <CameraIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <p className="mb-2 text-gray-600 dark:text-gray-400">
+                <CameraIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <p className="mb-2 text-muted-foreground dark:text-muted-foreground">
                   Ziehen Sie Dateien hierher oder
                 </p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="rounded-xl bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+                  className="rounded-lg bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
                 >
                   Dateien auswählen
                 </button>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   JPG, PNG, GIF, MP4, PDF (max. 50MB)
                 </p>
               </div>
@@ -689,10 +689,10 @@ export default function ModernMediaCategory({
               <button
                 key={tab.id}
                 onClick={() => setActiveGalleryTab(tab.id)}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                   activeGalleryTab === tab.id
-                    ? "bg-purple-600 text-white shadow-lg"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    ? "bg-purple-600 text-white shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                 }`}
               >
                 {tab.icon}
@@ -718,10 +718,10 @@ export default function ModernMediaCategory({
           <div className="flex justify-center">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-4 transition-all hover:border-purple-500 hover:bg-purple-50 dark:border-gray-600 dark:bg-gray-900 dark:hover:border-purple-500 dark:hover:bg-purple-950"
+              className="flex items-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted px-6 py-4 transition-all hover:border-purple-500 hover:bg-purple-50 dark:border-border dark:bg-muted dark:hover:border-purple-500 dark:hover:bg-purple-950"
             >
-              <PlusIcon className="h-6 w-6 text-gray-400" />
-              <span className="text-gray-500">Weitere Dateien hinzufügen</span>
+              <PlusIcon className="h-6 w-6 text-muted-foreground" />
+              <span className="text-muted-foreground">Weitere Dateien hinzufügen</span>
             </button>
           </div>
         )}
@@ -740,12 +740,12 @@ export default function ModernMediaCategory({
       </div>
       {/* AI‑Bildverbesserung */}
       {isEditMode && (
-        <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 p-6 dark:from-blue-950 dark:to-cyan-950">
+        <div className="rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 p-6 dark:from-blue-950 dark:to-cyan-950">
           <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-2xl bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
+            <div className="rounded-lg bg-white/50 p-3 backdrop-blur-sm dark:bg-white/10">
               <SparklesIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h3 className="text-xl font-bold text-muted-foreground dark:text-white">
               AI‑Bildverbesserung
             </h3>
           </div>
@@ -753,7 +753,7 @@ export default function ModernMediaCategory({
             {aiEnhancements.map((enhancement, index) => (
               <button
                 key={index}
-                className="flex flex-col items-center gap-2 rounded-xl bg-white/50 p-4 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:bg-white/10 dark:hover:bg-white/20"
+                className="flex flex-col items-center gap-2 rounded-lg bg-white/50 p-4 backdrop-blur-sm transition-all hover:bg-white hover:shadow-sm dark:bg-white/10 dark:hover:bg-white/20"
               >
                 {enhancement.icon}
                 <span className="text-center text-xs">{enhancement.label}</span>
@@ -765,9 +765,9 @@ export default function ModernMediaCategory({
       {/* Editor Modal */}
       {isEditorOpen && selectedImage !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-          <div className="h-full w-full max-w-6xl bg-white dark:bg-gray-900">
+          <div className="h-full w-full max-w-6xl bg-white dark:bg-muted">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+            <div className="flex items-center justify-between border-b border-border p-4 dark:border-border">
               <h3 className="text-xl font-bold">Bildeditor</h3>
               <div className="flex items-center gap-2">
                 <button className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700">
@@ -775,48 +775,48 @@ export default function ModernMediaCategory({
                 </button>
                 <button
                   onClick={() => setIsEditorOpen(false)}
-                  className="rounded-lg bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                  className="rounded-lg bg-muted p-2 hover:bg-muted dark:bg-muted dark:hover:bg-muted"
                 >
                   <Trash2Icon className="h-5 w-5" />
                 </button>
               </div>
             </div>
             {/* Toolbar */}
-            <div className="flex items-center gap-2 border-b border-gray-200 p-4 dark:border-gray-700">
-              <button className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <div className="flex items-center gap-2 border-b border-border p-4 dark:border-border">
+              <button className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted">
                 <CropIcon className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setRotation(rotation + 90)}
-                className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted"
               >
                 <RotateCwIcon className="h-5 w-5" />
               </button>
-              <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
-              <button className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
+              <button className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted">
                 <SunIcon className="h-5 w-5" />
               </button>
-              <button className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <button className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted">
                 <ContrastIcon className="h-5 w-5" />
               </button>
-              <button className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <button className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted">
                 <DropletsIcon className="h-5 w-5" />
               </button>
-              <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
-              <button className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
+              <button className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted">
                 <FilterIcon className="h-5 w-5" />
               </button>
-              <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+              <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
               <button
                 onClick={() => setZoom(Math.max(25, zoom - 10))}
-                className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted"
               >
                 <ZoomOutIcon className="h-5 w-5" />
               </button>
               <span className="px-2 text-sm">{zoom}%</span>
               <button
                 onClick={() => setZoom(Math.min(200, zoom + 10))}
-                className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="rounded-lg p-2 hover:bg-muted dark:hover:bg-muted"
               >
                 <ZoomInIcon className="h-5 w-5" />
               </button>
@@ -824,7 +824,7 @@ export default function ModernMediaCategory({
             {/* Editor Area */}
             <div className="flex h-[calc(100%-200px)]">
               {/* Filterliste */}
-              <div className="w-48 border-r border-gray-200 p-4 dark:border-gray-700">
+              <div className="w-48 border-r border-border p-4 dark:border-border">
                 <h4 className="mb-3 font-semibold">Filter</h4>
                 <div className="space-y-2">
                   {filters.map((filter) => (
@@ -834,7 +834,7 @@ export default function ModernMediaCategory({
                       className={`w-full rounded-lg p-2 text-left text-sm transition-all ${
                         selectedFilter === filter.name
                           ? "bg-purple-600 text-white"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                          : "hover:bg-muted dark:hover:bg-muted"
                       }`}
                     >
                       {filter.label}
@@ -843,7 +843,7 @@ export default function ModernMediaCategory({
                 </div>
               </div>
               {/* Bild */}
-              <div className="flex flex-1 items-center justify-center bg-gray-100 dark:bg-gray-800">
+              <div className="flex flex-1 items-center justify-center bg-muted dark:bg-muted">
                 <div
                   style={{
                     transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
@@ -862,9 +862,9 @@ export default function ModernMediaCategory({
                 </div>
               </div>
               {/* Placeholder für weitere Einstellungen */}
-              <div className="w-64 border-l border-gray-200 p-4 dark:border-gray-700">
+              <div className="w-64 border-l border-border p-4 dark:border-border">
                 <h4 className="mb-3 font-semibold">Anpassungen</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                   Helligkeit, Kontrast, Sättigung etc.
                 </p>
               </div>
@@ -918,12 +918,12 @@ export default function ModernMediaCategory({
       {/* Upload Fortschritt */}
       {uploadProgress > 0 && uploadProgress < 100 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-3xl bg-white p-6 dark:bg-gray-800">
+          <div className="rounded-lg bg-white p-6 dark:bg-muted">
             <div className="mb-4 flex items-center gap-3">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
               <p className="font-medium">Dateien werden hochgeladen...</p>
             </div>
-            <div className="h-2 w-64 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="h-2 w-64 overflow-hidden rounded-full bg-muted dark:bg-muted">
               <div
                 className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
@@ -935,7 +935,7 @@ export default function ModernMediaCategory({
 
       {/* Validierung */}
       {images.length === 0 && (
-        <div className="rounded-2xl border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
+        <div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
           <div className="flex items-center gap-3">
             <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
             <div>

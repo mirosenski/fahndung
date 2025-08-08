@@ -24,7 +24,7 @@ export default function PolizeiPage() {
       <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Über uns */}
         <Link href="/kontakt" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2 text-primary">
                 <Building2 className="h-6 w-6" />
@@ -41,7 +41,7 @@ export default function PolizeiPage() {
 
         {/* Karriere */}
         <Link href="/kontakt" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
                 <GraduationCap className="h-6 w-6" />
@@ -58,7 +58,7 @@ export default function PolizeiPage() {
 
         {/* Presse */}
         <Link href="/kontakt" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-green-500/10 p-2 text-green-500">
                 <Newspaper className="h-6 w-6" />

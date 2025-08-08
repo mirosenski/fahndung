@@ -176,7 +176,7 @@ export default function MediaGrid({
             </button>
             <button
               onClick={clearSelection}
-              className="flex items-center space-x-1 rounded bg-gray-600 px-3 py-1 text-sm text-white hover:bg-gray-700"
+              className="flex items-center space-x-1 rounded bg-muted px-3 py-1 text-sm text-white hover:bg-muted"
             >
               <X className="h-4 w-4" />
               <span>Abbrechen</span>
@@ -193,11 +193,11 @@ export default function MediaGrid({
       {/* Empty State */}
       {items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <ImageIcon className="h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+          <ImageIcon className="h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-medium text-muted-foreground dark:text-white">
             Keine Medien gefunden
           </h3>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
             Laden Sie Dateien hoch oder ändern Sie Ihre Filter-Einstellungen.
           </p>
         </div>
@@ -243,7 +243,7 @@ function MediaItemComponent({
       className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 ${
         isSelected
           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-          : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
+          : "border-border bg-white hover:border-border dark:border-border dark:bg-muted dark:hover:border-border"
       }`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -256,7 +256,7 @@ function MediaItemComponent({
           className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
             isSelected
               ? "border-blue-500 bg-blue-500 text-white"
-              : "border-gray-300 bg-white hover:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
+              : "border-border bg-white hover:border-blue-500 dark:border-border dark:bg-muted"
           }`}
         >
           {isSelected && <Check className="h-3 w-3" />}
@@ -276,8 +276,8 @@ function MediaItemComponent({
             loading={index === 0 ? "eager" : "lazy"}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-700">
-            <Icon className="h-12 w-12 text-gray-400" />
+          <div className="flex h-full w-full items-center justify-center bg-muted dark:bg-muted">
+            <Icon className="h-12 w-12 text-muted-foreground" />
           </div>
         )}
 
@@ -293,7 +293,7 @@ function MediaItemComponent({
                 e.stopPropagation();
                 onClick();
               }}
-              className="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-100"
+              className="rounded-full bg-white p-2 text-muted-foreground hover:bg-muted"
               title="Vorschau"
             >
               <Eye className="h-4 w-4" />
@@ -303,7 +303,7 @@ function MediaItemComponent({
                 e.stopPropagation();
                 onEdit(item);
               }}
-              className="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-100"
+              className="rounded-full bg-white p-2 text-muted-foreground hover:bg-muted"
               title="Bearbeiten"
             >
               <Edit className="h-4 w-4" />
@@ -326,7 +326,7 @@ function MediaItemComponent({
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white">
         <div className="space-y-1">
           <p className="truncate text-sm font-medium">{item.original_name}</p>
-          <div className="flex items-center justify-between text-xs text-gray-300">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{formatFileSize(item.file_size)}</span>
             <span>{formatDate(item.uploaded_at)}</span>
           </div>

@@ -89,7 +89,7 @@ export function TabDropdown({
         <div
           ref={dropdownRef}
           className={cn(
-            "absolute z-[9999] min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+            "absolute z-[9999] min-w-[8rem] overflow-hidden rounded-lg border bg-popover p-1 text-popover-foreground shadow-sm",
             align === "start" && "left-0",
             align === "center" && "left-1/2 -translate-x-1/2 transform",
             align === "end" && "right-0",
@@ -122,7 +122,7 @@ export function TabDropdownItem({
   return (
     <div
       className={cn(
-        "dropdown-item-focus outline-hidden relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+        "dropdown-item-focus outline-hidden relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
         disabled && "pointer-events-none opacity-50",
         className,
       )}

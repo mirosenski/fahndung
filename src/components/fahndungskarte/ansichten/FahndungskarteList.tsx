@@ -58,7 +58,7 @@ export default function FahndungskarteList({
     const config = {
       urgent: { label: "DRINGEND", color: "bg-red-600", pulse: true },
       new: { label: "NEU", color: "bg-blue-600", pulse: false },
-      normal: { label: "STANDARD", color: "bg-gray-500", pulse: false },
+      normal: { label: "STANDARD", color: "bg-muted", pulse: false },
     };
 
     const priorityConfig =
@@ -86,7 +86,7 @@ export default function FahndungskarteList({
       },
       UNKNOWN_DEAD: {
         label: "UNBEKANNTE TOTE",
-        color: "bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+        color: "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
       },
       STOLEN_GOODS: {
         label: "SACHEN",
@@ -112,11 +112,11 @@ export default function FahndungskarteList({
       {investigations.map((investigation, index) => (
         <div
           key={investigation.id}
-          className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+          className="group relative overflow-hidden rounded-lg border border-border bg-white shadow-sm transition-all duration-200 hover:shadow-sm dark:border-border dark:bg-muted"
         >
           <div className="flex">
             {/* Bild-Sektion */}
-            <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-700">
+            <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden bg-muted dark:bg-muted">
               <Image
                 src={getSafeImageSrc(investigation)}
                 alt={`Hauptfoto von ${investigation.title}`}
@@ -142,7 +142,7 @@ export default function FahndungskarteList({
                 {/* Header mit Titel und Badges */}
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="truncate text-lg font-semibold text-muted-foreground dark:text-white">
                       {investigation.title}
                     </h3>
                     <div className="mt-1 flex items-center gap-2">
@@ -160,7 +160,7 @@ export default function FahndungskarteList({
                           `/fahndungen/${investigation.id}?edit=true`,
                         );
                       }}
-                      className="flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group-hover:opacity-100"
+                      className="flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 group-hover:opacity-100"
                       aria-label="Schnell bearbeiten"
                     >
                       <Edit3 className="h-3 w-3" />
@@ -170,7 +170,7 @@ export default function FahndungskarteList({
                 </div>
 
                 {/* Beschreibung */}
-                <p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
+                <p className="line-clamp-2 text-sm text-muted-foreground dark:text-muted-foreground">
                   {investigation.short_description ||
                     investigation.description?.substring(0, 150) + "..."}
                 </p>
@@ -187,7 +187,7 @@ export default function FahndungskarteList({
                       </span>
                     ))}
                     {investigation.tags.length > 3 && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                         +{investigation.tags.length - 3} weitere
                       </span>
                     )}
@@ -196,7 +196,7 @@ export default function FahndungskarteList({
               </div>
 
               {/* Footer mit Metadaten */}
-              <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
                 <div className="flex items-center gap-4">
                   {/* Standort */}
                   {investigation.location && (
@@ -230,7 +230,7 @@ export default function FahndungskarteList({
                         ),
                       )
                     }
-                    className="flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                   >
                     <Eye className="h-3 w-3" />
                     Details

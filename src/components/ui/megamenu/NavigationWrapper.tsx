@@ -13,7 +13,7 @@ const DesktopMegaMenu = dynamic(
     ssr: false,
     loading: () => (
       <div className="hidden md:block">
-        <div className="h-16 animate-pulse bg-gray-200 dark:bg-gray-700" />
+        <div className="h-16 animate-pulse bg-muted dark:bg-muted" />
       </div>
     ),
   },
@@ -59,7 +59,7 @@ export default function NavigationWrapper({ logo }: NavigationWrapperProps) {
 
   // Verhindere Hydration-Mismatch
   if (!isHydrated) {
-    return <div className="h-16 animate-pulse bg-gray-200 dark:bg-gray-700" />;
+    return <div className="h-16 animate-pulse bg-muted dark:bg-muted" />;
   }
 
   return (

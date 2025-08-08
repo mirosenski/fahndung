@@ -116,7 +116,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-gray-200 bg-background">
+    <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="md:flex md:justify-between">
           {/* Logo und Beschreibung - Links */}
@@ -124,7 +124,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
             <Link href="/" className="flex items-center">
               <Logo className="text-foreground" showLink={false} />
             </Link>
-            <p className="mt-4 max-w-sm text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-4 max-w-sm text-sm text-muted-foreground dark:text-muted-foreground">
               Landeskriminalamt Baden-Württemberg - Zentrale Dienststelle für
               polizeiliche Kriminalitätsbekämpfung und Fahndung.
             </p>
@@ -133,10 +133,10 @@ export default function Footer({ variant = "home" }: FooterProps) {
           {/* Navigation - Rechts */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 sm:gap-6">
             <div>
-              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
+              <h2 className="mb-6 text-sm font-semibold uppercase text-muted-foreground dark:text-white">
                 Navigation
               </h2>
-              <ul className="font-medium text-gray-500 dark:text-gray-400">
+              <ul className="font-medium text-muted-foreground dark:text-muted-foreground">
                 {menuItems.map((item) => (
                   <li key={item.href} className="mb-4">
                     <Link href={item.href} className="hover:underline">
@@ -160,10 +160,10 @@ export default function Footer({ variant = "home" }: FooterProps) {
 
             {/* Rechtliche Links */}
             <div>
-              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
+              <h2 className="mb-6 text-sm font-semibold uppercase text-muted-foreground dark:text-white">
                 Rechtliches
               </h2>
-              <ul className="font-medium text-gray-500 dark:text-gray-400">
+              <ul className="font-medium text-muted-foreground dark:text-muted-foreground">
                 {legalItems.map((item) => (
                   <li key={item.href} className="mb-4">
                     <Link href={item.href} className="hover:underline">
@@ -177,11 +177,11 @@ export default function Footer({ variant = "home" }: FooterProps) {
         </div>
 
         {/* Trennlinie */}
-        <hr className="my-6 border-gray-200 dark:border-gray-700 sm:mx-auto lg:my-8" />
+        <hr className="my-6 border-border dark:border-border sm:mx-auto lg:my-8" />
 
         {/* Copyright, Theme Toggle und Social Media */}
         <div className="sm:flex sm:items-center sm:justify-between">
-          <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
+          <span className="text-sm text-muted-foreground dark:text-muted-foreground sm:text-center">
             © {currentYear}{" "}
             <Link href="/" className="hover:underline">
               Landeskriminalamt Baden-Württemberg
@@ -217,7 +217,7 @@ export default function Footer({ variant = "home" }: FooterProps) {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 transition-colors hover:text-gray-900 dark:hover:text-white"
+                  className="text-muted-foreground transition-colors hover:text-muted-foreground dark:hover:text-white"
                   title={item.label}
                 >
                   <Icon className="h-5 w-5" />

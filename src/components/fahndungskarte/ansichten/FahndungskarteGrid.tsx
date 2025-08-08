@@ -13,7 +13,7 @@ const Fahndungskarte = dynamic(
     ssr: false,
     loading: () => (
       <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+        <div className="h-64 rounded-lg bg-muted dark:bg-muted"></div>
       </div>
     ),
   },

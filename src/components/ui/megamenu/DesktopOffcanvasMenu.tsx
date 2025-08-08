@@ -170,23 +170,23 @@ export function DesktopOffcanvasMenu({
 
           {/* Offcanvas */}
           <div
-            className="fixed right-0 top-0 z-[9999] h-full w-full max-w-xs bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-background"
+            className="fixed right-0 top-0 z-[9999] h-full w-full max-w-xs bg-white shadow-sm transition-transform duration-300 ease-out dark:bg-background"
             role="dialog"
             aria-modal="true"
             aria-labelledby="desktop-offcanvas-title"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-border">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3 dark:border-border">
               <h3
                 id="desktop-offcanvas-title"
-                className="font-bold text-gray-800 dark:text-foreground"
+                className="font-bold text-muted-foreground dark:text-foreground"
               >
                 Menü
               </h3>
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-muted dark:text-muted-foreground dark:hover:bg-accent dark:focus:bg-accent"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-muted text-muted-foreground hover:bg-muted focus:bg-muted focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-muted dark:text-muted-foreground dark:hover:bg-accent dark:focus:bg-accent"
                 aria-label="Menü schließen"
               >
                 <span className="sr-only">Schließen</span>
@@ -197,15 +197,15 @@ export function DesktopOffcanvasMenu({
             {/* Content */}
             <div className="flex h-full flex-col">
               {/* Search */}
-              <div className="border-b border-gray-200 p-4 dark:border-border">
+              <div className="border-b border-border p-4 dark:border-border">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     type="text"
                     placeholder="Menü durchsuchen..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-input dark:bg-background dark:text-foreground dark:placeholder-muted-foreground"
+                    className="w-full rounded-lg border border-border bg-white px-10 py-2 text-sm text-muted-foreground placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-input dark:bg-background dark:text-foreground dark:placeholder-muted-foreground"
                   />
                 </div>
               </div>
@@ -223,7 +223,7 @@ export function DesktopOffcanvasMenu({
                             handleItemClick(item.href);
                           }
                         }}
-                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-foreground dark:hover:bg-accent"
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted dark:text-foreground dark:hover:bg-accent"
                       >
                         <div className="flex items-center gap-3">
                           {item.icon}
@@ -250,7 +250,7 @@ export function DesktopOffcanvasMenu({
                             <button
                               key={subItem.label}
                               onClick={() => handleItemClick(subItem.href)}
-                              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-gray-600 transition-colors hover:bg-gray-50 dark:text-muted-foreground dark:hover:bg-accent"
+                              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted dark:text-muted-foreground dark:hover:bg-accent"
                             >
                               {subItem.icon}
                               <span>{subItem.label}</span>
@@ -263,17 +263,17 @@ export function DesktopOffcanvasMenu({
                 </div>
 
                 {/* Auth Section */}
-                <div className="mt-6 border-t border-gray-200 pt-4 dark:border-border">
+                <div className="mt-6 border-t border-border pt-4 dark:border-border">
                   {isAuthenticated ? (
                     <div className="space-y-2">
                       {/* User Info */}
-                      <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 dark:text-muted-foreground">
+                      <div className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground dark:text-muted-foreground">
                         <User className="h-4 w-4" />
                         <div className="flex flex-col">
-                          <span className="font-medium text-gray-700 dark:text-foreground">
+                          <span className="font-medium text-muted-foreground dark:text-foreground">
                             Angemeldet als:
                           </span>
-                          <span className="text-xs text-gray-500 dark:text-muted-foreground">
+                          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                             {session?.user?.email ?? "Unbekannt"}
                           </span>
                         </div>
@@ -284,7 +284,7 @@ export function DesktopOffcanvasMenu({
                           router.push("/dashboard");
                           onClose();
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-foreground dark:hover:bg-accent"
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted dark:text-foreground dark:hover:bg-accent"
                       >
                         <Shield className="h-4 w-4" />
                         <span>Dashboard</span>

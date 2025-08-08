@@ -154,21 +154,21 @@ export default function ModernDescriptionCategory({
   };
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
       {/* Hauptbeschreibung */}
       <div className="mb-6">
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-bold text-muted-foreground dark:text-white">
             Beschreibung
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">
             Detaillierte Beschreibung des Falls
           </p>
         </div>
         {isEditMode ? (
           <div className="space-y-4">
             {/* Tabs */}
-            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between border-b border-border dark:border-border">
               <div className="flex gap-1">
                 <Button
                   variant={activeTab === "write" ? "default" : "ghost"}
@@ -198,7 +198,7 @@ export default function ModernDescriptionCategory({
                 >
                   <MinusIcon className="h-4 w-4" />
                 </Button>
-                <span className="min-w-[40px] text-center text-sm text-gray-600 dark:text-gray-400">
+                <span className="min-w-[40px] text-center text-sm text-muted-foreground dark:text-muted-foreground">
                   {fontSize}px
                 </span>
                 <Button
@@ -213,7 +213,7 @@ export default function ModernDescriptionCategory({
 
             {/* Formatierungsleiste */}
             {activeTab === "write" && (
-              <div className="flex flex-wrap items-center gap-1 rounded-xl bg-gray-50 p-2 dark:bg-gray-900">
+              <div className="flex flex-wrap items-center gap-1 rounded-lg bg-muted p-2 dark:bg-muted">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -238,14 +238,14 @@ export default function ModernDescriptionCategory({
                 >
                   <UnderlineIcon className="h-4 w-4" />
                 </Button>
-                <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Heading1Icon className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Heading2Icon className="h-4 w-4" />
                 </Button>
-                <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <ListIcon className="h-4 w-4" />
                 </Button>
@@ -268,14 +268,14 @@ export default function ModernDescriptionCategory({
                 >
                   <CodeIcon className="h-4 w-4" />
                 </Button>
-                <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <LinkIcon className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <ImageIcon className="h-4 w-4" />
                 </Button>
-                <div className="mx-2 h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                <div className="mx-2 h-6 w-px bg-muted dark:bg-muted" />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -297,14 +297,14 @@ export default function ModernDescriptionCategory({
 
             {/* Emoji‑Picker */}
             {showEmojiPicker && (
-              <div className="flex flex-wrap gap-2 rounded-xl bg-gray-50 p-3 dark:bg-gray-900">
+              <div className="flex flex-wrap gap-2 rounded-lg bg-muted p-3 dark:bg-muted">
                 {quickEmojis.map((emoji, index) => (
                   <Button
                     key={index}
                     variant="ghost"
                     size="sm"
                     onClick={() => insertEmoji(emoji)}
-                    className="h-10 w-10 p-0 text-2xl hover:bg-white hover:shadow-sm dark:hover:bg-gray-800"
+                    className="h-10 w-10 p-0 text-2xl hover:bg-white hover:shadow-sm dark:hover:bg-muted"
                   >
                     {emoji}
                   </Button>
@@ -318,7 +318,7 @@ export default function ModernDescriptionCategory({
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center gap-2">
                     <Wand2Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <h3 className="font-semibold text-muted-foreground dark:text-white">
                       AI Schreibvorschläge
                     </h3>
                   </div>
@@ -329,7 +329,7 @@ export default function ModernDescriptionCategory({
                         variant="outline"
                         size="sm"
                         onClick={() => insertAISuggestion(suggestion)}
-                        className="bg-white/50 backdrop-blur-sm hover:bg-white hover:shadow-md dark:bg-white/10 dark:hover:bg-white/20"
+                        className="bg-white/50 backdrop-blur-sm hover:bg-white hover:shadow-sm dark:bg-white/10 dark:hover:bg-white/20"
                       >
                         {suggestion}
                       </Button>
@@ -356,7 +356,7 @@ export default function ModernDescriptionCategory({
                   className={`min-h-[400px] resize-none border-2 transition-all ${
                     focusedField === "description"
                       ? "border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800"
-                      : "border-gray-200 dark:border-gray-700"
+                      : "border-border dark:border-border"
                   }`}
                   placeholder={
                     "Beginnen Sie mit der Beschreibung des Falls...\n\n" +
@@ -365,13 +365,13 @@ export default function ModernDescriptionCategory({
                   style={{ fontSize: `${fontSize}px`, lineHeight }}
                 />
                 {showToolbar && selectedText && (
-                  <div className="absolute left-1/2 top-20 z-10 -translate-x-1/2 rounded-xl bg-gray-900 p-2 shadow-2xl dark:bg-gray-700">
+                  <div className="absolute left-1/2 top-20 z-10 -translate-x-1/2 rounded-lg bg-muted p-2 shadow-sm dark:bg-muted">
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => applyFormat("bold")}
-                        className="h-8 w-8 p-0 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
+                        className="h-8 w-8 p-0 text-white hover:bg-muted dark:hover:bg-muted"
                       >
                         <BoldIcon className="h-4 w-4" />
                       </Button>
@@ -379,7 +379,7 @@ export default function ModernDescriptionCategory({
                         variant="ghost"
                         size="sm"
                         onClick={() => applyFormat("italic")}
-                        className="h-8 w-8 p-0 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
+                        className="h-8 w-8 p-0 text-white hover:bg-muted dark:hover:bg-muted"
                       >
                         <ItalicIcon className="h-4 w-4" />
                       </Button>
@@ -387,7 +387,7 @@ export default function ModernDescriptionCategory({
                         variant="ghost"
                         size="sm"
                         onClick={() => applyFormat("underline")}
-                        className="h-8 w-8 p-0 text-white hover:bg-gray-800 dark:hover:bg-gray-600"
+                        className="h-8 w-8 p-0 text-white hover:bg-muted dark:hover:bg-muted"
                       >
                         <UnderlineIcon className="h-4 w-4" />
                       </Button>
@@ -396,7 +396,7 @@ export default function ModernDescriptionCategory({
                 )}
               </div>
             ) : (
-              <div className="prose prose-lg dark:prose-invert max-w-none rounded-xl bg-gray-50 p-6 dark:bg-gray-900">
+              <div className="prose prose-lg dark:prose-invert max-w-none rounded-lg bg-muted p-6 dark:bg-muted">
                 <div
                   className="whitespace-pre-wrap"
                   style={{ fontSize: `${fontSize}px`, lineHeight }}
@@ -416,7 +416,7 @@ export default function ModernDescriptionCategory({
           </div>
         ) : (
           <div className="prose prose-lg max-w-none">
-            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+            <div className="whitespace-pre-wrap text-muted-foreground dark:text-muted-foreground">
               {step2.description || "Keine Beschreibung verfügbar."}
             </div>
           </div>
@@ -426,10 +426,10 @@ export default function ModernDescriptionCategory({
       {/* Kurzbeschreibung */}
       <div className="mb-6">
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-bold text-muted-foreground dark:text-white">
             Kurzbeschreibung
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">
             Wichtige Merkmale und Kennzeichen
           </p>
         </div>
@@ -442,13 +442,13 @@ export default function ModernDescriptionCategory({
             className={`min-h-[120px] resize-none border-2 transition-all ${
               focusedField === "features"
                 ? "border-orange-500 ring-2 ring-orange-200 dark:ring-orange-800"
-                : "border-gray-200 dark:border-gray-700"
+                : "border-border dark:border-border"
             }`}
             placeholder="Wichtige Merkmale, Kennzeichen, Auffälligkeiten..."
           />
         ) : (
-          <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900">
-            <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <p className="whitespace-pre-wrap text-muted-foreground dark:text-muted-foreground">
               {step2.features ?? "Keine Kurzbeschreibung angegeben."}
             </p>
           </div>
@@ -458,10 +458,10 @@ export default function ModernDescriptionCategory({
       {/* Besondere Merkmale */}
       <div className="mb-6">
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-bold text-muted-foreground dark:text-white">
             Besondere Merkmale
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">
             Narben, Tattoos, besondere Kleidung, Auffälligkeiten
           </p>
         </div>
@@ -474,13 +474,13 @@ export default function ModernDescriptionCategory({
             className={`min-h-[120px] resize-none border-2 transition-all ${
               focusedField === "features"
                 ? "border-cyan-500 ring-2 ring-cyan-200 dark:ring-cyan-800"
-                : "border-gray-200 dark:border-gray-700"
+                : "border-border dark:border-border"
             }`}
             placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
           />
         ) : (
-          <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900">
-            <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <p className="whitespace-pre-wrap text-muted-foreground dark:text-muted-foreground">
               {step2.features ?? "Keine besonderen Merkmale angegeben."}
             </p>
           </div>
@@ -490,49 +490,49 @@ export default function ModernDescriptionCategory({
       {/* Zusätzliche Dokumente */}
       <div className="mb-6">
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-bold text-muted-foreground dark:text-white">
             Zusätzliche Dokumente
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">
             PDF, Word, Bilder und andere Dateien
           </p>
         </div>
         {isEditMode ? (
           <div className="space-y-4">
             {/* Datei-Upload */}
-            <div className="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-600">
+            <div className="rounded-lg border-2 border-dashed border-border p-6 text-center dark:border-border">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
                 <FileTextIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="mb-2 text-lg font-semibold text-muted-foreground dark:text-white">
                 Dateien hochladen
               </h3>
-              <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mb-4 text-sm text-muted-foreground dark:text-muted-foreground">
                 Ziehen Sie Dateien hierher oder klicken Sie zum Auswählen
               </p>
               <Button className="bg-purple-600 hover:bg-purple-700">
                 <FileTextIcon className="mr-2 h-4 w-4" />
                 Dateien auswählen
               </Button>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-xs text-muted-foreground dark:text-muted-foreground">
                 PDF, Word, Excel, Bilder (max. 10MB pro Datei)
               </p>
             </div>
             {/* Hochgeladene Dateien */}
             <div className="space-y-2">
-              <h4 className="font-medium text-gray-900 dark:text-white">
+              <h4 className="font-medium text-muted-foreground dark:text-white">
                 Hochgeladene Dateien:
               </h4>
-              <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="rounded-lg bg-muted p-3 dark:bg-muted">
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                   Noch keine Dateien hochgeladen
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-900">
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               Keine zusätzlichen Dokumente verfügbar.
             </p>
           </div>

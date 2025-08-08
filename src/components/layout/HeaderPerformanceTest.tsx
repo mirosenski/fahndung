@@ -115,13 +115,13 @@ export const HeaderPerformanceTest: React.FC = () => {
     <div className="fixed bottom-4 right-4 z-50">
       <button
         onClick={() => setIsVisible(!isVisible)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors"
       >
         {isVisible ? "Hide" : "Show"} Performance
       </button>
       
       {isVisible && (
-        <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 w-80">
+        <div className="absolute bottom-full right-0 mb-2 bg-white border border-border rounded-lg shadow-sm p-4 w-80">
           <h3 className="font-bold text-lg mb-3">Header Performance Test</h3>
           
           <div className="space-y-2 text-sm">
@@ -151,7 +151,7 @@ export const HeaderPerformanceTest: React.FC = () => {
             </div>
           </div>
           
-          <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+          <div className="mt-4 p-2 bg-muted rounded text-xs">
             <div className="font-bold mb-1">Performance Targets:</div>
             <div>• FPS: ≥58 (Excellent)</div>
             <div>• Scroll Events: &lt;100 (Excellent)</div>
@@ -159,7 +159,7 @@ export const HeaderPerformanceTest: React.FC = () => {
             <div>• Layout Shifts: 0</div>
           </div>
           
-          <div className="mt-3 text-xs text-gray-600">
+          <div className="mt-3 text-xs text-muted-foreground">
             <div className="font-bold mb-1">Chrome DevTools:</div>
             <div>• Performance Tab: Aufnahme während Scrollen</div>
             <div>• Rendering Tab: Paint Flashing aktivieren</div>

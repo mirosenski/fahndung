@@ -230,13 +230,13 @@ export default function UsersTab({
 
   if (!isAdmin) {
     return (
-      <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <div className="shadow-xs rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="text-center">
-          <Shield className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-          <h3 className="mb-2 text-lg font-medium text-gray-600 dark:text-gray-400">
+          <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 text-lg font-medium text-muted-foreground dark:text-muted-foreground">
             Admin-Zugriff erforderlich
           </h3>
-          <p className="text-gray-500 dark:text-gray-500">
+          <p className="text-muted-foreground dark:text-muted-foreground">
             Nur Administratoren können die Benutzerverwaltung einsehen.
           </p>
         </div>
@@ -293,8 +293,8 @@ export default function UsersTab({
       </div>
 
       {/* Admin Tabs */}
-      <div className="shadow-xs rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-        <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="shadow-xs rounded-lg border border-border bg-white dark:border-border dark:bg-muted">
+        <div className="border-b border-border dark:border-border">
           <nav className="flex space-x-8 px-6">
             {[
               { id: "users", label: "Benutzer", icon: Users },
@@ -327,7 +327,7 @@ export default function UsersTab({
                   className={`flex cursor-pointer items-center space-x-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
                     adminActiveTab === tab.id
                       ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                      : "border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                      : "border-transparent text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -404,17 +404,17 @@ function StatCard({ icon: Icon, title, value, color }: StatCardProps) {
     green: "text-green-500",
     yellow: "text-yellow-500",
     red: "text-red-500",
-    gray: "text-gray-500",
+    gray: "text-muted-foreground",
     purple: "text-purple-500",
   };
 
   return (
-    <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+    <div className="shadow-xs rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
       <div className="flex items-center space-x-3">
         <Icon className={`h-8 w-8 ${colorClasses[color]}`} />
         <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold text-muted-foreground dark:text-white">
             {value}
           </p>
         </div>
@@ -464,11 +464,11 @@ function AdminUserList({
       {/* User Filters */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground">
             Suche
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               value={userSearchTerm}
@@ -480,7 +480,7 @@ function AdminUserList({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Rolle
           </label>
           <select
@@ -497,7 +497,7 @@ function AdminUserList({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Status
           </label>
           <select
@@ -534,15 +534,15 @@ function AdminUserList({
           filteredUsers.map((user) => (
             <div
               key={user.id}
-              className="shadow-xs flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+              className="shadow-xs flex items-center justify-between rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-muted"
             >
               <div className="flex-1">
                 <div className="flex items-center space-x-3">
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">
+                    <h3 className="font-medium text-muted-foreground dark:text-white">
                       {user.email}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                       {user.name ?? "Kein Name"}
                     </p>
                   </div>
@@ -573,7 +573,7 @@ function AdminUserList({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => void onLoadUserDetails(user)}
-                  className="p-2 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-white"
+                  className="p-2 text-muted-foreground transition-colors hover:text-muted-foreground dark:hover:text-white"
                   title="Details anzeigen"
                 >
                   <Eye className="h-4 w-4" />
@@ -591,7 +591,7 @@ function AdminUserList({
                         | "super_admin",
                     )
                   }
-                  className="focus:outline-hidden rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="focus:outline-hidden rounded border border-border bg-white px-2 py-1 text-xs text-muted-foreground focus:border-blue-500 dark:border-border dark:bg-muted dark:text-white"
                 >
                   <option value="user">Benutzer</option>
                   <option value="editor">Editor</option>
@@ -647,11 +647,11 @@ function AdminUserList({
           ))
         ) : (
           <div className="py-8 text-center">
-            <Users className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium text-gray-600 dark:text-gray-400">
+            <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-medium text-muted-foreground dark:text-muted-foreground">
               Keine Benutzer gefunden
             </h3>
-            <p className="text-gray-500 dark:text-gray-500">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               Es wurden keine Benutzer mit den aktuellen Filtern gefunden.
             </p>
           </div>
@@ -683,7 +683,7 @@ function PendingRegistrations({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
           Ausstehende Registrierungen ({pendingRegistrations.length})
         </h3>
         <button
@@ -699,23 +699,23 @@ function PendingRegistrations({
           pendingRegistrations.map((registration) => (
             <div
               key={registration.id}
-              className="shadow-xs rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+              className="shadow-xs rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-muted"
             >
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">
+                  <h4 className="font-medium text-muted-foreground dark:text-white">
                     {registration.name}
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                     {registration.email}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                     Abteilung: {registration.department ?? "Nicht angegeben"}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                     Telefon: {registration.phone ?? "Nicht angegeben"}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                     Registriert:{" "}
                     {new Date(registration.created_at).toLocaleString()}
                   </p>
@@ -753,11 +753,11 @@ function PendingRegistrations({
           ))
         ) : (
           <div className="py-8 text-center">
-            <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium text-gray-600 dark:text-gray-400">
+            <Clock className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-medium text-muted-foreground dark:text-muted-foreground">
               Keine ausstehenden Registrierungen
             </h3>
-            <p className="text-gray-500 dark:text-gray-500">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               Alle Registrierungen wurden bearbeitet.
             </p>
           </div>
@@ -781,12 +781,12 @@ function UserActivityList({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
           Aktivitäten für {selectedUser.email}
         </h3>
         <button
           onClick={() => setSelectedUser(null)}
-          className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-white"
+          className="text-muted-foreground transition-colors hover:text-muted-foreground dark:hover:text-white"
         >
           Schließen
         </button>
@@ -796,20 +796,20 @@ function UserActivityList({
         {userActivity.map((activity) => (
           <div
             key={activity.id}
-            className="shadow-xs flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+            className="shadow-xs flex items-center justify-between rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-muted"
           >
             <div>
-              <p className="text-gray-900 dark:text-white">
+              <p className="text-muted-foreground dark:text-white">
                 {activity.activity_type}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                 {activity.description ?? "Keine Beschreibung"}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                 {new Date(activity.created_at).toLocaleString()}
               </p>
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-500">
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground">
               {activity.ip_address}
             </span>
           </div>
@@ -829,20 +829,20 @@ function AdminActionsList({ adminActions }: AdminActionsListProps) {
       {adminActions.map((action) => (
         <div
           key={action.id}
-          className="shadow-xs flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+          className="shadow-xs flex items-center justify-between rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-muted"
         >
           <div>
-            <p className="text-gray-900 dark:text-white">
+            <p className="text-muted-foreground dark:text-white">
               {action.action_type}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               {action.description ?? "Keine Beschreibung"}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               {new Date(action.created_at).toLocaleString()}
             </p>
           </div>
-          <span className="text-xs text-gray-500 dark:text-gray-500">
+          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
             Admin ID: {action.admin_id}
           </span>
         </div>
@@ -879,12 +879,12 @@ function CreateUserForm({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
           Neuen Benutzer erstellen
         </h3>
         <button
           onClick={() => setAdminActiveTab("users")}
-          className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-white"
+          className="text-muted-foreground transition-colors hover:text-muted-foreground dark:hover:text-white"
         >
           Zurück zu Benutzern
         </button>
@@ -892,7 +892,7 @@ function CreateUserForm({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             E-Mail *
           </label>
           <input
@@ -910,7 +910,7 @@ function CreateUserForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Name
           </label>
           <input
@@ -928,7 +928,7 @@ function CreateUserForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Rolle *
           </label>
           <select
@@ -948,7 +948,7 @@ function CreateUserForm({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Abteilung
           </label>
           <input
@@ -966,7 +966,7 @@ function CreateUserForm({
         </div>
 
         <div className="md:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Passwort *
           </label>
           <input
@@ -987,7 +987,7 @@ function CreateUserForm({
       <div className="flex justify-end space-x-4">
         <button
           onClick={() => setAdminActiveTab("users")}
-          className="rounded-lg bg-gray-600 px-6 py-2 text-white transition-colors hover:bg-gray-700"
+          className="rounded-lg bg-muted px-6 py-2 text-white transition-colors hover:bg-muted"
         >
           Abbrechen
         </button>

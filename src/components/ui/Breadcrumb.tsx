@@ -163,13 +163,13 @@ export function Breadcrumb({
   };
 
   const getItemClasses = (isCurrent: boolean): string => {
-    const baseClasses = "px-2 py-1 rounded-md transition-colors";
+    const baseClasses = "px-2 py-1 rounded-lg transition-colors";
 
     if (isCurrent) {
-      return `${baseClasses} text-gray-700 bg-gray-100 dark:text-gray-200 dark:bg-gray-800`;
+      return `${baseClasses} text-muted-foreground bg-muted dark:text-muted-foreground dark:bg-muted`;
     }
 
-    return `${baseClasses} text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800`;
+    return `${baseClasses} text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:text-muted-foreground dark:hover:text-white dark:hover:bg-muted`;
   };
 
   // Seiten, auf denen keine Breadcrumb angezeigt werden soll
@@ -202,13 +202,13 @@ export function Breadcrumb({
               "type" in item &&
               item.type === "ellipsis" ? (
                 <li className="flex items-center">
-                  <Ellipsis className="h-4 w-4 text-gray-400" />
+                  <Ellipsis className="h-4 w-4 text-muted-foreground" />
                 </li>
               ) : (
                 <>
                   {index > 0 && (
                     <li className="flex items-center">
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </li>
                   )}
                   <li className="ml-2 flex items-center">

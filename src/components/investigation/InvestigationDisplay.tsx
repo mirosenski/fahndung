@@ -129,9 +129,9 @@ const getPriorityStyles = (priority: string): string => {
   const styles: Record<string, string> = {
     urgent: "bg-red-100 text-red-800 animate-pulse",
     new: "bg-blue-100 text-blue-800",
-    normal: "bg-gray-100 text-gray-800",
+    normal: "bg-muted text-muted-foreground",
   };
-  return styles[priority] ?? "bg-gray-100 text-gray-800";
+  return styles[priority] ?? "bg-muted text-muted-foreground";
 };
 
 const getUrgencyColor = (level: string): string => {
@@ -139,9 +139,9 @@ const getUrgencyColor = (level: string): string => {
     critical: "text-red-600",
     high: "text-orange-600",
     medium: "text-yellow-600",
-    low: "text-gray-600",
+    low: "text-muted-foreground",
   };
-  return colors[level] ?? "text-gray-600";
+  return colors[level] ?? "text-muted-foreground";
 };
 
 // FlipCard Component
@@ -177,12 +177,12 @@ const FlipCard: React.FC<{
       >
         {/* Front Side */}
         <div
-          className="absolute inset-0 h-full w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          className="absolute inset-0 h-full w-full overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-border dark:bg-muted"
           style={{ backfaceVisibility: "hidden" }}
         >
           {/* Image Section */}
           <div
-            className="relative w-full bg-gray-200 dark:bg-gray-700"
+            className="relative w-full bg-muted dark:bg-muted"
             style={{ height: imageHeight }}
           >
             {data.step3.imagePreviews && data.step3.imagePreviews.length > 0 ? (
@@ -214,7 +214,7 @@ const FlipCard: React.FC<{
               </>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <ImageIcon className="h-24 w-24 text-gray-400" />
+                <ImageIcon className="h-24 w-24 text-muted-foreground" />
               </div>
             )}
             {data.step2.priority === "urgent" && (
@@ -237,10 +237,10 @@ const FlipCard: React.FC<{
               <h3 className="mb-1 line-clamp-2 text-lg font-bold">
                 {data.step1.title}
               </h3>
-              <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mb-2 text-sm text-muted-foreground dark:text-muted-foreground">
                 {data.step4.mainLocation?.address ?? "Standort unbekannt"}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                 {data.step1.caseNumber} •{" "}
                 {new Date().toLocaleDateString("de-DE")}
               </p>
@@ -258,7 +258,7 @@ const FlipCard: React.FC<{
 
         {/* Back Side */}
         <div
-          className="absolute inset-0 h-full w-full rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          className="absolute inset-0 h-full w-full rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted"
           style={{
             backfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
@@ -269,7 +269,7 @@ const FlipCard: React.FC<{
               <h3 className="text-lg font-bold">Details</h3>
               <button
                 onClick={() => setIsFlipped(false)}
-                className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="rounded p-1 hover:bg-muted dark:hover:bg-muted"
                 aria-label="Schließen"
               >
                 <X className="h-5 w-5" />
@@ -278,33 +278,33 @@ const FlipCard: React.FC<{
 
             <div className="flex-1 space-y-4 overflow-y-auto text-sm">
               <div>
-                <p className="font-medium text-gray-700 dark:text-gray-300">
+                <p className="font-medium text-muted-foreground dark:text-muted-foreground">
                   Kurzbeschreibung:
                 </p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step2.shortDescription}
                 </p>
               </div>
 
               {data.step2.features && (
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">
+                  <p className="font-medium text-muted-foreground dark:text-muted-foreground">
                     Besondere Merkmale:
                   </p>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-muted-foreground dark:text-muted-foreground">
                     {data.step2.features}
                   </p>
                 </div>
               )}
 
               <div className="border-t pt-4">
-                <p className="mb-1 font-medium text-gray-700 dark:text-gray-300">
+                <p className="mb-1 font-medium text-muted-foreground dark:text-muted-foreground">
                   Kontakt:
                 </p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step5.contactPerson}
                 </p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step5.department}
                 </p>
                 <p className="text-blue-600 dark:text-blue-400">
@@ -339,7 +339,7 @@ export default function InvestigationDisplay({
   const renderSummaryMode = () => (
     <div className="space-y-6">
       {/* Basic Information */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <section className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-lg font-semibold">Basis-Informationen</h3>
           {onEdit && (
@@ -355,15 +355,15 @@ export default function InvestigationDisplay({
 
         <dl className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
           <div>
-            <dt className="font-medium text-gray-600 dark:text-gray-400">
+            <dt className="font-medium text-muted-foreground dark:text-muted-foreground">
               Titel:
             </dt>
-            <dd className="mt-1 text-gray-900 dark:text-gray-100">
+            <dd className="mt-1 text-muted-foreground dark:text-muted-foreground">
               {data.step1.title}
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-gray-600 dark:text-gray-400">
+            <dt className="font-medium text-muted-foreground dark:text-muted-foreground">
               Aktenzeichen:
             </dt>
             <dd className="mt-1">
@@ -371,7 +371,7 @@ export default function InvestigationDisplay({
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-gray-600 dark:text-gray-400">
+            <dt className="font-medium text-muted-foreground dark:text-muted-foreground">
               Kategorie:
             </dt>
             <dd className="mt-1">
@@ -383,7 +383,7 @@ export default function InvestigationDisplay({
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-gray-600 dark:text-gray-400">
+            <dt className="font-medium text-muted-foreground dark:text-muted-foreground">
               Priorität:
             </dt>
             <dd className="mt-1">
@@ -402,7 +402,7 @@ export default function InvestigationDisplay({
       </section>
 
       {/* Description */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <section className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-lg font-semibold">Beschreibung</h3>
           {onEdit && (
@@ -418,29 +418,29 @@ export default function InvestigationDisplay({
 
         <div className="space-y-4 text-sm">
           <div>
-            <p className="mb-1 font-medium text-gray-600 dark:text-gray-400">
+            <p className="mb-1 font-medium text-muted-foreground dark:text-muted-foreground">
               Kurzbeschreibung:
             </p>
-            <p className="text-gray-900 dark:text-gray-100">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               {data.step2.shortDescription}
             </p>
           </div>
 
           <div>
-            <p className="mb-1 font-medium text-gray-600 dark:text-gray-400">
+            <p className="mb-1 font-medium text-muted-foreground dark:text-muted-foreground">
               Ausführliche Beschreibung:
             </p>
-            <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+            <p className="whitespace-pre-wrap text-muted-foreground dark:text-muted-foreground">
               {data.step2.description}
             </p>
           </div>
 
           {data.step2.features && (
             <div>
-              <p className="mb-1 font-medium text-gray-600 dark:text-gray-400">
+              <p className="mb-1 font-medium text-muted-foreground dark:text-muted-foreground">
                 Besondere Merkmale:
               </p>
-              <p className="text-gray-900 dark:text-gray-100">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 {data.step2.features}
               </p>
             </div>
@@ -448,7 +448,7 @@ export default function InvestigationDisplay({
 
           {data.step2.tags.length > 0 && (
             <div>
-              <p className="mb-2 font-medium text-gray-600 dark:text-gray-400">
+              <p className="mb-2 font-medium text-muted-foreground dark:text-muted-foreground">
                 Tags:
               </p>
               <div className="flex flex-wrap gap-2">
@@ -466,7 +466,7 @@ export default function InvestigationDisplay({
       </section>
 
       {/* Media */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <section className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-lg font-semibold">Medien</h3>
           {onEdit && (
@@ -514,30 +514,30 @@ export default function InvestigationDisplay({
           {/* Media Stats */}
           <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
             <div className="flex items-center space-x-3">
-              <ImageIcon className="h-5 w-5 text-gray-400" />
+              <ImageIcon className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium">Hauptbild</p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step3.mainImage ? "✓ Hochgeladen" : "✗ Fehlt"}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <ImageIcon className="h-5 w-5 text-gray-400" />
+              <ImageIcon className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium">Weitere Bilder</p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step3.additionalImages.length} Dateien
                 </p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <FileText className="h-5 w-5 text-gray-400" />
+              <FileText className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium">Dokumente</p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step3.documents.length} PDFs
                 </p>
               </div>
@@ -547,7 +547,7 @@ export default function InvestigationDisplay({
       </section>
 
       {/* Locations */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <section className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-lg font-semibold">Orte & Karte</h3>
           {onEdit && (
@@ -567,7 +567,7 @@ export default function InvestigationDisplay({
               <MapPin className="mt-0.5 h-5 w-5 text-blue-500" />
               <div>
                 <p className="font-medium">Hauptort:</p>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-muted-foreground dark:text-muted-foreground">
                   {data.step4.mainLocation.address}
                 </p>
               </div>
@@ -575,10 +575,10 @@ export default function InvestigationDisplay({
           )}
 
           <div className="flex items-center space-x-3">
-            <MapPin className="h-5 w-5 text-gray-400" />
+            <MapPin className="h-5 w-5 text-muted-foreground" />
             <p>
               <span className="font-medium">Weitere Orte:</span>
-              <span className="ml-2 text-gray-600 dark:text-gray-400">
+              <span className="ml-2 text-muted-foreground dark:text-muted-foreground">
                 {data.step4.additionalLocations.length} markiert
               </span>
             </p>
@@ -586,11 +586,11 @@ export default function InvestigationDisplay({
 
           <div className="flex items-center space-x-3">
             <div className="flex h-5 w-5 items-center justify-center">
-              <div className="h-3 w-3 rounded-full border-2 border-gray-400"></div>
+              <div className="h-3 w-3 rounded-full border-2 border-border"></div>
             </div>
             <p>
               <span className="font-medium">Suchradius:</span>
-              <span className="ml-2 text-gray-600 dark:text-gray-400">
+              <span className="ml-2 text-muted-foreground dark:text-muted-foreground">
                 {data.step4.searchRadius} km
               </span>
             </p>
@@ -599,7 +599,7 @@ export default function InvestigationDisplay({
       </section>
 
       {/* Contact & Publication */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <section className="rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="mb-4 flex items-start justify-between">
           <h3 className="text-lg font-semibold">Kontakt & Veröffentlichung</h3>
           {onEdit && (
@@ -615,25 +615,25 @@ export default function InvestigationDisplay({
 
         <div className="grid grid-cols-1 gap-6 text-sm md:grid-cols-2">
           <div>
-            <h4 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
+            <h4 className="mb-2 font-medium text-muted-foreground dark:text-muted-foreground">
               Ansprechpartner
             </h4>
             <div className="space-y-2">
               <p className="flex items-center">
-                <User className="mr-2 h-4 w-4 text-gray-400" />
+                <User className="mr-2 h-4 w-4 text-muted-foreground" />
                 {data.step5.contactPerson}
               </p>
               <p className="flex items-center">
-                <Building className="mr-2 h-4 w-4 text-gray-400" />
+                <Building className="mr-2 h-4 w-4 text-muted-foreground" />
                 {data.step5.department}
               </p>
               <p className="flex items-center">
-                <Phone className="mr-2 h-4 w-4 text-gray-400" />
+                <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
                 {data.step5.contactPhone}
               </p>
               {data.step5.contactEmail && (
                 <p className="flex items-center">
-                  <Mail className="mr-2 h-4 w-4 text-gray-400" />
+                  <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
                   {data.step5.contactEmail}
                 </p>
               )}
@@ -641,13 +641,13 @@ export default function InvestigationDisplay({
           </div>
 
           <div>
-            <h4 className="mb-2 font-medium text-gray-700 dark:text-gray-300">
+            <h4 className="mb-2 font-medium text-muted-foreground dark:text-muted-foreground">
               Veröffentlichung
             </h4>
             <div className="space-y-2">
               <p>
                 <span className="font-medium">Status:</span>
-                <span className="ml-2 rounded bg-gray-100 px-2 py-1 text-xs dark:bg-gray-700">
+                <span className="ml-2 rounded bg-muted px-2 py-1 text-xs dark:bg-muted">
                   {data.step5.publishStatus}
                 </span>
               </p>
@@ -675,7 +675,7 @@ export default function InvestigationDisplay({
       {/* Hero Section */}
       <header className="relative h-[40vh] overflow-hidden rounded-t-xl bg-gradient-to-b from-gray-900 to-gray-700 md:h-[60vh]">
         <div className="absolute inset-0 flex items-center justify-center">
-          <ImageIcon className="h-32 w-32 text-gray-600" />
+          <ImageIcon className="h-32 w-32 text-muted-foreground" />
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 md:p-8">
@@ -695,11 +695,11 @@ export default function InvestigationDisplay({
           <h1 className="mb-2 text-3xl font-bold text-white md:text-5xl">
             {data.step1.title}
           </h1>
-          <p className="text-lg text-gray-200 md:text-xl">
+          <p className="text-lg text-muted-foreground md:text-xl">
             {data.step2.shortDescription}
           </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-300">
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center">
               <FileText className="mr-1 h-4 w-4" />
               <CaseNumberDetailed caseNumber={data.step1.caseNumber} />
@@ -717,7 +717,7 @@ export default function InvestigationDisplay({
       </header>
 
       {/* Content Section */}
-      <div className="space-y-8 rounded-b-xl bg-white p-6 dark:bg-gray-800 md:p-8">
+      <div className="space-y-8 rounded-b-xl bg-white p-6 dark:bg-muted md:p-8">
         {/* Description */}
         <section>
           <h2 className="mb-4 text-2xl font-bold">Beschreibung</h2>
@@ -747,7 +747,7 @@ export default function InvestigationDisplay({
                     alt={image.name}
                     width={300}
                     height={300}
-                    className="aspect-square w-full rounded-lg object-cover shadow-md transition-transform hover:scale-105"
+                    className="aspect-square w-full rounded-lg object-cover shadow-sm transition-transform hover:scale-105"
                     priority={index === 0}
                     loading={index === 0 ? "eager" : "lazy"}
                   />
@@ -768,11 +768,11 @@ export default function InvestigationDisplay({
         {locationCount > 0 && (
           <section>
             <h2 className="mb-4 text-2xl font-bold">Relevante Orte</h2>
-            <div className="flex h-64 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 md:h-96">
+            <div className="flex h-64 items-center justify-center rounded-lg bg-muted dark:bg-muted md:h-96">
               <div className="text-center">
-                <MapPin className="mx-auto mb-2 h-16 w-16 text-gray-400" />
-                <p className="text-gray-500">{locationCount} Orte markiert</p>
-                <p className="text-sm text-gray-400">
+                <MapPin className="mx-auto mb-2 h-16 w-16 text-muted-foreground" />
+                <p className="text-muted-foreground">{locationCount} Orte markiert</p>
+                <p className="text-sm text-muted-foreground">
                   Suchradius: {data.step4.searchRadius} km
                 </p>
               </div>
@@ -783,17 +783,17 @@ export default function InvestigationDisplay({
         {/* Contact Section */}
         <section className="border-t pt-8">
           <h2 className="mb-4 text-2xl font-bold">Kontaktinformationen</h2>
-          <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-900">
+          <div className="rounded-lg bg-muted p-6 dark:bg-muted">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <h3 className="mb-3 font-semibold">Ansprechpartner</h3>
                 <div className="space-y-2 text-sm">
                   <p className="flex items-center">
-                    <User className="mr-2 h-4 w-4 text-gray-400" />
+                    <User className="mr-2 h-4 w-4 text-muted-foreground" />
                     {data.step5.contactPerson}
                   </p>
                   <p className="flex items-center">
-                    <Building className="mr-2 h-4 w-4 text-gray-400" />
+                    <Building className="mr-2 h-4 w-4 text-muted-foreground" />
                     {data.step5.department}
                   </p>
                 </div>
@@ -803,7 +803,7 @@ export default function InvestigationDisplay({
                 <h3 className="mb-3 font-semibold">Erreichbarkeit</h3>
                 <div className="space-y-2 text-sm">
                   <p className="flex items-center">
-                    <Phone className="mr-2 h-4 w-4 text-gray-400" />
+                    <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
                     <a
                       href={`tel:${data.step5.contactPhone}`}
                       className="text-blue-600 hover:underline"
@@ -813,7 +813,7 @@ export default function InvestigationDisplay({
                   </p>
                   {data.step5.contactEmail && (
                     <p className="flex items-center">
-                      <Mail className="mr-2 h-4 w-4 text-gray-400" />
+                      <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
                       <a
                         href={`mailto:${data.step5.contactEmail}`}
                         className="text-blue-600 hover:underline"
@@ -823,7 +823,7 @@ export default function InvestigationDisplay({
                     </p>
                   )}
                   <p className="flex items-center">
-                    <Clock className="mr-2 h-4 w-4 text-gray-400" />
+                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
                     {data.step5.availableHours}
                   </p>
                 </div>
@@ -832,7 +832,7 @@ export default function InvestigationDisplay({
 
             {data.step5.alternativeContact && (
               <div className="mt-4 border-t pt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                   <strong>Vertretung:</strong>{" "}
                   {data.step5.alternativeContact.name} •{" "}
                   {data.step5.alternativeContact.phone}
@@ -863,7 +863,7 @@ export default function InvestigationDisplay({
 
   // Preview Mode - Styled preview
   const renderPreviewMode = () => (
-    <div className="mx-auto max-w-4xl rounded-lg bg-white shadow-xl dark:bg-gray-800">
+    <div className="mx-auto max-w-4xl rounded-lg bg-white shadow-sm dark:bg-muted">
       {renderDetailMode()}
     </div>
   );

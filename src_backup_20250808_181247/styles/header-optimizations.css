@@ -1,0 +1,214 @@
+/* Header-spezifische Optimierungen für Chrome - Performance-Guide */
+
+/* Verhindert Flackern durch GPU-Beschleunigung */
+header,
+.header-placeholder {
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* Optimiert Rendering-Layer */
+.header-placeholder {
+  position: relative;
+  z-index: -1;
+}
+
+/* Smooth Scrolling für bessere UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Verhindert Layout-Shifts beim Font-Loading */
+body {
+  font-display: swap;
+}
+
+/* Optimiert Backdrop-Filter Performance in Chrome */
+@supports (backdrop-filter: blur(12px)) {
+  header {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+/* Fallback für Browser ohne Backdrop-Filter Support */
+@supports not (backdrop-filter: blur(12px)) {
+  header.scrolled {
+    background-color: rgba(255, 255, 255, 0.98);
+  }
+}
+
+/* Verhindert Text-Rendering Flackern */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimiert Transitions für 60fps */
+header,
+header * {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Verhindert Reflow bei Hover-States */
+a, button {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Mobile-spezifische Optimierungen */
+@media (max-width: 1024px) {
+  /* Verhindert Overscroll-Bounce auf iOS - ohne position: fixed */
+  body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Verbesserte Touch-Scrolling-Unterstützung */
+    touch-action: pan-y;
+  }
+  
+  body.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    /* Verhindert Scroll während Menu offen */
+    touch-action: none;
+  }
+  
+  /* Verbesserte Scroll-Performance für Container */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  
+  /* iOS-spezifische Optimierungen */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      /* Verbesserte iOS-Scrolling */
+      -webkit-overflow-scrolling: touch;
+      /* Verhindert Zoom bei Doppel-Tap */
+      touch-action: manipulation;
+    }
+  }
+}
+
+/* Chrome-spezifische Fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  header {
+    /* Force hardware acceleration */
+    transform: translate3d(0, 0, 0);
+  }
+  
+  /* Fix für Sub-Pixel-Rendering */
+  .transition-all {
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+  }
+}
+
+/* Sticky Header Optimierungen */
+.sticky-header {
+  /* Hardware acceleration */
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  
+  /* Smooth transitions */
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Prevent layout shifts */
+  contain: layout style paint;
+}
+
+/* Adaptive Header Optimierungen */
+.adaptive-header {
+  /* GPU acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  
+  /* Optimized transitions */
+  transition: 
+    background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    height 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Prevent repaints */
+  will-change: transform, background-color, box-shadow;
+}
+
+/* Logo Optimierungen */
+.header-logo {
+  /* Prevent layout shifts */
+  contain: layout style;
+  
+  /* Smooth scaling */
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+}
+
+/* Navigation Optimierungen */
+.header-nav {
+  /* Prevent layout thrashing */
+  contain: layout style;
+  
+  /* Smooth hover effects */
+  transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dropdown Optimierungen */
+.header-dropdown {
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  
+  /* Smooth animations */
+  transition: 
+    opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Prevent layout shifts */
+  contain: layout style paint;
+}
+
+/* Mobile Menu Optimierungen */
+.mobile-menu {
+  /* Hardware acceleration */
+  transform: translate3d(0, 0, 0);
+  
+  /* Smooth slide animations */
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Prevent overscroll */
+  overscroll-behavior: contain;
+}
+
+/* Prefers Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  header,
+  header * {
+    transition: none !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  header {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Print Styles */
+@media print {
+  header {
+    position: static !important;
+    transform: none !important;
+  }
+} 

@@ -293,14 +293,14 @@ export default function ModernContactCategory({
   const renderContactCard = () => (
     <div className="space-y-6">
       {/* Mittlere Karte: Fall-Informationen */}
-      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
-        <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">
+      <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
+        <h3 className="mb-6 text-xl font-bold text-muted-foreground dark:text-white">
           Fall-Informationen
         </h3>
 
         {/* Fahndungs-Header mit Hauptbild */}
         <div className="mb-6 flex items-center gap-6">
-          <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-pink-600 shadow-lg ring-4 ring-white dark:ring-gray-800">
+          <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-red-500 via-red-600 to-pink-600 shadow-sm ring-4 ring-white dark:ring-gray-800">
             {data.step3?.mainImage ? (
               <Image
                 src={data.step3.mainImage}
@@ -335,29 +335,29 @@ export default function ModernContactCategory({
                 {getStatusLabel(data.step2?.priority)}
               </Badge>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-muted-foreground dark:text-white">
               {data.step1?.title ?? "Fahndung"}
             </h2>
           </div>
         </div>
 
         {/* Fallnummer und Datum */}
-        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+        <div className="mt-6 rounded-lg border border-border p-4 dark:border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Fallnummer:
                 </span>
-                <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white">
+                <span className="font-mono text-sm font-semibold text-muted-foreground dark:text-white">
                   {data.step1?.caseNumber ?? "POL-2025-K-767297-A"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Datum:
                 </span>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                <span className="text-sm font-semibold text-muted-foreground dark:text-white">
                   {new Date().toLocaleDateString("de-DE")}
                 </span>
               </div>
@@ -366,13 +366,13 @@ export default function ModernContactCategory({
         </div>
 
         {/* Kurze Beschreibung was passiert ist */}
-        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+        <div className="mt-6 rounded-lg border border-border p-4 dark:border-border">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Was ist passiert:
               </span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              <span className="text-sm font-semibold text-muted-foreground dark:text-white">
                 {data.step2?.shortDescription ?? "Keine Beschreibung verfügbar"}
               </span>
             </div>
@@ -380,13 +380,13 @@ export default function ModernContactCategory({
         </div>
 
         {/* Adresse/Ort wo es passiert ist */}
-        <div className="mt-6 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+        <div className="mt-6 rounded-lg border border-border p-4 dark:border-border">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Ort/Adresse:
               </span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              <span className="text-sm font-semibold text-muted-foreground dark:text-white">
                 {data.step4?.mainLocation?.address ??
                   "Reutlingen, Landkreis Reutlingen, Baden-Württemberg, Deutschland"}
               </span>
@@ -397,16 +397,16 @@ export default function ModernContactCategory({
         {/* Status-Informationen */}
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Veröffentlichungsstatus */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+          <div className="rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900">
                 <FileEdit className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                   Veröffentlichungsstatus
                 </p>
-                <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                <p className="mt-1 font-semibold text-muted-foreground dark:text-white">
                   {getPublishStatusLabel(
                     data.step5?.publishStatus ?? "published",
                   )}
@@ -416,16 +416,16 @@ export default function ModernContactCategory({
           </div>
 
           {/* Dringlichkeitsstufe */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+          <div className="rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
                 <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                   Dringlichkeitsstufe
                 </p>
-                <p className="mt-1 font-semibold text-gray-900 dark:text-white">
+                <p className="mt-1 font-semibold text-muted-foreground dark:text-white">
                   {getStatusLabel(data.step2?.priority)}
                 </p>
               </div>
@@ -433,13 +433,13 @@ export default function ModernContactCategory({
           </div>
 
           {/* Sichtbarkeit */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+          <div className="rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
             <div className="flex items-start gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900">
                 <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                   Sichtbarkeit
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
@@ -456,13 +456,13 @@ export default function ModernContactCategory({
           </div>
 
           {/* Benachrichtigungen */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+          <div className="rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
             <div className="flex items-start gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
                 <Bell className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                   Benachrichtigungen
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
@@ -485,14 +485,14 @@ export default function ModernContactCategory({
       </div>
 
       {/* Untere Karte: Kontakt und Kontaktperson */}
-      <div className="rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
-        <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">
+      <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
+        <h3 className="mb-6 text-xl font-bold text-muted-foreground dark:text-white">
           Kontakt
         </h3>
 
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-lg ring-4 ring-white dark:ring-gray-800">
+            <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-sm ring-4 ring-white dark:ring-gray-800">
               {contactPhoto ? (
                 <Image
                   src={contactPhoto}
@@ -505,7 +505,7 @@ export default function ModernContactCategory({
                 <User className="h-14 w-14 text-white" />
               )}
             </div>
-            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-lg">
+            <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 shadow-sm">
               <div className="h-3 w-3 rounded-full bg-white"></div>
             </div>
             {isEditMode && (
@@ -528,20 +528,20 @@ export default function ModernContactCategory({
                   };
                   input.click();
                 }}
-                className="absolute -bottom-1 -left-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 shadow-lg hover:bg-blue-600"
+                className="absolute -bottom-1 -left-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 shadow-sm hover:bg-blue-600"
               >
                 <Upload className="h-3 w-3 text-white" />
               </Button>
             )}
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-muted-foreground dark:text-white">
               {step5.contactPerson ?? "Kontaktperson"}
             </h2>
             <p className="mt-1 text-lg font-medium text-blue-600 dark:text-blue-400">
               {step5.department ?? "Abteilung"}
             </p>
-            <div className="mt-3 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground dark:text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Shield className="h-4 w-4" />
                 Verifiziert
@@ -560,7 +560,7 @@ export default function ModernContactCategory({
                 const contactText = `${step5.contactPerson}\n${step5.department}\n${step5.contactPhone}${step5.contactEmail ? `\n${step5.contactEmail}` : ""}`;
                 await copyToClipboard(contactText, "copy");
               }}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-sm dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
             >
               {copiedAction === "copy" ? (
                 <Check className="h-4 w-4" />
@@ -573,7 +573,7 @@ export default function ModernContactCategory({
               variant="outline"
               size="sm"
               onClick={shareContact}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all duration-200 hover:bg-muted hover:shadow-sm dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
             >
               <Share2 className="h-4 w-4" />
               Teilen
@@ -610,21 +610,21 @@ export default function ModernContactCategory({
           ].map(({ icon: Icon, label, value, color }) => (
             <div
               key={label}
-              className={`group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 hover:border-${color}-300 hover:bg-${color}-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-${color}-400 dark:hover:bg-${color}-900/20`}
+              className={`group rounded-lg border border-border bg-muted p-4 transition-all duration-200 hover:border-${color}-300 hover:bg-${color}-50 dark:border-border dark:bg-muted dark:hover:border-${color}-400 dark:hover:bg-${color}-900/20`}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-100 dark:bg-${color}-900`}
+                  className={`flex h-12 w-12 items-center justify-center rounded-lg bg-${color}-100 dark:bg-${color}-900`}
                 >
                   <Icon
                     className={`h-6 w-6 text-${color}-600 dark:text-${color}-400`}
                   />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                     {label}
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-muted-foreground dark:text-white">
                     {value || "Nicht angegeben"}
                   </p>
                 </div>
@@ -638,31 +638,31 @@ export default function ModernContactCategory({
 
   const renderArticlePublishing = () =>
     step5.articlePublishing.publishAsArticle && (
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+      <div className="mt-6 rounded-lg border border-border bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-900">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900">
             <FileEdit className="h-6 w-6 text-orange-600 dark:text-orange-400" />
           </div>
           <div className="flex-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
               Artikel-Veröffentlichung
             </p>
             <div className="mt-2 space-y-2">
               {step5.articlePublishing.seoTitle && (
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  <span className="text-gray-500">SEO-Titel:</span>{" "}
+                <p className="text-sm font-medium text-muted-foreground dark:text-white">
+                  <span className="text-muted-foreground">SEO-Titel:</span>{" "}
                   {step5.articlePublishing.seoTitle}
                 </p>
               )}
               {step5.articlePublishing.seoDescription && (
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <span className="text-gray-500">SEO-Beschreibung:</span>{" "}
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">
+                  <span className="text-muted-foreground">SEO-Beschreibung:</span>{" "}
                   {step5.articlePublishing.seoDescription}
                 </p>
               )}
               {step5.articlePublishing.keywords.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  <span className="text-xs text-gray-500">Keywords:</span>
+                  <span className="text-xs text-muted-foreground">Keywords:</span>
                   {step5.articlePublishing.keywords.map(
                     (keyword: string, index: number) => (
                       <Badge key={index} variant="outline" className="text-xs">
@@ -690,7 +690,7 @@ export default function ModernContactCategory({
 
   return (
     <div className="w-full space-y-4 px-4 pb-20 sm:space-y-6 sm:px-6 lg:px-8">
-      <div className="rounded-lg bg-white p-4 dark:bg-gray-800">
+      <div className="rounded-lg bg-white p-4 dark:bg-muted">
         <div className="flex items-center justify-between">
           <div></div>
         </div>
@@ -717,7 +717,7 @@ export default function ModernContactCategory({
           ].map(({ icon: Icon, label, value, required, type, placeholder }) => (
             <Card
               key={label}
-              className="border-0 bg-white shadow-sm dark:bg-gray-800"
+              className="border-0 bg-white shadow-sm dark:bg-muted"
             >
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -788,7 +788,7 @@ export default function ModernContactCategory({
           ].map(({ icon: Icon, label, value, required, type, placeholder }) => (
             <Card
               key={label}
-              className="border-0 bg-white shadow-sm dark:bg-gray-800"
+              className="border-0 bg-white shadow-sm dark:bg-muted"
             >
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -860,7 +860,7 @@ export default function ModernContactCategory({
           ))}
         </div>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
             Veröffentlichungseinstellungen
           </h3>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -890,7 +890,7 @@ export default function ModernContactCategory({
             ].map(({ icon: Icon, label, value, options }) => (
               <Card
                 key={label}
-                className="border-0 bg-white shadow-sm dark:bg-gray-800"
+                className="border-0 bg-white shadow-sm dark:bg-muted"
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -926,16 +926,16 @@ export default function ModernContactCategory({
           </div>
         </div>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
             Sichtbarkeit
           </h3>
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
+          <Card className="border-0 bg-white shadow-sm dark:bg-muted">
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {Object.entries(step5.visibility).map(([key, value]) => (
                   <label
                     key={key}
-                    className="flex items-center space-x-2 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="flex items-center space-x-2 rounded-lg border border-border p-3 hover:bg-muted dark:border-border dark:hover:bg-muted"
                   >
                     <Checkbox
                       checked={value}
@@ -946,7 +946,7 @@ export default function ModernContactCategory({
                         )
                       }
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                       {key === "internal" && "Intern"}
                       {key === "regional" && "Regional"}
                       {key === "national" && "National"}
@@ -959,16 +959,16 @@ export default function ModernContactCategory({
           </Card>
         </div>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
             Benachrichtigungen
           </h3>
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
+          <Card className="border-0 bg-white shadow-sm dark:bg-muted">
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 {Object.entries(step5.notifications).map(([key, value]) => (
                   <label
                     key={key}
-                    className="flex items-center space-x-2 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="flex items-center space-x-2 rounded-lg border border-border p-3 hover:bg-muted dark:border-border dark:hover:bg-muted"
                   >
                     <Checkbox
                       checked={value}
@@ -979,7 +979,7 @@ export default function ModernContactCategory({
                         )
                       }
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                       {key === "emailAlerts" && "E-Mail-Benachrichtigungen"}
                       {key === "smsAlerts" && "SMS-Benachrichtigungen"}
                       {key === "appNotifications" && "App-Benachrichtigungen"}
@@ -992,10 +992,10 @@ export default function ModernContactCategory({
           </Card>
         </div>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
             Artikel-Veröffentlichung
           </h3>
-          <Card className="border-0 bg-white shadow-sm dark:bg-gray-800">
+          <Card className="border-0 bg-white shadow-sm dark:bg-muted">
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <label className="flex items-center space-x-2">
@@ -1008,15 +1008,15 @@ export default function ModernContactCategory({
                       })
                     }
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                     Als Artikel veröffentlichen
                   </span>
                 </label>
                 {step5.articlePublishing.publishAsArticle && (
-                  <div className="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+                  <div className="space-y-4 rounded-lg border border-border p-4 dark:border-border">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                           SEO-Titel
                         </label>
                         <Input
@@ -1032,7 +1032,7 @@ export default function ModernContactCategory({
                         />
                       </div>
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                           SEO-Beschreibung
                         </label>
                         <Textarea
@@ -1050,7 +1050,7 @@ export default function ModernContactCategory({
                       </div>
                     </div>
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                         Keywords
                       </label>
                       <div className="flex gap-2">

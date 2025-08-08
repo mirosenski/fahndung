@@ -104,12 +104,12 @@ function StatCard({ icon: Icon, title, value, loading, color }: StatCardProps) {
   };
 
   return (
-    <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+    <div className="shadow-xs rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
       <div className="flex items-center space-x-3">
         <Icon className={`h-8 w-8 ${colorClasses[color]}`} />
         <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold text-muted-foreground dark:text-white">
             {loading ? "..." : value}
           </p>
         </div>
@@ -127,18 +127,18 @@ function RecentInvestigationsList({
 }: RecentInvestigationsListProps) {
   return (
     <div>
-      <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+      <h2 className="mb-4 text-xl font-semibold text-muted-foreground dark:text-white">
         Neueste Fahndungen
       </h2>
-      <div className="shadow-xs overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div className="shadow-xs overflow-hidden rounded-lg border border-border bg-white dark:border-border dark:bg-muted">
         <div className="p-6">
           {investigations.map((investigation) => (
             <div
               key={investigation.id}
-              className="flex items-center justify-between border-b border-gray-200 py-3 last:border-b-0 dark:border-gray-700"
+              className="flex items-center justify-between border-b border-border py-3 last:border-b-0 dark:border-border"
             >
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900 dark:text-white">
+                <h3 className="font-medium text-muted-foreground dark:text-white">
                   {investigation.title}
                 </h3>
                 <CaseNumberDetailed caseNumber={investigation.case_number} />
@@ -152,7 +152,7 @@ function RecentInvestigationsList({
                       ? "bg-red-500/20 text-red-600 dark:text-red-400"
                       : investigation.priority === "new"
                         ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                        : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                        : "bg-muted/20 text-muted-foreground dark:text-muted-foreground"
                   }`}
                 />
                 <UniversalBadge
@@ -164,8 +164,8 @@ function RecentInvestigationsList({
                       : investigation.status === "active"
                         ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
                         : investigation.status === "draft"
-                          ? "bg-gray-500/20 text-gray-600 dark:text-gray-400"
-                          : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                          ? "bg-muted/20 text-muted-foreground dark:text-muted-foreground"
+                          : "bg-muted/20 text-muted-foreground dark:text-muted-foreground"
                   }`}
                 />
               </div>

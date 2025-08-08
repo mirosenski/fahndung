@@ -295,14 +295,14 @@ export default function InvestigationsTab({
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      <div className="shadow-xs rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Suche
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 value={searchTerm}
@@ -314,7 +314,7 @@ export default function InvestigationsTab({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Kategorie
             </label>
             <select
@@ -332,7 +332,7 @@ export default function InvestigationsTab({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Status
             </label>
             <select
@@ -348,7 +348,7 @@ export default function InvestigationsTab({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Priorität
             </label>
             <select
@@ -418,16 +418,16 @@ export default function InvestigationsTab({
       )}
 
       {/* Investigations List */}
-      <div className="shadow-xs overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div className="shadow-xs overflow-hidden rounded-lg border border-border bg-white dark:border-border dark:bg-muted">
         <div className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-muted-foreground dark:text-white">
               Fahndungen ({filteredInvestigations.length})
             </h2>
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleSelectAll}
-                className="flex items-center space-x-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="flex items-center space-x-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted dark:border-border dark:text-muted-foreground dark:hover:bg-muted"
               >
                 {allSelected ? (
                   <CheckSquare className="h-4 w-4" />
@@ -444,7 +444,7 @@ export default function InvestigationsTab({
               {filteredInvestigations.map((investigation) => (
                 <div
                   key={investigation.id}
-                  className="shadow-xs flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                  className="shadow-xs flex items-center justify-between rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-muted"
                 >
                   <div className="flex items-center space-x-3">
                     <input
@@ -453,16 +453,16 @@ export default function InvestigationsTab({
                       onChange={() =>
                         handleSelectInvestigation(investigation.id)
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800"
+                      className="h-4 w-4 rounded border-border text-blue-600 focus:ring-blue-500 dark:border-border dark:bg-muted dark:ring-offset-gray-800"
                     />
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white">
+                      <h3 className="font-medium text-muted-foreground dark:text-white">
                         {investigation.title}
                       </h3>
                       <CaseNumberDetailed
                         caseNumber={investigation.case_number}
                       />
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                         {investigation.location}
                       </p>
                     </div>
@@ -476,7 +476,7 @@ export default function InvestigationsTab({
                           ? "bg-red-500/20 text-red-600 dark:text-red-400"
                           : investigation.priority === "new"
                             ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-                            : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                            : "bg-muted/20 text-muted-foreground dark:text-muted-foreground"
                       }`}
                     />
                     <UniversalBadge
@@ -488,8 +488,8 @@ export default function InvestigationsTab({
                           : investigation.status === "active"
                             ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
                             : investigation.status === "draft"
-                              ? "bg-gray-500/20 text-gray-600 dark:text-gray-400"
-                              : "bg-gray-500/20 text-gray-600 dark:text-gray-400"
+                              ? "bg-muted/20 text-muted-foreground dark:text-muted-foreground"
+                              : "bg-muted/20 text-muted-foreground dark:text-muted-foreground"
                       }`}
                     />
 
@@ -612,11 +612,11 @@ export default function InvestigationsTab({
             </div>
           ) : (
             <div className="py-8 text-center">
-              <Search className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium text-gray-600 dark:text-gray-400">
+              <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-medium text-muted-foreground dark:text-muted-foreground">
                 Keine Fahndungen gefunden
               </h3>
-              <p className="text-gray-500 dark:text-gray-500">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 Erstellen Sie Ihre erste Fahndung, um zu beginnen.
               </p>
             </div>

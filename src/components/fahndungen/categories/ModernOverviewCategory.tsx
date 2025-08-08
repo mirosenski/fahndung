@@ -10,7 +10,7 @@ import { MapPin as MapPinIcon } from "lucide-react";
 const MapPreview = dynamic(() => import("../../map/MapPreview"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-64 w-full items-center justify-center rounded-xl bg-muted/50 dark:bg-muted/20">
+    <div className="flex h-64 w-full items-center justify-center rounded-lg bg-muted/50 dark:bg-muted/20">
       <span className="text-sm text-muted-foreground">Karte wird geladen…</span>
     </div>
   ),
@@ -70,7 +70,7 @@ export default function ModernOverviewCategory({
       {/* Kontakt & Statistiken */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Kontaktkarte */}
-        <div className="rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 p-4 dark:from-purple-900/20 dark:to-pink-900/20">
+        <div className="rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 p-4 dark:from-purple-900/20 dark:to-pink-900/20">
           <h2 className="mb-3 text-lg font-semibold text-foreground">
             Kontakt
           </h2>
@@ -88,12 +88,12 @@ export default function ModernOverviewCategory({
               {data?.step5?.contactEmail || "fahndung@polizei-bw.de"}
             </div>
           </div>
-          <button className="mt-3 w-full rounded-md bg-gradient-to-r from-purple-600 to-pink-600 py-2 text-sm font-medium text-white transition-colors hover:shadow-md">
+          <button className="mt-3 w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 py-2 text-sm font-medium text-white transition-colors hover:shadow-sm">
             Hinweis geben
           </button>
         </div>
         {/* Statistik */}
-        <div className="rounded-xl bg-gradient-to-br from-orange-50 to-red-50 p-4 dark:from-orange-900/20 dark:to-red-900/20">
+        <div className="rounded-lg bg-gradient-to-br from-orange-50 to-red-50 p-4 dark:from-orange-900/20 dark:to-red-900/20">
           <h2 className="mb-3 text-lg font-semibold text-foreground">
             Statistiken
           </h2>

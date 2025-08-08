@@ -63,7 +63,7 @@ export default function LeichteSprachePage() {
             <section>
               <h2 className="mb-4 text-2xl font-semibold">Was machen wir?</h2>
               <div className="grid gap-6 md:grid-cols-2">
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <FileText className="h-6 w-6 text-blue-600" />
                     <h3 className="text-xl font-semibold">Fahndung</h3>
@@ -75,7 +75,7 @@ export default function LeichteSprachePage() {
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Shield className="h-6 w-6 text-green-600" />
                     <h3 className="text-xl font-semibold">Schutz</h3>
@@ -86,7 +86,7 @@ export default function LeichteSprachePage() {
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Users className="h-6 w-6 text-purple-600" />
                     <h3 className="text-xl font-semibold">Hilfe</h3>
@@ -97,7 +97,7 @@ export default function LeichteSprachePage() {
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+                <div className="rounded-lg bg-muted p-6 dark:bg-muted">
                   <div className="mb-4 flex items-center space-x-3">
                     <Phone className="h-6 w-6 text-red-600" />
                     <h3 className="text-xl font-semibold">Notruf</h3>
@@ -117,20 +117,20 @@ export default function LeichteSprachePage() {
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <Mail className="mt-1 h-5 w-5 text-gray-600" />
+                  <Mail className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">E-Mail</p>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       poststelle@lka.polizei.bwl.de
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <Phone className="mt-1 h-5 w-5 text-gray-600" />
+                  <Phone className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Telefon</p>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       +49 711 5401-0
                     </p>
                   </div>

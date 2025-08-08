@@ -16,7 +16,7 @@ const InteractiveMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+        <div className="h-64 rounded-lg bg-muted dark:bg-muted"></div>
       </div>
     ),
   },
@@ -143,31 +143,31 @@ export const TabContent: React.FC<TabContentProps> = ({
       case "overview":
         return (
           <div className="space-y-4">
-            <div className={`rounded-xl border p-4 ${category.bg}`}>
+            <div className={`rounded-lg border p-4 ${category.bg}`}>
               <div className="flex items-center gap-3">
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-muted-foreground dark:text-white">
                     {category.label}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                     Fall #{safeData.step1.caseNumber}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-              <h4 className="mb-2 font-medium text-gray-900 dark:text-white">
+            <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
+              <h4 className="mb-2 font-medium text-muted-foreground dark:text-white">
                 Kurzbeschreibung
               </h4>
-              <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="text-sm leading-relaxed text-muted-foreground dark:text-muted-foreground">
                 {safeData.step2.shortDescription}
               </p>
             </div>
 
             {safeData.step2.tags.length > 0 && (
               <div>
-                <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
+                <h4 className="mb-3 font-medium text-muted-foreground dark:text-white">
                   Merkmale
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -185,17 +185,17 @@ export const TabContent: React.FC<TabContentProps> = ({
 
             {/* Kontakt-Informationen */}
             {safeData.step5 && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+              <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
                       <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">
+                      <h4 className="font-medium text-muted-foreground dark:text-white">
                         {safeData.step5.contactPerson || "Nicht angegeben"}
                       </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                         {safeData.step5.department || "Nicht angegeben"}
                       </p>
                     </div>
@@ -203,7 +203,7 @@ export const TabContent: React.FC<TabContentProps> = ({
 
                   {safeData.step5.contactPhone && (
                     <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-gray-500" />
+                      <Phone className="h-4 w-4 text-muted-foreground" />
                       <a
                         href={`tel:${safeData.step5.contactPhone}`}
                         className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
@@ -217,7 +217,7 @@ export const TabContent: React.FC<TabContentProps> = ({
 
                   {safeData.step5.contactEmail && (
                     <div className="flex items-center gap-3">
-                      <MessageSquare className="h-4 w-4 text-gray-500" />
+                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
                       <a
                         href={`mailto:${safeData.step5.contactEmail}`}
                         className="text-sm text-blue-600 hover:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-blue-400"
@@ -231,12 +231,12 @@ export const TabContent: React.FC<TabContentProps> = ({
 
                   {safeData.step5.availableHours && (
                     <div className="flex items-start gap-3">
-                      <Clock className="mt-0.5 h-4 w-4 text-gray-500" />
+                      <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-muted-foreground dark:text-white">
                           Erreichbarkeit
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                           {safeData.step5.availableHours}
                         </p>
                       </div>
@@ -251,21 +251,21 @@ export const TabContent: React.FC<TabContentProps> = ({
       case "description":
         return (
           <div className="space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-              <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
+            <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
+              <h4 className="mb-3 font-medium text-muted-foreground dark:text-white">
                 Detaillierte Beschreibung
               </h4>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground dark:text-muted-foreground">
                 {safeData.step2.description}
               </p>
             </div>
 
             {safeData.step2.features && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-                <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
+              <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
+                <h4 className="mb-3 font-medium text-muted-foreground dark:text-white">
                   Besondere Merkmale
                 </h4>
-                <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground dark:text-muted-foreground">
                   {safeData.step2.features}
                 </p>
               </div>
@@ -276,11 +276,11 @@ export const TabContent: React.FC<TabContentProps> = ({
       case "media":
         return (
           <div className="space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-              <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
+            <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
+              <h4 className="mb-3 font-medium text-muted-foreground dark:text-white">
                 Hauptfoto
               </h4>
-              <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-200">
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                 <Image
                   src={getSafeImageSrc(safeData, imageError)}
                   alt={`Hauptfoto von ${safeData.step1.title}`}
@@ -298,7 +298,7 @@ export const TabContent: React.FC<TabContentProps> = ({
               safeData.step3.additionalImageUrls.length > 0) ??
               safeData.step3.additionalImages?.length > 0) && (
               <div>
-                <h4 className="mb-3 font-medium text-gray-900 dark:text-white">
+                <h4 className="mb-3 font-medium text-muted-foreground dark:text-white">
                   Weitere Bilder
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
@@ -310,7 +310,7 @@ export const TabContent: React.FC<TabContentProps> = ({
                   ).map((img, index) => (
                     <div
                       key={index}
-                      className="relative aspect-square overflow-hidden rounded-lg bg-gray-200"
+                      className="relative aspect-square overflow-hidden rounded-lg bg-muted"
                     >
                       <Image
                         src={getSafeAdditionalImageSrc(img)}
@@ -334,16 +334,16 @@ export const TabContent: React.FC<TabContentProps> = ({
             {safeData.step4.mainLocation ? (
               <div className="space-y-4">
                 {/* Erweiterte Kartenansicht */}
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
                   <div className="mb-4 flex items-start gap-3">
                     <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900">
                       <MapPin className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">
+                      <h4 className="font-medium text-muted-foreground dark:text-white">
                         Letzter bekannter Aufenthaltsort
                       </h4>
-                      <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
+                      <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground">
                         {safeData.step4.mainLocation.address}
                       </p>
                       {geocodedAddress &&
@@ -381,16 +381,16 @@ export const TabContent: React.FC<TabContentProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+              <div className="rounded-lg border border-border bg-muted p-6 text-center dark:border-border dark:bg-muted">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="rounded-lg bg-gray-100 p-3 dark:bg-gray-700">
-                    <MapPin className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                  <div className="rounded-lg bg-muted p-3 dark:bg-muted">
+                    <MapPin className="h-8 w-8 text-muted-foreground dark:text-muted-foreground" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">
+                    <h4 className="font-medium text-muted-foreground dark:text-white">
                       Keine Ortsdaten verfügbar
                     </h4>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground">
                       Für diesen Fall sind noch keine Ortsinformationen
                       hinterlegt.
                     </p>

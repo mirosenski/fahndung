@@ -192,7 +192,7 @@ const FahndungWizardContainer = ({
   );
 
   const PreviewTabs = () => (
-    <div className="flex justify-around border-b border-gray-200 dark:border-gray-700">
+    <div className="flex justify-around border-b border-border dark:border-border">
       {PREVIEW_MODES.map((mode) => (
         <button
           key={mode.id}
@@ -200,7 +200,7 @@ const FahndungWizardContainer = ({
           className={`flex flex-1 items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
             previewMode === mode.id
               ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
-              : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+              : "text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground"
           }`}
         >
           <mode.icon className="h-4 w-4" />
@@ -211,15 +211,15 @@ const FahndungWizardContainer = ({
   );
 
   const BottomNavigation = () => (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white dark:border-border dark:bg-muted">
       <div className="flex items-center justify-between p-4">
         <button
           onClick={handlePrevious}
           disabled={currentStep === 1}
           className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
             currentStep === 1
-              ? "cursor-not-allowed bg-gray-100 text-gray-400"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300"
+              ? "cursor-not-allowed bg-muted text-muted-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground"
           }`}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -227,13 +227,13 @@ const FahndungWizardContainer = ({
         </button>
 
         <div className="mx-4 flex-1">
-          <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-muted">
             <div
               className="h-full bg-blue-500 transition-all duration-300"
               style={{ width: `${(currentStep / 6) * 100}%` }}
             />
           </div>
-          <p className="mt-1 text-center text-xs text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-center text-xs text-muted-foreground dark:text-muted-foreground">
             Schritt {currentStep} von 6
           </p>
         </div>
@@ -244,7 +244,7 @@ const FahndungWizardContainer = ({
           className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
             canProceedToNextStep()
               ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "cursor-not-allowed bg-gray-300 text-gray-500"
+              : "cursor-not-allowed bg-muted text-muted-foreground"
           }`}
         >
           {!isMobile && <span className="mr-2">Weiter</span>}
@@ -259,7 +259,7 @@ const FahndungWizardContainer = ({
       case "card":
         return (
           <div className="space-y-4">
-            <h3 className="text-center text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-center text-lg font-semibold text-muted-foreground dark:text-white">
               Live-Vorschau Ihrer Fahndungskarte
             </h3>
             <LivePreviewCard data={wizardData} />
@@ -477,27 +477,27 @@ const FahndungWizardContainer = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-muted dark:bg-muted">
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="mb-4 flex items-center gap-4">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              className="flex items-center gap-2 text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-white"
             >
               <ArrowLeft className="h-5 w-5" />
               <span>Zurück zur Übersicht</span>
             </button>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-muted-foreground dark:text-white">
             {title ??
               (mode === "create"
                 ? "Neue Fahndung erstellen"
                 : "Fahndung bearbeiten")}
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-muted-foreground dark:text-muted-foreground">
             {description ??
               (mode === "create"
                 ? "Erstellen Sie eine neue Fahndung mit unserem erweiterten Wizard"
@@ -509,10 +509,10 @@ const FahndungWizardContainer = ({
         {!isMobile && (
           <div className="mb-8">
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Fortschritt: {currentStep} von {steps.length} Schritten
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                 {Math.round((currentStep / steps.length) * 100)}% abgeschlossen
               </span>
             </div>
@@ -524,7 +524,7 @@ const FahndungWizardContainer = ({
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
                       currentStep >= step.id
                         ? "border-blue-500 bg-blue-500 text-white"
-                        : "border-gray-300 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800"
+                        : "border-border bg-white text-muted-foreground dark:border-border dark:bg-muted"
                     }`}
                   >
                     {currentStep > step.id ? (
@@ -537,7 +537,7 @@ const FahndungWizardContainer = ({
                     className={`ml-2 text-sm font-medium ${
                       currentStep >= step.id
                         ? "text-blue-600 dark:text-blue-400"
-                        : "text-gray-500"
+                        : "text-muted-foreground"
                     }`}
                   >
                     {step.label}
@@ -547,7 +547,7 @@ const FahndungWizardContainer = ({
                       className={`mx-4 h-1 w-16 ${
                         currentStep > step.id
                           ? "bg-blue-500"
-                          : "bg-gray-300 dark:bg-gray-600"
+                          : "bg-muted dark:bg-muted"
                       }`}
                     />
                   )}
@@ -562,19 +562,19 @@ const FahndungWizardContainer = ({
           <DesktopLayout>
             {/* Main Content */}
             <div className="xl:col-span-2">
-              <div className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
+              <div className="rounded-lg bg-white p-8 shadow-sm dark:bg-muted">
                 {renderCurrentStep()}
 
                 {/* Desktop Navigation */}
                 {currentStep < 6 && (
-                  <div className="mt-8 flex justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
+                  <div className="mt-8 flex justify-between border-t border-border pt-6 dark:border-border">
                     <button
                       onClick={handlePrevious}
                       disabled={currentStep === 1}
                       className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
                         currentStep === 1
-                          ? "cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                          ? "cursor-not-allowed bg-muted text-muted-foreground dark:bg-muted"
+                          : "bg-muted text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                       }`}
                     >
                       <ArrowLeft className="h-4 w-4" />
@@ -587,7 +587,7 @@ const FahndungWizardContainer = ({
                       className={`flex items-center gap-2 rounded-lg px-6 py-2 ${
                         canProceedToNextStep()
                           ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-600"
+                          : "cursor-not-allowed bg-muted text-muted-foreground dark:bg-muted"
                       }`}
                     >
                       Weiter
@@ -601,7 +601,7 @@ const FahndungWizardContainer = ({
             {/* Preview Sidebar */}
             <div className="xl:col-span-1">
               <div className="sticky top-8">
-                <div className="rounded-lg bg-white shadow-lg dark:bg-gray-800">
+                <div className="rounded-lg bg-white shadow-sm dark:bg-muted">
                   <PreviewTabs />
                   <div className="p-6">{renderPreviewContent()}</div>
                 </div>
@@ -614,11 +614,11 @@ const FahndungWizardContainer = ({
         {!isDesktop && (
           <MobileLayout>
             {/* Sticky Header für Mobile */}
-            <div className="sticky top-0 z-40 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+            <div className="sticky top-0 z-40 border-b border-border bg-white dark:border-border dark:bg-muted">
               <div className="flex items-center justify-between p-4">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 text-gray-600 dark:text-gray-400"
+                  className="flex items-center gap-2 text-muted-foreground dark:text-muted-foreground"
                 >
                   <ArrowLeft className="h-5 w-5" />
                   <span>Zurück</span>
@@ -631,14 +631,14 @@ const FahndungWizardContainer = ({
 
             {/* Main Content */}
             <div className="flex-1 p-4 pb-32">
-              <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+              <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
                 {renderCurrentStep()}
               </div>
 
               {/* Mobile Preview Toggle */}
               <button
                 onClick={() => setShowMobilePreview(!showMobilePreview)}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-gray-100 py-3 dark:bg-gray-700"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-muted py-3 dark:bg-muted"
               >
                 <Eye className="h-4 w-4" />
                 <span>
@@ -648,7 +648,7 @@ const FahndungWizardContainer = ({
 
               {/* Mobile Preview */}
               {showMobilePreview && (
-                <div className="mt-4 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+                <div className="mt-4 rounded-lg bg-white shadow-sm dark:bg-muted">
                   <PreviewTabs />
                   <div className="p-4">{renderPreviewContent()}</div>
                 </div>

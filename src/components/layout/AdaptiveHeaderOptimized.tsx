@@ -86,8 +86,8 @@ const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <div
       className={`
-      w-full bg-[#EEEEEE] text-gray-700 transition-all duration-500
-      ease-out dark:bg-gray-900 dark:text-gray-200
+      w-full bg-[#EEEEEE] text-muted-foreground transition-all duration-500
+      ease-out dark:bg-muted dark:text-muted-foreground
       ${isVisible ? "h-8 opacity-100" : "h-0 opacity-0"}
     `}
     >
@@ -96,7 +96,7 @@ const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
         <div className="flex items-center gap-4 text-xs">
           <Link
             href="/gebaerdensprache"
-            className="flex items-center gap-1 rounded px-2 py-1 text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-gray-900"
+            className="flex items-center gap-1 rounded px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-gray-900"
             tabIndex={1}
           >
             <svg className="h-3 w-3" viewBox="0 0 7.15 7.7" fill="currentColor">
@@ -107,7 +107,7 @@ const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
           </Link>
           <Link
             href="/leichte-sprache"
-            className="flex items-center gap-1 rounded px-2 py-1 text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-gray-900"
+            className="flex items-center gap-1 rounded px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-gray-900"
             tabIndex={2}
           >
             <svg className="h-3 w-3" viewBox="0 0 7.24 7.7" fill="currentColor">
@@ -192,7 +192,7 @@ const AdaptiveDesktopHeader = ({
           {/* Hamburger Menu Button - auch für angemeldete Benutzer */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="inline-flex items-center gap-x-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
             aria-haspopup="dialog"
             aria-expanded={isMenuOpen}
             aria-controls="desktop-offcanvas-menu"
@@ -207,7 +207,7 @@ const AdaptiveDesktopHeader = ({
         <div className="flex h-9 items-center gap-3">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="inline-flex items-center gap-x-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
             aria-haspopup="dialog"
             aria-expanded={isMenuOpen}
             aria-controls="desktop-offcanvas-menu"
@@ -262,9 +262,9 @@ const AdaptiveDesktopHeader = ({
       >
         <div
           className={`
-            border border-gray-100 bg-gray-50 shadow-sm
-            transition-all duration-500 ease-out hover:shadow-md
-            dark:border-gray-700 dark:bg-gray-900
+            border border-border bg-muted shadow-sm
+            transition-all duration-500 ease-out hover:shadow-sm
+            dark:border-border dark:bg-muted
             ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl rounded-t-2xl"}
           `}
           style={{
@@ -304,7 +304,7 @@ const AdaptiveDesktopHeader = ({
                   {isScrolled && (
                     <button
                       onClick={() => setShowMetaBar(!showMetaBar)}
-                      className="relative h-full w-full touch-manipulation select-none rounded-xl border border-gray-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-300 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
+                      className="relative h-full w-full touch-manipulation select-none rounded-lg border border-border bg-white/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
                       title={
                         showMetaBar
                           ? "Barrierefreiheit ausblenden"
@@ -345,18 +345,18 @@ const ResponsiveMobileHeader = ({
 
   return (
     <div
-      className="sticky top-0 z-50 w-full rounded-xl border-b border-gray-100 bg-gray-50 shadow-sm transition-all duration-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900 lg:hidden"
+      className="sticky top-0 z-50 w-full rounded-lg border-b border-border bg-muted shadow-sm transition-all duration-300 hover:shadow-sm dark:border-border dark:bg-muted lg:hidden"
       style={{ zIndex: 100 }}
     >
       {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
       {showMetaControls && (
-        <div className="bg-gray-200 px-4 py-2 text-gray-800 dark:bg-[#020618] dark:text-slate-200">
+        <div className="bg-muted px-4 py-2 text-muted-foreground dark:bg-[#020618] dark:text-slate-200">
           <div className="flex items-center justify-between text-xs">
             {/* Links: Gebärdensprache, Leichte Sprache & Textvergrößerung */}
             <div className="flex items-center gap-3">
               <Link
                 href="/gebaerdensprache"
-                className="rounded px-2 py-1 text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-slate-900"
+                className="rounded px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-slate-900"
                 title="Gebärdensprache"
                 aria-label="Gebärdensprache"
               >
@@ -371,7 +371,7 @@ const ResponsiveMobileHeader = ({
               </Link>
               <Link
                 href="/leichte-sprache"
-                className="rounded px-2 py-1 text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-slate-900"
+                className="rounded px-2 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:ring-offset-gray-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-gray-500 dark:focus:ring-offset-slate-900"
                 title="Leichte Sprache"
                 aria-label="Leichte Sprache"
               >
@@ -410,7 +410,7 @@ const ResponsiveMobileHeader = ({
           {/* Meta Controls Toggle */}
           <button
             onClick={() => setShowMetaControls(!showMetaControls)}
-            className="relative touch-manipulation select-none overflow-hidden rounded-xl border border-gray-100 bg-gray-50/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-200 hover:bg-gray-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
+            className="relative touch-manipulation select-none overflow-hidden rounded-lg border border-border bg-muted/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-muted hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
             aria-label="Barrierefreiheit"
           >
             <Eye className="h-4 w-4" />
@@ -419,7 +419,7 @@ const ResponsiveMobileHeader = ({
           {/* Hamburger Menu Button */}
           <button
             onClick={onMenuToggle}
-            className="relative touch-manipulation select-none rounded-xl border border-gray-100 bg-gray-50/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-gray-200 hover:bg-gray-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
+            className="relative touch-manipulation select-none rounded-lg border border-border bg-muted/90 p-1.5 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-border hover:bg-muted hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400/50 dark:border-slate-600 dark:bg-slate-800/90 dark:hover:border-slate-500 dark:hover:bg-slate-800"
             aria-label="Menü öffnen"
           >
             <Menu className="h-5 w-5" />
@@ -468,7 +468,7 @@ const AdaptiveHeaderOptimized = ({
       {/* Skip Link */}
       <a
         href="#main-content"
-        className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:ring-4 focus:ring-primary/30"
+        className="sr-only z-50 rounded-lg bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:ring-4 focus:ring-primary/30"
         tabIndex={1}
       >
         Zum Hauptinhalt springen

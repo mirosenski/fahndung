@@ -160,7 +160,7 @@ export const OptimizedImage = ({
   if (!isInView && !priority) {
     return (
       <div
-        className={`animate-pulse bg-gray-200 dark:bg-gray-700 ${className}`}
+        className={`animate-pulse bg-muted dark:bg-muted ${className}`}
         style={{ width: imageSize.width, height: imageSize.height }}
         data-src={src}
       />
@@ -188,15 +188,15 @@ export const OptimizedImage = ({
 
       {/* Loading Indicator */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted dark:bg-muted">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
         </div>
       )}
 
       {/* Error State */}
       {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          <div className="text-center text-gray-500 dark:text-gray-400">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted dark:bg-muted">
+          <div className="text-center text-muted-foreground dark:text-muted-foreground">
             <svg
               className="mx-auto mb-2 h-12 w-12"
               fill="none"

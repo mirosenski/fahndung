@@ -66,7 +66,7 @@ export default function HeroSection({
   urgentInvestigations = [],
 
   showBackgroundSphere = false,
-  backgroundSphereColor = "bg-gray-100",
+  backgroundSphereColor = "bg-muted",
 }: HeroSectionProps) {
   return (
     <section className="relative bg-transparent" style={{ zIndex: 20 }}>
@@ -107,10 +107,10 @@ export default function HeroSection({
 
               {/* Haupttitel */}
               <div className="space-y-4">
-                <h1 className="text-4xl font-bold leading-tight text-gray-900 dark:text-white lg:text-5xl">
+                <h1 className="text-4xl font-bold leading-tight text-muted-foreground dark:text-white lg:text-5xl">
                   {title}
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">
+                <p className="text-lg text-muted-foreground dark:text-muted-foreground">
                   {subtitle}
                 </p>
               </div>
@@ -121,7 +121,7 @@ export default function HeroSection({
                   variant="outline"
                   size="lg"
                   onClick={onSecondaryClick}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="border-border text-muted-foreground hover:bg-muted dark:border-border dark:text-muted-foreground dark:hover:bg-muted"
                 >
                   {secondaryButtonText}
                 </Button>

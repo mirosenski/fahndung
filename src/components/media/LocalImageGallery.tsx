@@ -103,7 +103,7 @@ export default function LocalImageGallery() {
         <CardContent>
           {/* Suchleiste */}
           <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
             <Input
               placeholder="Bilder durchsuchen..."
               value={searchTerm}
@@ -139,11 +139,11 @@ export default function LocalImageGallery() {
           {/* Bildergalerie */}
           {images.length === 0 ? (
             <div className="py-12 text-center">
-              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900">
+              <ImageIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-medium text-muted-foreground">
                 Keine Bilder gefunden
               </h3>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 {searchTerm
                   ? "Keine Bilder entsprechen Ihrer Suche."
                   : "Noch keine Bilder hochgeladen."}
@@ -154,7 +154,7 @@ export default function LocalImageGallery() {
               {images.map((image, index) => (
                 <Card
                   key={image.id}
-                  className="overflow-hidden transition-shadow hover:shadow-lg"
+                  className="overflow-hidden transition-shadow hover:shadow-sm"
                 >
                   <div className="relative aspect-square">
                     <Image
@@ -183,11 +183,11 @@ export default function LocalImageGallery() {
                       >
                         {image.originalName}
                       </h3>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {formatDate(image.uploadedAt)}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {formatFileSize(image.fileSize)}
                       </div>
                       {image.tags && image.tags.length > 0 && (
@@ -299,7 +299,7 @@ export default function LocalImageGallery() {
                 {selectedImage.description && (
                   <div>
                     <span className="font-medium">Beschreibung:</span>
-                    <p className="mt-1 text-gray-600">
+                    <p className="mt-1 text-muted-foreground">
                       {selectedImage.description}
                     </p>
                   </div>

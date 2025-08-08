@@ -22,11 +22,11 @@ export const NetworkErrorDiagnostic: React.FC<NetworkErrorDiagnosticProps> = ({
         <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
       </div>
 
-      <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+      <h3 className="mb-2 text-lg font-semibold text-muted-foreground dark:text-white">
         Netzwerkfehler
       </h3>
 
-      <p className="mb-4 max-w-sm text-sm text-gray-600 dark:text-gray-400">
+      <p className="mb-4 max-w-sm text-sm text-muted-foreground dark:text-muted-foreground">
         {errorMessage || "Ein Fehler ist beim Laden der Daten aufgetreten."}
       </p>
 

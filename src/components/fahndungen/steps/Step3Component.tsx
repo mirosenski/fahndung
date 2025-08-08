@@ -357,10 +357,10 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
           Schritt 3: Medien & Dokumente
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Fügen Sie Bilder und Dokumente zur Fahndung hinzu
         </p>
       </div>
@@ -403,10 +403,10 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
       {/* Hauptbild */}
       <div className="space-y-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Hauptbild *
           </label>
-          <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mb-4 text-xs text-muted-foreground dark:text-muted-foreground">
             Das Hauptbild wird auf der Fahndungskarte angezeigt
           </p>
 
@@ -415,7 +415,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
             className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
               dragZone === "main"
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900"
-                : "border-gray-300 hover:border-gray-400 dark:border-gray-600"
+                : "border-border hover:border-border dark:border-border"
             }`}
             onDragEnter={(e) => handleDrag(e, "main")}
             onDragOver={(e) => handleDrag(e, "main")}
@@ -443,7 +443,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-muted-foreground dark:text-muted-foreground">
                   <p className="font-medium">{data.mainImage.name}</p>
                   <p>{formatFileSize(data.mainImage.size)}</p>
                   {data.mainImageUrl && (
@@ -453,21 +453,21 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                  <Camera className="h-8 w-8 text-gray-400" />
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                  <Camera className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-muted-foreground dark:text-white">
                     Bild hierher ziehen oder klicken zum Auswählen
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                     PNG, JPG, GIF bis 20MB
                   </p>
                 </div>
                 <button
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploading}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-muted"
                 >
                   {isUploading ? (
                     <>
@@ -498,10 +498,10 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
 
         {/* Weitere Bilder */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Weitere Bilder
           </label>
-          <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mb-4 text-xs text-muted-foreground dark:text-muted-foreground">
             Zusätzliche Bilder für die Detailansicht
           </p>
 
@@ -510,7 +510,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
             className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
               dragZone === "additional"
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900"
-                : "border-gray-300 hover:border-gray-400 dark:border-gray-600"
+                : "border-border hover:border-border dark:border-border"
             }`}
             onDragEnter={(e) => handleDrag(e, "additional")}
             onDragOver={(e) => handleDrag(e, "additional")}
@@ -518,21 +518,21 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
             onDrop={(e) => handleDrop(e, "additional")}
           >
             <div className="space-y-4">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                <ImageIcon className="h-6 w-6 text-gray-400" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-muted-foreground dark:text-white">
                   Weitere Bilder hierher ziehen
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   PNG, JPG, GIF bis 20MB
                 </p>
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="rounded-lg bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                className="rounded-lg bg-muted px-4 py-2 text-sm text-white hover:bg-muted disabled:cursor-not-allowed disabled:bg-muted"
               >
                 {isUploading ? (
                   <>
@@ -565,7 +565,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
           {Array.isArray(data.additionalImages) &&
             data.additionalImages.length > 0 && (
               <div className="mt-4">
-                <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <h4 className="mb-2 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Hochgeladene Bilder ({data.additionalImages.length})
                 </h4>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
@@ -578,10 +578,10 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                     return (
                       <div
                         key={index}
-                        className="group relative rounded-lg border border-gray-200 p-3 dark:border-gray-600"
+                        className="group relative rounded-lg border border-border p-3 dark:border-border"
                       >
                         <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4 text-gray-500" />
+                          <Icon className="h-4 w-4 text-muted-foreground" />
                           <span className="flex-1 truncate text-xs">
                             {file.name}
                           </span>
@@ -592,7 +592,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                             <X className="h-3 w-3 text-red-500" />
                           </button>
                         </div>
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
                           {formatFileSize(file.size)}
                         </p>
                         {isUploaded && (
@@ -610,10 +610,10 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
 
         {/* Dokumente */}
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Dokumente
           </label>
-          <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mb-4 text-xs text-muted-foreground dark:text-muted-foreground">
             PDFs, Word-Dokumente und andere relevante Dateien
           </p>
 
@@ -622,7 +622,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
             className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
               dragZone === "documents"
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900"
-                : "border-gray-300 hover:border-gray-400 dark:border-gray-600"
+                : "border-border hover:border-border dark:border-border"
             }`}
             onDragEnter={(e) => handleDrag(e, "documents")}
             onDragOver={(e) => handleDrag(e, "documents")}
@@ -630,20 +630,20 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
             onDrop={(e) => handleDrop(e, "documents")}
           >
             <div className="space-y-4">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
-                <FileText className="h-6 w-6 text-gray-400" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                <FileText className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-muted-foreground dark:text-white">
                   Dokumente hierher ziehen
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   PDF, DOC, DOCX bis 20MB
                 </p>
               </div>
               <button
                 onClick={() => documentInputRef.current?.click()}
-                className="rounded-lg bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700"
+                className="rounded-lg bg-muted px-4 py-2 text-sm text-white hover:bg-muted"
               >
                 Dokumente auswählen
               </button>
@@ -664,7 +664,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
           {/* Anzeige der Dokumente */}
           {data.documents.length > 0 && (
             <div className="mt-4">
-              <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h4 className="mb-2 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Hochgeladene Dokumente ({data.documents.length})
               </h4>
               <div className="space-y-2">
@@ -673,23 +673,23 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                   return (
                     <div
                       key={index}
-                      className="group flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-600"
+                      className="group flex items-center justify-between rounded-lg border border-border p-3 dark:border-border"
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className="h-5 w-5 text-gray-500" />
+                        <Icon className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          <p className="text-sm font-medium text-muted-foreground dark:text-white">
                             {file.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                             {getFileTypeLabel(file)} •{" "}
                             {formatFileSize(file.size)}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700">
-                          <Eye className="h-4 w-4 text-gray-500" />
+                        <button className="rounded p-1 hover:bg-muted dark:hover:bg-muted">
+                          <Eye className="h-4 w-4 text-muted-foreground" />
                         </button>
                         <button
                           onClick={() => removeDocument(index)}

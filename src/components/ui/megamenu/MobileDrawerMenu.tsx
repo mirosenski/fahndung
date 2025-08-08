@@ -199,7 +199,7 @@ export function MobileDrawerMenu({
       return (
         <div
           key={item.label}
-          className="border-b border-gray-200 last:border-b-0 dark:border-gray-700"
+          className="border-b border-border last:border-b-0 dark:border-border"
         >
           <div className="flex min-h-[44px] items-center justify-between py-3">
             <Link
@@ -208,13 +208,13 @@ export function MobileDrawerMenu({
               className="flex min-w-0 flex-1 items-center space-x-3 px-4"
             >
               {item.icon && (
-                <span className="flex-shrink-0 text-gray-400 dark:text-gray-500">
+                <span className="flex-shrink-0 text-muted-foreground dark:text-muted-foreground">
                   {item.icon}
                 </span>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center space-x-2">
-                  <span className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                  <span className="truncate text-sm font-medium text-muted-foreground dark:text-white">
                     {item.label}
                   </span>
                   {item.badge && (
@@ -224,7 +224,7 @@ export function MobileDrawerMenu({
                   )}
                 </div>
                 {item.description && (
-                  <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                  <p className="truncate text-xs text-muted-foreground dark:text-muted-foreground">
                     {item.description}
                   </p>
                 )}
@@ -234,7 +234,7 @@ export function MobileDrawerMenu({
             {hasSubItems && (
               <button
                 onClick={() => toggleExpanded(currentPath)}
-                className="flex-shrink-0 touch-manipulation select-none p-3 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-900"
+                className="flex-shrink-0 touch-manipulation select-none p-3 text-muted-foreground transition-colors hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-muted-foreground dark:hover:text-muted-foreground dark:focus:ring-offset-gray-900"
                 aria-expanded={isExpanded}
                 aria-label={`${isExpanded ? "Schließen" : "Öffnen"} ${item.label}`}
               >
@@ -250,7 +250,7 @@ export function MobileDrawerMenu({
           {hasSubItems && (
             <>
               {isExpanded && (
-                <div className="overflow-hidden bg-gray-50 transition-all duration-200 ease-in-out dark:bg-gray-800">
+                <div className="overflow-hidden bg-muted transition-all duration-200 ease-in-out dark:bg-muted">
                   <div className="space-y-1 py-2">
                     {item.subItems!.map((subItem) =>
                       renderMenuItem(subItem, level + 1, currentPath),
@@ -297,16 +297,16 @@ export function MobileDrawerMenu({
             {/* Drawer */}
             <div
               ref={drawerRef}
-              className="fixed right-0 top-0 z-[9999] flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-2xl transition-transform duration-300 ease-out md:hidden"
+              className="fixed right-0 top-0 z-[9999] flex h-full w-80 max-w-[85vw] flex-col bg-background shadow-sm transition-transform duration-300 ease-out md:hidden"
             >
               {/* Sticky Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-background p-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background p-4">
+                <h2 className="text-lg font-semibold text-muted-foreground dark:text-white">
                   Navigation
                 </h2>
                 <button
                   onClick={() => onClose()}
-                  className="touch-manipulation select-none p-2 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-gray-500 dark:hover:text-gray-300 dark:focus:ring-offset-gray-900"
+                  className="touch-manipulation select-none p-2 text-muted-foreground transition-colors hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:text-muted-foreground dark:hover:text-muted-foreground dark:focus:ring-offset-gray-900"
                   aria-label="Menü schließen"
                 >
                   <X className="h-6 w-6" />
@@ -314,15 +314,15 @@ export function MobileDrawerMenu({
               </div>
 
               {/* Search Field */}
-              <div className="border-b border-gray-200 p-4 dark:border-gray-700">
+              <div className="border-b border-border p-4 dark:border-border">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                   <input
                     type="text"
                     placeholder="Suchen..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                    className="w-full rounded-lg border border-border bg-white py-3 pl-10 pr-4 text-sm text-muted-foreground placeholder-gray-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white dark:placeholder-gray-400"
                     aria-label="Menü durchsuchen"
                   />
                 </div>
@@ -338,7 +338,7 @@ export function MobileDrawerMenu({
                   {filteredItems.length > 0 ? (
                     filteredItems.map((item) => renderMenuItem(item))
                   ) : (
-                    <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                    <div className="py-8 text-center text-muted-foreground dark:text-muted-foreground">
                       <Search className="mx-auto mb-2 h-8 w-8 opacity-50" />
                       <p>Keine Ergebnisse gefunden</p>
                     </div>
@@ -347,18 +347,18 @@ export function MobileDrawerMenu({
               </div>
 
               {/* Sticky Footer mit User Section */}
-              <div className="sticky bottom-0 border-t border-gray-200 bg-background p-4">
+              <div className="sticky bottom-0 border-t border-border bg-background p-4">
                 <div className="space-y-2">
                   {isAuthenticated ? (
                     <>
                       {/* User Info */}
-                      <div className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-muted-foreground dark:text-muted-foreground">
                         <User className="h-5 w-5" />
                         <div className="flex flex-col">
-                          <span className="font-medium text-gray-700 dark:text-gray-200">
+                          <span className="font-medium text-muted-foreground dark:text-muted-foreground">
                             Angemeldet als:
                           </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-500">
+                          <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                             {session?.user?.email ?? "Unbekannt"}
                           </span>
                         </div>
@@ -369,7 +369,7 @@ export function MobileDrawerMenu({
                           router.push("/dashboard");
                           onClose();
                         }}
-                        className="flex w-full touch-manipulation select-none items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                        className="flex w-full touch-manipulation select-none items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                       >
                         <Shield className="h-5 w-5" />
                         <span>Dashboard</span>

@@ -20,7 +20,7 @@ export function Logo({ className = "", showLink = true }: LogoProps) {
         <span className="font-arial text-xs font-normal leading-tight tracking-[4px] text-black subpixel-antialiased [font-family:'Arial-Regular',Helvetica] dark:text-white sm:text-sm lg:text-base">
           POLIZEI BW
         </span>
-        <span className="-mt-0.5 text-base font-black leading-tight tracking-[0.5px] text-[#373a41] subpixel-antialiased [font-family:'Inter-Black',Helvetica] dark:text-gray-200 sm:-mt-1 sm:text-lg lg:text-xl">
+        <span className="-mt-0.5 text-base font-black leading-tight tracking-[0.5px] text-[#373a41] subpixel-antialiased [font-family:'Inter-Black',Helvetica] dark:text-muted-foreground sm:-mt-1 sm:text-lg lg:text-xl">
           FAHNDUNG
         </span>
       </div>

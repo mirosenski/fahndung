@@ -219,7 +219,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   if (networkError) {
     return (
       <div
-        className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 ${className}`}
+        className={`relative overflow-hidden rounded-lg border border-border bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-sm dark:border-border dark:bg-muted ${className}`}
       >
         <NetworkErrorDiagnostic
           error={networkError}
@@ -234,12 +234,12 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
   if (isDataLoading && investigationId && !disableNavigation) {
     return (
       <div
-        className={`relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 ${className}`}
+        className={`relative overflow-hidden rounded-lg border border-border bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-sm dark:border-border dark:bg-muted ${className}`}
       >
         <div className="flex items-center justify-center p-8">
           <div className="flex flex-col items-center gap-4">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               Lade Fahndungsdaten...
             </p>
           </div>
@@ -268,7 +268,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         {/* FRONT SIDE */}
         <div
           ref={frontRef}
-          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900"
+          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm transition-shadow duration-300 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-border dark:bg-muted"
           style={{ backfaceVisibility: "hidden" }}
           onClick={
             disableNavigation || !investigationId ? flipCard : navigateToDetail
@@ -293,7 +293,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         >
           {/* Image Section */}
           <div
-            className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800"
+            className="relative w-full overflow-hidden bg-muted dark:bg-muted"
             style={{ height: "60%" }}
           >
             {!disableEdit &&
@@ -308,7 +308,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                       handleQuickEdit(e);
                     }
                   }}
-                  className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  className="absolute left-4 top-4 z-10 flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-sm transition-all hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   aria-label="Schnell bearbeiten"
                   tabIndex={0}
                 >
@@ -347,7 +347,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-600 dark:text-gray-400">
+                <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {safeData.step4.mainLocation?.address.split(",")[0] ??
                     "Unbekannt"}{" "}
                   |{" "}
@@ -360,7 +360,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                     : "Unbekannt"}
                 </div>
                 <div
-                  className="rounded border border-gray-300 bg-white px-2 py-0.5 text-xs font-medium text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                  className="rounded border border-border bg-white px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground"
                   role="status"
                   aria-label={`Kategorie: ${category.label}`}
                 >
@@ -368,10 +368,10 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 </div>
               </div>
 
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-bold text-muted-foreground dark:text-white">
                 {safeData.step1.title}
               </h3>
-              <p className="line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+              <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground dark:text-muted-foreground">
                 {safeData.step2.shortDescription}
               </p>
             </div>
@@ -380,7 +380,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               <div className="flex-1">
                 {!disableNavigation && investigationId && (
                   <button
-                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center gap-1 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigateToDetail();
@@ -404,7 +404,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               {/* Details Button - immer sichtbar, auch im Preview-Modus */}
               <button
                 ref={detailsButtonRef}
-                className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-1 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                 onClick={(e) => {
                   e.stopPropagation();
                   flipCard();
@@ -428,23 +428,23 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         {/* BACK SIDE */}
         <div
           ref={backRef}
-          className="absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
+          className="absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm dark:border-border dark:bg-muted"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex items-center justify-between border-b border-border p-4 dark:border-border">
+            <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
               Details
             </h3>
             <button
               onClick={flipCard}
-              className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
               aria-label="Karte schließen"
             >
               <EyeOff className="h-5 w-5" />
             </button>
           </div>
 
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
+          <div className="flex border-b border-border dark:border-border">
             {TAB_CONFIG.map((tab) => (
               <button
                 key={tab.id}
@@ -452,7 +452,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                 className={`flex min-w-0 flex-1 items-center justify-center gap-1 px-2 py-3 text-xs font-medium transition-colors ${
                   state.activeTab === tab.id
                     ? "border-b-2 border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    : "text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
                 }`}
               >
                 <tab.icon className="h-3 w-3 flex-shrink-0" />
@@ -471,7 +471,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             />
           </div>
 
-          <div className="border-t border-gray-200 p-4 dark:border-gray-700">
+          <div className="border-t border-border p-4 dark:border-border">
             <div className="flex items-center justify-between">
               {!disableNavigation && investigationId && (
                 <button
@@ -486,7 +486,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
               {!disableEdit && userPermissions?.canEdit && (
                 <button
                   onClick={handleQuickEdit}
-                  className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                 >
                   <Edit className="h-4 w-4" />
                   Bearbeiten

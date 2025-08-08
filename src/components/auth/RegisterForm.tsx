@@ -213,12 +213,12 @@ export default function RegisterForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-lg border border-border bg-white p-8 shadow-sm dark:border-border dark:bg-muted">
           <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="mb-2 text-3xl font-bold text-muted-foreground dark:text-white">
               Registrierung
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               Erstellen Sie Ihr Konto für Fahndung
             </p>
           </div>
@@ -242,12 +242,12 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="name"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
               >
                 Vollständiger Name *
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   id="name"
                   type="text"
@@ -264,12 +264,12 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
               >
                 E-Mail-Adresse *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   id="email"
                   type="email"
@@ -286,12 +286,12 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
               >
                 Passwort *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -306,7 +306,7 @@ export default function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -321,12 +321,12 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
               >
                 Passwort bestätigen *
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
@@ -341,7 +341,7 @@ export default function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -356,12 +356,12 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="department"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
               >
                 Abteilung
               </label>
               <div className="relative">
-                <Building className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Building className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <select
                   id="department"
                   value={formData.department}
@@ -384,12 +384,12 @@ export default function RegisterForm() {
             <div>
               <label
                 htmlFor="phone"
-                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground"
               >
                 Telefonnummer
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <input
                   id="phone"
                   type="tel"
@@ -415,7 +415,7 @@ export default function RegisterForm() {
           <div className="mt-6 text-center">
             <button
               onClick={() => router.push("/login")}
-              className="mx-auto flex items-center justify-center space-x-2 text-gray-400 transition-colors hover:text-white"
+              className="mx-auto flex items-center justify-center space-x-2 text-muted-foreground transition-colors hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Zurück zur Anmeldung</span>
@@ -423,7 +423,7 @@ export default function RegisterForm() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Durch die Registrierung stimmen Sie unseren{" "}
               <a href="#" className="text-blue-400 hover:text-blue-300">
                 Nutzungsbedingungen

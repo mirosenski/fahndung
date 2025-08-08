@@ -21,7 +21,7 @@ export default function CommonHeroSection({ data }: CommonHeroSectionProps) {
   return (
     <>
       {/* Hero Section */}
-      <div className="relative h-[60vh] min-h-[400px] overflow-hidden rounded-3xl bg-gray-200 dark:bg-gray-800">
+      <div className="relative h-[60vh] min-h-[400px] overflow-hidden rounded-lg bg-muted dark:bg-muted">
         {/* Hauptbild - Originales Fahndungsbild */}
         <Image
           src={mainImageUrl}

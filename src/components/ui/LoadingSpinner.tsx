@@ -48,14 +48,14 @@ export function LoadingSpinner({
         <div className="text-center">
           <div className="mb-4 flex justify-center">
             <div
-              className={`${sizeClasses[size]} rounded-full border-2 border-gray-300 border-t-blue-500`}
+              className={`${sizeClasses[size]} rounded-full border-2 border-border border-t-blue-500`}
             />
           </div>
-          <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="mb-2 text-lg font-semibold text-muted-foreground dark:text-white">
             {message}
           </h2>
           {subMessage && (
-            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mb-4 text-sm text-muted-foreground dark:text-muted-foreground">
               {subMessage}
             </p>
           )}
@@ -74,7 +74,7 @@ export function LoadingSpinner({
         <div className="mb-4 flex justify-center">
           {type === "loading" ? (
             <div
-              className={`${sizeClasses[size]} animate-spin rounded-full border-2 border-gray-300 border-t-blue-500`}
+              className={`${sizeClasses[size]} animate-spin rounded-full border-2 border-border border-t-blue-500`}
             />
           ) : type === "error" ? (
             <div className={`${sizeClasses[size]} text-red-500`}>
@@ -100,13 +100,13 @@ export function LoadingSpinner({
         </div>
 
         {/* Message */}
-        <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-lg font-semibold text-muted-foreground dark:text-white">
           {message}
         </h2>
 
         {/* Sub Message */}
         {subMessage && (
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mb-4 text-sm text-muted-foreground dark:text-muted-foreground">
             {subMessage}
           </p>
         )}
@@ -124,7 +124,7 @@ export function LoadingSpinner({
 
         {/* Progress Bar für bessere UX - nur client-seitig */}
         {type === "loading" && isClient && (
-          <div className="mt-4 w-48 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          <div className="mt-4 w-48 overflow-hidden rounded-full bg-muted dark:bg-muted">
             <div
               className="h-1 animate-pulse bg-blue-500 transition-all duration-1000 ease-out"
               style={{ transitionDuration: "1000ms" }}

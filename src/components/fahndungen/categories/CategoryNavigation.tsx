@@ -20,15 +20,15 @@ export default function CategoryNavigation({
 
   return (
     <div className="mb-6">
-      <nav className="flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+      <nav className="flex space-x-1 rounded-lg bg-muted p-1 dark:bg-muted">
         {categories.map((category) => (
           <button
             key={category.id}
             onClick={() => onCategoryChange?.(category.id)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
               activeCategory === category.id
-                ? "bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400"
-                : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                ? "bg-white text-blue-600 shadow-sm dark:bg-muted dark:text-blue-400"
+                : "text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-white"
             }`}
           >
             <span>{category.icon}</span>

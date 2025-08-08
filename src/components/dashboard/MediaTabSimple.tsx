@@ -143,7 +143,7 @@ export default function MediaTabSimple() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Medien-Galerie</h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {filteredMedia.length} Medien gefunden
           </p>
         </div>
@@ -183,13 +183,13 @@ export default function MediaTabSimple() {
       <div className="flex items-center space-x-4">
         {/* Search */}
         <div className="relative max-w-md flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Medien durchsuchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="focus:outline-hidden w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:ring-2 focus:ring-blue-500"
+            className="focus:outline-hidden w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -197,13 +197,13 @@ export default function MediaTabSimple() {
         <div className="flex items-center space-x-1">
           <button
             onClick={() => setViewMode("grid")}
-            className={`rounded p-2 ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-400"}`}
+            className={`rounded p-2 ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-muted-foreground"}`}
           >
             <Grid3X3 className="h-4 w-4" />
           </button>
           <button
             onClick={() => setViewMode("list")}
-            className={`rounded p-2 ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-400"}`}
+            className={`rounded p-2 ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-muted-foreground"}`}
           >
             <List className="h-4 w-4" />
           </button>
@@ -213,7 +213,7 @@ export default function MediaTabSimple() {
         <button
           onClick={loadMedia}
           disabled={loading}
-          className="rounded-lg border border-gray-300 p-2 hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-lg border border-border p-2 hover:bg-muted disabled:opacity-50"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </button>
@@ -232,14 +232,14 @@ export default function MediaTabSimple() {
           <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
         </div>
       ) : filteredMedia.length === 0 ? (
-        <div className="p-12 text-center text-gray-500">
+        <div className="p-12 text-center text-muted-foreground">
           Keine Medien gefunden
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {filteredMedia.map((item) => (
             <div key={item.id} className="group relative">
-              <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+              <div className="aspect-square overflow-hidden rounded-lg bg-muted">
                 {item.type.startsWith("image/") ? (
                   <Image
                     src={item.url}
@@ -249,12 +249,12 @@ export default function MediaTabSimple() {
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-gray-400">
+                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                     <Filter className="h-12 w-12" />
                   </div>
                 )}
               </div>
-              <p className="mt-2 truncate text-sm text-gray-600">{item.name}</p>
+              <p className="mt-2 truncate text-sm text-muted-foreground">{item.name}</p>
             </div>
           ))}
         </div>
@@ -263,9 +263,9 @@ export default function MediaTabSimple() {
           {filteredMedia.map((item) => (
             <div
               key={item.id}
-              className="flex items-center space-x-4 rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
+              className="flex items-center space-x-4 rounded-lg border border-border p-4 hover:bg-muted"
             >
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-gray-100">
+              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-muted">
                 {item.type.startsWith("image/") ? (
                   <Image
                     src={item.url}
@@ -275,14 +275,14 @@ export default function MediaTabSimple() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-gray-400">
+                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                     <Filter className="h-8 w-8" />
                   </div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{item.name}</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {new Date(item.created_at).toLocaleDateString("de-DE")}
                 </p>
               </div>

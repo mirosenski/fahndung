@@ -60,12 +60,12 @@ export default function ProtectedRoute({
   if (!initialized || loading) {
     return (
       fallback ?? (
-        <div className="min-h-screen bg-gray-900 text-white">
+        <div className="min-h-screen bg-muted text-white">
           <div className="flex h-screen items-center justify-center">
             <div className="text-center">
               <div className="mb-4 text-4xl">🔄</div>
               <div className="text-xl font-semibold">Lade...</div>
-              <div className="mt-2 text-gray-400">
+              <div className="mt-2 text-muted-foreground">
                 {!initialized
                   ? "Initialisiere..."
                   : "Prüfe Authentifizierung..."}
@@ -81,12 +81,12 @@ export default function ProtectedRoute({
   if (!session) {
     return (
       fallback ?? (
-        <div className="min-h-screen bg-gray-900 text-white">
+        <div className="min-h-screen bg-muted text-white">
           <div className="flex h-screen items-center justify-center">
             <div className="text-center">
               <div className="mb-4 text-4xl">🔐</div>
               <div className="text-xl font-semibold">Nicht authentifiziert</div>
-              <div className="mt-2 text-gray-400">
+              <div className="mt-2 text-muted-foreground">
                 Weiterleitung zu Login...
               </div>
             </div>
@@ -106,14 +106,14 @@ export default function ProtectedRoute({
     if (!hasRequiredRole) {
       return (
         fallback ?? (
-          <div className="min-h-screen bg-gray-900 text-white">
+          <div className="min-h-screen bg-muted text-white">
             <div className="flex h-screen items-center justify-center">
               <div className="text-center">
                 <div className="mb-4 text-4xl">🚫</div>
                 <div className="text-xl font-semibold">
                   Unzureichende Berechtigung
                 </div>
-                <div className="mt-2 text-gray-400">
+                <div className="mt-2 text-muted-foreground">
                   Sie haben nicht die erforderlichen Rechte für diese Seite.
                 </div>
               </div>

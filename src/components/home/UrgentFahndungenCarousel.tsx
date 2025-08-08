@@ -15,7 +15,7 @@ const Fahndungskarte = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-64 w-full animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700" />
+      <div className="h-64 w-full animate-pulse rounded-lg bg-muted dark:bg-muted" />
     ),
   },
 );
@@ -241,9 +241,9 @@ export default function UrgentFahndungenCarousel({
 
   if (!investigations || investigations.length === 0) {
     return (
-      <Card className={`w-full max-w-sm rounded-2xl shadow-xl ${className}`}>
+      <Card className={`w-full max-w-sm rounded-lg shadow-sm ${className}`}>
         <CardContent className="p-8 text-center">
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-muted-foreground dark:text-muted-foreground">
             Keine dringenden Fahndungen verfügbar
           </p>
         </CardContent>
@@ -261,7 +261,7 @@ export default function UrgentFahndungenCarousel({
       tabIndex={0}
     >
       {/* Carousel Container */}
-      <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+      <div className="relative overflow-hidden rounded-lg shadow-sm">
         <div className="flex transition-transform duration-700 ease-out">
           {investigations.map((investigation) => (
             <div
@@ -287,7 +287,7 @@ export default function UrgentFahndungenCarousel({
               variant="ghost"
               size="sm"
               onClick={goToPrevious}
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800"
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white dark:bg-muted/90 dark:hover:bg-muted"
               aria-label="Vorherige Fahndung"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -296,7 +296,7 @@ export default function UrgentFahndungenCarousel({
               variant="ghost"
               size="sm"
               onClick={goToNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white dark:bg-muted/90 dark:hover:bg-muted"
               aria-label="Nächste Fahndung"
             >
               <ChevronRight className="h-5 w-5" />
@@ -318,7 +318,7 @@ export default function UrgentFahndungenCarousel({
                   className={`h-3 w-3 rounded-full transition-all duration-200 hover:scale-125 ${
                     index === currentIndex
                       ? "scale-125 bg-blue-600 dark:bg-blue-400"
-                      : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500"
+                      : "bg-muted hover:bg-muted dark:bg-muted dark:hover:bg-muted"
                   }`}
                   aria-label={`Gehe zu Fahndung ${index + 1} von ${investigations.length}`}
                   aria-current={index === currentIndex ? "true" : "false"}
@@ -347,7 +347,7 @@ export default function UrgentFahndungenCarousel({
                 {isAutoPlaying ? "Pause" : "Start"}
               </Button>
 
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Square className="h-3 w-3" />
                   <span>Leertaste zum Pausieren/Starten</span>

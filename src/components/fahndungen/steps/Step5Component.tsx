@@ -105,10 +105,10 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
           Schritt 5: Kontakt & Veröffentlichung
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Legen Sie Kontaktdaten und Veröffentlichungseinstellungen fest
         </p>
       </div>
@@ -116,22 +116,22 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
       {/* Kontaktdaten */}
       <div className="space-y-6">
         <div>
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="mb-4 text-lg font-semibold text-muted-foreground dark:text-white">
             Kontaktdaten
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Ansprechpartner *
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   value={localContactPerson}
                   onChange={(e) => setLocalContactPerson(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                   placeholder="z.B. Kriminalhauptkommissar Müller"
                   required
                 />
@@ -139,17 +139,17 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Telefonnummer *
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="tel"
                   value={localContactPhone}
                   onChange={(e) => setLocalContactPhone(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                   placeholder="+49 123 456789"
                   required
                 />
@@ -157,51 +157,51 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 E-Mail-Adresse
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="email"
                   value={localContactEmail}
                   onChange={(e) => setLocalContactEmail(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                   placeholder="kontakt@polizei.de"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Abteilung
               </label>
               <div className="relative">
-                <Building className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Building className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   value={localDepartment}
                   onChange={(e) => setLocalDepartment(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                   placeholder="z.B. Kriminalpolizei"
                 />
               </div>
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Verfügbare Zeiten
               </label>
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
                   value={localAvailableHours}
                   onChange={(e) => setLocalAvailableHours(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                   placeholder="Mo-Fr 8:00-16:00 Uhr"
                 />
               </div>
@@ -211,12 +211,12 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
 
         {/* Veröffentlichungseinstellungen */}
         <div>
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="mb-4 text-lg font-semibold text-muted-foreground dark:text-white">
             Veröffentlichungseinstellungen
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Veröffentlichungsstatus
               </label>
               <select
@@ -227,7 +227,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                     publishStatus: e.target.value as Step5Data["publishStatus"],
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
               >
                 <option value="draft">Entwurf</option>
                 <option value="review">Zur Überprüfung</option>
@@ -237,7 +237,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Dringlichkeitsstufe
               </label>
               <select
@@ -248,7 +248,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                     urgencyLevel: e.target.value as Step5Data["urgencyLevel"],
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
               >
                 <option value="low">Niedrig</option>
                 <option value="medium">Mittel</option>
@@ -261,14 +261,14 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
 
         {/* Sichtbarkeit */}
         <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <h4 className="mb-3 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Sichtbarkeit
           </h4>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {Object.entries(data.visibility).map(([key, value]) => (
               <label
                 key={key}
-                className="flex items-center space-x-2 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                className="flex items-center space-x-2 rounded-lg border border-border p-3 hover:bg-muted dark:border-border dark:hover:bg-muted"
               >
                 <input
                   type="checkbox"
@@ -281,7 +281,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   }
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                   {key === "internal" && "Intern"}
                   {key === "regional" && "Regional"}
                   {key === "national" && "National"}
@@ -294,14 +294,14 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
 
         {/* Benachrichtigungen */}
         <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <h4 className="mb-3 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Benachrichtigungen
           </h4>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {Object.entries(data.notifications).map(([key, value]) => (
               <label
                 key={key}
-                className="flex items-center space-x-2 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                className="flex items-center space-x-2 rounded-lg border border-border p-3 hover:bg-muted dark:border-border dark:hover:bg-muted"
               >
                 <input
                   type="checkbox"
@@ -314,7 +314,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   }
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                   {key === "emailAlerts" && "E-Mail-Benachrichtigungen"}
                   {key === "smsAlerts" && "SMS-Benachrichtigungen"}
                   {key === "appNotifications" && "App-Benachrichtigungen"}
@@ -327,7 +327,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
 
         {/* Artikel-Veröffentlichung */}
         <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <h4 className="mb-3 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Artikel-Veröffentlichung
           </h4>
           <div className="space-y-4">
@@ -346,16 +346,16 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                 }
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-sm text-muted-foreground dark:text-muted-foreground">
                 Als Artikel veröffentlichen
               </span>
             </label>
 
             {data.articlePublishing.publishAsArticle && (
-              <div className="space-y-4 rounded-lg border border-gray-200 p-4 dark:border-gray-600">
+              <div className="space-y-4 rounded-lg border border-border p-4 dark:border-border">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                       SEO-Titel
                     </label>
                     <input
@@ -370,13 +370,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                           },
                         })
                       }
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                       placeholder="SEO-optimierter Titel"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                       SEO-Beschreibung
                     </label>
                     <textarea
@@ -391,14 +391,14 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                         })
                       }
                       rows={2}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                       placeholder="SEO-Beschreibung für Suchmaschinen"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                     Keywords
                   </label>
                   <div className="flex gap-2">
@@ -409,7 +409,7 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                       onKeyPress={(e) =>
                         e.key === "Enter" && (e.preventDefault(), addKeyword())
                       }
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="flex-1 rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                       placeholder="Keyword eingeben..."
                     />
                     <button

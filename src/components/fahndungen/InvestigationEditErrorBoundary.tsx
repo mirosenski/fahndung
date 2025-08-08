@@ -90,13 +90,13 @@ export class InvestigationEditErrorBoundary extends React.Component<
               <div className="mt-4 flex gap-2">
                 <button
                   onClick={this.handleReset}
-                  className="rounded-md bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
+                  className="rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
                 >
                   Erneut versuchen
                 </button>
                 <button
                   onClick={this.handleReload}
-                  className="flex items-center gap-2 rounded-md bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
+                  className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-white transition-colors hover:bg-muted"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Seite neu laden

@@ -35,17 +35,17 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
           Schritt 1: Grundinformationen
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Legen Sie die grundlegenden Informationen für die Fahndung fest
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Titel der Fahndung *
           </label>
           <input
@@ -53,7 +53,7 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
             value={localTitle}
             onChange={(e) => setLocalTitle(e.target.value)}
             onBlur={() => onChange({ ...data, title: localTitle })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             placeholder="z.B. Vermisste - Maria Schmidt"
             required
           />
@@ -61,13 +61,13 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Kategorie *
             </label>
             <select
               value={data.category}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             >
               {getCategoryOptions().map((option) => (
                 <option key={option.value} value={option.value}>
@@ -78,7 +78,7 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Aktenzeichen
             </label>
             <input
@@ -87,21 +87,21 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
               onChange={(e) =>
                 onChange({ ...data, caseNumber: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-border px-3 py-2 font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
               placeholder="POL-2024-K-001234-A"
             />
           </div>
         </div>
 
         {/* Aktenzeichen Info */}
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
+        <div className="rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
           <div className="mb-2 flex items-center space-x-2">
-            <FileText className="h-4 w-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Aktenzeichen Format:
             </span>
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-muted-foreground dark:text-muted-foreground">
             Format: [Präfix]-[Jahr]-[Monat]-[Nummer] | Wird automatisch bei
             Kategorieänderung generiert
           </div>

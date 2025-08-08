@@ -28,7 +28,7 @@ export default function BreadcrumbNavigation({
         <li>
           <Link
             href="/"
-            className="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            className="flex items-center text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
             prefetch={true}
           >
             <Home className="h-4 w-4" />
@@ -38,18 +38,18 @@ export default function BreadcrumbNavigation({
 
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
             {item.href && index < items.length - 1 ? (
               <Link
                 href={item.href}
-                className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                className="ml-2 text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
                 prefetch={true}
               >
                 {item.icon && <item.icon className="mr-1 h-4 w-4" />}
                 {item.label}
               </Link>
             ) : (
-              <span className="ml-2 text-gray-900 dark:text-white">
+              <span className="ml-2 text-muted-foreground dark:text-white">
                 {item.icon && <item.icon className="mr-1 h-4 w-4" />}
                 {item.label}
               </span>

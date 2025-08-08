@@ -28,7 +28,7 @@ const FahndungskarteGrid = dynamic(
     ssr: false,
     loading: () => (
       <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+        <div className="h-64 rounded-lg bg-muted dark:bg-muted"></div>
       </div>
     ),
   },
@@ -139,7 +139,7 @@ export default function FahndungenPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <span className="ml-2 text-gray-600 dark:text-gray-400">
+            <span className="ml-2 text-muted-foreground dark:text-muted-foreground">
               Lade Fahndungen...
             </span>
           </div>
@@ -154,10 +154,10 @@ export default function FahndungenPage() {
         {/* Header */}
         <div className="mb-8 flex flex-col items-start justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-muted-foreground dark:text-white">
               Fahndungen
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               {currentUser
                 ? `${stats.total} Fahndungen verwalten (${stats.active} aktiv, ${stats.published} veröffentlicht)`
                 : `${stats.total} öffentliche Fahndungen`}
@@ -167,23 +167,23 @@ export default function FahndungenPage() {
           <div className="flex items-center space-x-3">
             {/* View Mode Toggle (nur für eingeloggte Benutzer) */}
             {currentUser && (
-              <div className="flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+              <div className="flex rounded-lg bg-muted p-1 dark:bg-muted">
                 <button
                   onClick={() => setViewMode("all")}
-                  className={`rounded-md px-3 py-1 text-sm font-medium ${
+                  className={`rounded-lg px-3 py-1 text-sm font-medium ${
                     viewMode === "all"
-                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "bg-white text-muted-foreground shadow dark:bg-muted dark:text-white"
+                      : "text-muted-foreground dark:text-muted-foreground"
                   }`}
                 >
                   Alle
                 </button>
                 <button
                   onClick={() => setViewMode("my")}
-                  className={`rounded-md px-3 py-1 text-sm font-medium ${
+                  className={`rounded-lg px-3 py-1 text-sm font-medium ${
                     viewMode === "my"
-                      ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "bg-white text-muted-foreground shadow dark:bg-muted dark:text-white"
+                      : "text-muted-foreground dark:text-muted-foreground"
                   }`}
                 >
                   Meine
@@ -200,64 +200,64 @@ export default function FahndungenPage() {
 
         {/* Statistiken */}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+          <div className="rounded-lg bg-white p-4 shadow dark:bg-muted">
             <div className="flex items-center">
               <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/30">
                 <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-300" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Gesamt
                 </p>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                <p className="text-lg font-semibold text-muted-foreground dark:text-white">
                   {stats.total}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+          <div className="rounded-lg bg-white p-4 shadow dark:bg-muted">
             <div className="flex items-center">
               <div className="rounded-full bg-green-100 p-2 dark:bg-green-900/30">
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-300" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Aktiv
                 </p>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                <p className="text-lg font-semibold text-muted-foreground dark:text-white">
                   {stats.active}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+          <div className="rounded-lg bg-white p-4 shadow dark:bg-muted">
             <div className="flex items-center">
               <div className="rounded-full bg-yellow-100 p-2 dark:bg-yellow-900/30">
                 <Eye className="h-5 w-5 text-yellow-600 dark:text-yellow-300" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Veröffentlicht
                 </p>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                <p className="text-lg font-semibold text-muted-foreground dark:text-white">
                   {stats.published}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg bg-white p-4 shadow dark:bg-gray-800">
+          <div className="rounded-lg bg-white p-4 shadow dark:bg-muted">
             <div className="flex items-center">
               <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/30">
                 <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-300" />
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                   Dringend
                 </p>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                <p className="text-lg font-semibold text-muted-foreground dark:text-white">
                   {stats.urgent}
                 </p>
               </div>
@@ -268,13 +268,13 @@ export default function FahndungenPage() {
         {/* Filter und Suche */}
         <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Fahndungen durchsuchen..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="focus:outline-hidden w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+              className="focus:outline-hidden w-full rounded-lg border border-border bg-white px-10 py-2 text-muted-foreground placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white dark:placeholder-gray-400"
             />
           </div>
 
@@ -282,7 +282,7 @@ export default function FahndungenPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="focus:outline-hidden rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="focus:outline-hidden rounded-lg border border-border bg-white px-3 py-2 text-muted-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             >
               <option value="all">Alle Status</option>
               <option value="draft">Entwurf</option>
@@ -293,7 +293,7 @@ export default function FahndungenPage() {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="focus:outline-hidden rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              className="focus:outline-hidden rounded-lg border border-border bg-white px-3 py-2 text-muted-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             >
               <option value="all">Alle Prioritäten</option>
               <option value="normal">Normal</option>
@@ -303,7 +303,7 @@ export default function FahndungenPage() {
 
             <button
               onClick={handleRefreshClick}
-              className="rounded-lg bg-gray-100 p-2 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              className="rounded-lg bg-muted p-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
             >
               <RefreshCw className="h-4 w-4" />
             </button>
@@ -312,12 +312,12 @@ export default function FahndungenPage() {
 
         {/* Moderne Fahndungskarten */}
         {filteredInvestigations.length === 0 ? (
-          <div className="rounded-lg bg-white p-12 text-center shadow dark:bg-gray-800">
-            <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+          <div className="rounded-lg bg-white p-12 text-center shadow dark:bg-muted">
+            <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-medium text-muted-foreground dark:text-white">
               Keine Fahndungen gefunden
             </h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-muted-foreground dark:text-muted-foreground">
               {searchTerm
                 ? "Versuchen Sie andere Suchbegriffe."
                 : "Erstellen Sie Ihre erste Fahndung."}

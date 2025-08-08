@@ -19,7 +19,7 @@ const FahndungskarteGrid = dynamic(
     ssr: false,
     loading: () => (
       <div className="animate-pulse">
-        <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+        <div className="h-64 rounded-lg bg-muted dark:bg-muted"></div>
       </div>
     ),
   },
@@ -153,11 +153,11 @@ export default function HomeContent() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-24 rounded-lg bg-gray-200 dark:bg-gray-700"
+                className="h-24 rounded-lg bg-muted dark:bg-muted"
               />
             ))}
           </div>
-          <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
+          <div className="h-64 rounded-lg bg-muted dark:bg-muted" />
         </div>
       </div>
     );
@@ -205,11 +205,11 @@ export default function HomeContent() {
         {/* Investigations List */}
         <div className="space-y-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-muted-foreground dark:text-white">
               Aktuelle Fahndungen
             </h2>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground dark:text-muted-foreground">
                 <Eye className="h-4 w-4" />
                 <span>
                   {typedInvestigations ? filteredInvestigations.length : 0} von{" "}
@@ -235,16 +235,16 @@ export default function HomeContent() {
               />
             )
           ) : (
-            <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800">
-              <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="shadow-xs rounded-lg border border-border bg-white p-8 text-center dark:border-border dark:bg-muted">
+              <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-semibold text-muted-foreground dark:text-white">
                 {typedInvestigations &&
                 Array.isArray(typedInvestigations) &&
                 typedInvestigations.length > 0
                   ? "Keine Fahndungen mit den aktuellen Filtern gefunden"
                   : "Keine Fahndungen gefunden"}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 {typedInvestigations &&
                 Array.isArray(typedInvestigations) &&
                 typedInvestigations.length > 0

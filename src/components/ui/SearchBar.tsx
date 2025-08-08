@@ -54,7 +54,7 @@ export function SearchBar({
 
         {isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-lg bg-background p-4 shadow-lg">
+            <div className="w-full max-w-md rounded-lg bg-background p-4 shadow-sm">
               <form onSubmit={handleSubmit} className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />

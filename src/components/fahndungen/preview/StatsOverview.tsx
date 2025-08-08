@@ -15,7 +15,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ data }) => {
   return (
     <div className="space-y-4">
       {/* Fortschritt */}
-      <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+      <div className="rounded-lg bg-muted p-4 dark:bg-muted">
         <h4 className="mb-3 font-medium">Fortschritt</h4>
         <div className="space-y-2">
           {[
@@ -39,7 +39,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ data }) => {
       </div>
 
       {/* Medien-Übersicht */}
-      <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+      <div className="rounded-lg bg-muted p-4 dark:bg-muted">
         <h4 className="mb-3 font-medium">Medien</h4>
         <div className="space-y-1 text-sm">
           <div>Hauptbild: {data.step3?.mainImage ? "1" : "0"}</div>
@@ -49,7 +49,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ data }) => {
       </div>
 
       {/* Meta-Informationen */}
-      <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+      <div className="rounded-lg bg-muted p-4 dark:bg-muted">
         <h4 className="mb-3 font-medium">Meta-Daten</h4>
         <div className="space-y-1 text-sm">
           <div>Kategorie: {data.step1?.category ?? "-"}</div>

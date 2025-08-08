@@ -61,15 +61,15 @@ export default function WizardTabNavigation({
     <div className={`wizard-tab-navigation ${className}`}>
       {/* Progress Bar - nur wenn showProgress true ist */}
       {showProgress && (
-        <div className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+        <div className="border-b border-border bg-muted dark:border-border dark:bg-muted">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted dark:bg-muted">
               <div
                 className="bg-blue-600 transition-all duration-300 ease-in-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-2 text-center text-xs text-muted-foreground dark:text-muted-foreground">
               Schritt {activeIndex + 1} von {tabs.length}
             </div>
           </div>
@@ -77,16 +77,16 @@ export default function WizardTabNavigation({
       )}
 
       {/* Tab Navigation mit Scroll */}
-      <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div className="border-b border-border bg-white dark:border-border dark:bg-muted">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center">
             {/* Left Scroll Button */}
             {canScrollLeft && (
               <button
                 onClick={() => scroll("left")}
-                className="absolute left-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+                className="absolute left-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-muted"
               >
-                <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <ChevronLeft className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
               </button>
             )}
 
@@ -94,9 +94,9 @@ export default function WizardTabNavigation({
             {canScrollRight && (
               <button
                 onClick={() => scroll("right")}
-                className="absolute right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+                className="absolute right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-muted"
               >
-                <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
               </button>
             )}
 
@@ -128,10 +128,10 @@ export default function WizardTabNavigation({
                     disabled={isDisabled}
                     className={`group flex items-center space-x-2 whitespace-nowrap px-1 py-4 text-sm font-medium transition-colors ${
                       isDisabled
-                        ? "cursor-not-allowed text-gray-400 dark:text-gray-500"
+                        ? "cursor-not-allowed text-muted-foreground dark:text-muted-foreground"
                         : isActive
                           ? "text-blue-600 dark:text-blue-400"
-                          : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                          : "text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
                     }`}
                     title={tab.description}
                   >

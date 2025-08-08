@@ -17,7 +17,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
 
     return (
       <div className="flex items-center space-x-2">
-        <label className="relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full bg-gray-200 transition-colors focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:bg-gray-700">
+        <label className="relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full bg-muted transition-colors focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 dark:bg-muted">
           <input
             type="checkbox"
             className="peer sr-only"
@@ -26,10 +26,10 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             ref={ref}
             {...props}
           />
-          <span className="pointer-events-none absolute left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-transform peer-checked:translate-x-5 peer-checked:bg-blue-500 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-2 dark:bg-gray-300" />
+          <span className="pointer-events-none absolute left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5 peer-checked:bg-blue-500 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-2 dark:bg-muted" />
         </label>
         {label && (
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             {label}
           </span>
         )}

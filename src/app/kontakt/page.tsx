@@ -23,10 +23,10 @@ export default function KontaktPage() {
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
-                    <MapPin className="mt-1 h-5 w-5 text-gray-600" />
+                    <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Adresse</p>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-muted-foreground dark:text-muted-foreground">
                         Taubenheimstraße 85
                         <br />
                         70372 Stuttgart
@@ -37,30 +37,30 @@ export default function KontaktPage() {
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <Phone className="mt-1 h-5 w-5 text-gray-600" />
+                    <Phone className="mt-1 h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Telefon</p>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-muted-foreground dark:text-muted-foreground">
                         +49 711 5401-0
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <Mail className="mt-1 h-5 w-5 text-gray-600" />
+                    <Mail className="mt-1 h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">E-Mail</p>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-muted-foreground dark:text-muted-foreground">
                         poststelle@lka.polizei.bwl.de
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <Clock className="mt-1 h-5 w-5 text-gray-600" />
+                    <Clock className="mt-1 h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Öffnungszeiten</p>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-muted-foreground dark:text-muted-foreground">
                         Montag - Freitag: 8:00 - 16:00 Uhr
                         <br />
                         Samstag, Sonntag: geschlossen
@@ -75,7 +75,7 @@ export default function KontaktPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold">Pressestelle</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       E-Mail: pressestelle@lka.polizei.bwl.de
                       <br />
                       Telefon: +49 711 5401-1001
@@ -84,7 +84,7 @@ export default function KontaktPage() {
 
                   <div>
                     <h3 className="font-semibold">Datenschutz</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       E-Mail: datenschutz@lka.polizei.bwl.de
                       <br />
                       Telefon: +49 711 5401-1002
@@ -93,7 +93,7 @@ export default function KontaktPage() {
 
                   <div>
                     <h3 className="font-semibold">IT-Support</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       E-Mail: it-support@lka.polizei.bwl.de
                       <br />
                       Telefon: +49 711 5401-1003
@@ -127,7 +127,7 @@ export default function KontaktPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold">Allgemeine Anfragen</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       Für allgemeine Anfragen nutzen Sie bitte das
                       Kontaktformular oder die oben genannten Kontaktdaten.
                     </p>
@@ -135,14 +135,14 @@ export default function KontaktPage() {
 
                   <div>
                     <h3 className="font-semibold">Presseanfragen</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       Journalisten wenden sich bitte direkt an die Pressestelle.
                     </p>
                   </div>
 
                   <div>
                     <h3 className="font-semibold">Datenschutzanfragen</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                       Für Fragen zum Datenschutz kontaktieren Sie bitte den
                       Datenschutzbeauftragten.
                     </p>

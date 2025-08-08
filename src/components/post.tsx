@@ -28,15 +28,15 @@ export function LatestPost() {
       {latestInvestigation ? (
         <div className="mb-4 rounded-lg bg-white/10 p-4">
           <h3 className="font-semibold text-white">Neueste Fahndung:</h3>
-          <p className="text-sm text-gray-300">{latestInvestigation.title}</p>
+          <p className="text-sm text-muted-foreground">{latestInvestigation.title}</p>
           {latestInvestigation.description && (
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-muted-foreground">
               {latestInvestigation.description}
             </p>
           )}
         </div>
       ) : (
-        <p className="mb-4 text-gray-300">Noch keine Fahndungen vorhanden.</p>
+        <p className="mb-4 text-muted-foreground">Noch keine Fahndungen vorhanden.</p>
       )}
 
       <form

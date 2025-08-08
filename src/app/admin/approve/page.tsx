@@ -136,10 +136,10 @@ function AdminApprovalContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-muted dark:bg-muted">
         <div className="text-center">
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-muted-foreground dark:text-muted-foreground">
             Verarbeite Anfrage...
           </p>
         </div>
@@ -148,9 +148,9 @@ function AdminApprovalContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-muted dark:bg-muted">
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <div className="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
           {error && (
             <div className="mb-6 flex items-center space-x-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
               <AlertCircle className="h-6 w-6 text-red-400" />
@@ -178,50 +178,50 @@ function AdminApprovalContent() {
           )}
 
           {userData && (
-            <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-              <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
+            <div className="mb-6 rounded-lg border border-border bg-muted p-4 dark:border-border dark:bg-muted">
+              <h3 className="mb-3 font-semibold text-muted-foreground dark:text-white">
                 Benutzer-Details
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     Name:
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-muted-foreground dark:text-white">
                     {userData.name}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     E-Mail:
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-muted-foreground dark:text-white">
                     {userData.email}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     Abteilung:
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-muted-foreground dark:text-white">
                     {userData.department}
                   </span>
                 </div>
                 {userData.phone && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">
+                    <span className="text-muted-foreground dark:text-muted-foreground">
                       Telefon:
                     </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="font-medium text-muted-foreground dark:text-white">
                       {userData.phone}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     Registriert:
                   </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-muted-foreground dark:text-white">
                     {new Date(userData.created_at).toLocaleDateString("de-DE")}
                   </span>
                 </div>
@@ -230,10 +230,10 @@ function AdminApprovalContent() {
           )}
 
           <div className="text-center">
-            <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
               Admin-Genehmigung
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               {action === "approve"
                 ? "Benutzer wurde genehmigt und kann sich jetzt anmelden."
                 : "Benutzer wurde abgelehnt und erhält eine Benachrichtigung."}
@@ -249,14 +249,14 @@ function AdminApprovalContent() {
             </button>
             <button
               onClick={() => router.push("/dashboard")}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+              className="rounded-lg border border-border bg-white px-4 py-2 font-medium text-muted-foreground transition-colors hover:bg-muted dark:border-border dark:bg-muted dark:text-white dark:hover:bg-muted"
             >
               Dashboard
             </button>
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Sie werden automatisch zum Admin-Panel weitergeleitet...
             </p>
           </div>
@@ -270,10 +270,10 @@ export default function AdminApprovalPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex min-h-screen items-center justify-center bg-muted dark:bg-muted">
           <div className="text-center">
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Lade...</p>
+            <p className="mt-4 text-muted-foreground dark:text-muted-foreground">Lade...</p>
           </div>
         </div>
       }

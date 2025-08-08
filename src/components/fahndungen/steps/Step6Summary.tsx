@@ -25,10 +25,10 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
           Schritt 6: Zusammenfassung & Abschluss
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Überprüfen Sie alle Daten vor der finalen Speicherung
         </p>
       </div>
@@ -36,8 +36,8 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
       {/* Zusammenfassung */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-4">
-          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <h3 className="mb-2 font-semibold text-muted-foreground dark:text-white">
               Grundinformationen
             </h3>
             <dl className="space-y-1 text-sm">
@@ -61,11 +61,11 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
             </dl>
           </div>
 
-          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <h3 className="mb-2 font-semibold text-muted-foreground dark:text-white">
               Beschreibung
             </h3>
-            <p className="line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
+            <p className="line-clamp-3 text-sm text-muted-foreground dark:text-muted-foreground">
               {data.step2?.description}
             </p>
             <div className="mt-2">
@@ -79,11 +79,11 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <h3 className="mb-2 font-semibold text-muted-foreground dark:text-white">
               Medien
             </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground">
               <div>
                 Hauptbild:{" "}
                 {data.step3?.mainImage ? "✓ Vorhanden" : "✗ Nicht vorhanden"}
@@ -95,11 +95,11 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
             </div>
           </div>
 
-          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <h3 className="mb-2 font-semibold text-muted-foreground dark:text-white">
               Standort
             </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground">
               <div>
                 Hauptort:{" "}
                 {data.step4?.mainLocation?.address ?? "Nicht festgelegt"}
@@ -111,11 +111,11 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
             </div>
           </div>
 
-          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
+          <div className="rounded-lg bg-muted p-4 dark:bg-muted">
+            <h3 className="mb-2 font-semibold text-muted-foreground dark:text-white">
               Kontakt & Veröffentlichung
             </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground">
               <div>
                 Kontakt: {data.step5?.contactPerson ?? "Nicht angegeben"}
               </div>
@@ -136,10 +136,10 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
       </div>
 
       {/* Aktion Buttons */}
-      <div className="flex justify-between border-t border-gray-200 pt-6 dark:border-gray-700">
+      <div className="flex justify-between border-t border-border pt-6 dark:border-border">
         <button
           onClick={onTogglePreview}
-          className="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+          className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
         >
           <Eye className="h-4 w-4" />
           {showPreview ? "Vorschau ausblenden" : "Kartenvorschau anzeigen"}
@@ -149,7 +149,7 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
           <button
             onClick={onSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-lg bg-gray-600 px-6 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-muted px-6 py-2 text-white hover:bg-muted disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {isSubmitting ? "Speichert..." : "Als Entwurf speichern"}

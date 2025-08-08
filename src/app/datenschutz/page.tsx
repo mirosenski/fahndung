@@ -146,8 +146,8 @@ export default function DatenschutzPage() {
               </p>
             </section>
 
-            <div className="mt-8 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-8 rounded-lg bg-muted p-4 dark:bg-muted">
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                 <strong>Stand:</strong> {new Date().toLocaleDateString("de-DE")}
                 <br />
                 Diese Datenschutzerklärung wird bei Änderungen aktualisiert.

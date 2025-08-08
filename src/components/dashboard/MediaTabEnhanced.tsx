@@ -210,10 +210,10 @@ export default function MediaTabEnhanced() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-muted-foreground dark:text-white">
             Medien-Galerie
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground dark:text-muted-foreground">
             {total} Medien • {items.length} angezeigt
             {mediaError && " • Fehler beim Laden"}
             {!isAuthenticated && " • Anmeldung erforderlich für Upload"}
@@ -251,14 +251,14 @@ export default function MediaTabEnhanced() {
 
       {/* Upload Section - Only show for admins */}
       {showUpload && isAdmin && (
-        <div className="shadow-xs rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <div className="shadow-xs rounded-lg border border-border bg-white p-6 dark:border-border dark:bg-muted">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-muted-foreground dark:text-white">
               🚀 Supabase Upload (Neue Funktion)
             </h3>
             <button
               onClick={() => setShowUpload(false)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground"
             >
               <X className="h-5 w-5" />
             </button>
@@ -268,13 +268,13 @@ export default function MediaTabEnhanced() {
           {isUploading && (
             <div className="mb-4 space-y-2">
               <div className="text-sm text-blue-600">⏳ Upload läuft...</div>
-              <div className="h-2 w-full rounded-full bg-gray-200">
+              <div className="h-2 w-full rounded-full bg-muted">
                 <div
                   className="h-2 rounded-full bg-blue-600 transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
-              <div className="text-xs text-gray-600">{progress}%</div>
+              <div className="text-xs text-muted-foreground">{progress}%</div>
             </div>
           )}
 
@@ -327,7 +327,7 @@ export default function MediaTabEnhanced() {
                 onChange={handleFileUpload}
                 disabled={isUploading}
                 accept="image/*,video/*,.pdf,.doc,.docx"
-                className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
               />
             </div>
 
@@ -344,8 +344,8 @@ export default function MediaTabEnhanced() {
           </div>
 
           {/* Legacy MediaUpload Component (fallback) */}
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <h4 className="mb-3 text-sm font-medium text-gray-700">
+          <div className="mt-6 border-t border-border pt-6">
+            <h4 className="mb-3 text-sm font-medium text-muted-foreground">
               Legacy Upload (tRPC):
             </h4>
             <MediaUpload onUploadComplete={() => void refetchMedia()} />
@@ -384,19 +384,19 @@ export default function MediaTabEnhanced() {
       <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:space-x-4 lg:space-y-0">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Medien durchsuchen..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="focus:outline-hidden w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="focus:outline-hidden w-full rounded-lg border border-border bg-white px-10 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
           />
         </div>
 
         {/* Type Filter */}
         <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-gray-400" />
+          <Filter className="h-4 w-4 text-muted-foreground" />
           <select
             value={selectedType}
             onChange={(e) =>
@@ -404,7 +404,7 @@ export default function MediaTabEnhanced() {
                 e.target.value as "all" | "image" | "video" | "document",
               )
             }
-            className="focus:outline-hidden rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="focus:outline-hidden rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
           >
             <option value="all">Alle Typen</option>
             <option value="image">Bilder</option>
@@ -415,11 +415,11 @@ export default function MediaTabEnhanced() {
 
         {/* Directory Filter */}
         <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-gray-400" />
+          <Filter className="h-4 w-4 text-muted-foreground" />
           <select
             value={selectedDirectory}
             onChange={(e) => handleDirectoryChange(e.target.value)}
-            className="focus:outline-hidden rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="focus:outline-hidden rounded-lg border border-border bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
           >
             <option value="all">Alle Verzeichnisse</option>
             {availableDirectories.map((dir) => (
@@ -437,7 +437,7 @@ export default function MediaTabEnhanced() {
             className={`rounded p-2 ${
               viewMode === "grid"
                 ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                : "text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground"
             }`}
           >
             <Grid3X3 className="h-4 w-4" />
@@ -447,7 +447,7 @@ export default function MediaTabEnhanced() {
             className={`rounded p-2 ${
               viewMode === "list"
                 ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                : "text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground"
             }`}
           >
             <List className="h-4 w-4" />
@@ -458,7 +458,7 @@ export default function MediaTabEnhanced() {
         <button
           onClick={handleRefresh}
           disabled={mediaLoading}
-          className="rounded-lg border border-gray-300 bg-white p-2 text-gray-400 transition-colors hover:border-gray-400 hover:text-gray-600 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:text-gray-300"
+          className="rounded-lg border border-border bg-white p-2 text-muted-foreground transition-colors hover:border-border hover:text-muted-foreground disabled:opacity-50 dark:border-border dark:bg-muted dark:hover:border-border dark:hover:text-muted-foreground"
         >
           <RefreshCw
             className={`h-4 w-4 ${mediaLoading ? "animate-spin" : ""}`}
@@ -468,7 +468,7 @@ export default function MediaTabEnhanced() {
         {/* Reset Filters */}
         <button
           onClick={handleResetFilters}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-600 transition-colors hover:border-gray-400 hover:text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:text-gray-100"
+          className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground dark:hover:border-border dark:hover:text-muted-foreground"
         >
           Zurücksetzen
         </button>

@@ -16,7 +16,7 @@ export default function ServicePage() {
       <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Kontakt */}
         <Link href="/kontakt" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2 text-primary">
                 <Phone className="h-6 w-6" />
@@ -31,7 +31,7 @@ export default function ServicePage() {
 
         {/* FAQ */}
         <Link href="/faq" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
                 <HelpCircle className="h-6 w-6" />
@@ -46,7 +46,7 @@ export default function ServicePage() {
 
         {/* Downloads */}
         <Link href="/downloads" className="group">
-          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-lg">
+          <div className="rounded-lg border border-border bg-background p-6 transition-all duration-200 hover:bg-accent group-hover:shadow-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-green-500/10 p-2 text-green-500">
                 <Download className="h-6 w-6" />

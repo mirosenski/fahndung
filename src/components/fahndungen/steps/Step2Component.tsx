@@ -62,17 +62,17 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
           Schritt 2: Beschreibung & Details
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Fügen Sie detaillierte Informationen zur Fahndung hinzu
         </p>
       </div>
 
       <div className="space-y-6">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Kurzbeschreibung *
           </label>
           <textarea
@@ -80,14 +80,14 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
             onChange={(e) => setLocalShortDescription(e.target.value)}
             onBlur={commitChanges}
             rows={2}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             placeholder="Kurze Zusammenfassung für die Kartenansicht..."
             required
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Detaillierte Beschreibung *
           </label>
           <textarea
@@ -95,7 +95,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
             onChange={(e) => setLocalDescription(e.target.value)}
             onBlur={commitChanges}
             rows={6}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             placeholder="Ausführliche Beschreibung der Fahndung..."
             required
           />
@@ -103,7 +103,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Priorität *
             </label>
             <select
@@ -114,7 +114,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
                   priority: e.target.value as Step2Data["priority"],
                 })
               }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             >
               <option value="normal">Normal</option>
               <option value="urgent">Dringend</option>
@@ -123,7 +123,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Tags hinzufügen
             </label>
             <div className="flex gap-2">
@@ -134,7 +134,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
                 onKeyPress={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addTag())
                 }
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="flex-1 rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
                 placeholder="Tag eingeben..."
               />
               <button
@@ -151,7 +151,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
         {/* Tags anzeigen */}
         {data.tags.length > 0 && (
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Aktuelle Tags
             </label>
             <div className="flex flex-wrap gap-2">
@@ -175,7 +175,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
         )}
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Besondere Merkmale
           </label>
           <textarea
@@ -183,7 +183,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
             onChange={(e) => setLocalFeatures(e.target.value)}
             onBlur={commitChanges}
             rows={4}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
             placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
           />
         </div>

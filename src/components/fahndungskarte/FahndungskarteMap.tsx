@@ -176,7 +176,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
         <div className="absolute left-2 top-2 z-[1000]">
           <button
             onClick={() => setShowFilterPanel(!showFilterPanel)}
-            className="flex items-center space-x-2 rounded-lg bg-white p-3 shadow-lg hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+            className="flex items-center space-x-2 rounded-lg bg-white p-3 shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-muted"
           >
             <Filter className="h-4 w-4" />
             <span className="text-sm font-medium">Filter</span>
@@ -186,7 +186,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
           </button>
 
           {showFilterPanel && (
-            <div className="absolute left-0 top-full mt-2 w-80 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800">
+            <div className="absolute left-0 top-full mt-2 w-80 rounded-lg bg-white p-4 shadow-sm dark:bg-muted">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Filter</h3>
                 <button
@@ -273,7 +273,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
 
               {/* Statistiken */}
               <div className="border-t pt-4">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <div>
                     Angezeigt: {filteredLocations.length} von {locations.length}
                   </div>
@@ -296,13 +296,13 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
 
       {/* Kartenansicht-Selector */}
       <div className="absolute right-2 top-2 z-[1000]">
-        <div className="flex space-x-1 rounded-lg bg-white p-1 shadow-lg dark:bg-gray-800">
+        <div className="flex space-x-1 rounded-lg bg-white p-1 shadow-sm dark:bg-muted">
           <button
             onClick={() => changeMapView("standard")}
             className={`rounded px-3 py-1 text-xs ${
               mapView === "standard"
                 ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                : "hover:bg-muted dark:hover:bg-muted"
             }`}
           >
             Standard
@@ -312,7 +312,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
             className={`rounded px-3 py-1 text-xs ${
               mapView === "satellite"
                 ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                : "hover:bg-muted dark:hover:bg-muted"
             }`}
           >
             Satellit
@@ -334,7 +334,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
 
       {/* Legende */}
       {showLegend && (
-        <div className="absolute bottom-2 left-2 z-[1000] rounded-lg bg-white p-3 shadow-lg dark:bg-gray-800">
+        <div className="absolute bottom-2 left-2 z-[1000] rounded-lg bg-white p-3 shadow-sm dark:bg-muted">
           <h4 className="mb-2 text-sm font-medium">Legende</h4>
           <div className="space-y-1">
             {Object.entries(fahndungMarkerIcons).map(([type, config]) => (
@@ -349,12 +349,12 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
 
       {/* Location Details Panel */}
       {selectedLocation && (
-        <div className="absolute bottom-2 right-2 z-[1000] w-80 rounded-lg bg-white p-4 shadow-xl dark:bg-gray-800">
+        <div className="absolute bottom-2 right-2 z-[1000] w-80 rounded-lg bg-white p-4 shadow-sm dark:bg-muted">
           <div className="mb-3 flex items-start justify-between">
             <h3 className="text-lg font-semibold">Details</h3>
             <button
               onClick={() => setSelectedLocation(null)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-muted-foreground"
             >
               ×
             </button>
@@ -370,7 +370,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
                 <span className="font-medium">{selectedLocation.address}</span>
               </div>
               {selectedLocation.description && (
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {selectedLocation.description}
                 </p>
               )}
@@ -398,7 +398,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
                   className={`text-sm font-medium ${
                     selectedLocation.priority === "urgent"
                       ? "text-red-600"
-                      : "text-gray-600"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {selectedLocation.priority === "urgent"
@@ -409,7 +409,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
             )}
 
             {selectedLocation.timestamp && (
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>
                   {new Date(selectedLocation.timestamp).toLocaleString("de-DE")}
@@ -423,19 +423,19 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
                 <div className="space-y-1 text-sm">
                   {selectedLocation.contactInfo.person && (
                     <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4 text-gray-400" />
+                      <User className="h-4 w-4 text-muted-foreground" />
                       <span>{selectedLocation.contactInfo.person}</span>
                     </div>
                   )}
                   {selectedLocation.contactInfo.phone && (
                     <div className="flex items-center space-x-2">
-                      <span className="text-gray-400">📞</span>
+                      <span className="text-muted-foreground">📞</span>
                       <span>{selectedLocation.contactInfo.phone}</span>
                     </div>
                   )}
                   {selectedLocation.contactInfo.email && (
                     <div className="flex items-center space-x-2">
-                      <span className="text-gray-400">✉️</span>
+                      <span className="text-muted-foreground">✉️</span>
                       <span>{selectedLocation.contactInfo.email}</span>
                     </div>
                   )}
@@ -447,7 +447,7 @@ export const FahndungskarteMap: React.FC<FahndungskarteProps> = ({
       )}
 
       {/* Statistiken */}
-      <div className="absolute left-1/2 top-2 z-[1000] -translate-x-1/2 rounded-lg bg-white px-4 py-2 shadow-lg dark:bg-gray-800">
+      <div className="absolute left-1/2 top-2 z-[1000] -translate-x-1/2 rounded-lg bg-white px-4 py-2 shadow-sm dark:bg-muted">
         <div className="flex items-center space-x-4 text-sm">
           <div className="flex items-center space-x-1">
             <MapPin className="h-4 w-4 text-blue-500" />

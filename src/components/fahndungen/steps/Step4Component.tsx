@@ -12,8 +12,8 @@ const InteractiveMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[400px] animate-pulse items-center justify-center rounded-lg bg-gray-100">
-        <MapPin className="h-8 w-8 text-gray-400" />
+      <div className="flex h-[400px] animate-pulse items-center justify-center rounded-lg bg-muted">
+        <MapPin className="h-8 w-8 text-muted-foreground" />
       </div>
     ),
   },
@@ -57,7 +57,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
     { value: "wohnort", label: "Wohnort", color: "bg-green-500" },
     { value: "arbeitsplatz", label: "Arbeitsplatz", color: "bg-yellow-500" },
     { value: "sichtung", label: "Sichtung", color: "bg-purple-500" },
-    { value: "sonstiges", label: "Sonstiges", color: "bg-gray-500" },
+    { value: "sonstiges", label: "Sonstiges", color: "bg-muted" },
   ];
 
   const generateId = () =>
@@ -138,7 +138,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
   };
 
   const getLocationTypeColor = (type: MapLocation["type"]) => {
-    return locationTypes.find((t) => t.value === type)?.color ?? "bg-gray-500";
+    return locationTypes.find((t) => t.value === type)?.color ?? "bg-muted";
   };
 
   const getLocationTypeLabel = (type: MapLocation["type"]) => {
@@ -148,10 +148,10 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-2 text-2xl font-bold text-muted-foreground dark:text-white">
           Schritt 4: Standort & Karte
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Legen Sie den Hauptstandort und weitere relevante Orte fest
         </p>
       </div>
@@ -159,12 +159,12 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
       {/* Suchleiste */}
       <div className="space-y-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Standort suchen
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
@@ -173,7 +173,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
                   e.key === "Enter" && searchLocation(searchQuery)
                 }
                 placeholder="Adresse oder Ort eingeben..."
-                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                className="w-full rounded-lg border border-border py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
               />
             </div>
             <button
@@ -193,9 +193,9 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
 
         {/* Suchergebnisse */}
         {searchResults.length > 0 && (
-          <div className="rounded-lg border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800">
+          <div className="rounded-lg border border-border bg-white dark:border-border dark:bg-muted">
             <div className="p-4">
-              <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h4 className="mb-2 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Suchergebnisse
               </h4>
               <div className="space-y-2">
@@ -212,15 +212,15 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
                       setSearchResults([]);
                       setSearchQuery("");
                     }}
-                    className="flex w-full items-center justify-between rounded-lg p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="flex w-full items-center justify-between rounded-lg p-3 text-left hover:bg-muted dark:hover:bg-muted"
                   >
                     <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-900 dark:text-white">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground dark:text-white">
                         {result.address}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                       {result.lat.toFixed(6)}, {result.lng.toFixed(6)}
                     </span>
                   </button>
@@ -234,15 +234,15 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
       {/* Interaktive Karte */}
       <div className="space-y-4">
         <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Interaktive Karte
           </label>
-          <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mb-4 text-xs text-muted-foreground dark:text-muted-foreground">
             Klicken Sie auf die Karte, um einen Standort hinzuzufügen
           </p>
         </div>
 
-        <div className="rounded-lg border border-gray-200 dark:border-gray-600">
+        <div className="rounded-lg border border-border dark:border-border">
           <InteractiveMap
             locations={[
               ...(data.mainLocation ? [data.mainLocation] : []),
@@ -262,7 +262,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
       {/* Standort-Liste */}
       <div className="space-y-4">
         <div>
-          <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <h4 className="mb-2 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Festgelegte Standorte
           </h4>
         </div>
@@ -306,20 +306,20 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
             {data.additionalLocations.map((location) => (
               <div
                 key={location.id}
-                className="flex items-center justify-between rounded-lg border border-gray-200 p-3 dark:border-gray-600"
+                className="flex items-center justify-between rounded-lg border border-border p-3 dark:border-border"
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={`h-3 w-3 rounded-full ${getLocationTypeColor(location.type)}`}
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-white">
                       {getLocationTypeLabel(location.type)}
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                       {location.address}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                       {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
                     </p>
                   </div>
@@ -336,12 +336,12 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
         )}
 
         {!data.mainLocation && data.additionalLocations.length === 0 && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-600 dark:bg-gray-800">
-            <MapPin className="mx-auto h-8 w-8 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="rounded-lg border border-border bg-muted p-4 text-center dark:border-border dark:bg-muted">
+            <MapPin className="mx-auto h-8 w-8 text-muted-foreground" />
+            <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
               Noch keine Standorte festgelegt
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500">
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground">
               Suchen Sie nach einem Ort oder klicken Sie auf die Karte
             </p>
           </div>
@@ -350,7 +350,7 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
 
       {/* Suchradius */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
           Suchradius (km)
         </label>
         <div className="flex items-center gap-4">
@@ -364,11 +364,11 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
             }
             className="flex-1"
           />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             {data.searchRadius} km
           </span>
         </div>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
           Bestimmt den Radius für die Standortsuche und -anzeige
         </p>
       </div>

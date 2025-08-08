@@ -188,11 +188,11 @@ export default function DualStorageUpload({
         accept="image/*"
         onChange={handleFileSelect}
         disabled={isUploading}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+        className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
       />
 
       {selectedFile && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           Ausgewählte Datei: {selectedFile.name} (
           {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
         </div>
@@ -200,11 +200,11 @@ export default function DualStorageUpload({
 
       {isUploading && (
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             Upload läuft... {uploadProgress}%
           </div>
-          <div className="h-2 w-full rounded-full bg-gray-200">
+          <div className="h-2 w-full rounded-full bg-muted">
             <div
               className="h-2 rounded-full bg-blue-600 transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
@@ -232,7 +232,7 @@ export default function DualStorageUpload({
       </Button>
 
       {/* Debug Info */}
-      <div className="mt-2 text-xs text-gray-500">
+      <div className="mt-2 text-xs text-muted-foreground">
         <div>Upload-Mutation Status:</div>
         <div>
           Lokal:{" "}

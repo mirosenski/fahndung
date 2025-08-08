@@ -99,7 +99,7 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-lg">
+    <div className="rounded-lg bg-white p-6 shadow-sm">
       <h3 className="mb-4 text-lg font-semibold">🔐 Supabase Login</h3>
 
       {error && (
@@ -122,7 +122,7 @@ export const LoginForm = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="focus:outline-hidden w-full rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            className="focus:outline-hidden w-full rounded border border-border px-3 py-2 focus:ring-2 focus:ring-blue-500"
             placeholder="deine@email.com"
           />
         </div>
@@ -134,7 +134,7 @@ export const LoginForm = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="focus:outline-hidden w-full rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
+            className="focus:outline-hidden w-full rounded border border-border px-3 py-2 focus:ring-2 focus:ring-blue-500"
             placeholder="Dein Passwort"
           />
         </div>
