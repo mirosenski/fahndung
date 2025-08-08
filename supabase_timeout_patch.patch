@@ -1,0 +1,79 @@
+From 4f6ccc1772877a4c73c5b0415ddf9569b7415e38 Mon Sep 17 00:00:00 2001
+From: OpenAI <openai@example.com>
+Date: Fri, 8 Aug 2025 10:30:59 -0700
+Subject: [PATCH] feat(supabase): enforce timeouts on auth operations to
+ prevent hanging requests
+
+---
+ src/hooks/useSupabaseAuthActions.ts | 34 ++++++++++++++++++++++++-----
+ 1 file changed, 28 insertions(+), 6 deletions(-)
+
+diff --git a/src/hooks/useSupabaseAuthActions.ts b/src/hooks/useSupabaseAuthActions.ts
+index bbc024e..622cae8 100644
+--- a/src/hooks/useSupabaseAuthActions.ts
++++ b/src/hooks/useSupabaseAuthActions.ts
+@@ -4,6 +4,19 @@ import { useState, useTransition } from "react";
+ import { supabase } from "~/lib/supabase";
+ import { log, error as logError } from "~/lib/logger";
+ 
++// Helper to enforce a timeout on an async operation. If the wrapped
++// promise does not settle within the specified milliseconds, the returned
++// promise rejects with a timeout error. This prevents hanging network
++// requests from blocking the UI indefinitely.
++async function raceWithTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
++  return await Promise.race([
++    promise,
++    new Promise<never>((_, reject) =>
++      setTimeout(() => reject(new Error(`Request timed out after ${ms} ms`)), ms),
++    ),
++  ]);
++}
++
+ /**
+  * Encapsulated supabase authentication actions.  This hook uses
+  * `useTransition` to ensure that the UI remains responsive while
+@@ -27,10 +40,13 @@ export function useSupabaseAuthActions() {
+     startTransition(async () => {
+       try {
+         log("🔐 Login: Versuche Anmeldung für:", email);
+-        const { data, error } = await supabase.auth.signInWithPassword({
+-          email,
+-          password,
+-        });
++        const { data, error } = await raceWithTimeout(
++          supabase.auth.signInWithPassword({
++            email,
++            password,
++          }),
++          10000,
++        );
+         if (error) {
+           logError("❌ Login: Anmeldung fehlgeschlagen:", error.message);
+           setErrorMsg(error.message);
+@@ -54,7 +70,10 @@ export function useSupabaseAuthActions() {
+     startTransition(async () => {
+       try {
+         log("📝 SignUp: Versuche Registrierung für:", email);
+-        const { data, error } = await supabase.auth.signUp({ email, password });
++        const { data, error } = await raceWithTimeout(
++          supabase.auth.signUp({ email, password }),
++          10000,
++        );
+         if (error) {
+           logError("❌ SignUp: Registrierung fehlgeschlagen:", error.message);
+           setErrorMsg(error.message);
+@@ -79,7 +98,10 @@ export function useSupabaseAuthActions() {
+     setSuccessMsg(null);
+     startTransition(async () => {
+       try {
+-        const { error } = await supabase.auth.signOut();
++        const { error } = await raceWithTimeout(
++          supabase.auth.signOut(),
++          5000,
++        );
+         if (error) {
+           logError("❌ Logout: Abmeldung fehlgeschlagen:", error.message);
+           setErrorMsg(error.message);
+-- 
+2.39.5
+

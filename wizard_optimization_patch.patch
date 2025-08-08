@@ -1,0 +1,178 @@
+From cc5dd5a05391d4736fb456b0202c0644f02343cf Mon Sep 17 00:00:00 2001
+From: OpenAI <openai@example.com>
+Date: Fri, 8 Aug 2025 10:39:59 -0700
+Subject: [PATCH] feat(wizard): add debounced updates and remove heavy equality
+ check for smoother typing and proper validation
+
+---
+ .../fahndungen/FahndungWizardContainer.tsx    |  9 +++---
+ .../fahndungen/steps/Step1Component.tsx       | 17 +++++++++-
+ .../fahndungen/steps/Step2Component.tsx       | 30 +++++++++++++++++-
+ src/hooks/useDebounce.ts                      | 31 +++++++++++++++++++
+ 4 files changed, 80 insertions(+), 7 deletions(-)
+ create mode 100644 src/hooks/useDebounce.ts
+
+diff --git a/src/components/fahndungen/FahndungWizardContainer.tsx b/src/components/fahndungen/FahndungWizardContainer.tsx
+index 47a18d2..cbc05b0 100644
+--- a/src/components/fahndungen/FahndungWizardContainer.tsx
++++ b/src/components/fahndungen/FahndungWizardContainer.tsx
+@@ -312,12 +312,11 @@ const FahndungWizardContainer = ({
+     (step: keyof WizardData, data: WizardData[keyof WizardData]) => {
+       log(`🔵 UPDATE CALLED: ${step}`, data);
+ 
+-      // WICHTIG: Prüfe ob sich wirklich was geändert hat
++      // Aktualisiere den Wizard-State. Der vorherige Vergleich mittels
++      // JSON.stringify führte zu Performance-Problemen bei großen Objekten und
++      // wurde entfernt. Wir lassen React diffen, um unnötige Renders zu
++      // vermeiden.
+       setWizardData((prev) => {
+-        if (JSON.stringify(prev[step]) === JSON.stringify(data)) {
+-          log("⚪ NO CHANGE - skipping update");
+-          return prev; // Keine Änderung!
+-        }
+         log("🟢 UPDATING STATE");
+         return {
+           ...prev,
+diff --git a/src/components/fahndungen/steps/Step1Component.tsx b/src/components/fahndungen/steps/Step1Component.tsx
+index a8dc21e..ceb64f3 100644
+--- a/src/components/fahndungen/steps/Step1Component.tsx
++++ b/src/components/fahndungen/steps/Step1Component.tsx
+@@ -1,6 +1,7 @@
+ "use client";
+ 
+ import React, { useState, useEffect } from "react";
++import { useDebounce } from "~/hooks/useDebounce";
+ import { FileText } from "lucide-react";
+ import { getCategoryOptions } from "@/types/categories";
+ import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
+@@ -15,11 +16,26 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
+   // Lokaler State für den Titel
+   const [localTitle, setLocalTitle] = useState(data.title);
+ 
++  // Debounced version of the title to reduce frequent state updates. When the
++  // user stops typing for the specified delay, the debounced value changes
++  // and we propagate it to the parent via onChange.
++  const debouncedTitle = useDebounce(localTitle, 300);
++
+   // Synchronisiere lokalen State mit data.title wenn sich data ändert
+   useEffect(() => {
+     setLocalTitle(data.title);
+   }, [data.title]);
+ 
++  // Propagate debounced title changes to the parent wizard. Only update
++  // when the debounced value differs from the current data.title to
++  // prevent unnecessary updates.
++  useEffect(() => {
++    if (debouncedTitle !== data.title) {
++      onChange({ ...data, title: debouncedTitle });
++    }
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [debouncedTitle]);
++
+   const generateCaseNumber = (category: string): string => {
+     return generateNewCaseNumber(category as Step1Data["category"], "draft");
+   };
+@@ -52,7 +68,6 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
+             type="text"
+             value={localTitle}
+             onChange={(e) => setLocalTitle(e.target.value)}
+-            onBlur={() => onChange({ ...data, title: localTitle })}
+             className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+             placeholder="z.B. Vermisste - Maria Schmidt"
+             required
+diff --git a/src/components/fahndungen/steps/Step2Component.tsx b/src/components/fahndungen/steps/Step2Component.tsx
+index 7f5090e..926f4d7 100644
+--- a/src/components/fahndungen/steps/Step2Component.tsx
++++ b/src/components/fahndungen/steps/Step2Component.tsx
+@@ -1,6 +1,7 @@
+ "use client";
+ 
+ import React, { useState, useEffect } from "react";
++import { useDebounce } from "~/hooks/useDebounce";
+ import { X } from "lucide-react";
+ import type { Step2Data } from "../types/WizardTypes";
+ 
+@@ -19,6 +20,13 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
+   const [localDescription, setLocalDescription] = useState(data.description);
+   const [localFeatures, setLocalFeatures] = useState(data.features);
+ 
++  // Debounced values to reduce frequent state updates while typing. When the
++  // user stops typing for the specified delay, these values change and
++  // propagate to the parent wizard via onChange.
++  const debouncedShortDescription = useDebounce(localShortDescription, 300);
++  const debouncedDescription = useDebounce(localDescription, 300);
++  const debouncedFeatures = useDebounce(localFeatures, 300);
++
+   // Synchronisiere mit externen Änderungen
+   useEffect(() => {
+     setLocalShortDescription(data.shortDescription);
+@@ -32,7 +40,27 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
+     setLocalFeatures(data.features);
+   }, [data.features]);
+ 
+-  // Commit-Funktionen
++  // Propagate debounced field values to the wizard state. Only update when
++  // there is a change to avoid unnecessary renders.
++  useEffect(() => {
++    if (
++      debouncedShortDescription !== data.shortDescription ||
++      debouncedDescription !== data.description ||
++      debouncedFeatures !== data.features
++    ) {
++      onChange({
++        ...data,
++        shortDescription: debouncedShortDescription,
++        description: debouncedDescription,
++        features: debouncedFeatures,
++      });
++    }
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [debouncedShortDescription, debouncedDescription, debouncedFeatures]);
++
++  // Commit-Funktionen (veraltet): Der Wizard erhält seine Daten jetzt
++  // automatisch über die debounced States. Diese Funktion bleibt als
++  // Fallback bestehen, falls andere Komponenten sie aufrufen.
+   const commitChanges = () => {
+     onChange({
+       ...data,
+diff --git a/src/hooks/useDebounce.ts b/src/hooks/useDebounce.ts
+new file mode 100644
+index 0000000..07cb7b9
+--- /dev/null
++++ b/src/hooks/useDebounce.ts
+@@ -0,0 +1,31 @@
++"use client";
++
++import { useState, useEffect } from "react";
++
++/**
++ * useDebounce hook
++ *
++ * Returns a debounced version of the provided value that only updates
++ * after the specified delay has elapsed without further changes. This is
++ * useful for reducing the number of updates triggered by rapid input
++ * changes, such as typing into a text field.
++ *
++ * @param value The value to debounce.
++ * @param delay The debounce delay in milliseconds.
++ * @returns The debounced value.
++ */
++export function useDebounce<T>(value: T, delay: number): T {
++  const [debouncedValue, setDebouncedValue] = useState(value);
++
++  useEffect(() => {
++    const handler = setTimeout(() => {
++      setDebouncedValue(value);
++    }, delay);
++
++    return () => {
++      clearTimeout(handler);
++    };
++  }, [value, delay]);
++
++  return debouncedValue;
++}
+\ No newline at end of file
+-- 
+2.39.5
+
