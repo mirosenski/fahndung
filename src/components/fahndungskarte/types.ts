@@ -59,6 +59,22 @@ export interface ModernFahndungskarteProps {
     canDelete?: boolean;
     canPublish?: boolean;
   };
+
+  /**
+   * Legt fest, ob Navigationsfunktionen ("Mehr erfahren", "Vollständige Ansicht")
+   * in der Fahndungskarte deaktiviert werden sollen.
+   * Dies ist insbesondere im Wizard sinnvoll, um unbeabsichtigte Navigation
+   * während der Bearbeitung zu verhindern.
+   */
+  disableNavigation?: boolean;
+
+  /**
+   * Deaktiviert alle Editierfunktionen innerhalb der Fahndungskarte. Wenn diese
+   * Eigenschaft gesetzt ist, werden der Schnell‑Bearbeiten‑Button sowie
+   * Bearbeiten‑Schaltflächen in der Rückansicht ausgeblendet, unabhängig von
+   * den übergebenen Benutzerrechten.
+   */
+  disableEdit?: boolean;
 }
 
 export interface FahndungLocation {
