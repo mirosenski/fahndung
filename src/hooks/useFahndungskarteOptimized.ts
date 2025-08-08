@@ -8,27 +8,46 @@ import { mockData } from "~/components/fahndungskarte/mockData";
  * Optimierte Hook für Fahndungskarten mit reduzierten Queries
  * Stellt sicher, dass nur eine Query pro Investigation ausgeführt wird
  */
+/**
+ * Liefert optimierte Daten für die Fahndungskarte. Wenn keine
+ * `investigationId` übergeben wird oder die ID ein leerer String ist,
+ * wird kein Backend‑Request ausgelöst und stattdessen `propData`
+ * direkt verwendet. Dadurch kann die Hook auch im Vorschau‑Modus
+ * (z. B. im Wizard) verwendet werden, ohne unnötige Netzwerkaufrufe.
+ *
+ * @param investigationId Die ID der Fahndung; optional. Ein leerer
+ *                        oder undefinierter Wert deaktiviert die
+ *                        Synchronisation mit dem Backend.
+ * @param propData        Bereits vorhandene Daten, die als Fallback
+ *                        verwendet werden, wenn keine ID vorhanden ist.
+ */
 export function useFahndungskarteOptimized(
-  investigationId: string,
+  investigationId?: string,
   propData?: FahndungsData,
 ) {
+  // Bestimme, ob eine gültige Investigation-ID übergeben wurde. Ein leerer
+  // String wird als "keine ID" behandelt.
+  const hasValidId = Boolean(investigationId && investigationId.trim().length > 0);
+
   const {
     investigation: syncInvestigation,
     isLoading: isSyncLoading,
     error: syncError,
     refetch: syncAfterUpdate,
-  } = useInvestigationSync(investigationId);
+  } = useInvestigationSync(hasValidId ? investigationId! : "");
 
   // Optimierte Datenkonvertierung mit Memoization
   const convertedData = useMemo(() => {
-    if (syncInvestigation) {
+    // Wenn eine gültige ID vorliegt und Daten aus dem Backend vorhanden sind,
+    // konvertiere diese in das UI‑Format. Ansonsten verwende propData.
+    if (hasValidId && syncInvestigation) {
       const conversion = InvestigationDataConverter.toUIFormat(
         syncInvestigation as Record<string, unknown>,
       );
       return conversion.success ? conversion.data : null;
     }
     return propData;
-  }, [syncInvestigation, propData]);
+  }, [hasValidId, syncInvestigation, propData]);
 
   const data = convertedData ?? mockData;
   const safeData: FahndungsData = useMemo(() => {
@@ -65,7 +84,10 @@ export function useFahndungskarteOptimized(
     };
   }, [data]);
 
-  const isDataLoading = isSyncLoading || (!syncInvestigation && !propData);
+  // Die Daten gelten als geladen, sobald entweder aus dem Backend Daten
+  // vorhanden sind oder propData bereitsteht. Wenn keine ID vorhanden ist,
+  // wird die Ladezeit ausschließlich über propData bestimmt.
+  const isDataLoading = isSyncLoading || (hasValidId ? !syncInvestigation && !propData : false);
 
   // Optimierte Error-Behandlung
   const networkError = useMemo(() => {
