@@ -19,7 +19,8 @@ import { isValidInvestigationId } from "~/lib/utils/validation";
 import { InvestigationDebug } from "~/components/debug/InvestigationDebug";
 
 // Lazy Loading für bessere Performance
-const OverviewCategory = dynamic(() => import("./OverviewCategory"), {
+// Nutze die modernisierte Overview‑Kategorie mit optimierter Performance
+const OverviewCategory = dynamic(() => import("./ModernOverviewCategory"), {
   loading: () => (
     <div className="animate-pulse">
       <div className="h-64 rounded-lg bg-gray-200 dark:bg-gray-700" />
