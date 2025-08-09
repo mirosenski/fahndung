@@ -73,7 +73,7 @@ export default function PrimaryHeader() {
           className={`
             mx-auto max-w-[1273px] transition-all duration-300
             ${isCompact ? "mt-0 h-16" : "mt-4 h-[106px]"}
-            glass-production hover:shadow-xl
+            glass-production bg-background/50 backdrop-blur-xl hover:shadow-xl
           `}
         >
           <div className="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">

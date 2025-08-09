@@ -72,8 +72,8 @@ export default function ModernHeader() {
         {/* Glassmorphismus Container */}
         <div
           className={`
-          glass-production h-full
-          w-full rounded-none border-0
+          glass-production h-full w-full rounded-none
+          border-0 bg-background/50 backdrop-blur-xl
           transition-shadow duration-300 hover:shadow-md
         `}
         >

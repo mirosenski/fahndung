@@ -159,14 +159,16 @@
   --border: 0 0% 80%;
 }
 
-/* Einheitlicher Glass-Effekt (1:1 für Header & Global) */
-.glass-production,
-.dropdown-glass {
-  background-color: hsl(var(--background) / 0.5);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid hsl(var(--border) / 0.5);
-  border-radius: 12px;
+@layer components {
+  /* Einheitlicher Glass-Effekt (1:1 für Header & Global) */
+  .glass-production,
+  .dropdown-glass {
+    background-color: hsl(var(--background) / 0.5) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid hsl(var(--border) / 0.5) !important;
+    border-radius: 12px !important;
+  }
 }
 
 /* Alle Dropdown-Items */
