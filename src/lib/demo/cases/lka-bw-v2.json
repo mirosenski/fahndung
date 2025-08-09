@@ -1,0 +1,40 @@
+[
+  {
+    "category": "Vermisste",
+    "title": "EILFAHNDUNG - Vermisster Torben Seiler",
+    "caseNumber": "PF-2025-V-000123-E",
+    "priority": "Dringend",
+    "label": "Neu",
+    "region": "Pforzheim",
+    "radiusKm": 75,
+    "tags": ["Suizidgefahr", "Psychiatrie", "Eigengefährdung"],
+    "summary": "32-jähriger Mann in suizidaler Verfassung vermisst",
+    "narrative": "Am 21.01.2025 verließ Torben SEILER gegen 14:30 Uhr eine psychiatrische Einrichtung in Pforzheim-Eutingen ...",
+    "person": {
+      "name": "Torben Seiler",
+      "sex": "m",
+      "age": 32,
+      "heightCm": 180,
+      "build": "schlank",
+      "hair": "braun, kurz",
+      "beard": "3-Tage-Bart",
+      "eyes": "grün",
+      "clothing": "graue Jogginghose, weißes T-Shirt",
+      "features": ["3-Tage-Bart", "grüne Augen"]
+    },
+    "lastSeen": {
+      "place": "Pforzheim Hbf",
+      "date": "2025-01-21",
+      "time": "15:45"
+    },
+    "contact": {
+      "agency": "Polizeipräsidium Pforzheim",
+      "phone": "07231/186-3456",
+      "email": "krisenintervention@polizei-bw.de",
+      "emergency": "110"
+    }
+  }
+]
+
+
+

@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, Phone, Mail, Building, Clock, AlertCircle } from "lucide-react";
+import {
+  User,
+  Phone,
+  Mail,
+  Building,
+  Clock,
+  AlertCircle,
+  Wand2,
+} from "lucide-react";
+import { DEMO_DEFAULTS } from "@/lib/demo/helpers";
 import type { Step5Data } from "../types/WizardTypes";
 
 interface Step5ComponentProps {
@@ -138,6 +147,21 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   placeholder="z.B. Kriminalhauptkommissar Müller"
                   required
                 />
+                <button
+                  type="button"
+                  aria-label="Demo füllen"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
+                  onClick={() => {
+                    setLocalContactPerson("KHK Müller");
+                    setLocalContactPhone(DEMO_DEFAULTS.phone);
+                    setLocalContactEmail(DEMO_DEFAULTS.email);
+                    setLocalDepartment(DEMO_DEFAULTS.department);
+                    setLocalAvailableHours(DEMO_DEFAULTS.availableHours);
+                    commitChanges();
+                  }}
+                >
+                  <Wand2 className="h-4 w-4" />
+                </button>
               </div>
             </div>
 

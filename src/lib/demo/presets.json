@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enums": {
+    "kategorien": ["Straftaeter", "Vermisst", "UnbekannteTote", "Sachen"],
+    "dienststellen": [
+      "LKA",
+      "Aalen",
+      "Freiburg",
+      "Heilbronn",
+      "Karlsruhe",
+      "Konstanz",
+      "Ludwigsburg",
+      "Mannheim",
+      "Offenburg",
+      "Pforzheim",
+      "Ravensburg",
+      "Reutlingen",
+      "Stuttgart",
+      "Ulm"
+    ],
+    "status": ["Aktiv", "Erledigt", "Archiv"],
+    "dringlichkeit": ["Dringend", "Hoch", "Normal", "Niedrig"],
+    "kennzeichnung": ["Neu", "Aktualisiert", "Unveraendert"],
+    "straftattypen": [
+      "Diebstahl",
+      "Raub",
+      "Betrug",
+      "Koerperverletzung",
+      "Sexualdelikt",
+      "Cybercrime",
+      "BtM",
+      "Brandstiftung",
+      "Sonstiges"
+    ],
+    "gegenstandstypen": [
+      "Fahrzeug",
+      "Fahrrad",
+      "Elektronik",
+      "Schmuck",
+      "Kunst",
+      "Dokumente",
+      "Sonstiges"
+    ]
+  },
+  "placeholders": {
+    "city": "",
+    "dienststelle": "",
+    "date": "",
+    "time": "",
+    "caseNumber": "",
+    "amount": "",
+    "age": "",
+    "height": "",
+    "build": "",
+    "clothing": "",
+    "itemBrand": "",
+    "model": "",
+    "serial": "",
+    "color": "",
+    "features": "",
+    "hintUrl": "",
+    "phone": "",
+    "email": "",
+    "locationDetail": "",
+    "tattoo": "",
+    "personName": "",
+    "pronoun": ""
+  },
+  "common": {
+    "Kontakt": [
+      "Hinweise an {dienststelle} unter {phone} oder {email}.",
+      "Nutzen Sie das Hinweisportal: {hintUrl}."
+    ],
+    "Belohnung": [
+      "Für Hinweise, die zur Ergreifung führen, wird eine Belohnung von {amount} EUR ausgelobt."
+    ]
+  },
+  "Straftaeter": {
+    "Diebstahl": {
+      "Titel": [
+        "Diebstahlserie in {city} – Täter gesucht",
+        "Ladendiebstahl mit professioneller Vorgehensweise – {city}"
+      ],
+      "Beschreibung": [
+        "Am {date} gegen {time} entwendete der unbekannte Täter in {city} hochwertige Elektronikartikel."
+      ],
+      "Taeterbeschreibung": [
+        "Männlich, ca. {age} Jahre, ca. {height} cm, {build} Statur, {clothing}."
+      ],
+      "ModusOperandi": [
+        "Ablenkung des Verkaufspersonals; Entfernen von Sicherungsetiketten; Flucht über Seitenausgang."
+      ],
+      "Gefaehrdung": ["Keine Hinweise auf Bewaffnung."]
+    }
+  },
+  "Vermisst": {
+    "Standard": {
+      "Titel": [
+        "Vermisst: {personName} ({age}) aus {city} – Polizei bittet um Mithilfe"
+      ],
+      "Beschreibung": [
+        "{personName} wurde zuletzt am {date} um {time} in {city} gesehen. {pronoun} ist {height} cm groß und trug zuletzt {clothing}."
+      ],
+      "Gesundheit": ["{personName} benötigt regelmäßig Medikamente."]
+    }
+  },
+  "UnbekannteTote": {
+    "Standard": {
+      "Titel": ["Unbekannte tote Person – Identität gesucht ({city})"],
+      "Beschreibung": [
+        "Die Person wurde am {date} in {city}, Bereich {locationDetail}, aufgefunden. Geschätztes Alter {age}, {height} cm, {build} Statur."
+      ],
+      "IdentMerkmale": ["Tätowierung am rechten Unterarm (Motiv: {tattoo})."]
+    }
+  },
+  "Sachen": {
+    "Fahrrad": {
+      "Titel": [
+        "Fahndung nach gestohlenem Fahrrad – {itemBrand} {model} ({city})"
+      ],
+      "Beschreibung": [
+        "Das Fahrrad wurde am {date} in {city} entwendet. Rahmen-Nr.: {serial}, Farbe: {color}, Besonderheiten: {features}."
+      ]
+    }
+  }
+}
+
+
+

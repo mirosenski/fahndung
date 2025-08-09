@@ -27,7 +27,9 @@ export function useFahndungskarteOptimized(
 ) {
   // Bestimme, ob eine gültige Investigation-ID übergeben wurde. Ein leerer
   // String wird als "keine ID" behandelt.
-  const hasValidId = Boolean(investigationId && investigationId.trim().length > 0);
+  const hasValidId = Boolean(
+    investigationId && investigationId.trim().length > 0,
+  );
 
   const {
     investigation: syncInvestigation,
@@ -51,35 +53,44 @@ export function useFahndungskarteOptimized(
 
   const data = convertedData ?? mockData;
   const safeData: FahndungsData = useMemo(() => {
+    const maybe = data as unknown as Partial<FahndungsData>;
     // Erstelle sichere Daten mit Fallback
     return {
       step1: {
-        title: data?.step1?.title ?? mockData.step1.title,
-        category: data?.step1?.category ?? mockData.step1.category,
-        caseNumber: data?.step1?.caseNumber ?? mockData.step1.caseNumber,
+        title: maybe.step1?.title ?? mockData.step1.title,
+        category: maybe.step1?.category ?? mockData.step1.category,
+        caseNumber: maybe.step1?.caseNumber ?? mockData.step1.caseNumber,
+        caseDate: maybe.step1?.caseDate ?? mockData.step1.caseDate,
+        department:
+          maybe.step1?.department ??
+          maybe.step5?.department ??
+          mockData.step5.department,
+        variant: maybe.step1?.variant,
       },
       step2: {
         shortDescription:
-          data?.step2?.shortDescription ?? mockData.step2.shortDescription,
-        description: data?.step2?.description ?? mockData.step2.description,
-        priority: data?.step2?.priority ?? mockData.step2.priority,
-        tags: data?.step2?.tags ?? mockData.step2.tags,
-        features: data?.step2?.features ?? mockData.step2.features,
+          maybe.step2?.shortDescription ?? mockData.step2.shortDescription,
+        description: maybe.step2?.description ?? mockData.step2.description,
+        priority: maybe.step2?.priority ?? mockData.step2.priority,
+        tags: maybe.step2?.tags ?? mockData.step2.tags,
+        features: maybe.step2?.features ?? mockData.step2.features,
       },
       step3: {
-        mainImage: data?.step3?.mainImage ?? mockData.step3.mainImage,
+        mainImage: maybe.step3?.mainImage ?? mockData.step3.mainImage,
         additionalImages:
-          data?.step3?.additionalImages ?? mockData.step3.additionalImages,
+          maybe.step3?.additionalImages ?? mockData.step3.additionalImages,
       },
       step4: {
-        mainLocation: data?.step4?.mainLocation ?? mockData.step4.mainLocation,
+        mainLocation: maybe.step4?.mainLocation ?? mockData.step4.mainLocation,
       },
       step5: {
-        contactPerson: data?.step5?.contactPerson ?? mockData.step5.contactPerson,
-        contactPhone: data?.step5?.contactPhone ?? mockData.step5.contactPhone,
-        contactEmail: data?.step5?.contactEmail ?? mockData.step5.contactEmail,
-        department: data?.step5?.department ?? mockData.step5.department,
-        availableHours: data?.step5?.availableHours ?? mockData.step5.availableHours,
+        contactPerson:
+          maybe.step5?.contactPerson ?? mockData.step5.contactPerson,
+        contactPhone: maybe.step5?.contactPhone ?? mockData.step5.contactPhone,
+        contactEmail: maybe.step5?.contactEmail ?? mockData.step5.contactEmail,
+        department: maybe.step5?.department ?? mockData.step5.department,
+        availableHours:
+          maybe.step5?.availableHours ?? mockData.step5.availableHours,
       },
     };
   }, [data]);
@@ -87,7 +98,8 @@ export function useFahndungskarteOptimized(
   // Die Daten gelten als geladen, sobald entweder aus dem Backend Daten
   // vorhanden sind oder propData bereitsteht. Wenn keine ID vorhanden ist,
   // wird die Ladezeit ausschließlich über propData bestimmt.
-  const isDataLoading = isSyncLoading || (hasValidId ? !syncInvestigation && !propData : false);
+  const isDataLoading =
+    isSyncLoading || (hasValidId ? !syncInvestigation && !propData : false);
 
   // Optimierte Error-Behandlung
   const networkError = useMemo(() => {

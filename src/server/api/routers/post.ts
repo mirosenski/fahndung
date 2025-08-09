@@ -455,6 +455,9 @@ export const postRouter = createTRPCRouter({
         features: z.string().optional(),
         mainImageUrl: z.string().optional(), // URL des Hauptbildes
         additionalImageUrls: z.array(z.string()).optional(), // URLs der zusätzlichen Bilder
+        station: z.string().optional(),
+        date: z.string().optional(),
+        metadata: z.record(z.unknown()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -543,12 +546,12 @@ export const postRouter = createTRPCRouter({
             tags: input.tags,
             location: input.location ?? "",
             short_description: input.short_description ?? input.title, // Verwende die kurze Beschreibung oder Fallback auf Titel
-            station: "Allgemein",
+            station: input.station ?? "Allgemein",
             features: input.features ?? "",
-            date: new Date().toISOString(),
+            date: input.date ?? new Date().toISOString(),
             case_number: caseNumber,
             contact_info: input.contact_info ?? {},
-            metadata: {},
+            metadata: input.metadata ?? {},
             created_by: createdBy,
             images: images.length > 0 ? images : undefined, // Bilder als JSON speichern
           })

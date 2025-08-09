@@ -58,6 +58,9 @@ const LivePreviewCard = memo<LivePreviewCardProps>(
           title: data.step1?.title ?? "Titel der Fahndung",
           category: toValidCategory(data.step1?.category),
           caseNumber: data.step1?.caseNumber ?? "",
+          caseDate: data.step1?.caseDate,
+          department: data.step1?.department ?? data.step5?.department,
+          variant: data.step1?.variant,
         },
         step2: {
           shortDescription:
@@ -94,6 +97,9 @@ const LivePreviewCard = memo<LivePreviewCardProps>(
         data.step1?.title,
         data.step1?.category,
         data.step1?.caseNumber,
+        data.step1?.caseDate,
+        data.step1?.department,
+        data.step1?.variant,
         data.step2?.shortDescription,
         data.step2?.description,
         data.step2?.priority,

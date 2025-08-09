@@ -2,15 +2,24 @@
 
 import React, { useState, useEffect } from "react";
 import { useDebounce } from "~/hooks/useDebounce";
-import { X } from "lucide-react";
-import type { Step2Data } from "../types/WizardTypes";
+import { X, Wand2 } from "lucide-react";
+import {
+  generateDemoShortDescription,
+  generateDemoDescription,
+} from "@/lib/demo/autofill";
+import type { Step2Data, WizardData } from "../types/WizardTypes";
 
 interface Step2ComponentProps {
   data: Step2Data;
   onChange: (data: Step2Data) => void;
+  wizard?: Partial<WizardData>;
 }
 
-const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
+const Step2Component: React.FC<Step2ComponentProps> = ({
+  data,
+  onChange,
+  wizard,
+}) => {
   const [tagInput, setTagInput] = useState("");
 
   // Lokale States für alle Textfelder
@@ -106,15 +115,32 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
           <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
             Mindestens 20 Zeichen. Kurze Zusammenfassung für die Kartenansicht.
           </p>
-          <textarea
-            value={localShortDescription}
-            onChange={(e) => setLocalShortDescription(e.target.value)}
-            onBlur={commitChanges}
-            rows={2}
-            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
-            placeholder="Kurze Zusammenfassung für die Kartenansicht..."
-            required
-          />
+          <div className="relative">
+            <textarea
+              value={localShortDescription}
+              onChange={(e) => setLocalShortDescription(e.target.value)}
+              onBlur={commitChanges}
+              rows={2}
+              className="w-full rounded-lg border border-border px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+              placeholder="Kurze Zusammenfassung für die Kartenansicht..."
+              required
+            />
+            <button
+              type="button"
+              aria-label="Demo füllen"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
+              onClick={() => {
+                const demo = generateDemoShortDescription({
+                  ...(wizard ?? {}),
+                  step2: data,
+                });
+                setLocalShortDescription(demo);
+                commitChanges();
+              }}
+            >
+              <Wand2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div>
@@ -124,15 +150,32 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
           <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
             Mindestens 50 Zeichen. Ausführliche Beschreibung der Fahndung.
           </p>
-          <textarea
-            value={localDescription}
-            onChange={(e) => setLocalDescription(e.target.value)}
-            onBlur={commitChanges}
-            rows={6}
-            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
-            placeholder="Ausführliche Beschreibung der Fahndung..."
-            required
-          />
+          <div className="relative">
+            <textarea
+              value={localDescription}
+              onChange={(e) => setLocalDescription(e.target.value)}
+              onBlur={commitChanges}
+              rows={6}
+              className="w-full rounded-lg border border-border px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+              placeholder="Ausführliche Beschreibung der Fahndung..."
+              required
+            />
+            <button
+              type="button"
+              aria-label="Demo füllen"
+              className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-muted"
+              onClick={() => {
+                const demo = generateDemoDescription({
+                  ...(wizard ?? {}),
+                  step2: data,
+                });
+                setLocalDescription(demo);
+                commitChanges();
+              }}
+            >
+              <Wand2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

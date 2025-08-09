@@ -22,6 +22,9 @@ export interface FahndungsData {
     title: string;
     category: CategoryType;
     caseNumber: string;
+    caseDate?: string; // ISO yyyy-mm-dd
+    department?: string; // Dienststelle (aus Step 1)
+    variant?: string; // Variante (optional, je nach Kategorie)
   };
   step2: {
     shortDescription: string;

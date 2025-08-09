@@ -100,6 +100,12 @@ export const createSafeData = (
       title: data?.step1?.title ?? mockData.step1.title,
       category: data?.step1?.category ?? mockData.step1.category,
       caseNumber: data?.step1?.caseNumber ?? mockData.step1.caseNumber,
+      caseDate: data?.step1?.caseDate ?? mockData.step1.caseDate,
+      department:
+        data?.step1?.department ??
+        data?.step5?.department ??
+        mockData.step5.department,
+      variant: data?.step1?.variant,
     },
     step2: {
       shortDescription:

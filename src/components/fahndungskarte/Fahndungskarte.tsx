@@ -348,16 +348,20 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground dark:text-muted-foreground">
-                  {safeData.step4.mainLocation?.address.split(",")[0] ??
-                    "Unbekannt"}{" "}
-                  |{" "}
-                  {safeData.step1.caseNumber
-                    ? new Date().toLocaleDateString("de-DE", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "Unbekannt"}
+                  {safeData.step1.department ??
+                    safeData.step5.department ??
+                    "Dienststelle"}
+                  {" | "}
+                  {safeData.step1.caseDate
+                    ? new Date(safeData.step1.caseDate).toLocaleDateString(
+                        "de-DE",
+                        { day: "2-digit", month: "short", year: "numeric" },
+                      )
+                    : "Datum unbekannt"}
+                  {" | "}
+                  {safeData.step1?.variant
+                    ? `Variante: ${safeData.step1.variant}`
+                    : "Variante: -"}
                 </div>
                 <div
                   className="rounded border border-border bg-white px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground"

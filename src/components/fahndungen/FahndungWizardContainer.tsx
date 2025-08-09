@@ -23,7 +23,6 @@ import {
 import { useResponsive } from "~/hooks/useResponsive";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import { generateNewCaseNumber } from "~/lib/utils/caseNumberGenerator";
 
 // Import separate Komponenten
 import Step1Component from "./steps/Step1Component";
@@ -81,6 +80,8 @@ const FahndungWizardContainer = ({
       title: "",
       category: "",
       caseNumber: "", // Zunächst leer lassen!
+      variant: "",
+      regionCity: "",
     },
     step2: initialData?.step2 ?? {
       shortDescription: "",
@@ -142,24 +143,12 @@ const FahndungWizardContainer = ({
     log("🟡 wizardData changed:", wizardData);
   }, [wizardData]);
 
-  // Setze caseNumber nur auf dem Client, wenn noch nicht gesetzt
+  // Initialisierung ohne automatische Aktenzeichen-Generierung
   React.useEffect(() => {
     if (!isInitialized) {
-      // Verwende Timestamp für bessere Eindeutigkeit
-      const uniqueCaseNumber = generateNewCaseNumber(
-        "MISSING_PERSON", // Verwende festen Wert statt wizardData.step1?.category
-        "draft",
-      );
-      setWizardData((prev) => ({
-        ...prev,
-        step1: {
-          ...prev.step1!,
-          caseNumber: prev.step1?.caseNumber ?? uniqueCaseNumber,
-        },
-      }));
       setIsInitialized(true);
     }
-  }, [isInitialized]); // NUR isInitialized als Dependency!
+  }, [isInitialized]);
 
   // tRPC Mutation für das Erstellen von Fahndungen
   const createInvestigation = api.post.createInvestigation.useMutation({
@@ -256,7 +245,12 @@ const FahndungWizardContainer = ({
 
         <button
           onClick={handleNext}
-          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700`}
+          disabled={currentStep === 1 ? !canProceedToNextStep() : false}
+          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
+            currentStep === 1 && !canProceedToNextStep()
+              ? "cursor-not-allowed bg-muted text-muted-foreground"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
         >
           {!isMobile && <span className="mr-2">Weiter</span>}
           <ArrowRight className="h-5 w-5" />
@@ -418,6 +412,16 @@ const FahndungWizardContainer = ({
           mainImageUrl: wizardData.step3?.mainImageUrl ?? undefined,
           additionalImageUrls:
             wizardData.step3?.additionalImageUrls ?? undefined,
+          station:
+            wizardData.step1?.department ??
+            wizardData.step5?.department ??
+            "Allgemein",
+          date: wizardData.step1?.caseDate
+            ? new Date(wizardData.step1.caseDate).toISOString()
+            : undefined,
+          metadata: {
+            variant: wizardData.step1?.variant ?? undefined,
+          },
         });
       }
     } catch (error) {
@@ -437,6 +441,7 @@ const FahndungWizardContainer = ({
             <Step1Component
               data={wizardData.step1}
               onChange={(data) => updateStepData("step1", data)}
+              wizard={wizardData}
             />
           )
         );
@@ -446,6 +451,7 @@ const FahndungWizardContainer = ({
             <Step2Component
               data={wizardData.step2}
               onChange={(data) => updateStepData("step2", data)}
+              wizard={wizardData}
             />
           )
         );
@@ -618,7 +624,14 @@ const FahndungWizardContainer = ({
 
                     <button
                       onClick={handleNext}
-                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
+                      disabled={
+                        currentStep === 1 ? !canProceedToNextStep() : false
+                      }
+                      className={`flex items-center gap-2 rounded-lg px-6 py-2 text-white ${
+                        currentStep === 1 && !canProceedToNextStep()
+                          ? "cursor-not-allowed bg-muted text-muted-foreground"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      }`}
                     >
                       Weiter
                       <ArrowRight className="h-4 w-4" />

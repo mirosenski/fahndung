@@ -27,6 +27,32 @@ export class InvestigationDataConverter {
           title: (dbData["title"] as string) ?? "",
           category: this.validateCategory(dbData["category"] as string),
           caseNumber: dbData["case_number"] as string,
+          // Zusätzliche Felder
+          caseDate: ((): string | undefined => {
+            const raw = dbData["date"] as string | undefined;
+            if (!raw) return undefined;
+            try {
+              // Normalisiere auf yyyy-mm-dd für UI-Eingabe
+              const d = new Date(raw);
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const dd = String(d.getDate()).padStart(2, "0");
+              return `${yyyy}-${mm}-${dd}`;
+            } catch {
+              return undefined;
+            }
+          })(),
+          department: (dbData["station"] as string) ?? undefined,
+          variant: ((): string | undefined => {
+            const meta = dbData["metadata"] as
+              | Record<string, unknown>
+              | undefined;
+            const v =
+              meta && typeof meta["variant"] === "string"
+                ? meta["variant"]
+                : undefined;
+            return v;
+          })(),
         },
         step2: {
           shortDescription: (dbData["short_description"] as string) ?? "",
