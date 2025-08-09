@@ -100,9 +100,12 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
 
       <div className="space-y-6">
         <div>
-          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Kurzbeschreibung *
           </label>
+          <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+            Mindestens 20 Zeichen. Kurze Zusammenfassung für die Kartenansicht.
+          </p>
           <textarea
             value={localShortDescription}
             onChange={(e) => setLocalShortDescription(e.target.value)}
@@ -115,9 +118,12 @@ const Step2Component: React.FC<Step2ComponentProps> = ({ data, onChange }) => {
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Detaillierte Beschreibung *
           </label>
+          <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+            Mindestens 50 Zeichen. Ausführliche Beschreibung der Fahndung.
+          </p>
           <textarea
             value={localDescription}
             onChange={(e) => setLocalDescription(e.target.value)}

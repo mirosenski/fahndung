@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  useDeferredValue,
+  useTransition,
+} from "react";
 // Import the shared logger. All diagnostic output should go through
 // this module so that logs are suppressed in production builds. See
 // `src/lib/logger.ts` for implementation details.
@@ -34,6 +41,7 @@ const LivePreviewCard = dynamic(() => import("./preview/LivePreviewCard"), {
 
 // Import Types
 import type { WizardData } from "./types/WizardTypes";
+import { validateStep } from "~/lib/validation/wizardValidation";
 
 const PREVIEW_MODES = [
   { id: "card", label: "Karte", icon: CreditCard },
@@ -64,11 +72,14 @@ const FahndungWizardContainer = ({
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [triedNext, setTriedNext] = useState(false);
+  const [stepErrors, setStepErrors] = useState<string[]>([]);
+  const [, startTransition] = useTransition();
 
   const [wizardData, setWizardData] = useState<Partial<WizardData>>({
     step1: initialData?.step1 ?? {
       title: "",
-      category: "MISSING_PERSON",
+      category: "",
       caseNumber: "", // Zunächst leer lassen!
     },
     step2: initialData?.step2 ?? {
@@ -245,12 +256,7 @@ const FahndungWizardContainer = ({
 
         <button
           onClick={handleNext}
-          disabled={!canProceedToNextStep()}
-          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
-            canProceedToNextStep()
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "cursor-not-allowed bg-muted text-muted-foreground"
-          }`}
+          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700`}
         >
           {!isMobile && <span className="mr-2">Weiter</span>}
           <ArrowRight className="h-5 w-5" />
@@ -259,16 +265,19 @@ const FahndungWizardContainer = ({
     </div>
   );
 
-  const renderPreviewContent = () => {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-center text-lg font-semibold text-muted-foreground dark:text-white">
-          Live-Vorschau Ihrer Fahndungskarte
-        </h3>
-        <LivePreviewCard data={wizardData} />
-      </div>
-    );
-  };
+  // Hooks müssen auf Top-Level bleiben; daher hier berechnen
+  const deferredWizardData = useDeferredValue(wizardData);
+
+  const renderPreviewContent = () => (
+    <div className="space-y-4">
+      <h3 className="text-center text-lg font-semibold text-muted-foreground dark:text-white">
+        Live-Vorschau Ihrer Fahndungskarte
+      </h3>
+      <LivePreviewCard data={deferredWizardData} />
+    </div>
+  );
+
+  // Hinweise stehen direkt an den Feldern in den Step-Komponenten.
 
   const updateStepData = useCallback(
     (step: keyof WizardData, data: WizardData[keyof WizardData]) => {
@@ -278,65 +287,75 @@ const FahndungWizardContainer = ({
       // JSON.stringify führte zu Performance-Problemen bei großen Objekten und
       // wurde entfernt. Wir lassen React diffen, um unnötige Renders zu
       // vermeiden.
-      setWizardData((prev) => {
-        log("🟢 UPDATING STATE");
-        return {
-          ...prev,
-          [step]: data,
-        };
+      startTransition(() => {
+        setWizardData((prev) => {
+          log("🟢 UPDATING STATE");
+          return {
+            ...prev,
+            [step]: data,
+          };
+        });
       });
+      setTriedNext(false);
     },
-    [],
+    [startTransition],
   );
 
-  // Strenge Schrittvalidierung
-  const isValidEmail = (email: string): boolean =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const isValidPhone = (phone: string): boolean => {
-    // Erlaube +, Leerzeichen, (), -; verbiete Buchstaben; min. 7 Ziffern
-    if (/[^0-9+()\-\s]/.test(phone)) return false;
-    const digits = phone.replace(/\D/g, "");
-    return digits.length >= 7;
-  };
-
-  const canProceedToNextStep = () => {
-    switch (currentStep) {
-      case 1: {
-        const title = wizardData.step1?.title?.trim() ?? "";
-        const category = wizardData.step1?.category ?? "";
-        return title.length >= 5 && Boolean(category);
-      }
-      case 2: {
-        const shortD = wizardData.step2?.shortDescription?.trim() ?? "";
-        const desc = wizardData.step2?.description?.trim() ?? "";
-        return shortD.length >= 20 && desc.length >= 50;
-      }
-      case 3: {
-        const hasMain = Boolean(
-          wizardData.step3?.mainImage ?? wizardData.step3?.mainImageUrl,
-        );
-        return hasMain;
-      }
-      case 4: {
-        return Boolean(wizardData.step4?.mainLocation);
-      }
-      case 5: {
-        const person = wizardData.step5?.contactPerson?.trim() ?? "";
-        const phone = wizardData.step5?.contactPhone?.trim() ?? "";
-        const email = wizardData.step5?.contactEmail?.trim() ?? "";
-        const phoneOk = phone !== "" && isValidPhone(phone);
-        const emailOk = email === "" || isValidEmail(email);
-        return person.length >= 1 && phoneOk && emailOk;
-      }
-      default:
-        return true;
-    }
-  };
+  // Schrittvalidierung via Zod
+  const currentValidation = validateStep(currentStep, wizardData);
+  const canProceedToNextStep = () => currentValidation.isValid;
 
   const handleNext = () => {
     if (canProceedToNextStep() && currentStep < 6) {
       setCurrentStep(currentStep + 1);
+      setTriedNext(false);
+      return;
+    }
+    // Zeige Fehler explizit und scrolle zum ersten Problemfeld
+    setTriedNext(true);
+    setStepErrors(currentValidation.errors);
+    // Fokussierung auf das erste erwartete Feld je Step
+    try {
+      switch (currentStep) {
+        case 1: {
+          const el = document.querySelector<HTMLInputElement>(
+            'input[placeholder="z.B. Vermisste - Maria Schmidt"]',
+          );
+          el?.focus();
+          break;
+        }
+        case 2: {
+          const el = document.querySelector<HTMLTextAreaElement>(
+            'textarea[placeholder="Kurze Zusammenfassung für die Kartenansicht..."]',
+          );
+          el?.focus();
+          break;
+        }
+        case 3: {
+          const el =
+            document.querySelector<HTMLButtonElement>("button:has(svg)");
+          el?.focus();
+          break;
+        }
+        case 4: {
+          const el = document.querySelector<HTMLInputElement>(
+            'input[placeholder="Adresse oder Ort eingeben..."]',
+          );
+          el?.focus();
+          break;
+        }
+        case 5: {
+          const el = document.querySelector<HTMLInputElement>(
+            'input[placeholder="z.B. Kriminalhauptkommissar Müller"]',
+          );
+          el?.focus();
+          break;
+        }
+        default:
+          break;
+      }
+    } catch {
+      // ignore focus errors gracefully
     }
   };
 
@@ -570,6 +589,15 @@ const FahndungWizardContainer = ({
             {/* Main Content */}
             <div className="xl:col-span-2">
               <div className="rounded-lg bg-white p-8 shadow-sm dark:bg-muted">
+                {stepErrors.length > 0 && triedNext && (
+                  <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900 dark:text-red-200">
+                    <ul className="list-disc pl-5">
+                      {stepErrors.map((err, idx) => (
+                        <li key={idx}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {renderCurrentStep()}
 
                 {/* Desktop Navigation */}
@@ -590,12 +618,7 @@ const FahndungWizardContainer = ({
 
                     <button
                       onClick={handleNext}
-                      disabled={!canProceedToNextStep()}
-                      className={`flex items-center gap-2 rounded-lg px-6 py-2 ${
-                        canProceedToNextStep()
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "cursor-not-allowed bg-muted text-muted-foreground dark:bg-muted"
-                      }`}
+                      className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
                     >
                       Weiter
                       <ArrowRight className="h-4 w-4" />
@@ -639,6 +662,15 @@ const FahndungWizardContainer = ({
             {/* Main Content */}
             <div className="flex-1 p-4 pb-32">
               <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-muted">
+                {stepErrors.length > 0 && triedNext && (
+                  <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900 dark:text-red-200">
+                    <ul className="list-disc pl-5">
+                      {stepErrors.map((err, idx) => (
+                        <li key={idx}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {renderCurrentStep()}
               </div>
 

@@ -2,6 +2,7 @@
 export interface Step1Data {
   title: string;
   category:
+    | ""
     | "WANTED_PERSON"
     | "MISSING_PERSON"
     | "UNKNOWN_DEAD"

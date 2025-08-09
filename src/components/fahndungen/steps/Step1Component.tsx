@@ -15,6 +15,8 @@ interface Step1ComponentProps {
 const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
   // Lokaler State für den Titel
   const [localTitle, setLocalTitle] = useState(data.title);
+  const [titleTouched, setTitleTouched] = useState(false);
+  const [categoryTouched, setCategoryTouched] = useState(false);
 
   // Debounced version of the title to reduce frequent state updates. When the
   // user stops typing for the specified delay, the debounced value changes
@@ -48,6 +50,10 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
     });
   };
 
+  const isTitleInvalid =
+    titleTouched && (localTitle.length < 5 || localTitle.length > 100);
+  const isCategoryInvalid = categoryTouched && !data.category;
+
   return (
     <div className="space-y-6">
       <div>
@@ -61,14 +67,27 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
 
       <div className="grid grid-cols-1 gap-6">
         <div>
-          <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+          <label
+            className={`mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground ${
+              isTitleInvalid ? "underline decoration-red-500" : ""
+            }`}
+            style={isTitleInvalid ? { textDecorationStyle: "wavy" } : undefined}
+          >
             Titel der Fahndung *
           </label>
+          <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+            Bitte mindestens 5 und maximal 100 Zeichen eingeben.
+          </p>
           <input
             type="text"
             value={localTitle}
             onChange={(e) => setLocalTitle(e.target.value)}
-            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+            onBlur={() => setTitleTouched(true)}
+            className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+              isTitleInvalid
+                ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                : "border-border focus:border-blue-500 focus:ring-blue-500"
+            }`}
             placeholder="z.B. Vermisste - Maria Schmidt"
             required
           />
@@ -76,14 +95,35 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+            <label
+              className={`mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground ${
+                isCategoryInvalid ? "underline decoration-red-500" : ""
+              }`}
+              style={
+                isCategoryInvalid ? { textDecorationStyle: "wavy" } : undefined
+              }
+            >
               Kategorie *
             </label>
+            <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+              Bitte eine passende Kategorie auswählen.
+            </p>
             <select
-              value={data.category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+              value={data.category ?? ""}
+              onChange={(e) => {
+                if (!categoryTouched) setCategoryTouched(true);
+                handleCategoryChange(e.target.value);
+              }}
+              onBlur={() => setCategoryTouched(true)}
+              className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                isCategoryInvalid
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                  : "border-border focus:border-blue-500 focus:ring-blue-500"
+              }`}
             >
+              <option value="" disabled>
+                Bitte Kategorie auswählen …
+              </option>
               {getCategoryOptions().map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -93,9 +133,12 @@ const Step1Component: React.FC<Step1ComponentProps> = ({ data, onChange }) => {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+            <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Aktenzeichen
             </label>
+            <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+              Automatisch bei Kategorienwechsel; bei Bedarf anpassbar.
+            </p>
             <input
               type="text"
               value={data.caseNumber}

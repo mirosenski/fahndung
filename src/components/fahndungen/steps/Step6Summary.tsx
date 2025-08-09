@@ -4,6 +4,7 @@ import React from "react";
 import { Eye, Save } from "lucide-react";
 import { CATEGORY_CONFIG, PRIORITY_CONFIG } from "../types/WizardTypes";
 import type { WizardData } from "../types/WizardTypes";
+import type { CategoryType } from "~/components/fahndungskarte/types";
 
 interface Step6SummaryProps {
   data: Partial<WizardData>;
@@ -22,6 +23,14 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
   isSubmitting,
   mode,
 }) => {
+  const toValidCategory = (value: unknown): CategoryType =>
+    value === "WANTED_PERSON" ||
+    value === "MISSING_PERSON" ||
+    value === "UNKNOWN_DEAD" ||
+    value === "STOLEN_GOODS"
+      ? (value as CategoryType)
+      : "MISSING_PERSON";
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,10 +57,7 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
               <div>
                 <dt className="inline font-medium">Kategorie:</dt>{" "}
                 <dd className="ml-2 inline">
-                  {
-                    CATEGORY_CONFIG[data.step1?.category ?? "MISSING_PERSON"]
-                      .label
-                  }
+                  {CATEGORY_CONFIG[toValidCategory(data.step1?.category)].label}
                 </dd>
               </div>
               <div>

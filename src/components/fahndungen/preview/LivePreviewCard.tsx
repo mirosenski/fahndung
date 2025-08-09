@@ -3,6 +3,7 @@
 import React, { useMemo, useEffect, useRef, memo } from "react";
 import type { WizardData } from "../types/WizardTypes";
 import type { FahndungsData } from "~/components/fahndungskarte/types";
+import type { CategoryType } from "~/components/fahndungskarte/types";
 import dynamic from "next/dynamic";
 
 const Fahndungskarte = dynamic(
@@ -41,12 +42,21 @@ const LivePreviewCard = memo<LivePreviewCardProps>(
       return urlCache.current.get(file) ?? null;
     };
 
+    // Helper: sichere Kategoriekonvertierung
+    const toValidCategory = (value: unknown): CategoryType =>
+      value === "WANTED_PERSON" ||
+      value === "MISSING_PERSON" ||
+      value === "UNKNOWN_DEAD" ||
+      value === "STOLEN_GOODS"
+        ? (value as CategoryType)
+        : "MISSING_PERSON";
+
     // PERFORMANCE: Nur relevante Teile memoizen
     const fahndungsData = useMemo<FahndungsData>(
       () => ({
         step1: {
           title: data.step1?.title ?? "Titel der Fahndung",
-          category: data.step1?.category ?? "MISSING_PERSON",
+          category: toValidCategory(data.step1?.category),
           caseNumber: data.step1?.caseNumber ?? "",
         },
         step2: {

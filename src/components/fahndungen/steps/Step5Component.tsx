@@ -121,9 +121,12 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
           </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+              <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Ansprechpartner *
               </label>
+              <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+                Mindestens 3 Zeichen (Vor- und Nachname empfohlen).
+              </p>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
@@ -139,9 +142,13 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+              <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 Telefonnummer *
               </label>
+              <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+                Gültiges Format, mindestens 7 Ziffern. Erlaubt: +, Leerzeichen,
+                Klammern, Bindestrich.
+              </p>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
@@ -157,9 +164,12 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+              <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                 E-Mail-Adresse
               </label>
+              <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+                Optional. Falls angegeben, muss es eine gültige E-Mail sein.
+              </p>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
