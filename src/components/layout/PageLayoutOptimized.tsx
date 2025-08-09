@@ -3,6 +3,7 @@
 import React from "react";
 import AdaptiveHeaderOptimized from "./archive/AdaptiveHeaderOptimized";
 import ModernHeader from "./ModernHeader";
+import PrimaryHeader from "./PrimaryHeader";
 import { useEffect, useState } from "react";
 import Footer from "./Footer";
 import { type Session } from "~/lib/auth";
@@ -36,13 +37,13 @@ export default function PageLayoutOptimized({
   showPerformanceTest = process.env.NODE_ENV === "development",
   className = "",
 }: PageLayoutOptimizedProps) {
-  const [headerVariant, setHeaderVariant] = useState<"modern" | "classic">(
-    "modern",
-  );
+  const [headerVariant, setHeaderVariant] = useState<
+    "modern" | "primary" | "classic"
+  >("primary");
 
   useEffect(() => {
     const handleHeaderChange = (e: Event) => {
-      const custom = e as CustomEvent<"modern" | "classic">;
+      const custom = e as CustomEvent<"modern" | "primary" | "classic">;
       setHeaderVariant(custom.detail);
     };
     window.addEventListener(
@@ -53,8 +54,8 @@ export default function PageLayoutOptimized({
     const saved =
       (typeof window !== "undefined" &&
         localStorage.getItem("header-variant")) ||
-      "modern";
-    setHeaderVariant(saved as "modern" | "classic");
+      "primary";
+    setHeaderVariant(saved as "modern" | "primary" | "classic");
 
     return () =>
       window.removeEventListener(
@@ -69,6 +70,8 @@ export default function PageLayoutOptimized({
       {showHeader &&
         (headerVariant === "modern" ? (
           <ModernHeader />
+        ) : headerVariant === "primary" ? (
+          <PrimaryHeader />
         ) : (
           <AdaptiveHeaderOptimized
             variant={variant}

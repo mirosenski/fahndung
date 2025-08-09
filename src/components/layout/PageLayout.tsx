@@ -5,6 +5,7 @@ import { useAuth } from "~/hooks/useAuth";
 import { useStableSession } from "~/hooks/useStableSession";
 import AdaptiveHeaderOptimized from "./archive/AdaptiveHeaderOptimized";
 import ModernHeader from "./ModernHeader";
+import PrimaryHeader from "./PrimaryHeader";
 import { useEffect, useState } from "react";
 import Footer from "./Footer";
 import { type Session } from "~/lib/auth";
@@ -40,13 +41,13 @@ const PageLayout = memo(function PageLayout({
   // Verwende stabile Session für bessere Performance
   const { session } = useStableSession(externalSession);
 
-  const [headerVariant, setHeaderVariant] = useState<"modern" | "classic">(
-    "modern",
-  );
+  const [headerVariant, setHeaderVariant] = useState<
+    "modern" | "primary" | "classic"
+  >("primary");
 
   useEffect(() => {
     const handleHeaderChange = (e: Event) => {
-      const custom = e as CustomEvent<"modern" | "classic">;
+      const custom = e as CustomEvent<"modern" | "primary" | "classic">;
       setHeaderVariant(custom.detail);
     };
     window.addEventListener(
@@ -57,8 +58,8 @@ const PageLayout = memo(function PageLayout({
     const saved =
       (typeof window !== "undefined" &&
         localStorage.getItem("header-variant")) ||
-      "modern";
-    setHeaderVariant(saved as "modern" | "classic");
+      "primary";
+    setHeaderVariant(saved as "modern" | "primary" | "classic");
 
     return () =>
       window.removeEventListener(
@@ -73,6 +74,8 @@ const PageLayout = memo(function PageLayout({
 
     return headerVariant === "modern" ? (
       <ModernHeader />
+    ) : headerVariant === "primary" ? (
+      <PrimaryHeader />
     ) : (
       <AdaptiveHeaderOptimized
         variant={variant}

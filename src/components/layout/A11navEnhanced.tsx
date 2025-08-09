@@ -11,7 +11,7 @@ interface A11navEnhancedProps {
 type FontSize = "normal" | "large" | "xlarge";
 type AppTheme = "light" | "dark" | "system";
 type ContrastMode = "normal" | "high";
-type HeaderVariant = "modern" | "classic";
+type HeaderVariant = "modern" | "primary" | "classic";
 
 export default function A11navEnhanced({
   isCompact = false,
@@ -23,7 +23,7 @@ export default function A11navEnhanced({
   const [fontSize, setFontSize] = useState<FontSize>("normal");
   const [theme, setThemeState] = useState<AppTheme>("system");
   const [contrast, setContrast] = useState<ContrastMode>("normal");
-  const [headerVariant, setHeaderVariant] = useState<HeaderVariant>("modern");
+  const [headerVariant, setHeaderVariant] = useState<HeaderVariant>("primary");
 
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -38,7 +38,7 @@ export default function A11navEnhanced({
       const savedContrast =
         (localStorage.getItem("contrast") as ContrastMode) ?? "normal";
       const savedHeaderVariant =
-        (localStorage.getItem("header-variant") as HeaderVariant) ?? "modern";
+        (localStorage.getItem("header-variant") as HeaderVariant) ?? "primary";
 
       setFontSize(savedFontSize);
       setThemeState(savedTheme);
@@ -253,30 +253,32 @@ export default function A11navEnhanced({
               <Layout className="h-4 w-4" />
               Header
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <button
                 type="button"
-                onClick={() => setHeaderVariant("modern")}
-                className={`rounded-lg px-2 py-1.5 text-sm transition-colors ${
-                  headerVariant === "modern"
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                    : "hover:bg-accent"
-                }`}
-                aria-pressed={headerVariant === "modern"}
+                onClick={() => {
+                  const nextVariant = ((): HeaderVariant => {
+                    switch (headerVariant) {
+                      case "modern":
+                        return "primary";
+                      case "primary":
+                        return "classic";
+                      case "classic":
+                        return "modern";
+                      default:
+                        return "primary";
+                    }
+                  })();
+                  setHeaderVariant(nextVariant);
+                }}
+                className="rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+                aria-label="Header-Variante wechseln"
               >
-                Modern
-              </button>
-              <button
-                type="button"
-                onClick={() => setHeaderVariant("classic")}
-                className={`rounded-lg px-2 py-1.5 text-sm transition-colors ${
-                  headerVariant === "classic"
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                    : "hover:bg-accent"
-                }`}
-                aria-pressed={headerVariant === "classic"}
-              >
-                Classic
+                {headerVariant === "modern"
+                  ? "Zum Primary Header"
+                  : headerVariant === "primary"
+                    ? "Zum Classic Header"
+                    : "Zum Modern Header"}
               </button>
             </div>
           </div>

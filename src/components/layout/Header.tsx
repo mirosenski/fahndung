@@ -8,6 +8,7 @@ const Breadcrumb = dynamic(
 );
 import AdaptiveHeaderOptimized from "./archive/AdaptiveHeaderOptimized";
 import ModernHeader from "./ModernHeader";
+import PrimaryHeader from "./PrimaryHeader";
 import { type Session } from "~/lib/auth";
 
 interface HeaderProps {
@@ -21,13 +22,13 @@ export default function Header({
   session,
   onLogout,
 }: HeaderProps) {
-  const [headerVariant, setHeaderVariant] = useState<"modern" | "classic">(
-    "modern",
-  );
+  const [headerVariant, setHeaderVariant] = useState<
+    "modern" | "primary" | "classic"
+  >("primary");
 
   useEffect(() => {
     const handleHeaderChange = (e: Event) => {
-      const custom = e as CustomEvent<"modern" | "classic">;
+      const custom = e as CustomEvent<"modern" | "primary" | "classic">;
       setHeaderVariant(custom.detail);
     };
     window.addEventListener(
@@ -38,8 +39,8 @@ export default function Header({
     const saved =
       (typeof window !== "undefined" &&
         localStorage.getItem("header-variant")) ||
-      "modern";
-    setHeaderVariant(saved as "modern" | "classic");
+      "primary";
+    setHeaderVariant(saved as "modern" | "primary" | "classic");
 
     return () =>
       window.removeEventListener(
@@ -51,6 +52,8 @@ export default function Header({
   const headerNode = useMemo(() => {
     return headerVariant === "modern" ? (
       <ModernHeader />
+    ) : headerVariant === "primary" ? (
+      <PrimaryHeader />
     ) : (
       <AdaptiveHeaderOptimized
         variant={variant}
