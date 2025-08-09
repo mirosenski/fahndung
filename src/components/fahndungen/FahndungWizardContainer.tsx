@@ -11,7 +11,6 @@ import {
   Check,
   Eye,
   FileText,
-  BarChart3,
   CreditCard,
 } from "lucide-react";
 import { useResponsive } from "~/hooks/useResponsive";
@@ -27,32 +26,18 @@ import Step4Component from "./steps/Step4Component";
 import Step5Component from "./steps/Step5Component";
 import Step6Summary from "./steps/Step6Summary";
 
-// Dynamically import preview components to split chunks and avoid
-// loading heavy components (e.g. cards with maps) upfront. Server‑side
-// rendering is disabled for these components since they rely on
-// browser APIs.
+// Dynamically import preview components to split chunks and avoid heavy loads upfront.
 import dynamic from "next/dynamic";
-const LivePreviewCard = dynamic(
-  () => import("./preview/LivePreviewCard"),
-  { ssr: false },
-);
-const StatsOverview = dynamic(
-  () => import("./preview/StatsOverview"),
-  { ssr: false },
-);
-const DetailPagePreview = dynamic(
-  () => import("./preview/DetailPagePreview"),
-  { ssr: false },
-);
+const LivePreviewCard = dynamic(() => import("./preview/LivePreviewCard"), {
+  ssr: false,
+});
 
 // Import Types
-import type { WizardData, PreviewMode } from "./types/WizardTypes";
+import type { WizardData } from "./types/WizardTypes";
 
-const PREVIEW_MODES: PreviewMode[] = [
+const PREVIEW_MODES = [
   { id: "card", label: "Karte", icon: CreditCard },
-  { id: "detail", label: "Detail", icon: Eye },
-  { id: "stats", label: "Stats", icon: BarChart3 },
-];
+] as const;
 
 // Container-Komponente für Fahndung Wizard
 const FahndungWizardContainer = ({
@@ -74,9 +59,8 @@ const FahndungWizardContainer = ({
   const { isMobile, isDesktop } = useResponsive();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
-  const [previewMode, setPreviewMode] = useState<"card" | "detail" | "stats">(
-    "card",
-  );
+  const [previewMode, setPreviewMode] =
+    useState<(typeof PREVIEW_MODES)[number]["id"]>("card");
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -276,36 +260,14 @@ const FahndungWizardContainer = ({
   );
 
   const renderPreviewContent = () => {
-    switch (previewMode) {
-      case "card":
-        return (
-          <div className="space-y-4">
-            <h3 className="text-center text-lg font-semibold text-muted-foreground dark:text-white">
-              Live-Vorschau Ihrer Fahndungskarte
-            </h3>
-            <LivePreviewCard data={wizardData} />
-          </div>
-        );
-
-      case "detail":
-        return (
-          <div className="space-y-4 p-4">
-            <h3 className="text-lg font-semibold">Detailseite Vorschau</h3>
-            <DetailPagePreview data={wizardData} />
-          </div>
-        );
-
-      case "stats":
-        return (
-          <div className="space-y-4 p-4">
-            <h3 className="text-lg font-semibold">Validierung & Statistiken</h3>
-            <StatsOverview data={wizardData} />
-          </div>
-        );
-
-      default:
-        return null;
-    }
+    return (
+      <div className="space-y-4">
+        <h3 className="text-center text-lg font-semibold text-muted-foreground dark:text-white">
+          Live-Vorschau Ihrer Fahndungskarte
+        </h3>
+        <LivePreviewCard data={wizardData} />
+      </div>
+    );
   };
 
   const updateStepData = useCallback(
@@ -327,22 +289,46 @@ const FahndungWizardContainer = ({
     [],
   );
 
+  // Strenge Schrittvalidierung
+  const isValidEmail = (email: string): boolean =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const isValidPhone = (phone: string): boolean => {
+    // Erlaube +, Leerzeichen, (), -; verbiete Buchstaben; min. 7 Ziffern
+    if (/[^0-9+()\-\s]/.test(phone)) return false;
+    const digits = phone.replace(/\D/g, "");
+    return digits.length >= 7;
+  };
+
   const canProceedToNextStep = () => {
     switch (currentStep) {
-      case 1:
-        return wizardData.step1?.title && wizardData.step1?.category;
-      case 2:
-        return (
-          wizardData.step2?.shortDescription && wizardData.step2?.description
+      case 1: {
+        const title = wizardData.step1?.title?.trim() ?? "";
+        const category = wizardData.step1?.category ?? "";
+        return title.length >= 5 && Boolean(category);
+      }
+      case 2: {
+        const shortD = wizardData.step2?.shortDescription?.trim() ?? "";
+        const desc = wizardData.step2?.description?.trim() ?? "";
+        return shortD.length >= 20 && desc.length >= 50;
+      }
+      case 3: {
+        const hasMain = Boolean(
+          wizardData.step3?.mainImage ?? wizardData.step3?.mainImageUrl,
         );
-      case 3:
-        return wizardData.step3?.mainImage;
-      case 4:
-        return wizardData.step4?.mainLocation;
-      case 5:
-        return (
-          wizardData.step5?.contactPerson && wizardData.step5?.contactPhone
-        );
+        return hasMain;
+      }
+      case 4: {
+        return Boolean(wizardData.step4?.mainLocation);
+      }
+      case 5: {
+        const person = wizardData.step5?.contactPerson?.trim() ?? "";
+        const phone = wizardData.step5?.contactPhone?.trim() ?? "";
+        const email = wizardData.step5?.contactEmail?.trim() ?? "";
+        const phoneOk = phone !== "" && isValidPhone(phone);
+        const emailOk = email === "" || isValidEmail(email);
+        return person.length >= 1 && phoneOk && emailOk;
+      }
       default:
         return true;
     }

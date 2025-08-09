@@ -145,25 +145,12 @@ export const componentClasses = {
 export const migrateGrayClasses = {
   // Hintergrund
   "bg-muted": "bg-muted",
-  "bg-muted": "bg-muted",
-  "bg-muted": "bg-muted/50",
-  "bg-muted": "bg-card",
-  "bg-muted": "bg-background",
   "bg-white": "bg-background",
 
   // Text
-  "text-muted-foreground": "text-foreground",
-  "text-muted-foreground": "text-foreground",
-  "text-muted-foreground": "text-foreground",
-  "text-muted-foreground": "text-muted-foreground",
-  "text-muted-foreground": "text-muted-foreground",
-  "text-muted-foreground": "text-muted-foreground",
   "text-muted-foreground": "text-muted-foreground",
 
   // Border
-  "border-border": "border-border",
-  "border-border": "border-border",
-  "border-border": "border-border",
   "border-border": "border-border",
 } as const;
 

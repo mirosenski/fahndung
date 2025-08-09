@@ -15,7 +15,6 @@ const isDev = process.env.NODE_ENV !== "production";
  */
 export function log(...args: unknown[]): void {
   if (isDev) {
-    // eslint-disable-next-line no-console
     console.log(...args);
   }
 }
@@ -26,7 +25,6 @@ export function log(...args: unknown[]): void {
  */
 export function warn(...args: unknown[]): void {
   if (isDev) {
-    // eslint-disable-next-line no-console
     console.warn(...args);
   }
 }
@@ -38,7 +36,6 @@ export function warn(...args: unknown[]): void {
  */
 export function error(...args: unknown[]): void {
   if (isDev) {
-    // eslint-disable-next-line no-console
     console.error(...args);
   }
 }
