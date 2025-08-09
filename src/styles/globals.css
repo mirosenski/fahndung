@@ -192,3 +192,30 @@
   background: rgba(102, 126, 234, 0.1) !important;
   transform: translateX(2px) !important;
 }
+
+/* Universal Glassmorphism - Cross Browser */
+.glass-universal {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .glass-universal {
+  background: rgba(17, 24, 39, 0.9) !important;
+  border-color: rgba(75, 85, 99, 0.3) !important;
+}
+
+/* Firefox Fallback */
+@-moz-document url-prefix() {
+  .glass-universal {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .dark .glass-universal {
+    background: rgba(17, 24, 39, 0.95) !important;
+  }
+}

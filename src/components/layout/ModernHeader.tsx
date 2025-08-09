@@ -72,10 +72,9 @@ export default function ModernHeader() {
         {/* Glassmorphismus Container */}
         <div
           className={`
-          h-full w-full
-          border-b border-border/50 bg-background/70
-          shadow-sm backdrop-blur-2xl
-          transition-shadow duration-300 hover:shadow-md dark:bg-background/50
+          glass-universal h-full
+          w-full
+          transition-shadow duration-300 hover:shadow-md
         `}
         >
           <div className="mx-auto h-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -212,9 +211,9 @@ export default function ModernHeader() {
           </div>
         </div>
 
-        {/* Mobile Menu Overlay - UNVERÄNDERT */}
+        {/* Mobile Menu Overlay - an Dropdown-Glas angepasst */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 top-16 z-40 bg-background/95 backdrop-blur-xl lg:hidden">
+          <div className="glass-universal fixed inset-0 top-16 z-40 lg:hidden">
             <nav className="space-y-4 p-4">
               {navSections.map((section) => (
                 <div key={section}>

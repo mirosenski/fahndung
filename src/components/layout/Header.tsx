@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import dynamic from "next/dynamic";
-const Breadcrumb = dynamic(
-  () => import("~/components/ui/Breadcrumb").then((m) => m.Breadcrumb),
-  { ssr: false },
-);
+import { Breadcrumb } from "~/components/ui/Breadcrumb";
 import AdaptiveHeaderOptimized from "./archive/AdaptiveHeaderOptimized";
 import ModernHeader from "./ModernHeader";
 import PrimaryHeader from "./PrimaryHeader";

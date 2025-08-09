@@ -73,9 +73,7 @@ export default function PrimaryHeader() {
           className={`
             mx-auto max-w-[1273px] transition-all duration-300
             ${isCompact ? "mt-0 h-16" : "mt-4 h-[106px]"}
-            rounded-[10px] border border-white/50
-            bg-white/40 shadow-lg
-            backdrop-blur-[50px] hover:shadow-xl
+            glass-universal hover:shadow-xl
           `}
         >
           <div className="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -216,12 +214,12 @@ export default function PrimaryHeader() {
           </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
+        {/* Mobile Menu Overlay - an Dropdown-Glas angepasst */}
         {isMobileMenuOpen && (
           <div
             className={`fixed inset-0 z-40 ${
               isCompact ? "top-16" : "top-[106px]"
-            } bg-background/95 backdrop-blur-xl lg:hidden`}
+            } glass-universal lg:hidden`}
           >
             <nav className="space-y-4 p-4">
               {navSections.map((section) => (

@@ -187,34 +187,46 @@ export default function A11navEnhanced({
           ref={menuRef}
           role="menu"
           aria-label="A11y & Meta Einstellungen"
-          className="dropdown-glass absolute right-0 z-50 mt-2 w-64 p-2 text-popover-foreground"
+          className={`dropdown-glass absolute right-0 z-50 mt-2 ${
+            isCompact ? "w-56 p-1.5" : "w-64 p-2"
+          } text-popover-foreground`}
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
           {/* 1) Barrierefreiheit Links */}
-          <div className="mb-4 space-y-2">
+          <div
+            className={`${isCompact ? "mb-2 space-y-1.5" : "mb-4 space-y-2"}`}
+          >
             <a
               href="/leichte-sprache"
-              className="block rounded-md border border-input/50 bg-background/50 px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+              className={`block rounded-md border border-input/50 bg-background/50 ${
+                isCompact ? "px-2 py-1 text-[11px]" : "px-2 py-1.5 text-sm"
+              } transition-colors hover:bg-accent`}
             >
               Leichte Sprache
             </a>
             <a
               href="/gebaerdensprache"
-              className="block rounded-md border border-input/50 bg-background/50 px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+              className={`block rounded-md border border-input/50 bg-background/50 ${
+                isCompact ? "px-2 py-1 text-[11px]" : "px-2 py-1.5 text-sm"
+              } transition-colors hover:bg-accent`}
             >
               Gebärdensprache
             </a>
           </div>
 
           {/* 2) Theme-Einstellungen */}
-          <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium">Theme</label>
-            <div className="flex gap-1">
+          <div className={isCompact ? "mb-2" : "mb-4"}>
+            <label
+              className={`block font-medium ${isCompact ? "mb-1 text-[10px]" : "mb-2 text-xs"}`}
+            >
+              Theme
+            </label>
+            <div className={`flex ${isCompact ? "gap-0.5" : "gap-1"}`}>
               <button
                 type="button"
                 onClick={() => setThemeState("light")}
-                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                className={`rounded-md ${isCompact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-sm"} transition-colors ${
                   theme === "light"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -226,7 +238,7 @@ export default function A11navEnhanced({
               <button
                 type="button"
                 onClick={() => setThemeState("dark")}
-                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                className={`rounded-md ${isCompact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-sm"} transition-colors ${
                   theme === "dark"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -238,7 +250,7 @@ export default function A11navEnhanced({
               <button
                 type="button"
                 onClick={() => setThemeState("system")}
-                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                className={`rounded-md ${isCompact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-sm"} transition-colors ${
                   theme === "system"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -251,11 +263,13 @@ export default function A11navEnhanced({
           </div>
 
           {/* 3) Text-Einstellungen */}
-          <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium">
+          <div className={isCompact ? "mb-2" : "mb-4"}>
+            <label
+              className={`block font-medium ${isCompact ? "mb-1 text-[10px]" : "mb-2 text-xs"}`}
+            >
               Schriftgröße
             </label>
-            <div className="flex gap-1">
+            <div className={`flex ${isCompact ? "gap-0.5" : "gap-1"}`}>
               {(
                 [
                   { key: "normal", label: "Normal" },
@@ -267,7 +281,7 @@ export default function A11navEnhanced({
                   key={opt.key}
                   type="button"
                   onClick={() => setFontSize(opt.key)}
-                  className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                  className={`rounded-md ${isCompact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-sm"} transition-colors ${
                     fontSize === opt.key
                       ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                       : "hover:bg-accent"
@@ -280,13 +294,17 @@ export default function A11navEnhanced({
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium">Kontrast</label>
-            <div className="flex gap-1">
+          <div className={isCompact ? "mb-2" : "mb-4"}>
+            <label
+              className={`block font-medium ${isCompact ? "mb-1 text-[10px]" : "mb-2 text-xs"}`}
+            >
+              Kontrast
+            </label>
+            <div className={`flex ${isCompact ? "gap-0.5" : "gap-1"}`}>
               <button
                 type="button"
                 onClick={() => setContrast("normal")}
-                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                className={`rounded-md ${isCompact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-sm"} transition-colors ${
                   contrast === "normal"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -298,7 +316,7 @@ export default function A11navEnhanced({
               <button
                 type="button"
                 onClick={() => setContrast("high")}
-                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                className={`rounded-md ${isCompact ? "px-1.5 py-0.5 text-[11px]" : "px-2 py-1 text-sm"} transition-colors ${
                   contrast === "high"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -311,7 +329,7 @@ export default function A11navEnhanced({
           </div>
 
           {/* 4) Header-Switch */}
-          <div className="border-t pt-3">
+          <div className={`border-t ${isCompact ? "pt-2" : "pt-3"}`}>
             <button
               type="button"
               onClick={() => {
@@ -329,7 +347,7 @@ export default function A11navEnhanced({
                 })();
                 setHeaderVariant(nextVariant);
               }}
-              className="rounded-md px-2 py-1 text-sm transition-colors hover:bg-accent"
+              className={`rounded-md ${isCompact ? "px-2 py-1 text-[11px]" : "px-2 py-1 text-sm"} transition-colors hover:bg-accent`}
               aria-label="Header-Variante wechseln"
             >
               {headerVariant === "modern"
