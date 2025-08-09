@@ -159,61 +159,14 @@
   --border: 0 0% 80%;
 }
 
-/* Production-Safe Glasmorphism */
-.glass-production {
-  /* Fallback für alle Browser */
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
-
-  /* Moderne Browser */
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  /* Vercel Build Fix */
-  box-shadow:
-    0 8px 32px rgba(31, 38, 135, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-@supports (backdrop-filter: blur(20px)) {
-  .glass-production {
-    background: rgba(255, 255, 255, 0.15) !important;
-  }
-}
-
-@supports not (backdrop-filter: blur(20px)) {
-  .glass-production {
-    background: rgba(255, 255, 255, 0.9) !important;
-  }
-}
-
-.dark .glass-production {
-  background: rgba(17, 24, 39, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-@supports (backdrop-filter: blur(20px)) {
-  .dark .glass-production {
-    background: rgba(17, 24, 39, 0.1) !important;
-  }
-}
-
-/* Globale Dropdown-Standards */
+/* Einheitlicher Glass-Effekt (1:1 für Header & Global) */
+.glass-production,
 .dropdown-glass {
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 12px !important;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.2) !important;
-}
-
-.dark .dropdown-glass {
-  background: rgba(17, 24, 39, 0.95) !important;
-  border-color: rgba(75, 85, 99, 0.3) !important;
+  background-color: hsl(var(--background) / 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 12px;
 }
 
 /* Alle Dropdown-Items */
