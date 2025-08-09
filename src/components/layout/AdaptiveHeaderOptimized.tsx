@@ -262,7 +262,7 @@ const AdaptiveDesktopHeader = ({
       >
         <div
           className={`
-            glass-header shadow-sm
+            glass-production shadow-sm
             transition-all duration-500 ease-out hover:shadow-sm
             ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl rounded-t-2xl"}
           `}
@@ -402,7 +402,7 @@ const ResponsiveMobileHeader = ({
       )}
 
       {/* Main Mobile Header */}
-      <div className="glass-header flex items-center justify-between px-4 py-3">
+      <div className="glass-production flex items-center justify-between px-4 py-3">
         <Logo className="text-foreground" showLink={true} />
 
         <div className="flex items-center gap-2">

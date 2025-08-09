@@ -72,7 +72,7 @@ export default function ModernHeader() {
         {/* Glassmorphismus Container */}
         <div
           className={`
-          glass-header h-full
+          glass-production h-full
           w-full rounded-none border-0
           transition-shadow duration-300 hover:shadow-md
         `}
@@ -213,7 +213,7 @@ export default function ModernHeader() {
 
         {/* Mobile Menu Overlay - an Dropdown-Glas angepasst */}
         {isMobileMenuOpen && (
-          <div className="glass-header fixed inset-0 top-16 z-40 lg:hidden">
+          <div className="glass-production fixed inset-0 top-16 z-40 lg:hidden">
             <nav className="space-y-4 p-4">
               {navSections.map((section) => (
                 <div key={section}>

@@ -73,7 +73,7 @@ export default function PrimaryHeader() {
           className={`
             mx-auto max-w-[1273px] transition-all duration-300
             ${isCompact ? "mt-0 h-16" : "mt-4 h-[106px]"}
-            glass-header hover:shadow-xl
+            glass-production hover:shadow-xl
           `}
         >
           <div className="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -219,7 +219,7 @@ export default function PrimaryHeader() {
           <div
             className={`fixed inset-0 z-40 ${
               isCompact ? "top-16" : "top-[106px]"
-            } glass-header lg:hidden`}
+            } glass-production lg:hidden`}
           >
             <nav className="space-y-4 p-4">
               {navSections.map((section) => (
