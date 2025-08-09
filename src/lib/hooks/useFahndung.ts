@@ -60,6 +60,7 @@ export function useFahndung(id: string) {
               | "UNKNOWN_DEAD"
               | "STOLEN_GOODS") ?? "MISSING_PERSON",
           caseNumber: rawData.case_number ?? "",
+          priority: rawData.priority ?? "normal",
         },
         step2: {
           shortDescription: rawData.short_description ?? "",
@@ -135,6 +136,7 @@ export function useFahndung(id: string) {
               | "UNKNOWN_DEAD"
               | "STOLEN_GOODS") ?? "MISSING_PERSON",
           caseNumber: updatedData.case_number ?? "",
+          priority: updatedData.priority ?? "normal",
         },
         step2: {
           shortDescription: updatedData.short_description ?? "",

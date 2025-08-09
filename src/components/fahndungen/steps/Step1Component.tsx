@@ -28,6 +28,12 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
   const [localVariant, setLocalVariant] = useState(data.variant);
   const [localDepartment, setLocalDepartment] = useState(data.department);
   const [localCaseDate, setLocalCaseDate] = useState<string>(data.caseDate);
+  const [localPriority, setLocalPriority] = useState<Step1Data["priority"]>(
+    data.priority,
+  );
+  const [localPriorityUntil, setLocalPriorityUntil] = useState<string>(
+    data.priorityUntil ?? "",
+  );
 
   // Debounced version of the title to reduce frequent state updates. When the
   // user stops typing for the specified delay, the debounced value changes
@@ -52,6 +58,14 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
   useEffect(() => {
     setLocalCaseDate(data.caseDate);
   }, [data.caseDate]);
+
+  useEffect(() => {
+    setLocalPriority(data.priority);
+  }, [data.priority]);
+
+  useEffect(() => {
+    setLocalPriorityUntil(data.priorityUntil ?? "");
+  }, [data.priorityUntil]);
 
   // Propagate debounced title changes to the parent wizard. Only update
   // when the debounced value differs from the current data.title to
@@ -84,6 +98,7 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
   const isDepartmentInvalid = showValidation && !localDepartment;
   const isCaseDateInvalid = showValidation && !localCaseDate;
   const isVariantInvalid = showValidation && !localVariant;
+  const isPriorityInvalid = showValidation && !localPriority;
 
   return (
     <div className="space-y-6">
@@ -334,10 +349,79 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
           )}
         </div>
 
+        {/* 6. Priorität * */}
+        <div>
+          <label
+            className={`mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground ${
+              isPriorityInvalid ? "underline decoration-red-500" : ""
+            }`}
+            style={
+              isPriorityInvalid ? { textDecorationStyle: "wavy" } : undefined
+            }
+          >
+            6. Priorität *
+          </label>
+          <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
+            Steuert Sichtbarkeit und Markierung. &quot;Neu&quot; wird standardmäßig 1 Tag
+            markiert.
+          </p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Platzhalter-Label für identische vertikale Ausrichtung */}
+            <div>
+              <label className="mb-1 block text-sm font-medium opacity-0">
+                Priorität *
+              </label>
+              <select
+                value={localPriority}
+                onChange={(e) => {
+                  const value = e.target.value as Step1Data["priority"];
+                  setLocalPriority(value);
+                  onChange({ ...data, priority: value });
+                }}
+                className={`h-11 min-h-[44px] w-full rounded-lg border px-3 py-2 leading-none focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                  isPriorityInvalid
+                    ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                    : "border-border focus:border-blue-500 focus:ring-blue-500"
+                }`}
+              >
+                <option value="new">Neu</option>
+                <option value="urgent">Dringend</option>
+                <option value="normal">Standard</option>
+              </select>
+            </div>
+
+            {/* Optional: 'Neu bis' nur sichtbar, wenn Priorität = new */}
+            <div className={localPriority === "new" ? "" : "opacity-50"}>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
+                Neu bis (optional)
+              </label>
+              <input
+                type="date"
+                value={localPriorityUntil}
+                onChange={(e) => {
+                  setLocalPriorityUntil(e.target.value);
+                  onChange({ ...data, priorityUntil: e.target.value });
+                }}
+                className="h-11 min-h-[44px] w-full rounded-lg border px-3 py-2 leading-none focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white"
+                placeholder="yyyy-mm-dd"
+              />
+                  <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
+                    Leer lassen für Standard (1 Tag). Setze ein Datum, wenn die
+                    &quot;Neu&quot;-Markierung länger gelten soll.
+                  </p>
+            </div>
+          </div>
+          {isPriorityInvalid && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Priorität ist erforderlich
+            </p>
+          )}
+        </div>
+
         {/* 6. Aktenzeichen (nur Anzeige, automatisch generiert) */}
         <div>
           <label className="mb-1 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
-            6. Aktenzeichen
+            7. Aktenzeichen
           </label>
           <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
             Automatisch bei Kategorienwechsel; wird unten generiert.

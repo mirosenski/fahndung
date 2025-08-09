@@ -13,11 +13,12 @@ export const UIInvestigationInputSchema = z.object({
     caseNumber: z.string().optional(),
     caseDate: z.string().optional(),
     variant: z.string().optional(),
+    priority: z.enum(["normal", "urgent", "new"]).optional().default("new"),
+    priorityUntil: z.string().optional(),
   }),
   step2: z.object({
     shortDescription: z.string().min(5, "Mindestens 5 Zeichen"), // Von 10 auf 5 reduziert
     description: z.string().min(10, "Mindestens 10 Zeichen"), // Von 20 auf 10 reduziert
-    priority: z.enum(["normal", "urgent", "new"]),
     tags: z.array(z.string()).optional().default([]), // Optional gemacht
     features: z.string(),
   }),
@@ -210,6 +211,8 @@ export const UIInvestigationDBSchema = z.object({
     caseNumber: z.string().optional(),
     caseDate: z.string().optional(),
     variant: z.string().optional(),
+    priority: z.enum(["normal", "urgent", "new"]).optional().default("new"),
+    priorityUntil: z.string().optional(),
   }),
   step2: z.object({
     shortDescription: z.string().optional().default(""),

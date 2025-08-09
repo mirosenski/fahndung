@@ -116,8 +116,9 @@ export default function ModernContactCategory({
     }
   };
 
-  const getStatusLabel = (priority?: string) => {
-    switch (priority) {
+  const getStatusLabel = (priority: unknown) => {
+    const p = typeof priority === "string" ? priority : undefined;
+    switch (p) {
       case "new":
         return "NEU";
       case "urgent":
@@ -332,7 +333,7 @@ export default function ModernContactCategory({
                 variant="outline"
                 className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
               >
-                {getStatusLabel(data.step2?.priority)}
+                {getStatusLabel(data.step1?.priority)}
               </Badge>
             </div>
             <h2 className="text-2xl font-bold text-muted-foreground dark:text-white">
@@ -426,7 +427,7 @@ export default function ModernContactCategory({
                   Dringlichkeitsstufe
                 </p>
                 <p className="mt-1 font-semibold text-muted-foreground dark:text-white">
-                  {getStatusLabel(data.step2?.priority)}
+                  {getStatusLabel(data.step1?.priority)}
                 </p>
               </div>
             </div>
@@ -656,13 +657,17 @@ export default function ModernContactCategory({
               )}
               {step5.articlePublishing.seoDescription && (
                 <p className="text-sm text-muted-foreground dark:text-muted-foreground">
-                  <span className="text-muted-foreground">SEO-Beschreibung:</span>{" "}
+                  <span className="text-muted-foreground">
+                    SEO-Beschreibung:
+                  </span>{" "}
                   {step5.articlePublishing.seoDescription}
                 </p>
               )}
               {step5.articlePublishing.keywords.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  <span className="text-xs text-muted-foreground">Keywords:</span>
+                  <span className="text-xs text-muted-foreground">
+                    Keywords:
+                  </span>
                   {step5.articlePublishing.keywords.map(
                     (keyword: string, index: number) => (
                       <Badge key={index} variant="outline" className="text-xs">

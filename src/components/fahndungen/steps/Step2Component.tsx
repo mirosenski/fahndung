@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useDebounce } from "~/hooks/useDebounce";
-import { X, Wand2 } from "lucide-react";
+import { X, Wand2, WandSparkles } from "lucide-react";
 import {
   generateDemoShortDescription,
   generateDemoDescription,
+  generateDemoFeatures,
 } from "@/lib/demo/autofill";
 import type { Step2Data, WizardData } from "../types/WizardTypes";
 
@@ -199,26 +200,7 @@ const Step2Component: React.FC<Step2ComponentProps> = ({
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
-              Priorität *
-            </label>
-            <select
-              value={data.priority}
-              onChange={(e) =>
-                onChange({
-                  ...data,
-                  priority: e.target.value as Step2Data["priority"],
-                })
-              }
-              className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
-            >
-              <option value="normal">Normal</option>
-              <option value="urgent">Dringend</option>
-              <option value="new">Neu</option>
-            </select>
-          </div>
-
+          {/* Priorität nach Step 1 verlegt */}
           <div>
             <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
               Tags hinzufügen
@@ -275,14 +257,31 @@ const Step2Component: React.FC<Step2ComponentProps> = ({
           <label className="mb-2 block text-sm font-medium text-muted-foreground dark:text-muted-foreground">
             Besondere Merkmale
           </label>
-          <textarea
-            value={localFeatures}
-            onChange={(e) => setLocalFeatures(e.target.value)}
-            onBlur={commitChanges}
-            rows={4}
-            className="w-full rounded-lg border border-border px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
-            placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
-          />
+          <div className="relative">
+            <textarea
+              value={localFeatures}
+              onChange={(e) => setLocalFeatures(e.target.value)}
+              onBlur={commitChanges}
+              rows={4}
+              className="w-full rounded-lg border border-border px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+              placeholder="z.B. Narben, Tattoos, besondere Kleidung, Auffälligkeiten..."
+            />
+            <button
+              type="button"
+              aria-label="Demo-Merkmale füllen"
+              className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-muted"
+              onClick={() => {
+                const demo = generateDemoFeatures({
+                  ...(wizard ?? {}),
+                  step2: data,
+                });
+                setLocalFeatures(demo);
+                commitChanges();
+              }}
+            >
+              <WandSparkles className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

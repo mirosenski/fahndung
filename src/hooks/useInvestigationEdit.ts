@@ -92,6 +92,7 @@ export function useInvestigationEdit(investigationId: string) {
                 | "UNKNOWN_DEAD"
                 | "STOLEN_GOODS") ?? "MISSING_PERSON",
             caseNumber: dbInvestigation.case_number ?? "",
+            priority: dbInvestigation.priority ?? "normal",
           },
           step2: {
             shortDescription: dbInvestigation.short_description ?? "",

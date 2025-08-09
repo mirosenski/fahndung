@@ -44,6 +44,7 @@ export const convertInvestigationToFahndungsData = (
       title: (investigation["title"] as string) ?? "Unbekannte Fahndung",
       category: (investigation["category"] as CategoryType) ?? "MISSING_PERSON",
       caseNumber: (investigation["case_number"] as string) ?? "",
+      // Schritt 1 enthält die Priorität im Wizard nicht, Karten-Daten behalten sie in step2
     },
     step2: {
       shortDescription: (investigation["short_description"] as string) ?? "",

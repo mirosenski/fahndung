@@ -22,6 +22,16 @@ export const step1Schema = z.object({
   department: z.string().min(1, "Dienststelle ist erforderlich"),
   caseDate: z.string().min(1, "Fahndungsdatum ist erforderlich"),
   variant: z.string().min(1, "Variante ist erforderlich"),
+  // Priorität ist jetzt in Step 1 Pflichtfeld
+  priority: z.enum(["normal", "urgent", "new"]),
+  // Wenn priority === "new": optionales Enddatum für "Neu"-Markierung (>= heute)
+  priorityUntil: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || !Number.isNaN(Date.parse(val)),
+      "Ungültiges Datum für 'Neu bis'",
+    ),
   // Aktenzeichen (6) ist ausdrücklich NICHT pflicht
   caseNumber: z.string().optional(),
 });
@@ -36,7 +46,6 @@ export const step2Schema = z.object({
     .string()
     .min(50, "Beschreibung muss mindestens 50 Zeichen haben")
     .max(5000, "Beschreibung darf maximal 5000 Zeichen haben"),
-  priority: z.enum(["normal", "urgent", "new"]),
   tags: z.array(z.string()).optional(),
 });
 

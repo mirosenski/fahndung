@@ -53,7 +53,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ data }) => {
         <h4 className="mb-3 font-medium">Meta-Daten</h4>
         <div className="space-y-1 text-sm">
           <div>Kategorie: {data.step1?.category ?? "-"}</div>
-          <div>Priorität: {data.step2?.priority ?? "-"}</div>
+          <div>Priorität: {data.step1?.priority ?? "-"}</div>
           <div>Status: {data.step5?.publishStatus ?? "draft"}</div>
           <div>Tags: {data.step2?.tags?.length ?? 0}</div>
         </div>

@@ -19,8 +19,33 @@ export class InvestigationDataConverter {
     try {
       // Bereinige und normalisiere die Daten
       const cleanedContactInfo = this.cleanContactInfo(
-        dbData["contact_info"] as Record<string, unknown> | undefined,
+        (dbData["contact_info"] as Record<string, unknown> | undefined) ?? undefined,
       );
+
+      const meta: Record<string, unknown> =
+        typeof dbData["metadata"] === "object" && dbData["metadata"] !== null
+          ? (dbData["metadata"] as Record<string, unknown>)
+          : {};
+
+      // Effektive Priorität berechnen: "new" nur bis priorityUntil anzeigen
+      const dbPriority = this.validatePriority(dbData["priority"] as string);
+      const priorityUntil =
+        typeof meta["priorityUntil"] === "string"
+          ? meta["priorityUntil"]
+          : undefined;
+      const isNewExpired = (() => {
+        if (dbPriority !== "new" || !priorityUntil) return false;
+        const today = new Date();
+        // Vergleiche als Datum ohne Zeit (yyyy-mm-dd)
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+        try {
+          return new Date(priorityUntil) < new Date(todayStr);
+        } catch {
+          return false;
+        }
+      })();
+
+      const effectivePriority = isNewExpired ? "normal" : dbPriority;
 
       const uiData = {
         step1: {
@@ -42,22 +67,16 @@ export class InvestigationDataConverter {
               return undefined;
             }
           })(),
-          department: (dbData["station"] as string) ?? undefined,
           variant: ((): string | undefined => {
-            const meta = dbData["metadata"] as
-              | Record<string, unknown>
-              | undefined;
             const v =
-              meta && typeof meta["variant"] === "string"
-                ? meta["variant"]
-                : undefined;
+              typeof meta["variant"] === "string" ? meta["variant"] : undefined;
             return v;
           })(),
         },
         step2: {
           shortDescription: (dbData["short_description"] as string) ?? "",
           description: (dbData["description"] as string) ?? "",
-          priority: this.validatePriority(dbData["priority"] as string),
+          priority: effectivePriority,
           tags: Array.isArray(dbData["tags"])
             ? (dbData["tags"] as string[])
             : [],
@@ -84,27 +103,29 @@ export class InvestigationDataConverter {
           availableHours: cleanedContactInfo.hours ?? "24/7",
         },
         images:
-          (dbData["images"] as Array<{
+          ((dbData["images"] as Array<{
             id: string;
             url: string;
             alt_text?: string;
             caption?: string;
-          }>) ?? [],
+          }>) ?? []),
         contact_info: (dbData["contact_info"] as Record<string, unknown>) ?? {},
       };
 
       // Verwende das lockere DB-Schema für Validierung mit transform
       const validated = UIInvestigationDBSchema.safeParse(uiData);
       if (!validated.success) {
-        console.error("Validierungsfehler:", validated.error.errors);
+       console.error("Validierungsfehler:", JSON.stringify(validated.error.errors));
         return { success: false, error: validated.error };
       }
 
       return { success: true, data: validated.data };
-    } catch (error) {
+    } catch (error: unknown) {
       return {
         success: false,
-        error: new Error(`Konvertierung fehlgeschlagen: ${String(error)}`),
+        error: new Error(
+          `Konvertierung fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`,
+        ),
       };
     }
   }

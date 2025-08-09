@@ -14,12 +14,15 @@ export interface Step1Data {
   caseDate: string; // ISO Datum (yyyy-mm-dd)
   // Optionales Zusatzfeld für Übergangsphasen bis Step 4 gesetzt ist
   regionCity?: string;
+  // Priorität wurde in Schritt 1 verlagert
+  priority: "normal" | "urgent" | "new";
+  // Optional: Bis zu welchem Datum soll die Priorität "neu" sichtbar bleiben (ISO yyyy-mm-dd)
+  priorityUntil?: string;
 }
 
 export interface Step2Data {
   shortDescription: string;
   description: string;
-  priority: "normal" | "urgent" | "new";
   tags: string[];
   features: string;
 }

@@ -202,3 +202,18 @@ export function fillContactDefaults(
     },
   } as Partial<WizardData>;
 }
+
+// Neue Hilfsfunktion: Fülle besondere Merkmale aus Presets/Dummywerten
+export function generateDemoFeatures(data: Partial<WizardData>): string {
+  const ctx = {
+    ...buildContext(data),
+  } as Record<string, string>;
+  // Einfache, allgemeine Vorlage; kann später je Kategorie/Variante aus presets.json gezogen werden
+  const templates = [
+    "Auffällige {tattoo}-Tätowierung am Unterarm, {clothing}, {build} Statur.",
+    "Narbe an der rechten Augenbraue, {clothing}, trägt häufig Kappe.",
+    "Trägt Brille, {clothing}, {height} cm groß, {build} Figur.",
+  ];
+  const text = templates[Math.floor(Math.random() * templates.length)]!;
+  return resolvePlaceholders(text, ctx);
+}

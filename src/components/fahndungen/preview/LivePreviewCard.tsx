@@ -2,8 +2,11 @@
 
 import React, { useMemo, useEffect, useRef, memo } from "react";
 import type { WizardData } from "../types/WizardTypes";
-import type { FahndungsData } from "~/components/fahndungskarte/types";
-import type { CategoryType } from "~/components/fahndungskarte/types";
+import type {
+  FahndungsData,
+  CategoryType,
+  PriorityType,
+} from "~/components/fahndungskarte/types";
 import dynamic from "next/dynamic";
 
 const Fahndungskarte = dynamic(
@@ -51,6 +54,11 @@ const LivePreviewCard = memo<LivePreviewCardProps>(
         ? (value as CategoryType)
         : "MISSING_PERSON";
 
+    const toValidPriority = (value: unknown): PriorityType =>
+      value === "normal" || value === "urgent" || value === "new"
+        ? (value as PriorityType)
+        : "new";
+
     // PERFORMANCE: Nur relevante Teile memoizen
     const fahndungsData = useMemo<FahndungsData>(
       () => ({
@@ -66,7 +74,7 @@ const LivePreviewCard = memo<LivePreviewCardProps>(
           shortDescription:
             data.step2?.shortDescription ?? "Kurzbeschreibung...",
           description: data.step2?.description ?? "",
-          priority: data.step2?.priority ?? "normal",
+          priority: toValidPriority((data.step1?.priority as unknown) ?? "new"),
           tags: data.step2?.tags ?? [],
           features: data.step2?.features ?? "",
         },
@@ -100,9 +108,10 @@ const LivePreviewCard = memo<LivePreviewCardProps>(
         data.step1?.caseDate,
         data.step1?.department,
         data.step1?.variant,
+        data.step1?.priority,
         data.step2?.shortDescription,
         data.step2?.description,
-        data.step2?.priority,
+        // step2.priority existiert im Wizard nicht; Priorität liegt in step1
         data.step2?.tags,
         data.step2?.features,
         data.step3?.mainImage,

@@ -84,11 +84,14 @@ const FahndungWizardContainer = ({
       department: "",
       caseDate: "",
       regionCity: "",
+      priority: "new",
+      priorityUntil: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10),
     },
     step2: initialData?.step2 ?? {
       shortDescription: "",
       description: "",
-      priority: "normal",
       tags: [],
       features: "",
     },
@@ -391,7 +394,7 @@ const FahndungWizardContainer = ({
           description: wizardData.step2?.description ?? "",
           short_description: wizardData.step2?.shortDescription ?? "", // Kurze Beschreibung hinzugefügt
           status: finalStatus,
-          priority: wizardData.step2?.priority ?? "normal",
+          priority: wizardData.step1?.priority ?? "new",
           category: wizardData.step1?.category ?? "MISSING_PERSON",
           location: wizardData.step4?.mainLocation?.address ?? "",
           contact_info: {
@@ -401,7 +404,7 @@ const FahndungWizardContainer = ({
           },
           tags: [
             wizardData.step1?.category ?? "",
-            wizardData.step2?.priority ?? "",
+            wizardData.step1?.priority ?? "",
             ...(wizardData.step2?.tags ?? []),
           ],
           // Bild-URLs hinzufügen
@@ -417,6 +420,7 @@ const FahndungWizardContainer = ({
             : undefined,
           metadata: {
             variant: wizardData.step1?.variant ?? undefined,
+            priorityUntil: wizardData.step1?.priorityUntil ?? undefined,
           },
         });
       }
