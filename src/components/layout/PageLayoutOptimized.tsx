@@ -51,11 +51,10 @@ export default function PageLayoutOptimized({
       handleHeaderChange as EventListener,
     );
 
-    const saved = (
-      typeof window !== "undefined"
+    const saved =
+      (typeof window !== "undefined"
         ? localStorage.getItem("header-variant")
-        : null
-    ) ?? "primary";
+        : null) ?? "primary";
     setHeaderVariant(saved as "modern" | "primary" | "classic");
 
     return () =>
