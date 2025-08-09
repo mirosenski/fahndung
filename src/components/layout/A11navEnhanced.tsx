@@ -1,14 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Accessibility,
-  Sun,
-  Moon,
-  Monitor,
-  Type,
-  Contrast,
-  Layout,
-} from "lucide-react";
+import { Sun, Moon, Monitor, Type, Contrast, Layout } from "lucide-react";
+import { AccessibilityIcon } from "../ui/AccessibilityIcon";
 import { useTheme } from "next-themes";
 
 interface A11navEnhancedProps {
@@ -128,7 +121,11 @@ export default function A11navEnhanced({
         aria-expanded={open}
         className="inline-flex items-center gap-2 rounded-lg border border-input/50 bg-background/60 px-3 py-2 text-sm font-medium text-foreground shadow-sm backdrop-blur-xl transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary/50"
       >
-        <Accessibility className="h-4 w-4" />
+        <AccessibilityIcon
+          isActive={isHovered || open}
+          variant={isHovered || open ? "filled" : "outline"}
+          className="h-4 w-4"
+        />
         {isCompact ? "A11y" : "A11y & Meta"}
       </button>
 
