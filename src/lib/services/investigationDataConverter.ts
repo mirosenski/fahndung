@@ -19,7 +19,8 @@ export class InvestigationDataConverter {
     try {
       // Bereinige und normalisiere die Daten
       const cleanedContactInfo = this.cleanContactInfo(
-        (dbData["contact_info"] as Record<string, unknown> | undefined) ?? undefined,
+        (dbData["contact_info"] as Record<string, unknown> | undefined) ??
+          undefined,
       );
 
       const meta: Record<string, unknown> =
@@ -103,19 +104,22 @@ export class InvestigationDataConverter {
           availableHours: cleanedContactInfo.hours ?? "24/7",
         },
         images:
-          ((dbData["images"] as Array<{
+          (dbData["images"] as Array<{
             id: string;
             url: string;
             alt_text?: string;
             caption?: string;
-          }>) ?? []),
+          }>) ?? [],
         contact_info: (dbData["contact_info"] as Record<string, unknown>) ?? {},
       };
 
       // Verwende das lockere DB-Schema für Validierung mit transform
       const validated = UIInvestigationDBSchema.safeParse(uiData);
       if (!validated.success) {
-       console.error("Validierungsfehler:", JSON.stringify(validated.error.errors));
+        console.error(
+          "Validierungsfehler:",
+          JSON.stringify(validated.error.errors),
+        );
         return { success: false, error: validated.error };
       }
 

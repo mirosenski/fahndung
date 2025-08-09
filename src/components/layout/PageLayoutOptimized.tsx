@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import AdaptiveHeaderOptimized from "./AdaptiveHeaderOptimized";
+import AdaptiveHeaderOptimized from "./archive/AdaptiveHeaderOptimized";
+import ModernHeader from "./ModernHeader";
+import { useEffect, useState } from "react";
 import Footer from "./Footer";
 import { type Session } from "~/lib/auth";
 import { Breadcrumb } from "~/components/ui/Breadcrumb";
@@ -31,19 +33,49 @@ export default function PageLayoutOptimized({
   showBreadcrumb = false,
   showHero = false,
   showFooter = true,
-  showPerformanceTest = process.env.NODE_ENV === 'development',
+  showPerformanceTest = process.env.NODE_ENV === "development",
   className = "",
 }: PageLayoutOptimizedProps) {
+  const [headerVariant, setHeaderVariant] = useState<"modern" | "classic">(
+    "modern",
+  );
+
+  useEffect(() => {
+    const handleHeaderChange = (e: Event) => {
+      const custom = e as CustomEvent<"modern" | "classic">;
+      setHeaderVariant(custom.detail);
+    };
+    window.addEventListener(
+      "header-variant-change",
+      handleHeaderChange as EventListener,
+    );
+
+    const saved =
+      (typeof window !== "undefined" &&
+        localStorage.getItem("header-variant")) ||
+      "modern";
+    setHeaderVariant(saved as "modern" | "classic");
+
+    return () =>
+      window.removeEventListener(
+        "header-variant-change",
+        handleHeaderChange as EventListener,
+      );
+  }, []);
+
   return (
     <div className={cn("min-h-screen", colors.background.primary, className)}>
       {/* Optimized Header */}
-      {showHeader && (
-        <AdaptiveHeaderOptimized 
-          variant={variant} 
-          session={session} 
-          onLogout={onLogout} 
-        />
-      )}
+      {showHeader &&
+        (headerVariant === "modern" ? (
+          <ModernHeader />
+        ) : (
+          <AdaptiveHeaderOptimized
+            variant={variant}
+            session={session}
+            onLogout={onLogout}
+          />
+        ))}
 
       {/* Breadcrumb */}
       {showBreadcrumb && <Breadcrumb />}
@@ -72,4 +104,4 @@ export default function PageLayoutOptimized({
       {showPerformanceTest && <HeaderPerformanceTest />}
     </div>
   );
-} 
+}

@@ -362,8 +362,8 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
             6. Priorität *
           </label>
           <p className="mb-2 text-xs text-muted-foreground dark:text-muted-foreground">
-            Steuert Sichtbarkeit und Markierung. &quot;Neu&quot; wird standardmäßig 1 Tag
-            markiert.
+            Steuert Sichtbarkeit und Markierung. &quot;Neu&quot; wird
+            standardmäßig 1 Tag markiert.
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Platzhalter-Label für identische vertikale Ausrichtung */}
@@ -405,10 +405,10 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
                 className="h-11 min-h-[44px] w-full rounded-lg border px-3 py-2 leading-none focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white"
                 placeholder="yyyy-mm-dd"
               />
-                  <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
-                    Leer lassen für Standard (1 Tag). Setze ein Datum, wenn die
-                    &quot;Neu&quot;-Markierung länger gelten soll.
-                  </p>
+              <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
+                Leer lassen für Standard (1 Tag). Setze ein Datum, wenn die
+                &quot;Neu&quot;-Markierung länger gelten soll.
+              </p>
             </div>
           </div>
           {isPriorityInvalid && (

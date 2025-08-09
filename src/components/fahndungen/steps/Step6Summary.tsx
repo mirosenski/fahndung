@@ -79,7 +79,9 @@ const Step6Summary: React.FC<Step6SummaryProps> = ({
                 const p = data.step1?.priority ?? "normal";
                 const cfg = PRIORITY_CONFIG[p];
                 return (
-                  <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${cfg.color} text-white`}>
+                  <span
+                    className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${cfg.color} text-white`}
+                  >
                     {cfg.label}
                   </span>
                 );

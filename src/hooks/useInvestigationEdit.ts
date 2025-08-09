@@ -27,11 +27,17 @@ export function useInvestigationEdit(investigationId: string) {
       refetchInterval: 120000, // Alle 2 Minuten (reduziert von 30s)
       retry: (failureCount, error) => {
         // Retry-Logik verbessern
-        if (failureCount < 2) { // Reduziert von 3 auf 2
-          console.log(`🔄 Retry ${failureCount + 1}/2 für getInvestigation (Edit)`);
+        if (failureCount < 2) {
+          // Reduziert von 3 auf 2
+          console.log(
+            `🔄 Retry ${failureCount + 1}/2 für getInvestigation (Edit)`,
+          );
           return true;
         }
-        console.error("❌ Max retries erreicht für getInvestigation (Edit):", error);
+        console.error(
+          "❌ Max retries erreicht für getInvestigation (Edit):",
+          error,
+        );
         return false;
       },
       retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 10000), // Reduziert
@@ -102,12 +108,9 @@ export function useInvestigationEdit(investigationId: string) {
             features: dbInvestigation.features ?? "",
           },
           step3: {
-            mainImage:
-              dbInvestigation.images?.[0]?.url ?? null,
+            mainImage: dbInvestigation.images?.[0]?.url ?? null,
             additionalImages:
-              dbInvestigation.images
-                ?.slice(1)
-                .map((img) => img.url) ?? [],
+              dbInvestigation.images?.slice(1).map((img) => img.url) ?? [],
           },
           step4: {
             mainLocation: {
@@ -115,11 +118,15 @@ export function useInvestigationEdit(investigationId: string) {
             },
           },
           step5: {
-            contactPerson: dbInvestigation.contact_info?.["person"] as string ?? "",
-            contactPhone: dbInvestigation.contact_info?.["phone"] as string ?? "",
-            contactEmail: dbInvestigation.contact_info?.["email"] as string ?? "",
+            contactPerson:
+              (dbInvestigation.contact_info?.["person"] as string) ?? "",
+            contactPhone:
+              (dbInvestigation.contact_info?.["phone"] as string) ?? "",
+            contactEmail:
+              (dbInvestigation.contact_info?.["email"] as string) ?? "",
             department: dbInvestigation.station ?? "",
-            availableHours: dbInvestigation.contact_info?.["hours"] as string ?? "",
+            availableHours:
+              (dbInvestigation.contact_info?.["hours"] as string) ?? "",
             publishStatus: "draft" as const,
             urgencyLevel: "medium" as const,
             requiresApproval: false,

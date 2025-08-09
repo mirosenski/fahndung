@@ -3,7 +3,9 @@
 import React, { memo, useMemo } from "react";
 import { useAuth } from "~/hooks/useAuth";
 import { useStableSession } from "~/hooks/useStableSession";
-import AdaptiveHeaderOptimized from "./AdaptiveHeaderOptimized";
+import AdaptiveHeaderOptimized from "./archive/AdaptiveHeaderOptimized";
+import ModernHeader from "./ModernHeader";
+import { useEffect, useState } from "react";
 import Footer from "./Footer";
 import { type Session } from "~/lib/auth";
 import { layout, colors } from "~/lib/design-tokens";
@@ -34,34 +36,63 @@ const PageLayout = memo(function PageLayout({
   className = "",
 }: PageLayoutProps) {
   const { logout } = useAuth();
-  
+
   // Verwende stabile Session für bessere Performance
   const { session } = useStableSession(externalSession);
+
+  const [headerVariant, setHeaderVariant] = useState<"modern" | "classic">(
+    "modern",
+  );
+
+  useEffect(() => {
+    const handleHeaderChange = (e: Event) => {
+      const custom = e as CustomEvent<"modern" | "classic">;
+      setHeaderVariant(custom.detail);
+    };
+    window.addEventListener(
+      "header-variant-change",
+      handleHeaderChange as EventListener,
+    );
+
+    const saved =
+      (typeof window !== "undefined" &&
+        localStorage.getItem("header-variant")) ||
+      "modern";
+    setHeaderVariant(saved as "modern" | "classic");
+
+    return () =>
+      window.removeEventListener(
+        "header-variant-change",
+        handleHeaderChange as EventListener,
+      );
+  }, []);
 
   // Memoized Header für bessere Performance
   const headerComponent = useMemo(() => {
     if (!showHeader) return null;
-    
-    return (
-      <AdaptiveHeaderOptimized 
-        variant={variant} 
-        session={session} 
-        onLogout={onLogout ?? logout} 
+
+    return headerVariant === "modern" ? (
+      <ModernHeader />
+    ) : (
+      <AdaptiveHeaderOptimized
+        variant={variant}
+        session={session}
+        onLogout={onLogout ?? logout}
       />
     );
-  }, [showHeader, variant, session, onLogout, logout]);
+  }, [showHeader, headerVariant, variant, session, onLogout, logout]);
 
   // Memoized Footer für bessere Performance
   const footerComponent = useMemo(() => {
     if (!showFooter) return null;
-    
+
     return <Footer variant={variant} />;
   }, [showFooter, variant]);
 
   // Memoized Hero Section für bessere Performance
   const heroComponent = useMemo(() => {
     if (!showHero) return null;
-    
+
     return (
       <div className="bg-gradient-to-br from-blue-600 to-purple-700 dark:from-blue-800 dark:to-purple-900">
         <div className={layout.container}>

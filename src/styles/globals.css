@@ -130,3 +130,37 @@
     overflow: hidden;
   }
 }
+
+/* Font Size Support */
+[data-font-size="normal"] {
+  font-size: 100%;
+}
+
+[data-font-size="large"] {
+  font-size: 112.5%;
+}
+
+[data-font-size="xlarge"] {
+  font-size: 125%;
+}
+
+/* High Contrast Support */
+[data-contrast="high"] {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --primary: 240 100% 50%;
+  --border: 0 0% 50%;
+}
+
+[data-contrast="high"].dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 240 100% 70%;
+  --border: 0 0% 80%;
+}
+
+/* Glassmorphismus Enhancements */
+.glass-header {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
