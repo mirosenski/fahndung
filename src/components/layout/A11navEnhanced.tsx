@@ -27,6 +27,7 @@ export default function A11navEnhanced({
 
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Init from localStorage
   useEffect(() => {
@@ -107,34 +108,89 @@ export default function A11navEnhanced({
 
   const toggleOpen = () => setOpen((v) => !v);
 
+  const cancelClose = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleClose = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => setOpen(false), 180);
+  };
+
   return (
     <div
       className="relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => {
+        cancelClose();
+        setIsHovered(true);
+        setOpen(true);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        scheduleClose();
+      }}
     >
-      <button
-        ref={btnRef}
-        type="button"
-        onClick={toggleOpen}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="inline-flex items-center gap-2 rounded-lg border border-input/50 bg-background/60 px-3 py-2 text-sm font-medium text-foreground shadow-sm backdrop-blur-xl transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary/50"
-      >
-        <AccessibilityIcon
-          isActive={isHovered || open}
-          variant={isHovered || open ? "filled" : "outline"}
-          className="h-4 w-4"
-        />
-        {isCompact ? "A11y" : "A11y & Meta"}
-      </button>
+      {headerVariant === "primary" ? (
+        <button
+          ref={btnRef}
+          type="button"
+          onClick={toggleOpen}
+          onMouseEnter={() => {
+            cancelClose();
+            setIsHovered(true);
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            scheduleClose();
+          }}
+          className="group flex h-14 w-14 items-center justify-center rounded-full bg-transparent backdrop-blur-xl transition-all duration-200 hover:bg-background/20 focus:outline-none"
+          aria-label="Barrierefreiheit und Einstellungen"
+          aria-expanded={open}
+          aria-haspopup="true"
+        >
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full group-focus-visible:ring-2 group-focus-visible:ring-primary/50 group-focus-visible:ring-offset-2">
+            <AccessibilityIcon
+              isActive={isHovered || open}
+              variant={isHovered || open ? "filled" : "outline"}
+              className="h-8 w-8 transition-all duration-200"
+            />
+          </span>
+        </button>
+      ) : (
+        <button
+          ref={btnRef}
+          type="button"
+          onClick={toggleOpen}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          className={`
+            flex items-center gap-2 rounded-xl border
+            border-border/50 bg-background/50 px-4
+            py-3 text-sm
+            font-medium backdrop-blur-xl transition-all
+            duration-200 hover:bg-accent/50
+          `}
+        >
+          <AccessibilityIcon
+            isActive={isHovered || open}
+            variant={isHovered || open ? "filled" : "outline"}
+            className="h-5 w-5"
+          />
+          <span>{isCompact ? "A11y" : "A11y & Meta"}</span>
+        </button>
+      )}
 
       {open && (
         <div
           ref={menuRef}
           role="menu"
           aria-label="A11y & Meta Einstellungen"
-          className="absolute right-0 z-50 mt-2 w-80 rounded-xl border border-border/50 bg-popover/95 p-3 text-popover-foreground shadow-xl backdrop-blur-2xl dark:bg-popover/90"
+          className="dropdown-glass absolute right-0 z-50 mt-2 w-80 p-3 text-popover-foreground"
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleClose}
         >
           {/* Schriftgröße */}
           <div className="mb-3">

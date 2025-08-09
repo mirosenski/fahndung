@@ -119,11 +119,9 @@ export default function ModernHeader() {
                     {activeDropdown === section && (
                       <div
                         className={`
-                        animate-in fade-in-0 zoom-in-95 absolute left-0
-                        top-full mt-2 w-80
-                        rounded-xl border border-border/50
-                        bg-popover/95 shadow-xl backdrop-blur-2xl duration-200 dark:bg-popover/90
-                      `}
+                          animate-in fade-in-0 zoom-in-95 dropdown-glass absolute
+                          left-0 top-full mt-2 w-80
+                        `}
                       >
                         <div className="p-2">
                           {navigationData[section].map((item: NavItem) => {
@@ -133,9 +131,7 @@ export default function ModernHeader() {
                                 key={item.href}
                                 href={item.href}
                                 className={`
-                                  flex items-start gap-3 rounded-lg px-3 py-2.5
-                                  transition-colors duration-200
-                                  hover:bg-accent focus:bg-accent focus:outline-none
+                                  dropdown-item flex items-start gap-3
                                   ${item.urgent ? "border border-destructive/20" : ""}
                                 `}
                               >
