@@ -38,9 +38,14 @@ interface MapLocation {
 interface Step4ComponentProps {
   data: Step4Data;
   onChange: (data: Step4Data) => void;
+  showValidation?: boolean;
 }
 
-const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
+const Step4Component: React.FC<Step4ComponentProps> = ({
+  data,
+  onChange,
+  showValidation = false,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<
@@ -242,7 +247,13 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
           </p>
         </div>
 
-        <div className="rounded-lg border border-border dark:border-border">
+        <div
+          className={`rounded-lg border dark:border-border ${
+            showValidation && !data.mainLocation
+              ? "border-red-400"
+              : "border-border"
+          }`}
+        >
           <InteractiveMap
             locations={[
               ...(data.mainLocation ? [data.mainLocation] : []),
@@ -257,6 +268,11 @@ const Step4Component: React.FC<Step4ComponentProps> = ({ data, onChange }) => {
             zoom={data.mainLocation ? 12 : 6}
           />
         </div>
+        {showValidation && !data.mainLocation && (
+          <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+            Hauptstandort ist erforderlich
+          </p>
+        )}
       </div>
 
       {/* Standort-Liste */}

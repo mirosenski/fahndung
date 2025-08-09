@@ -19,6 +19,7 @@ interface MemoryInfo {
  */
 export function PerformanceMonitor() {
   const pathname = usePathname();
+  const safePathname = pathname ?? "";
   const navigationStartRef = useRef<number>(0);
   const lastPathnameRef = useRef<string>("");
 
@@ -29,22 +30,22 @@ export function PerformanceMonitor() {
     const currentTime = performance.now();
 
     // Track Navigation-Zeit
-    if (lastPathnameRef.current && lastPathnameRef.current !== pathname) {
+    if (lastPathnameRef.current && lastPathnameRef.current !== safePathname) {
       const navigationTime = currentTime - navigationStartRef.current;
 
       log("🚀 Navigation Performance:", {
         from: lastPathnameRef.current,
-        to: pathname,
+        to: safePathname,
         time: `${navigationTime.toFixed(2)}ms`,
         timestamp: new Date().toISOString(),
       });
 
       // 🚀 PERFORMANCE-OPTIMIERUNGEN BASIEREND AUF ZEIT
       if (navigationTime > 1000) {
-        warn("⚠️ Langsame Navigation erkannt:", {
-          pathname,
-          time: navigationTime,
-        });
+          warn("⚠️ Langsame Navigation erkannt:", {
+            pathname: safePathname,
+            time: navigationTime,
+          });
 
         // Automatische Optimierungen für langsame Navigationen
         if (navigationTime > 2000) {
@@ -56,8 +57,8 @@ export function PerformanceMonitor() {
 
     // Starte Timer für nächste Navigation
     navigationStartRef.current = currentTime;
-    lastPathnameRef.current = pathname;
-  }, [pathname]);
+    lastPathnameRef.current = safePathname;
+  }, [safePathname]);
 
   // 🚀 AUTOMATISCHE PERFORMANCE-OPTIMIERUNGEN
   useEffect(() => {

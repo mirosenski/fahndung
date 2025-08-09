@@ -14,6 +14,7 @@ import { api } from "~/trpc/react";
  */
 export function OptimizedLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const safePathname = pathname ?? "";
   const { prefetchCommonRoutes } = useNavigationOptimizer();
   const utils = api.useUtils();
 
@@ -24,25 +25,25 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
       prefetchCommonRoutes();
 
       // 🚀 SEITENSPEZIFISCHE OPTIMIERUNGEN
-      if (pathname === "/") {
+      if (safePathname === "/") {
         // Auf Homepage: Prefetch Dashboard und Fahndungen
         utils.post.getInvestigations
           .prefetch({ limit: 20, offset: 0 })
           .catch((error) => warn(error));
-      } else if (pathname === "/fahndungen") {
+      } else if (safePathname === "/fahndungen") {
         // Auf Fahndungen-Seite: Prefetch Detailseiten für erste Ergebnisse
         utils.post.getInvestigations
           .prefetch({ limit: 10, offset: 0 })
           .catch((error) => warn(error));
       } else if (
-        pathname.startsWith("/fahndungen/") &&
-        !pathname.includes("/neu")
+        safePathname.startsWith("/fahndungen/") &&
+        !safePathname.includes("/neu")
       ) {
         // Auf Detailseite: Prefetch verwandte Fahndungen
         utils.post.getInvestigations
           .prefetch({ limit: 5, offset: 0 })
           .catch((error) => warn(error));
-      } else if (pathname === "/dashboard") {
+      } else if (safePathname === "/dashboard") {
         // Auf Dashboard: Prefetch Benutzer-spezifische Daten
         utils.post.getMyInvestigations
           .prefetch({ limit: 10, offset: 0 })
@@ -52,14 +53,14 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
       // Fehler beim Prefetching sind nicht kritisch - nur loggen
       warn("⚠️ Prefetch-Fehler (nicht kritisch):", error);
     }
-  }, [pathname, prefetchCommonRoutes, utils]);
+  }, [safePathname, prefetchCommonRoutes, utils]);
 
   // 🚀 OPTIMIERTE CACHE-INVALIDIERUNG
   useEffect(() => {
     try {
       // Cache für aktuelle Seite warmhalten
-      if (pathname.startsWith("/fahndungen/") && !pathname.includes("/neu")) {
-        const investigationId = pathname.split("/").pop();
+      if (safePathname.startsWith("/fahndungen/") && !safePathname.includes("/neu")) {
+        const investigationId = safePathname.split("/").pop();
         if (investigationId) {
           // Validiere die ID vor dem Prefetching
           const isValidId =
@@ -81,7 +82,7 @@ export function OptimizedLayout({ children }: { children: React.ReactNode }) {
       // Fehler beim Prefetching sind nicht kritisch - nur loggen
       warn("⚠️ Investigation Prefetch-Fehler (nicht kritisch):", error);
     }
-  }, [pathname, utils]);
+  }, [safePathname, utils]);
 
   return <>{children}</>;
 }

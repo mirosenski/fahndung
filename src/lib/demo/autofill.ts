@@ -123,7 +123,11 @@ export function generateDemoTitle(
   let template: string | null = null;
   const P: PresetsShape = presets as unknown as PresetsShape;
   if (catKey === "Vermisst") {
-    template = pickFirst(P.Vermisst?.Standard?.Titel);
+    // Wähle nach Variante, fallback auf Standard
+    const variant = data.step1?.variant ?? "Standard";
+    template =
+      pickFirst(P.Vermisst?.[variant]?.Titel) ??
+      pickFirst(P.Vermisst?.["Standard"]?.Titel);
   } else if (catKey === "Straftaeter") {
     const offense = overrides?.offenseType ?? "Diebstahl";
     template = pickFirst(P.Straftaeter?.[offense]?.Titel);
@@ -132,7 +136,10 @@ export function generateDemoTitle(
       template = `${offense} in {city} – Zeugen gesucht`;
     }
   } else if (catKey === "UnbekannteTote") {
-    template = pickFirst(P.UnbekannteTote?.Standard?.Titel);
+    const variant = data.step1?.variant ?? "Standard";
+    template =
+      pickFirst(P.UnbekannteTote?.[variant]?.Titel) ??
+      pickFirst(P.UnbekannteTote?.["Standard"]?.Titel);
   } else if (catKey === "Sachen") {
     template = pickFirst(P.Sachen?.Fahrrad?.Titel);
   }
@@ -150,7 +157,10 @@ export function generateDemoShortDescription(
   const P: PresetsShape = presets as unknown as PresetsShape;
   if (catKey === "Vermisst") {
     // Für Kurzbeschreibung nutzen wir die erste Zeile der Beschreibung
-    template = pickFirst(P.Vermisst?.Standard?.Beschreibung);
+    const variant = data.step1?.variant ?? "Standard";
+    template =
+      pickFirst(P.Vermisst?.[variant]?.Beschreibung) ??
+      pickFirst(P.Vermisst?.["Standard"]?.Beschreibung);
   } else if (catKey === "Straftaeter") {
     const offense = overrides?.offenseType ?? "Diebstahl";
     template = pickFirst(P.Straftaeter?.[offense]?.Beschreibung);
@@ -158,7 +168,10 @@ export function generateDemoShortDescription(
       template = `Am {date} entwendete der unbekannte Täter in {city} Gegenstände. Kategorie: ${offense}.`;
     }
   } else if (catKey === "UnbekannteTote") {
-    template = pickFirst(P.UnbekannteTote?.Standard?.Beschreibung);
+    const variant = data.step1?.variant ?? "Standard";
+    template =
+      pickFirst(P.UnbekannteTote?.[variant]?.Beschreibung) ??
+      pickFirst(P.UnbekannteTote?.["Standard"]?.Beschreibung);
   } else if (catKey === "Sachen") {
     template = pickFirst(P.Sachen?.Fahrrad?.Beschreibung);
   }

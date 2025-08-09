@@ -102,6 +102,22 @@
         "{personName} wurde zuletzt am {date} um {time} in {city} gesehen. {pronoun} ist {height} cm groß und trug zuletzt {clothing}."
       ],
       "Gesundheit": ["{personName} benötigt regelmäßig Medikamente."]
+    },
+    "Kind": {
+      "Titel": [
+        "Vermisstes Kind: {personName} ({age}) aus {city} – Wer hat {pronoun} gesehen?"
+      ],
+      "Beschreibung": [
+        "Das Kind {personName} wurde zuletzt am {date} gegen {time} in {city} gesehen. Bekleidung: {clothing}. {pronoun} ist {height} cm groß."
+      ]
+    },
+    "Senior": {
+      "Titel": [
+        "Vermisste Seniorin/Senior: {personName} ({age}) – Bereich {city}"
+      ],
+      "Beschreibung": [
+        "{personName} (geschätztes Alter {age}) wird seit {date} vermisst. Zuletzt gesehen in {city}. Hinweise bitte an {dienststelle}."
+      ]
     }
   },
   "UnbekannteTote": {
@@ -111,6 +127,18 @@
         "Die Person wurde am {date} in {city}, Bereich {locationDetail}, aufgefunden. Geschätztes Alter {age}, {height} cm, {build} Statur."
       ],
       "IdentMerkmale": ["Tätowierung am rechten Unterarm (Motiv: {tattoo})."]
+    },
+    "Wasserfund": {
+      "Titel": ["Unbekannte tote Person – Wasserfund in {city}"],
+      "Beschreibung": [
+        "Am {date} wurde in {city} (Bereich {locationDetail}) eine unbekannte tote Person im Wasser aufgefunden. Geschätztes Alter {age}, Größe {height} cm."
+      ]
+    },
+    "Waldfund": {
+      "Titel": ["Unbekannte tote Person – Waldfund nahe {city}"],
+      "Beschreibung": [
+        "In einem Waldstück bei {city} wurde am {date} eine unbekannte tote Person entdeckt. Auffällige Merkmale: {tattoo}."
+      ]
     }
   },
   "Sachen": {
@@ -124,6 +152,3 @@
     }
   }
 }
-
-
-

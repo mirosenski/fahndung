@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { MapPin, Eye, Clock, Edit3 } from "lucide-react";
+import { MapPin, Eye, Edit3 } from "lucide-react";
 import { type Fahndungskarte } from "~/types/fahndungskarte";
 import { CaseNumberBadge } from "~/components/ui/CaseNumberDisplay";
 import { getFahndungUrl } from "~/lib/seo";
@@ -73,38 +73,30 @@ export default function FahndungskarteList({
     );
   };
 
-  // Category Badge
-  const getCategoryBadge = (category: string) => {
-    const config = {
-      WANTED_PERSON: {
-        label: "STRAFTÄTER",
-        color: "bg-red-50 text-red-800 dark:bg-red-900 dark:text-red-200",
-      },
-      MISSING_PERSON: {
-        label: "VERMISSTE",
-        color: "bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      },
-      UNKNOWN_DEAD: {
-        label: "UNBEKANNTE TOTE",
-        color: "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
-      },
-      STOLEN_GOODS: {
-        label: "SACHEN",
-        color:
-          "bg-orange-50 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-      },
-    };
+  // Kompakter Kategorie/Variante-Text statt Badge
+  const getCategoryVariantText = (
+    category: string,
+    variant?: string,
+  ): string => {
+    const labels = {
+      WANTED_PERSON: "Straftäter",
+      MISSING_PERSON: "Vermisste",
+      UNKNOWN_DEAD: "Unbekannte Tote",
+      STOLEN_GOODS: "Sachen",
+    } as const;
+    const catLabel = labels[(category as keyof typeof labels)] ?? labels.MISSING_PERSON;
+    if (variant && variant.trim().length > 0) {
+      return `${catLabel} · ${variant}`;
+    }
+    return catLabel;
+  };
 
-    const categoryConfig =
-      config[category as keyof typeof config] || config.MISSING_PERSON;
-
-    return (
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryConfig.color}`}
-      >
-        {categoryConfig.label}
-      </span>
-    );
+  const getVariantFromMetadata = (metadata: unknown): string | undefined => {
+    if (metadata && typeof metadata === "object" && "variant" in metadata) {
+      const v = (metadata as { variant?: unknown }).variant;
+      return typeof v === "string" ? v : undefined;
+    }
+    return undefined;
   };
 
   return (
@@ -145,9 +137,15 @@ export default function FahndungskarteList({
                     <h3 className="truncate text-lg font-semibold text-muted-foreground dark:text-white">
                       {investigation.title}
                     </h3>
-                    <div className="mt-1 flex items-center gap-2">
+                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                       <CaseNumberBadge caseNumber={investigation.case_number} />
-                      {getCategoryBadge(investigation.category)}
+                      <span>
+                        {getCategoryVariantText(
+                          investigation.category,
+                          // Variante steckt in metadata? fallback leer
+                          getVariantFromMetadata(investigation.metadata),
+                        )}
+                      </span>
                     </div>
                   </div>
 
@@ -195,28 +193,27 @@ export default function FahndungskarteList({
                 )}
               </div>
 
-              {/* Footer mit Metadaten */}
+              {/* Footer mit kompakten Metadaten */}
               <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground dark:text-muted-foreground">
-                <div className="flex items-center gap-4">
-                  {/* Standort */}
+                <div className="flex items-center gap-2">
+                  <span>{investigation.station || "Dienststelle"}</span>
+                  <span>|</span>
+                  <span>
+                    {new Date(
+                      investigation.date || investigation.created_at,
+                    ).toLocaleDateString("de-DE")}
+                  </span>
                   {investigation.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span className="max-w-32 truncate">
-                        {investigation.location.split(",")[0]}
-                      </span>
-                    </div>
+                    <>
+                      <span>|</span>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span className="max-w-32 truncate">
+                          {investigation.location.split(",")[0]}
+                        </span>
+                      </div>
+                    </>
                   )}
-
-                  {/* Erstellungsdatum */}
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>
-                      {new Date(investigation.created_at).toLocaleDateString(
-                        "de-DE",
-                      )}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Action Buttons */}

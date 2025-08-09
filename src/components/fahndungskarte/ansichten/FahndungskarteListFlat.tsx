@@ -73,38 +73,30 @@ export default function FahndungskarteListFlat({
     );
   };
 
-  // Category Badge
-  const getCategoryBadge = (category: string) => {
-    const config = {
-      WANTED_PERSON: {
-        label: "STRAFTÄTER",
-        color: "bg-red-50 text-red-800 dark:bg-red-900 dark:text-red-200",
-      },
-      MISSING_PERSON: {
-        label: "VERMISSTE",
-        color: "bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      },
-      UNKNOWN_DEAD: {
-        label: "UNBEKANNTE TOTE",
-        color: "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground",
-      },
-      STOLEN_GOODS: {
-        label: "SACHEN",
-        color:
-          "bg-orange-50 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-      },
-    };
+  // Kompakter Kategorie/Variante-Text statt Badge
+  const getCategoryVariantText = (
+    category: string,
+    variant?: string,
+  ): string => {
+    const labels = {
+      WANTED_PERSON: "Straftäter",
+      MISSING_PERSON: "Vermisste",
+      UNKNOWN_DEAD: "Unbekannte Tote",
+      STOLEN_GOODS: "Sachen",
+    } as const;
+    const catLabel = labels[(category as keyof typeof labels)] ?? labels.MISSING_PERSON;
+    if (variant && variant.trim().length > 0) {
+      return `${catLabel} · ${variant}`;
+    }
+    return catLabel;
+  };
 
-    const categoryConfig =
-      config[category as keyof typeof config] || config.MISSING_PERSON;
-
-    return (
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryConfig.color}`}
-      >
-        {categoryConfig.label}
-      </span>
-    );
+  const getVariantFromMetadata = (metadata: unknown): string | undefined => {
+    if (metadata && typeof metadata === "object" && "variant" in metadata) {
+      const v = (metadata as { variant?: unknown }).variant;
+      return typeof v === "string" ? v : undefined;
+    }
+    return undefined;
   };
 
   return (
@@ -146,7 +138,12 @@ export default function FahndungskarteListFlat({
                     <h3 className="truncate text-sm font-semibold text-muted-foreground dark:text-white lg:text-xs">
                       {investigation.title}
                     </h3>
-                    {getCategoryBadge(investigation.category)}
+                    <span className="text-xs text-muted-foreground">
+                      {getCategoryVariantText(
+                        investigation.category,
+                        getVariantFromMetadata(investigation.metadata),
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CaseNumberBadge caseNumber={investigation.case_number} />
@@ -191,16 +188,28 @@ export default function FahndungskarteListFlat({
               </div>
 
               {/* Rechte Seite - Metadaten und Actions */}
-              <div className="ml-3 flex items-center gap-2">
-                {/* Erstellungsdatum - nur auf größeren Bildschirmen */}
-                <div className="hidden items-center gap-1 text-xs text-muted-foreground dark:text-muted-foreground sm:flex">
+              <div className="ml-3 flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
+                {/* Kompakte Metadaten: Dienststelle | Datum | (optional Standort) */}
+                <span className="hidden sm:inline">
+                  {investigation.station || "Dienststelle"}
+                </span>
+                <span className="hidden sm:inline">|</span>
+                <div className="hidden items-center gap-1 sm:flex">
                   <Clock className="h-3 w-3" />
                   <span>
-                    {new Date(investigation.created_at).toLocaleDateString(
-                      "de-DE",
-                    )}
+                    {new Date(
+                      investigation.date || investigation.created_at,
+                    ).toLocaleDateString("de-DE")}
                   </span>
                 </div>
+                {investigation.location && (
+                  <div className="hidden items-center gap-1 md:flex">
+                    <MapPin className="h-3 w-3" />
+                    <span className="max-w-24 truncate">
+                      {investigation.location.split(",")[0]}
+                    </span>
+                  </div>
+                )}
 
                 {/* Quick Edit Button - nur für Editoren */}
                 {userPermissions?.canEdit && (

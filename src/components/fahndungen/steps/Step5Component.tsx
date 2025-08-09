@@ -16,9 +16,14 @@ import type { Step5Data } from "../types/WizardTypes";
 interface Step5ComponentProps {
   data: Step5Data;
   onChange: (data: Step5Data) => void;
+  showValidation?: boolean;
 }
 
-const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
+const Step5Component: React.FC<Step5ComponentProps> = ({
+  data,
+  onChange,
+  showValidation = false,
+}) => {
   const [keywordInput, setKeywordInput] = useState("");
 
   // Lokale States für alle Kontaktfelder
@@ -143,7 +148,11 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   value={localContactPerson}
                   onChange={(e) => setLocalContactPerson(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+                  className={`w-full rounded-lg border py-2 pl-10 pr-3 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                    showValidation && (localContactPerson?.length ?? 0) < 3
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                      : "border-border focus:border-blue-500 focus:ring-blue-500"
+                  }`}
                   placeholder="z.B. Kriminalhauptkommissar Müller"
                   required
                 />
@@ -163,6 +172,11 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   <Wand2 className="h-4 w-4" />
                 </button>
               </div>
+              {showValidation && (localContactPerson?.length ?? 0) < 3 && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  Name muss mindestens 3 Zeichen haben
+                </p>
+              )}
             </div>
 
             <div>
@@ -180,10 +194,21 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   value={localContactPhone}
                   onChange={(e) => setLocalContactPhone(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+                  className={`w-full rounded-lg border py-2 pl-10 pr-3 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                    showValidation &&
+                    (localContactPhone?.replace(/\D/g, "").length ?? 0) < 7
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                      : "border-border focus:border-blue-500 focus:ring-blue-500"
+                  }`}
                   placeholder="+49 123 456789"
                   required
                 />
+                {showValidation &&
+                  (localContactPhone?.replace(/\D/g, "").length ?? 0) < 7 && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                      Telefonnummer muss mindestens 7 Ziffern enthalten
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -201,9 +226,22 @@ const Step5Component: React.FC<Step5ComponentProps> = ({ data, onChange }) => {
                   value={localContactEmail}
                   onChange={(e) => setLocalContactEmail(e.target.value)}
                   onBlur={commitChanges}
-                  className="w-full rounded-lg border border-border py-2 pl-10 pr-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+                  className={`w-full rounded-lg border py-2 pl-10 pr-3 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                    showValidation &&
+                    localContactEmail &&
+                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localContactEmail)
+                      ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                      : "border-border focus:border-blue-500 focus:ring-blue-500"
+                  }`}
                   placeholder="kontakt@polizei.de"
                 />
+                {showValidation &&
+                  localContactEmail &&
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localContactEmail) && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                      Ungültige E-Mail-Adresse
+                    </p>
+                  )}
               </div>
             </div>
 

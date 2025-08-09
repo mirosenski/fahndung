@@ -18,7 +18,12 @@ export const step1Schema = z.object({
     "UNKNOWN_DEAD",
     "STOLEN_GOODS",
   ]),
-  caseNumber: z.string().min(1, "Aktenzeichen erforderlich"),
+  // Pflichtfelder laut Anforderung: 1-5 (ohne Aktenzeichen)
+  department: z.string().min(1, "Dienststelle ist erforderlich"),
+  caseDate: z.string().min(1, "Fahndungsdatum ist erforderlich"),
+  variant: z.string().min(1, "Variante ist erforderlich"),
+  // Aktenzeichen (6) ist ausdrücklich NICHT pflicht
+  caseNumber: z.string().optional(),
 });
 
 // Step 2 Schema

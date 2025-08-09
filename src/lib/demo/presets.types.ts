@@ -5,8 +5,8 @@ export type TextTemplate = {
 };
 
 export type PresetsShape = {
-  Vermisst?: { Standard?: TextTemplate };
+  Vermisst?: Record<string, TextTemplate>;
   Straftaeter?: Record<string, TextTemplate>;
-  UnbekannteTote?: { Standard?: TextTemplate };
+  UnbekannteTote?: Record<string, TextTemplate>;
   Sachen?: { Fahrrad?: TextTemplate };
 };

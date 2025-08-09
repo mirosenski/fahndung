@@ -13,12 +13,14 @@ interface Step2ComponentProps {
   data: Step2Data;
   onChange: (data: Step2Data) => void;
   wizard?: Partial<WizardData>;
+  showValidation?: boolean;
 }
 
 const Step2Component: React.FC<Step2ComponentProps> = ({
   data,
   onChange,
   wizard,
+  showValidation = false,
 }) => {
   const [tagInput, setTagInput] = useState("");
 
@@ -121,7 +123,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({
               onChange={(e) => setLocalShortDescription(e.target.value)}
               onBlur={commitChanges}
               rows={2}
-              className="w-full rounded-lg border border-border px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+              className={`w-full rounded-lg border px-3 py-2 pr-10 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                showValidation && (localShortDescription?.length ?? 0) < 20
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                  : "border-border focus:border-blue-500 focus:ring-blue-500"
+              }`}
               placeholder="Kurze Zusammenfassung für die Kartenansicht..."
               required
             />
@@ -141,6 +147,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({
               <Wand2 className="h-4 w-4" />
             </button>
           </div>
+          {showValidation && (localShortDescription?.length ?? 0) < 20 && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Kurzbeschreibung muss mindestens 20 Zeichen haben
+            </p>
+          )}
         </div>
 
         <div>
@@ -156,7 +167,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({
               onChange={(e) => setLocalDescription(e.target.value)}
               onBlur={commitChanges}
               rows={6}
-              className="w-full rounded-lg border border-border px-3 py-2 pr-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-border dark:bg-muted dark:text-white"
+              className={`w-full rounded-lg border px-3 py-2 pr-10 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+                showValidation && (localDescription?.length ?? 0) < 50
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                  : "border-border focus:border-blue-500 focus:ring-blue-500"
+              }`}
               placeholder="Ausführliche Beschreibung der Fahndung..."
               required
             />
@@ -176,6 +191,11 @@ const Step2Component: React.FC<Step2ComponentProps> = ({
               <Wand2 className="h-4 w-4" />
             </button>
           </div>
+          {showValidation && (localDescription?.length ?? 0) < 50 && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Beschreibung muss mindestens 50 Zeichen haben
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

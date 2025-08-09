@@ -29,9 +29,14 @@ const supabase = createClient(
 interface Step3ComponentProps {
   data: Step3Data;
   onChange: (data: Step3Data) => void;
+  showValidation?: boolean;
 }
 
-const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
+const Step3Component: React.FC<Step3ComponentProps> = ({
+  data,
+  onChange,
+  showValidation = false,
+}) => {
   const [dragZone, setDragZone] = useState<
     "main" | "additional" | "documents" | null
   >(null);
@@ -415,7 +420,7 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
             className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
               dragZone === "main"
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900"
-                : "border-border hover:border-border dark:border-border"
+                : `${showValidation && !data.mainImage ? "border-red-400" : "border-border"} hover:border-border dark:border-border`
             }`}
             onDragEnter={(e) => handleDrag(e, "main")}
             onDragOver={(e) => handleDrag(e, "main")}
@@ -463,6 +468,11 @@ const Step3Component: React.FC<Step3ComponentProps> = ({ data, onChange }) => {
                   <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                     PNG, JPG, GIF bis 20MB
                   </p>
+                  {showValidation && !data.mainImage && (
+                    <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+                      Hauptbild ist erforderlich
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={() => imageInputRef.current?.click()}

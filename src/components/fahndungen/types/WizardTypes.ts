@@ -8,11 +8,12 @@ export interface Step1Data {
     | "UNKNOWN_DEAD"
     | "STOLEN_GOODS";
   caseNumber: string;
-  // Optionale Steuerfelder für Demo/Varianten
-  variant?: string; // z. B. Diebstahl/Raub bei Straftäter, Fahrzeug/Fahrrad bei Sachen
-  regionCity?: string; // Freie Stadt/Region, falls Karte (Step 4) noch nicht gesetzt
-  department?: string; // freie Eingabe optional
-  caseDate?: string; // ISO Datum (yyyy-mm-dd)
+  // Pflichtfelder laut Anforderung: 1-5 (ohne Aktenzeichen)
+  variant: string; // z. B. Diebstahl/Raub bei Straftäter, Fahrzeug/Fahrrad bei Sachen
+  department: string; // Dienststelle
+  caseDate: string; // ISO Datum (yyyy-mm-dd)
+  // Optionales Zusatzfeld für Übergangsphasen bis Step 4 gesetzt ist
+  regionCity?: string;
 }
 
 export interface Step2Data {

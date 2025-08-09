@@ -12,22 +12,22 @@ interface Step1ComponentProps {
   data: Step1Data;
   onChange: (data: Step1Data) => void;
   wizard?: Partial<WizardData>;
+  showValidation?: boolean;
 }
 
 const Step1Component: React.FC<Step1ComponentProps> = ({
   data,
   onChange,
   wizard,
+  showValidation = false,
 }) => {
   // Lokaler State für den Titel
   const [localTitle, setLocalTitle] = useState(data.title);
   const [titleTouched, setTitleTouched] = useState(false);
   const [categoryTouched, setCategoryTouched] = useState(false);
-  const [localVariant, setLocalVariant] = useState(data.variant ?? "");
-  const [localDepartment, setLocalDepartment] = useState(data.department ?? "");
-  const [localCaseDate, setLocalCaseDate] = useState<string>(
-    data.caseDate ?? "",
-  );
+  const [localVariant, setLocalVariant] = useState(data.variant);
+  const [localDepartment, setLocalDepartment] = useState(data.department);
+  const [localCaseDate, setLocalCaseDate] = useState<string>(data.caseDate);
 
   // Debounced version of the title to reduce frequent state updates. When the
   // user stops typing for the specified delay, the debounced value changes
@@ -40,17 +40,17 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
   }, [data.title]);
 
   useEffect(() => {
-    setLocalVariant(data.variant ?? "");
+    setLocalVariant(data.variant);
   }, [data.variant]);
 
   // Stadt/Region wird nicht mehr in Step 1 geführt (liegt in Step 4)
 
   useEffect(() => {
-    setLocalDepartment(data.department ?? "");
+    setLocalDepartment(data.department);
   }, [data.department]);
 
   useEffect(() => {
-    setLocalCaseDate(data.caseDate ?? "");
+    setLocalCaseDate(data.caseDate);
   }, [data.caseDate]);
 
   // Propagate debounced title changes to the parent wizard. Only update
@@ -77,8 +77,13 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
   };
 
   const isTitleInvalid =
-    titleTouched && (localTitle.length < 5 || localTitle.length > 100);
-  const isCategoryInvalid = categoryTouched && !data.category;
+    (showValidation || titleTouched) &&
+    (localTitle.length < 5 || localTitle.length > 100);
+  const isCategoryInvalid =
+    (showValidation || categoryTouched) && !data.category;
+  const isDepartmentInvalid = showValidation && !localDepartment;
+  const isCaseDateInvalid = showValidation && !localCaseDate;
+  const isVariantInvalid = showValidation && !localVariant;
 
   return (
     <div className="space-y-6">
@@ -129,6 +134,11 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
               </option>
             ))}
           </select>
+          {isCategoryInvalid && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Bitte eine Kategorie auswählen
+            </p>
+          )}
         </div>
 
         {/* 2. Dienststelle */}
@@ -142,7 +152,11 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
               setLocalDepartment(e.target.value);
               onChange({ ...data, department: e.target.value });
             }}
-            className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white"
+            className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+              isDepartmentInvalid
+                ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                : "border-border focus:border-blue-500 focus:ring-blue-500"
+            }`}
           >
             <option value="">Bitte Dienststelle auswählen …</option>
             {[
@@ -183,11 +197,20 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
               setLocalCaseDate(e.target.value);
               onChange({ ...data, caseDate: e.target.value });
             }}
-            className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white"
+            className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+              isCaseDateInvalid
+                ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                : "border-border focus:border-blue-500 focus:ring-blue-500"
+            }`}
           />
           <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
             Vergangenheit und Zukunft erlaubt.
           </p>
+          {isCaseDateInvalid && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Fahndungsdatum ist erforderlich
+            </p>
+          )}
         </div>
 
         {/* 4. Variante (je nach Kategorie) */}
@@ -201,7 +224,11 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
               setLocalVariant(e.target.value);
               onChange({ ...data, variant: e.target.value });
             }}
-            className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white"
+            className={`w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-1 dark:border-border dark:bg-muted dark:text-white ${
+              isVariantInvalid
+                ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                : "border-border focus:border-blue-500 focus:ring-blue-500"
+            }`}
           >
             <option value="">Keine Auswahl</option>
             {data.category === "WANTED_PERSON" && (
@@ -222,15 +249,28 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
               </>
             )}
             {data.category === "MISSING_PERSON" && (
-              <option value="Standard">Standard</option>
+              <>
+                <option value="Standard">Standard</option>
+                <option value="Kind">Kind</option>
+                <option value="Senior">Senior</option>
+              </>
             )}
             {data.category === "UNKNOWN_DEAD" && (
-              <option value="Standard">Standard</option>
+              <>
+                <option value="Standard">Standard</option>
+                <option value="Wasserfund">Wasserfund</option>
+                <option value="Waldfund">Waldfund</option>
+              </>
             )}
           </select>
           <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
             Beeinflusst die Textbausteine für den Zauberstab.
           </p>
+          {isVariantInvalid && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Variante ist erforderlich
+            </p>
+          )}
         </div>
 
         {/* 5. Titel der Fahndung */}
@@ -287,6 +327,11 @@ const Step1Component: React.FC<Step1ComponentProps> = ({
               <Wand2 className="h-4 w-4" />
             </button>
           </div>
+          {isTitleInvalid && (
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+              Titel muss 5–100 Zeichen lang sein
+            </p>
+          )}
         </div>
 
         {/* 6. Aktenzeichen (nur Anzeige, automatisch generiert) */}

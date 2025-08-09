@@ -88,6 +88,23 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
       : CATEGORY_CONFIG.MISSING_PERSON;
   }, [safeData?.step1?.category]);
 
+  // Kompakter Kategoriename für Frontseite
+  const categoryCompactLabel = useMemo(() => {
+    const cat = safeData?.step1?.category;
+    switch (cat) {
+      case "UNKNOWN_DEAD":
+        return "TOTE";
+      case "WANTED_PERSON":
+        return "STRAFTÄTER";
+      case "MISSING_PERSON":
+        return "VERMISSTE";
+      case "STOLEN_GOODS":
+        return "SACHEN";
+      default:
+        return category.label;
+    }
+  }, [safeData?.step1?.category, category.label]);
+
   const priority = useMemo(() => {
     return safeData?.step2?.priority
       ? PRIORITY_CONFIG[safeData.step2.priority]
@@ -347,7 +364,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground dark:text-muted-foreground">
+                <div className="truncate text-xs text-muted-foreground dark:text-muted-foreground">
                   {safeData.step1.department ??
                     safeData.step5.department ??
                     "Dienststelle"}
@@ -355,20 +372,15 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
                   {safeData.step1.caseDate
                     ? new Date(safeData.step1.caseDate).toLocaleDateString(
                         "de-DE",
-                        { day: "2-digit", month: "short", year: "numeric" },
+                        { day: "2-digit", month: "2-digit", year: "2-digit" },
                       )
                     : "Datum unbekannt"}
                   {" | "}
-                  {safeData.step1?.variant
-                    ? `Variante: ${safeData.step1.variant}`
-                    : "Variante: -"}
-                </div>
-                <div
-                  className="rounded border border-border bg-white px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground"
-                  role="status"
-                  aria-label={`Kategorie: ${category.label}`}
-                >
-                  {category.label}
+                  {categoryCompactLabel}
+                  {safeData.step1?.variant &&
+                  safeData.step1.variant.trim().length > 0
+                    ? ` · ${safeData.step1.variant}`
+                    : ""}
                 </div>
               </div>
 

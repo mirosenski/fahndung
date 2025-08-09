@@ -79,8 +79,10 @@ const FahndungWizardContainer = ({
     step1: initialData?.step1 ?? {
       title: "",
       category: "",
-      caseNumber: "", // Zunächst leer lassen!
+      caseNumber: "", // Aktenzeichen ist nicht pflicht
       variant: "",
+      department: "",
+      caseDate: "",
       regionCity: "",
     },
     step2: initialData?.step2 ?? {
@@ -218,18 +220,17 @@ const FahndungWizardContainer = ({
   const BottomNavigation = () => (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white dark:border-border dark:bg-muted">
       <div className="flex items-center justify-between p-4">
-        <button
-          onClick={handlePrevious}
-          disabled={currentStep === 1}
-          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
-            currentStep === 1
-              ? "cursor-not-allowed bg-muted text-muted-foreground"
-              : "bg-muted text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground"
-          }`}
-        >
-          <ArrowLeft className="h-5 w-5" />
-          {!isMobile && <span className="ml-2">Zurück</span>}
-        </button>
+        {currentStep > 1 ? (
+          <button
+            onClick={handlePrevious}
+            className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-muted px-4 py-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground`}
+          >
+            <ArrowLeft className="h-5 w-5" />
+            {!isMobile && <span className="ml-2">Zurück</span>}
+          </button>
+        ) : (
+          <div />
+        )}
 
         <div className="mx-4 flex-1">
           <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-muted">
@@ -245,12 +246,7 @@ const FahndungWizardContainer = ({
 
         <button
           onClick={handleNext}
-          disabled={currentStep === 1 ? !canProceedToNextStep() : false}
-          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg px-4 py-2 ${
-            currentStep === 1 && !canProceedToNextStep()
-              ? "cursor-not-allowed bg-muted text-muted-foreground"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
+          className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700`}
         >
           {!isMobile && <span className="mr-2">Weiter</span>}
           <ArrowRight className="h-5 w-5" />
@@ -442,6 +438,7 @@ const FahndungWizardContainer = ({
               data={wizardData.step1}
               onChange={(data) => updateStepData("step1", data)}
               wizard={wizardData}
+              showValidation={triedNext}
             />
           )
         );
@@ -452,6 +449,7 @@ const FahndungWizardContainer = ({
               data={wizardData.step2}
               onChange={(data) => updateStepData("step2", data)}
               wizard={wizardData}
+              showValidation={triedNext}
             />
           )
         );
@@ -461,6 +459,7 @@ const FahndungWizardContainer = ({
             <Step3Component
               data={wizardData.step3}
               onChange={(data) => updateStepData("step3", data)}
+              showValidation={triedNext}
             />
           )
         );
@@ -470,6 +469,7 @@ const FahndungWizardContainer = ({
             <Step4Component
               data={wizardData.step4}
               onChange={(data) => updateStepData("step4", data)}
+              showValidation={triedNext}
             />
           )
         );
@@ -479,6 +479,7 @@ const FahndungWizardContainer = ({
             <Step5Component
               data={wizardData.step5}
               onChange={(data) => updateStepData("step5", data)}
+              showValidation={triedNext}
             />
           )
         );
@@ -609,29 +610,21 @@ const FahndungWizardContainer = ({
                 {/* Desktop Navigation */}
                 {currentStep < 6 && (
                   <div className="mt-8 flex justify-between border-t border-border pt-6 dark:border-border">
-                    <button
-                      onClick={handlePrevious}
-                      disabled={currentStep === 1}
-                      className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
-                        currentStep === 1
-                          ? "cursor-not-allowed bg-muted text-muted-foreground dark:bg-muted"
-                          : "bg-muted text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
-                      }`}
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Zurück
-                    </button>
+                    {currentStep > 1 ? (
+                      <button
+                        onClick={handlePrevious}
+                        className={`flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-muted-foreground hover:bg-muted dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted`}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Zurück
+                      </button>
+                    ) : (
+                      <div />
+                    )}
 
                     <button
                       onClick={handleNext}
-                      disabled={
-                        currentStep === 1 ? !canProceedToNextStep() : false
-                      }
-                      className={`flex items-center gap-2 rounded-lg px-6 py-2 text-white ${
-                        currentStep === 1 && !canProceedToNextStep()
-                          ? "cursor-not-allowed bg-muted text-muted-foreground"
-                          : "bg-blue-600 hover:bg-blue-700"
-                      }`}
+                      className={`flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700`}
                     >
                       Weiter
                       <ArrowRight className="h-4 w-4" />
