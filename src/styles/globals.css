@@ -161,8 +161,28 @@
 
 /* Glassmorphismus Enhancements */
 .glass-header {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Hintergrund an das Theme angepasst, ähnlich der Suchleiste */
+  background-color: hsl(
+    var(--background) / 0.5
+  ) !important; /* wie bg-background/50 */
+  backdrop-filter: blur(20px) saturate(160%) !important; /* wie backdrop-blur-xl + leichte Sättigung */
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border: 1px solid hsl(var(--border) / 0.4) !important; /* wie border-input/50 */
+  border-radius: 12px !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+}
+
+.dark .glass-header {
+  /* etwas weniger Deckkraft im Dark Mode wie die Suchleiste */
+  background-color: hsl(
+    var(--background) / 0.3
+  ) !important; /* wie dark:bg-background/30 */
+  border-color: hsl(var(--border) / 0.3) !important;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
 }
 
 /* Globale Dropdown-Standards */

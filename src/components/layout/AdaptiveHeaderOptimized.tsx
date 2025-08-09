@@ -262,9 +262,8 @@ const AdaptiveDesktopHeader = ({
       >
         <div
           className={`
-            border border-border bg-muted shadow-sm
+            glass-header shadow-sm
             transition-all duration-500 ease-out hover:shadow-sm
-            dark:border-border dark:bg-muted
             ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl rounded-t-2xl"}
           `}
           style={{
@@ -345,7 +344,7 @@ const ResponsiveMobileHeader = ({
 
   return (
     <div
-      className="sticky top-0 z-50 w-full rounded-lg border-b border-border bg-muted shadow-sm transition-all duration-300 hover:shadow-sm dark:border-border dark:bg-muted lg:hidden"
+      className="sticky top-0 z-50 w-full transition-all duration-300 hover:shadow-sm lg:hidden"
       style={{ zIndex: 100 }}
     >
       {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
@@ -403,7 +402,7 @@ const ResponsiveMobileHeader = ({
       )}
 
       {/* Main Mobile Header */}
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="glass-header flex items-center justify-between px-4 py-3">
         <Logo className="text-foreground" showLink={true} />
 
         <div className="flex items-center gap-2">
