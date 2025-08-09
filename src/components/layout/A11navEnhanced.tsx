@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { Sun, Moon, Monitor, Type, Contrast, Layout } from "lucide-react";
 import { AccessibilityIcon } from "../ui/AccessibilityIcon";
 import { useTheme } from "next-themes";
 
@@ -188,17 +187,75 @@ export default function A11navEnhanced({
           ref={menuRef}
           role="menu"
           aria-label="A11y & Meta Einstellungen"
-          className="dropdown-glass absolute right-0 z-50 mt-2 w-80 p-3 text-popover-foreground"
+          className="dropdown-glass absolute right-0 z-50 mt-2 w-64 p-2 text-popover-foreground"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          {/* Schriftgröße */}
-          <div className="mb-3">
-            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <Type className="h-4 w-4" />
-              Schriftgröße
+          {/* 1) Barrierefreiheit Links */}
+          <div className="mb-4 space-y-2">
+            <a
+              href="/leichte-sprache"
+              className="block rounded-md border border-input/50 bg-background/50 px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+            >
+              Leichte Sprache
+            </a>
+            <a
+              href="/gebaerdensprache"
+              className="block rounded-md border border-input/50 bg-background/50 px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+            >
+              Gebärdensprache
+            </a>
+          </div>
+
+          {/* 2) Theme-Einstellungen */}
+          <div className="mb-4">
+            <label className="mb-2 block text-xs font-medium">Theme</label>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => setThemeState("light")}
+                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                  theme === "light"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                    : "hover:bg-accent"
+                }`}
+                aria-pressed={theme === "light"}
+              >
+                Hell
+              </button>
+              <button
+                type="button"
+                onClick={() => setThemeState("dark")}
+                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                  theme === "dark"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                    : "hover:bg-accent"
+                }`}
+                aria-pressed={theme === "dark"}
+              >
+                Dunkel
+              </button>
+              <button
+                type="button"
+                onClick={() => setThemeState("system")}
+                className={`rounded-md px-2 py-1 text-sm transition-colors ${
+                  theme === "system"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                    : "hover:bg-accent"
+                }`}
+                aria-pressed={theme === "system"}
+              >
+                System
+              </button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+          </div>
+
+          {/* 3) Text-Einstellungen */}
+          <div className="mb-4">
+            <label className="mb-2 block text-xs font-medium">
+              Schriftgröße
+            </label>
+            <div className="flex gap-1">
               {(
                 [
                   { key: "normal", label: "Normal" },
@@ -210,7 +267,7 @@ export default function A11navEnhanced({
                   key={opt.key}
                   type="button"
                   onClick={() => setFontSize(opt.key)}
-                  className={`rounded-lg px-2 py-1.5 text-sm transition-colors ${
+                  className={`rounded-md px-2 py-1 text-sm transition-colors ${
                     fontSize === opt.key
                       ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                       : "hover:bg-accent"
@@ -223,63 +280,13 @@ export default function A11navEnhanced({
             </div>
           </div>
 
-          {/* Theme */}
-          <div className="mb-3">
-            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <Sun className="h-4 w-4" />
-              Theme
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setThemeState("light")}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors ${
-                  theme === "light"
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                    : "hover:bg-accent"
-                }`}
-                aria-pressed={theme === "light"}
-              >
-                <Sun className="h-4 w-4" /> Hell
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeState("dark")}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors ${
-                  theme === "dark"
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                    : "hover:bg-accent"
-                }`}
-                aria-pressed={theme === "dark"}
-              >
-                <Moon className="h-4 w-4" /> Dunkel
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeState("system")}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors ${
-                  theme === "system"
-                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
-                    : "hover:bg-accent"
-                }`}
-                aria-pressed={theme === "system"}
-              >
-                <Monitor className="h-4 w-4" /> System
-              </button>
-            </div>
-          </div>
-
-          {/* Kontrast */}
-          <div className="mb-3">
-            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <Contrast className="h-4 w-4" />
-              Kontrast
-            </div>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="mb-4">
+            <label className="mb-2 block text-xs font-medium">Kontrast</label>
+            <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => setContrast("normal")}
-                className={`rounded-lg px-2 py-1.5 text-sm transition-colors ${
+                className={`rounded-md px-2 py-1 text-sm transition-colors ${
                   contrast === "normal"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -291,7 +298,7 @@ export default function A11navEnhanced({
               <button
                 type="button"
                 onClick={() => setContrast("high")}
-                className={`rounded-lg px-2 py-1.5 text-sm transition-colors ${
+                className={`rounded-md px-2 py-1 text-sm transition-colors ${
                   contrast === "high"
                     ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                     : "hover:bg-accent"
@@ -303,56 +310,34 @@ export default function A11navEnhanced({
             </div>
           </div>
 
-          {/* Header Variante */}
-          <div className="mb-3">
-            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <Layout className="h-4 w-4" />
-              Header
-            </div>
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const nextVariant = ((): HeaderVariant => {
-                    switch (headerVariant) {
-                      case "modern":
-                        return "primary";
-                      case "primary":
-                        return "classic";
-                      case "classic":
-                        return "modern";
-                      default:
-                        return "primary";
-                    }
-                  })();
-                  setHeaderVariant(nextVariant);
-                }}
-                className="rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-accent"
-                aria-label="Header-Variante wechseln"
-              >
-                {headerVariant === "modern"
-                  ? "Zum Primary Header"
-                  : headerVariant === "primary"
-                    ? "Zum Classic Header"
-                    : "Zum Modern Header"}
-              </button>
-            </div>
-          </div>
-
-          {/* Links */}
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <a
-              href="/leichte-sprache"
-              className="rounded-lg border border-input/50 bg-background/50 px-3 py-2 text-center text-sm transition-colors hover:bg-accent"
+          {/* 4) Header-Switch */}
+          <div className="border-t pt-3">
+            <button
+              type="button"
+              onClick={() => {
+                const nextVariant = ((): HeaderVariant => {
+                  switch (headerVariant) {
+                    case "modern":
+                      return "primary";
+                    case "primary":
+                      return "classic";
+                    case "classic":
+                      return "modern";
+                    default:
+                      return "primary";
+                  }
+                })();
+                setHeaderVariant(nextVariant);
+              }}
+              className="rounded-md px-2 py-1 text-sm transition-colors hover:bg-accent"
+              aria-label="Header-Variante wechseln"
             >
-              Leichte Sprache
-            </a>
-            <a
-              href="/gebaerdensprache"
-              className="rounded-lg border border-input/50 bg-background/50 px-3 py-2 text-center text-sm transition-colors hover:bg-accent"
-            >
-              Gebärdensprache
-            </a>
+              {headerVariant === "modern"
+                ? "Zum Primary Header"
+                : headerVariant === "primary"
+                  ? "Zum Classic Header"
+                  : "Zum Modern Header"}
+            </button>
           </div>
         </div>
       )}

@@ -55,10 +55,11 @@ const PageLayout = memo(function PageLayout({
       handleHeaderChange as EventListener,
     );
 
-    const saved =
-      (typeof window !== "undefined" &&
-        localStorage.getItem("header-variant")) ||
-      "primary";
+    const saved = (
+      typeof window !== "undefined"
+        ? localStorage.getItem("header-variant")
+        : null
+    ) ?? "primary";
     setHeaderVariant(saved as "modern" | "primary" | "classic");
 
     return () =>
