@@ -285,7 +285,7 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
         {/* FRONT SIDE */}
         <div
           ref={frontRef}
-          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm transition-shadow duration-300 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-border dark:bg-muted"
+          className="group absolute inset-0 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-lg border border-border bg-transparent shadow-sm transition-shadow duration-300 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-border"
           style={{ backfaceVisibility: "hidden" }}
           onClick={
             disableNavigation || !investigationId ? flipCard : navigateToDetail
@@ -357,9 +357,9 @@ const Fahndungskarte: React.FC<ModernFahndungskarteProps> = ({
             )}
           </div>
 
-          {/* Info Section */}
+          {/* Info Section (Glass) */}
           <div
-            className="flex flex-col justify-between p-4"
+            className="glass-production flex flex-col justify-between bg-background/50 p-4 backdrop-blur-xl"
             style={{ height: "40%" }}
           >
             <div className="space-y-2">
