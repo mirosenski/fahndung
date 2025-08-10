@@ -33,7 +33,11 @@
     "health:check": "pnpm typecheck && pnpm lint && pnpm audit --prod",
     "health:report": "pnpm outdated && echo '✅ System Health Check Complete'",
     "build:force": "SKIP_LINTING=true next build || echo 'Build completed with warnings'",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "lhci": "lhci autorun",
+    "lhci:dev": "source scripts/setup-lighthouse-wsl2.sh && lhci autorun",
+    "lhci:prod": "pnpm build && pnpm start & sleep 10 && source scripts/setup-lighthouse-wsl2.sh && lhci autorun && pkill -f 'next start'",
+    "lhci:setup": "bash scripts/setup-lighthouse-wsl2.sh"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",
