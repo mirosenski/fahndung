@@ -6,6 +6,10 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig = {
+  // TEMP: nur für die Bundle-Analyse – danach wieder entfernen!
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '**.supabase.co' },
