@@ -32,7 +32,8 @@
     "health:fix": "sed -i 's/!\\([a-zA-Z_]*\\) ?? !\\([a-zA-Z_]*\\)/!\\1 || !\\2/g' src/**/*.{ts,tsx}",
     "health:check": "pnpm typecheck && pnpm lint && pnpm audit --prod",
     "health:report": "pnpm outdated && echo '✅ System Health Check Complete'",
-    "build:force": "SKIP_LINTING=true next build || echo 'Build completed with warnings'"
+    "build:force": "SKIP_LINTING=true next build || echo 'Build completed with warnings'",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",
