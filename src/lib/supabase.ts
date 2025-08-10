@@ -55,8 +55,30 @@ const getSupabaseInstance = () => {
   return supabaseInstance;
 };
 
-// Exportiere die Supabase-Instanz
-export const supabase = getSupabaseInstance();
+// Exportiere die Supabase-Instanz mit Error-Handling
+export const supabase = (() => {
+  try {
+    return getSupabaseInstance();
+  } catch (error) {
+    console.error("❌ Fehler beim Initialisieren von Supabase:", error);
+    // Fallback: Erstelle einen minimalen Client für bessere Fehlerbehandlung
+    return createClient(supabaseUrl ?? "", supabaseAnonKey ?? "", {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+          heartbeatIntervalMs: 1000,
+          reconnectAfterMs: 1000,
+          maxRetries: 3,
+        },
+      },
+    });
+  }
+})();
 
 // Performance-Monitoring (nur in Development)
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -64,7 +86,13 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   window.fetch = async (...args) => {
     const start = performance.now();
     try {
-      const response = await originalFetch(...args);
+      // Sicherstellen, dass originalFetch korrekt aufgerufen wird
+      if (typeof originalFetch !== "function") {
+        console.error("❌ Original fetch ist keine Funktion");
+        throw new Error("Original fetch function is not available");
+      }
+
+      const response = await originalFetch.apply(window, args);
       const duration = performance.now() - start;
 
       if (duration > 3000) {
@@ -81,6 +109,15 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
       return response;
     } catch (error) {
       console.error("❌ Fetch Error:", error);
+      // Bessere Fehlerbehandlung für Network-Fehler
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.error(
+          "🌐 Netzwerkfehler - Überprüfen Sie Ihre Internetverbindung",
+        );
+      }
       throw error;
     }
   };

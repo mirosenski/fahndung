@@ -25,6 +25,38 @@
 }
 
 :root {
+<<<<<<< HEAD
+=======
+  /* Light Mode Farben */
+  --sphere-gradient-light: linear-gradient(
+    to top,
+    rgba(213, 223, 227, 0.38) 0%,
+    rgba(213, 223, 227, 0.19) 10%,
+    rgba(213, 223, 227, 0.077) 30%,
+    transparent 60%
+  );
+  --background-gradient-light: radial-gradient(
+    circle at center,
+    rgba(213, 223, 227, 0.19) 0%,
+    transparent 70%
+  );
+
+  /* Dark Mode Farben */
+  --sphere-gradient-dark: linear-gradient(
+    to top,
+    rgba(213, 223, 227, 0.095) 0%,
+    rgba(213, 223, 227, 0.0475) 10%,
+    rgba(213, 223, 227, 0.01925) 30%,
+    transparent 60%
+  );
+  --background-gradient-dark: radial-gradient(
+    circle at center,
+    rgba(213, 223, 227, 0.095) 0%,
+    transparent 70%
+  );
+
+  /* Design System Variablen */
+>>>>>>> 12a841d (perf: baseline before audit (Next 15.4.6, React 19.1.1))
   --background: 0 0% 96.1%;
   --foreground: 222.2 84% 4.9%;
   --card: 0 0% 100%;
@@ -50,6 +82,23 @@
   --chart-3: 197 37% 24%;
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
+<<<<<<< HEAD
+=======
+}
+
+/* Dark Mode Anpassungen */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sphere-gradient: var(--sphere-gradient-dark);
+    --background-gradient: var(--background-gradient-dark);
+  }
+}
+
+/* Light Mode (Standard) */
+:root {
+  --sphere-gradient: var(--sphere-gradient-light);
+  --background-gradient: var(--background-gradient-light);
+>>>>>>> 12a841d (perf: baseline before audit (Next 15.4.6, React 19.1.1))
 }
 
 .dark {

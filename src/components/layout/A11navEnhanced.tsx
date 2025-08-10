@@ -132,6 +132,7 @@ export default function A11navEnhanced({
         scheduleClose();
       }}
     >
+<<<<<<< HEAD
       {headerVariant === "primary" ? (
         <button
           ref={btnRef}
@@ -181,6 +182,19 @@ export default function A11navEnhanced({
           <span>{isCompact ? "A11y" : "A11y & Meta"}</span>
         </button>
       )}
+=======
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={toggleOpen}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex items-center gap-2 rounded-md border border-input/50 bg-background/60 px-3 py-2 text-sm font-medium text-foreground shadow-sm backdrop-blur-xl transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary/50"
+      >
+        <Accessibility className="h-4 w-4" />
+        {isCompact ? "A11y" : "A11y & Meta"}
+      </button>
+>>>>>>> 12a841d (perf: baseline before audit (Next 15.4.6, React 19.1.1))
 
       {open && (
         <div
@@ -267,7 +281,11 @@ export default function A11navEnhanced({
                   key={opt.key}
                   type="button"
                   onClick={() => setFontSize(opt.key)}
+<<<<<<< HEAD
                   className={`rounded-md px-2 py-1 text-sm transition-colors ${
+=======
+                  className={`rounded-md px-2 py-1.5 text-sm transition-colors ${
+>>>>>>> 12a841d (perf: baseline before audit (Next 15.4.6, React 19.1.1))
                     fontSize === opt.key
                       ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                       : "hover:bg-accent"
@@ -280,9 +298,65 @@ export default function A11navEnhanced({
             </div>
           </div>
 
+<<<<<<< HEAD
           <div className="mb-4">
             <label className="mb-2 block text-xs font-medium">Kontrast</label>
             <div className="flex gap-1">
+=======
+          {/* Theme */}
+          <div className="mb-3">
+            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <Sun className="h-4 w-4" />
+              Theme
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setThemeState("light")}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm transition-colors ${
+                  theme === "light"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                    : "hover:bg-accent"
+                }`}
+                aria-pressed={theme === "light"}
+              >
+                <Sun className="h-4 w-4" /> Hell
+              </button>
+              <button
+                type="button"
+                onClick={() => setThemeState("dark")}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm transition-colors ${
+                  theme === "dark"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                    : "hover:bg-accent"
+                }`}
+                aria-pressed={theme === "dark"}
+              >
+                <Moon className="h-4 w-4" /> Dunkel
+              </button>
+              <button
+                type="button"
+                onClick={() => setThemeState("system")}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm transition-colors ${
+                  theme === "system"
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+                    : "hover:bg-accent"
+                }`}
+                aria-pressed={theme === "system"}
+              >
+                <Monitor className="h-4 w-4" /> System
+              </button>
+            </div>
+          </div>
+
+          {/* Kontrast */}
+          <div className="mb-3">
+            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <Contrast className="h-4 w-4" />
+              Kontrast
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+>>>>>>> 12a841d (perf: baseline before audit (Next 15.4.6, React 19.1.1))
               <button
                 type="button"
                 onClick={() => setContrast("normal")}

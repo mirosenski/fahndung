@@ -1,10 +1,8 @@
 /*
- * Tailwind CSS core directives. `@tailwind base` injects a reset and base
- * styles, `@tailwind components` adds component classes and `@tailwind utilities`
- * includes low-level utility classes such as `sr-only` and `focus` styles.
+ * Tailwind CSS v4 core directives. `@import "tailwindcss/preflight"` injects a reset and base
+ * styles, `@tailwind utilities` includes low-level utility classes such as `sr-only` and `focus` styles.
  */
-@tailwind base;
-@tailwind components;
+@import "tailwindcss/preflight";
 @tailwind utilities;
 
 /* Firefox-spezifische Verbesserungen für Touch-Interaktionen */

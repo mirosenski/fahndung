@@ -76,9 +76,16 @@ export const TabContent: React.FC<TabContentProps> = ({
 
         return null;
       } catch (error) {
-        // Spezielle Behandlung für Timeout-Fehler
+        // Spezielle Behandlung für verschiedene Fehlertypen
         if (error instanceof Error && error.name === "AbortError") {
           console.warn("⚠️ Geocoding Request abgebrochen (Timeout)");
+        } else if (
+          error instanceof TypeError &&
+          error.message.includes("Failed to fetch")
+        ) {
+          console.warn(
+            "🌐 Netzwerkfehler beim Geocoding - Überprüfen Sie Ihre Internetverbindung",
+          );
         } else {
           console.warn("⚠️ Geocoding fehlgeschlagen:", error);
         }

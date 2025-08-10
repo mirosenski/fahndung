@@ -108,9 +108,17 @@ export class NominatimService {
       if (error instanceof Error && error.name === "AbortError") {
         console.warn("⚠️ Geocoding Request abgebrochen (Timeout)");
         return [];
+      } else if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          "🌐 Netzwerkfehler beim Geocoding - Überprüfen Sie Ihre Internetverbindung",
+        );
+        return [];
       } else {
         console.warn("⚠️ Geocoding fehlgeschlagen:", error);
-        throw error;
+        return [];
       }
     }
   }
@@ -182,6 +190,14 @@ export class NominatimService {
       if (error instanceof Error && error.name === "AbortError") {
         console.warn("⚠️ Reverse Geocoding Request abgebrochen (Timeout)");
         throw new Error("Reverse geocoding timeout");
+      } else if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          "🌐 Netzwerkfehler beim Reverse Geocoding - Überprüfen Sie Ihre Internetverbindung",
+        );
+        throw new Error("Network error during reverse geocoding");
       } else {
         console.warn("⚠️ Reverse Geocoding fehlgeschlagen:", error);
         throw error;
@@ -208,6 +224,17 @@ export class NominatimService {
         return [];
       }
 
+      // Behandlung für Netzwerkfehler
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        console.warn(
+          "🌐 Netzwerkfehler beim Geocoding - Überprüfen Sie Ihre Internetverbindung",
+        );
+        return [];
+      }
+
       console.warn("⚠️ Geocoding fehlgeschlagen, verwende Fallback:", error);
 
       // Fallback: Versuche mit vereinfachter Suche
@@ -216,12 +243,20 @@ export class NominatimService {
         try {
           return await this.search(simplifiedQuery, options);
         } catch (fallbackError) {
-          // Auch hier AbortError behandeln
+          // Auch hier AbortError und Netzwerkfehler behandeln
           if (
             fallbackError instanceof Error &&
             fallbackError.name === "AbortError"
           ) {
             console.warn("⚠️ Fallback Geocoding Request abgebrochen (Timeout)");
+            return [];
+          } else if (
+            fallbackError instanceof TypeError &&
+            fallbackError.message.includes("Failed to fetch")
+          ) {
+            console.warn(
+              "🌐 Netzwerkfehler beim Fallback Geocoding - Überprüfen Sie Ihre Internetverbindung",
+            );
             return [];
           }
           console.warn(

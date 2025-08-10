@@ -69,16 +69,18 @@ export default function ModernHeader() {
         role="banner"
         aria-label="Hauptnavigation"
       >
-        {/* Glassmorphismus Container */}
+        {/* Glassmorphismus Container - freistehende Form */}
         <div
           className={`
-          h-full w-full
-          border-b border-border/50 bg-background/70
-          shadow-sm backdrop-blur-2xl
-          transition-shadow duration-300 hover:shadow-md dark:bg-background/50
+          mx-auto h-full max-w-[1273px]
+          ${isCompact ? "mt-0" : "mt-4"}
+          rounded-[10px] border border-white/50
+          bg-white/40 shadow-lg backdrop-blur-[50px] 
+          transition-all duration-300 hover:shadow-xl
+          dark:border-white/20 dark:bg-black/40
         `}
         >
-          <div className="mx-auto h-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="h-full px-4 sm:px-6 lg:px-8">
             <div className="flex h-full items-center justify-between">
               {/* Logo */}
               <div className="flex-shrink-0">
