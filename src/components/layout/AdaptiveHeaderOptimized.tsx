@@ -7,6 +7,9 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+
+// Import der Header-Optimierungen
+import "~/styles/current-header-optimizations.css";
 import Link from "next/link";
 import { Eye, EyeOff, Menu, Plus, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
@@ -86,8 +89,8 @@ const MetaAccessibilityBar = ({ isVisible }: { isVisible: boolean }) => {
   return (
     <div
       className={`
-      w-full bg-[#EEEEEE] text-muted-foreground transition-all duration-500
-      ease-out dark:bg-muted dark:text-muted-foreground
+      meta-accessibility-bar w-full bg-[#EEEEEE] text-muted-foreground transition-all
+      duration-500 ease-out dark:bg-muted dark:text-muted-foreground
       ${isVisible ? "h-8 opacity-100" : "h-0 opacity-0"}
     `}
     >
@@ -231,10 +234,12 @@ const AdaptiveDesktopHeader = ({
   return (
     <div
       className={`
-      hidden w-full lg:block
+      adaptive-desktop-header hidden w-full lg:block
       ${isScrolled ? "sticky top-0 z-50" : "relative"}
     `}
       style={{ zIndex: 100 }}
+      data-header-component="desktop"
+      data-sticky-header={isScrolled ? "true" : "false"}
     >
       {/* Meta Accessibility Bar - im normalen Zustand immer sichtbar, im Sticky-Zustand nur wenn eingeblendet */}
       {(!isScrolled || showMetaBar) && (
@@ -268,25 +273,27 @@ const AdaptiveDesktopHeader = ({
             ${isScrolled ? "w-full rounded-none border-0" : "rounded-b-2xl rounded-t-2xl"}
           `}
           style={{
-            // Hardware-Acceleration für smoothe Performance
+            // Hardware-Acceleration für smoothe Performance - verhindert Flackern
             transform: "translate3d(0, 0, 0)",
             backfaceVisibility: "hidden",
             perspective: 1000,
+            willChange: "transform, background-color, box-shadow",
           }}
         >
           <div
             className={`flex w-full items-center justify-between ${isScrolled ? "px-6 py-0" : "px-6 py-1"}`}
           >
             {/* Logo - adaptiert Größe */}
-            <div className="flex-shrink-0">
+            <div className="header-logo flex-shrink-0" data-header-logo="true">
               <Logo className="text-foreground" showLink={true} />
             </div>
 
             {/* Navigation */}
             <nav
-              className="flex items-center gap-4"
+              className="header-nav flex items-center gap-4"
               role="navigation"
               aria-label="Hauptnavigation"
+              data-header-nav="true"
             >
               {/* Desktop Mega Menu */}
               <DesktopMegaMenu />
@@ -345,8 +352,17 @@ const ResponsiveMobileHeader = ({
 
   return (
     <div
-      className="sticky top-0 z-50 w-full rounded-lg border-b border-border bg-muted shadow-sm transition-all duration-300 hover:shadow-sm dark:border-border dark:bg-muted lg:hidden"
-      style={{ zIndex: 100 }}
+      className="responsive-mobile-header sticky top-0 z-50 w-full rounded-lg border-b border-border bg-muted shadow-sm transition-all duration-300 hover:shadow-sm dark:border-border dark:bg-muted lg:hidden"
+      style={{
+        zIndex: 100,
+        // Hardware-Acceleration für Mobile - verhindert Flackern
+        transform: "translate3d(0, 0, 0)",
+        backfaceVisibility: "hidden",
+        perspective: 1000,
+        willChange: "transform, background-color, box-shadow",
+      }}
+      data-header-component="mobile"
+      data-sticky-header="true"
     >
       {/* Meta Controls Bar (mobile) - Gleiche Elemente wie Desktop */}
       {showMetaControls && (
@@ -462,7 +478,17 @@ const AdaptiveHeaderOptimized = ({
     <>
       {/* Placeholder für Header-Höhe um Layout-Shift zu vermeiden - nur wenn Header sticky ist */}
       {isScrolled && (
-        <div className="header-placeholder h-16 sm:h-20 lg:h-24" />
+        <div
+          className="header-placeholder h-16 sm:h-20 lg:h-24"
+          style={{
+            // Optimiert Rendering-Layer
+            position: "relative",
+            zIndex: -1,
+            // Hardware-Acceleration
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+          }}
+        />
       )}
 
       {/* Skip Link */}

@@ -21,15 +21,30 @@ export default function CommonHeroSection({ data }: CommonHeroSectionProps) {
   return (
     <>
       {/* Hero Section */}
-      <div className="relative h-[60vh] min-h-[400px] overflow-hidden rounded-lg bg-muted dark:bg-muted">
+      <div 
+        className="relative h-[60vh] min-h-[400px] overflow-hidden rounded-lg bg-muted dark:bg-muted detail-hero-section"
+        style={{
+          // Hardware-Acceleration für Detailseite - verhindert Flackern
+          transform: "translate3d(0, 0, 0)",
+          backfaceVisibility: "hidden",
+          perspective: 1000,
+          willChange: "transform, background-color",
+        }}
+      >
         {/* Hauptbild - Originales Fahndungsbild */}
         <Image
           src={mainImageUrl}
           alt="Fahndungsbild"
           fill
           priority
-          className="object-cover"
+          className="object-cover detail-hero-image"
           sizes="(max-width: 1024px) 100vw, 60vw"
+          style={{
+            // Hardware-Acceleration für Image - verhindert Flackern
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+            willChange: "transform",
+          }}
           onError={(e) => {
             // Fallback zu einem lokalen Platzhalterbild
             const target = e.target as HTMLImageElement;

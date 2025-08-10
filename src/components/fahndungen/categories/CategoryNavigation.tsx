@@ -19,8 +19,16 @@ export default function CategoryNavigation({
   ];
 
   return (
-    <div className="mb-6">
-      <nav className="flex space-x-1 rounded-lg bg-muted p-1 dark:bg-muted">
+    <div
+      className="mb-6"
+      style={{
+        // Hardware-Acceleration für Navigation - verhindert Flackern
+        transform: "translateZ(0)",
+        backfaceVisibility: "hidden",
+        willChange: "transform",
+      }}
+    >
+      <nav className="detail-navigation flex space-x-1 rounded-lg bg-muted p-1 dark:bg-muted">
         {categories.map((category) => (
           <button
             key={category.id}

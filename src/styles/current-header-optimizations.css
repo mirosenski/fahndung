@@ -1,8 +1,9 @@
-/* Header-spezifische Optimierungen für Chrome - Performance-Guide */
+/* Aktuelle Header-Optimierungen - basierend auf der funktionierenden alten Version */
 
-/* Verhindert Flackern durch GPU-Beschleunigung */
+/* Verhindert Flackern durch GPU-Beschleunigung für alle Header-Elemente */
 header,
-.header-placeholder {
+.header-placeholder,
+[data-header-component] {
   -webkit-transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   -webkit-perspective: 1000;
@@ -11,10 +12,12 @@ header,
   perspective: 1000;
 }
 
-/* Optimiert Rendering-Layer */
+/* Optimiert Rendering-Layer für Header-Placeholder */
 .header-placeholder {
   position: relative;
   z-index: -1;
+  /* Verhindert Layout-Shifts */
+  contain: layout style;
 }
 
 /* Smooth Scrolling für bessere UX */
@@ -29,7 +32,8 @@ body {
 
 /* Optimiert Backdrop-Filter Performance in Chrome */
 @supports (backdrop-filter: blur(12px)) {
-  header {
+  header,
+  [data-header-component] {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
@@ -37,7 +41,8 @@ body {
 
 /* Fallback für Browser ohne Backdrop-Filter Support */
 @supports not (backdrop-filter: blur(12px)) {
-  header.scrolled {
+  header.scrolled,
+  [data-header-component].scrolled {
     background-color: rgba(255, 255, 255, 0.98);
   }
 }
@@ -50,13 +55,14 @@ body {
 
 /* Optimiert Transitions für 60fps */
 header,
-header * {
+header *,
+[data-header-component],
+[data-header-component] * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Verhindert Reflow bei Hover-States */
-a,
-button {
+a, button {
   transform: translateZ(0);
   will-change: transform;
 }
@@ -71,7 +77,7 @@ button {
     /* Verbesserte Touch-Scrolling-Unterstützung */
     touch-action: pan-y;
   }
-
+  
   body.menu-open {
     overflow: hidden;
     position: fixed;
@@ -79,14 +85,14 @@ button {
     /* Verhindert Scroll während Menu offen */
     touch-action: none;
   }
-
+  
   /* Verbesserte Scroll-Performance für Container */
   .scroll-container {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;
   }
-
+  
   /* iOS-spezifische Optimierungen */
   @supports (-webkit-touch-callout: none) {
     body {
@@ -100,90 +106,95 @@ button {
 
 /* Chrome-spezifische Fixes */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
-  header {
+  header,
+  [data-header-component] {
     /* Force hardware acceleration */
     transform: translate3d(0, 0, 0);
   }
-
+  
   /* Fix für Sub-Pixel-Rendering */
   .transition-all {
     -webkit-transform: translateZ(0);
-    transform: translateZ(0);
     -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
   }
 }
 
 /* Sticky Header Optimierungen */
-.sticky-header {
+.sticky-header,
+[data-sticky-header] {
   /* Hardware acceleration */
   transform: translate3d(0, 0, 0);
   will-change: transform;
-
+  
   /* Smooth transitions */
   transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-
+  
   /* Prevent layout shifts */
   contain: layout style paint;
 }
 
 /* Adaptive Header Optimierungen */
-.adaptive-header {
+.adaptive-header,
+[data-adaptive-header] {
   /* GPU acceleration */
   transform: translateZ(0);
   backface-visibility: hidden;
-
+  
   /* Optimized transitions */
-  transition:
+  transition: 
     background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
     height 300ms cubic-bezier(0.4, 0, 0.2, 1);
-
+  
   /* Prevent repaints */
   will-change: transform, background-color, box-shadow;
 }
 
 /* Logo Optimierungen */
-.header-logo {
+.header-logo,
+[data-header-logo] {
   /* Prevent layout shifts */
   contain: layout style;
-
+  
   /* Smooth scaling */
   transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
 }
 
 /* Navigation Optimierungen */
-.header-nav {
+.header-nav,
+[data-header-nav] {
   /* Prevent layout thrashing */
   contain: layout style;
-
+  
   /* Smooth hover effects */
   transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Dropdown Optimierungen */
-.header-dropdown {
+.header-dropdown,
+[data-header-dropdown] {
   /* Hardware acceleration */
   transform: translateZ(0);
-
+  
   /* Smooth animations */
-  transition:
+  transition: 
     opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
     transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
-
+  
   /* Prevent layout shifts */
   contain: layout style paint;
 }
 
 /* Mobile Menu Optimierungen */
-.mobile-menu {
+.mobile-menu,
+[data-mobile-menu] {
   /* Hardware acceleration */
   transform: translate3d(0, 0, 0);
-
+  
   /* Smooth slide animations */
   transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
-
+  
   /* Prevent overscroll */
   overscroll-behavior: contain;
 }
@@ -194,24 +205,66 @@ button {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-
+  
   header,
-  header * {
+  header *,
+  [data-header-component],
+  [data-header-component] * {
     transition: none !important;
   }
 }
 
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
-  header {
+  header,
+  [data-header-component] {
     border: 2px solid currentColor;
   }
 }
 
 /* Print Styles */
 @media print {
-  header {
+  header,
+  [data-header-component] {
     position: static !important;
     transform: none !important;
   }
+}
+
+/* Spezielle Optimierungen für AdaptiveHeaderOptimized */
+.adaptive-desktop-header {
+  /* Hardware acceleration für Desktop */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000;
+  will-change: transform, background-color, box-shadow;
+  
+  /* Smooth transitions */
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.responsive-mobile-header {
+  /* Hardware acceleration für Mobile */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000;
+  will-change: transform, background-color, box-shadow;
+  
+  /* Smooth transitions */
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Meta Bar Optimierungen */
+.meta-accessibility-bar {
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  
+  /* Smooth height transitions */
+  transition: 
+    height 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Prevent layout shifts */
+  contain: layout style;
 }

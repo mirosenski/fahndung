@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
+
+// Import der Detailseite-Optimierungen
+import "~/styles/detail-page-optimizations.css";
 import Link from "next/link";
 import { ArrowLeft, Save, Edit, Eye, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -117,7 +120,7 @@ export default function FahndungCategoriesContainer({
     if (isLoading || !isValidId) {
       return (
         <PageLayout session={session}>
-          <div className="flex min-h-[400px] items-center justify-center">
+          <div className="detail-loading flex min-h-[400px] items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
               <p className="text-muted-foreground dark:text-muted-foreground">
@@ -138,7 +141,7 @@ export default function FahndungCategoriesContainer({
     if (!isValidId) {
       return (
         <PageLayout session={session}>
-          <div className="flex min-h-[400px] items-center justify-center">
+          <div className="detail-error flex min-h-[400px] items-center justify-center">
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
                 <div className="h-6 w-6 text-white">!</div>
@@ -164,7 +167,7 @@ export default function FahndungCategoriesContainer({
     if (!investigation && !isLoading) {
       return (
         <PageLayout session={session}>
-          <div className="flex min-h-[400px] items-center justify-center">
+          <div className="detail-error flex min-h-[400px] items-center justify-center">
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
                 <div className="h-6 w-6 text-white">!</div>
@@ -347,7 +350,15 @@ export default function FahndungCategoriesContainer({
   return (
     <InvestigationEditErrorBoundary>
       <PageLayout session={session}>
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div
+          className="detail-page-container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+          style={{
+            // Hardware-Acceleration für Detailseite Container - verhindert Flackern
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+            willChange: "transform",
+          }}
+        >
           {/* Header */}
           <div className="mb-8">
             <div className="mt-4 flex items-center justify-between">
@@ -368,7 +379,7 @@ export default function FahndungCategoriesContainer({
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={handleSave}
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                          className="detail-button flex items-center gap-2 bg-green-600 hover:bg-green-700"
                         >
                           <Save className="h-4 w-4" />
                           Speichern
@@ -376,7 +387,7 @@ export default function FahndungCategoriesContainer({
                         <Button
                           onClick={() => globalSync()}
                           variant="outline"
-                          className="flex items-center gap-2"
+                          className="detail-button flex items-center gap-2"
                         >
                           <Eye className="h-4 w-4" />
                           Ansicht
@@ -386,7 +397,7 @@ export default function FahndungCategoriesContainer({
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={() => globalSync()}
-                          className="flex items-center gap-2"
+                          className="detail-button flex items-center gap-2"
                         >
                           <Edit className="h-4 w-4" />
                           Bearbeiten
@@ -394,7 +405,7 @@ export default function FahndungCategoriesContainer({
                         <Button
                           onClick={handleDelete}
                           variant="destructive"
-                          className="flex items-center gap-2"
+                          className="detail-button flex items-center gap-2"
                         >
                           <Trash2 className="h-4 w-4" />
                           Löschen
@@ -408,7 +419,9 @@ export default function FahndungCategoriesContainer({
           </div>
 
           {/* Category Content */}
-          <div className="min-h-[600px]">{categoryContent}</div>
+          <div className="detail-category-content min-h-[600px]">
+            {categoryContent}
+          </div>
         </div>
       </PageLayout>
     </InvestigationEditErrorBoundary>
