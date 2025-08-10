@@ -18,7 +18,6 @@ export default function A11navEnhanced({
   const { setTheme } = useTheme();
 
   const [open, setOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [fontSize, setFontSize] = useState<FontSize>("normal");
   const [theme, setThemeState] = useState<AppTheme>("system");
   const [contrast, setContrast] = useState<ContrastMode>("normal");
