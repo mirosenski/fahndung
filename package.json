@@ -32,7 +32,12 @@
     "health:fix": "sed -i 's/!\\([a-zA-Z_]*\\) ?? !\\([a-zA-Z_]*\\)/!\\1 || !\\2/g' src/**/*.{ts,tsx}",
     "health:check": "pnpm typecheck && pnpm lint && pnpm audit --prod",
     "health:report": "pnpm outdated && echo '✅ System Health Check Complete'",
-    "build:force": "SKIP_LINTING=true next build || echo 'Build completed with warnings'"
+    "build:force": "SKIP_LINTING=true next build || echo 'Build completed with warnings'",
+    "analyze": "ANALYZE=true next build",
+    "lhci": "lhci autorun",
+    "lhci:dev": "source scripts/setup-lighthouse-wsl2.sh && lhci autorun",
+    "lhci:prod": "pnpm build && pnpm start & sleep 10 && source scripts/setup-lighthouse-wsl2.sh && lhci autorun && pkill -f 'next start'",
+    "lhci:setup": "bash scripts/setup-lighthouse-wsl2.sh"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -47,6 +52,7 @@
     "@trpc/server": "^11.0.0",
     "@upstash/ratelimit": "^1.1.0",
     "@upstash/redis": "^1.24.2",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
     "lucide-react": "0.525.0",

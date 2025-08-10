@@ -41,13 +41,13 @@ export const layout = {
   section: "py-8",
   card: "rounded-lg border bg-card text-card-foreground shadow-xs",
   cardHover:
-    "rounded-lg border bg-card text-card-foreground shadow-xs transition-shadow hover:shadow-sm",
+    "rounded-lg border bg-card text-card-foreground shadow-xs transition-shadow hover:shadow-md",
 } as const;
 
 // Komponenten-Tokens
 export const components = {
   input: {
-    base: "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+    base: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
     error: "border-destructive focus-visible:ring-destructive",
     success: "border-green-500 focus-visible:ring-green-500",
   },
@@ -61,7 +61,7 @@ export const components = {
       "border-transparent bg-destructive text-destructive-foreground",
   },
   button: {
-    base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50",
+    base: "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50",
     variants: {
       default:
         "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
@@ -76,8 +76,8 @@ export const components = {
     },
     sizes: {
       default: "h-9 px-4 py-2",
-      sm: "h-8 rounded-lg px-3",
-      lg: "h-10 rounded-lg px-6",
+      sm: "h-8 rounded-md px-3",
+      lg: "h-10 rounded-md px-6",
       icon: "size-9",
     },
   },
@@ -144,14 +144,27 @@ export const componentClasses = {
 // Migration-Hilfsfunktionen
 export const migrateGrayClasses = {
   // Hintergrund
-  "bg-muted": "bg-muted",
+  "bg-gray-100": "bg-muted",
+  "bg-gray-200": "bg-muted",
+  "bg-gray-50": "bg-muted/50",
+  "bg-gray-800": "bg-card",
+  "bg-gray-900": "bg-background",
   "bg-white": "bg-background",
 
   // Text
-  "text-muted-foreground": "text-muted-foreground",
+  "text-gray-900": "text-foreground",
+  "text-gray-800": "text-foreground",
+  "text-gray-700": "text-foreground",
+  "text-gray-600": "text-muted-foreground",
+  "text-gray-500": "text-muted-foreground",
+  "text-gray-400": "text-muted-foreground",
+  "text-gray-300": "text-muted-foreground",
 
   // Border
-  "border-border": "border-border",
+  "border-gray-200": "border-border",
+  "border-gray-300": "border-border",
+  "border-gray-600": "border-border",
+  "border-gray-700": "border-border",
 } as const;
 
 // Utility für Migration

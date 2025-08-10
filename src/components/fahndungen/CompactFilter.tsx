@@ -143,7 +143,7 @@ const CustomDropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden overflow-y-auto rounded-lg border border-border bg-popover shadow-sm">
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
           {options.map((option) => (
             <button
               key={option}

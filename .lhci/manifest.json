@@ -1,0 +1,14 @@
+[
+  {
+    "url": "http://localhost:3010/",
+    "isRepresentativeRun": true,
+    "htmlPath": "/home/miro/projects/PTLS/t3/fahndung/.lhci/localhost--2025_08_10_07_49_59.report.html",
+    "jsonPath": "/home/miro/projects/PTLS/t3/fahndung/.lhci/localhost--2025_08_10_07_49_59.report.json",
+    "summary": {
+      "performance": 0.85,
+      "accessibility": 0.91,
+      "best-practices": 1,
+      "seo": 1
+    }
+  }
+]
